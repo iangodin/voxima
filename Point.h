@@ -7,7 +7,7 @@ struct Point
 	float y = 0.F;
 };
 
-Point operator+( const Point &a, const Point &b )
+inline Point operator+( const Point &a, const Point &b )
 {
 	return { a.x + b.x, a.y + b.y };
 }
