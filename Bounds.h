@@ -53,6 +53,10 @@ public:
     void visit( const Path &path ) override {
         for ( const auto &cmd : path.commands ) {
             bounds.add( { path.position.x + cmd.to.x, path.position.y + cmd.to.y } );
+            if ( cmd.type == PathCommand::QuadTo || cmd.type == PathCommand::CubicTo )
+                bounds.add( { path.position.x + cmd.ctrl1.x, path.position.y + cmd.ctrl1.y } );
+            if ( cmd.type == PathCommand::CubicTo )
+                bounds.add( { path.position.x + cmd.ctrl2.x, path.position.y + cmd.ctrl2.y } );
         }
     }
 

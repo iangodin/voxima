@@ -94,13 +94,18 @@ std::unique_ptr<Group> Font::create_text( const std::string &text, float font_si
     }
 
     hb_buffer_destroy( buffer );
+// Center the glyphs by offsetting each path
+BoundingBoxVisitor visitor;
+group->accept( visitor );
+Point center = { ( visitor.bounds.min.x + visitor.bounds.max.x ) / 2.0f, 
+                 ( visitor.bounds.min.y + visitor.bounds.max.y ) / 2.0f };
 
-    BoundingBoxVisitor visitor;
-    group->accept( visitor );
-    Point center = { ( visitor.bounds.min.x + visitor.bounds.max.x ) / 2.0f, 
-                     ( visitor.bounds.min.y + visitor.bounds.max.y ) / 2.0f };
+for ( auto &v : *group ) {
+    v->position.x -= center.x;
+    v->position.y -= center.y;
+}
 
-    group->position = { -center.x, -center.y };
+group->position = { 0.0f, 0.0f };
 
-    return group;
+return group;
 }
