@@ -1,0 +1,16 @@
+#pragma once
+
+#include "Visual.h"
+#include "VisualVisitor.h"
+#include "Point.h"
+
+struct Line : public Visual
+{
+	Point start = { 0.F, 0.F };
+	Point end = { 0.F, 0.F };
+
+	void accept( VisualVisitor &visitor ) const override
+	{
+		visitor.visit( *this );
+	}
+};

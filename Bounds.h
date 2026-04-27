@@ -5,6 +5,8 @@
 #include "Rectangle.h"
 #include "RoundRectangle.h"
 #include "Path.h"
+#include "Line.h"
+#include "ArrowTip.h"
 #include "Visuals.h"
 #include "Point.h"
 #include <algorithm>
@@ -45,6 +47,19 @@ public:
         for ( const auto &cmd : path.commands ) {
             bounds.add( { path.position.x + cmd.to.x, path.position.y + cmd.to.y } );
         }
+    }
+
+    void visit( const Line &line ) override {
+        bounds.add( { line.position.x + line.start.x, line.position.y + line.start.y } );
+        bounds.add( { line.position.x + line.end.x, line.position.y + line.end.y } );
+    }
+
+    void visit( const ArrowTip &arrow ) override {
+        bounds.add( { arrow.position.x + arrow.end.x, arrow.position.y + arrow.end.y } );
+        // The arrow is essentially a small triangle around arrow.end
+        float s = arrow.size * 2.0f;
+        bounds.add( { arrow.position.x + arrow.end.x - s, arrow.position.y + arrow.end.y - s } );
+        bounds.add( { arrow.position.x + arrow.end.x + s, arrow.position.y + arrow.end.y + s } );
     }
 
     void visit( const Visuals &visuals ) override {

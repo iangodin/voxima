@@ -27,11 +27,11 @@ int main()
 	// 3. Run until 'tick' returns false
 	while ( producer.tick() )
 	{
-		std::cout << producer.current_frame() << ": " << stage.message << '\n';
-
 		std::ostringstream oss;
 		oss << "frames/frame_" << std::setfill('0') << std::setw(4) << producer.current_frame() << ".svg";
 		stage.save_svg( oss.str() );
+
+		std::cout << "Produced frame " << producer.current_frame() << '\n';
 	}
 
 	return 0;

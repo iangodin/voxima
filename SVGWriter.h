@@ -1,4 +1,3 @@
-
 #pragma once
 
 #include "VisualVisitor.h"
@@ -6,6 +5,8 @@
 #include "Rectangle.h"
 #include "RoundRectangle.h"
 #include "Path.h"
+#include "Line.h"
+#include "ArrowTip.h"
 #include "Visuals.h"
 #include "Color.h"
 
@@ -25,7 +26,8 @@ public:
 	void visit( const Circle &circle ) override
 	{
 		_out << indent() << "<g transform=\"translate(" << circle.position.x 
-		     << "," << circle.position.y << ") rotate(" << circle.rotation << ")\">\n";
+		     << "," << circle.position.y << ") rotate(" << circle.rotation 
+		     << ") scale(" << circle.scale_x << "," << circle.scale_y << ")\">\n";
 		
 		_indent += 2;
 		Color final_color = _current_color * circle.color;
@@ -42,7 +44,8 @@ public:
 	void visit( const Rectangle &rectangle ) override
 	{
 		_out << indent() << "<g transform=\"translate(" << rectangle.position.x 
-		     << "," << rectangle.position.y << ") rotate(" << rectangle.rotation << ")\">\n";
+		     << "," << rectangle.position.y << ") rotate(" << rectangle.rotation 
+		     << ") scale(" << rectangle.scale_x << "," << rectangle.scale_y << ")\">\n";
 		
 		_indent += 2;
 		Color final_color = _current_color * rectangle.color;
@@ -65,7 +68,8 @@ public:
 	void visit( const RoundRectangle &rect ) override
 	{
 		_out << indent() << "<g transform=\"translate(" << rect.position.x 
-		     << "," << rect.position.y << ") rotate(" << rect.rotation << ")\">\n";
+		     << "," << rect.position.y << ") rotate(" << rect.rotation 
+		     << ") scale(" << rect.scale_x << "," << rect.scale_y << ")\">\n";
 		
 		_indent += 2;
 		Color final_color = _current_color * rect.color;
@@ -107,7 +111,8 @@ public:
 	void visit( const Path &path ) override
 	{
 		_out << indent() << "<g transform=\"translate(" << path.position.x 
-		     << "," << path.position.y << ") rotate(" << path.rotation << ")\">\n";
+		     << "," << path.position.y << ") rotate(" << path.rotation 
+		     << ") scale(" << path.scale_x << "," << path.scale_y << ")\">\n";
 		
 		_indent += 2;
 		Color final_color = _current_color * path.color;
@@ -145,6 +150,65 @@ public:
 		_out << indent() << "</g>\n";
 	}
 
+	void visit( const Line &line ) override
+	{
+		_out << indent() << "<g transform=\"translate(" << line.position.x 
+		     << "," << line.position.y << ") rotate(" << line.rotation 
+		     << ") scale(" << line.scale_x << "," << line.scale_y << ")\">\n";
+		
+		_indent += 2;
+		Color final_stroke_color = _current_stroke_color * line.stroke_color;
+
+		_out << indent() << "<line x1=\"" << line.start.x << "\" y1=\"" << line.start.y 
+		     << "\" x2=\"" << line.end.x << "\" y2=\"" << line.end.y << "\" "
+		     << stroke_attributes( line.stroke_thickness, final_stroke_color ) << " />\n";
+		_indent -= 2;
+
+		_out << indent() << "</g>\n";
+	}
+
+	void visit( const ArrowTip &arrow ) override
+	{
+		_out << indent() << "<g transform=\"translate(" << arrow.position.x 
+		     << "," << arrow.position.y << ") rotate(" << arrow.rotation 
+		     << ") scale(" << arrow.scale_x << "," << arrow.scale_y << ")\">\n";
+		
+		_indent += 2;
+		Color final_color = _current_color * arrow.color;
+		Color final_stroke_color = _current_stroke_color * arrow.stroke_color;
+
+		float dx = arrow.end.x - arrow.start.x;
+		float dy = arrow.end.y - arrow.start.y;
+		float len = std::sqrt( dx * dx + dy * dy );
+		
+		if ( len > 0.0001f )
+		{
+			dx /= len;
+			dy /= len;
+
+			// Perpendicular vector
+			float px = -dy;
+			float py = dx;
+
+			// Tip is at 'end', two other corners are offset by size
+			float p1x = arrow.end.x;
+			float p1y = arrow.end.y;
+			float p2x = arrow.end.x - dx * arrow.size * 2.0f + px * arrow.size;
+			float p2y = arrow.end.y - dy * arrow.size * 2.0f + py * arrow.size;
+			float p3x = arrow.end.x - dx * arrow.size * 2.0f - px * arrow.size;
+			float p3y = arrow.end.y - dy * arrow.size * 2.0f - py * arrow.size;
+
+			_out << indent() << "<path d=\"M " << p1x << "," << p1y 
+			     << " L " << p2x << "," << p2y 
+			     << " L " << p3x << "," << p3y << " Z\" "
+			     << color_attributes( final_color ) << " "
+			     << stroke_attributes( arrow.stroke_thickness, final_stroke_color ) << " />\n";
+		}
+		_indent -= 2;
+
+		_out << indent() << "</g>\n";
+	}
+
 	void visit( const Visuals &visuals ) override
 	{
 		Color old_color = _current_color;
@@ -154,7 +218,8 @@ public:
 		_current_stroke_color = _current_stroke_color * visuals.stroke_color;
 
 		_out << indent() << "<g transform=\"translate(" << visuals.position.x 
-		     << "," << visuals.position.y << ") rotate(" << visuals.rotation << ")\">\n";
+		     << "," << visuals.position.y << ") rotate(" << visuals.rotation 
+		     << ") scale(" << visuals.scale_x << "," << visuals.scale_y << ")\">\n";
 		
 		_indent += 2;
 		for ( const auto &v : visuals )

@@ -12,7 +12,6 @@
 
 struct Stage
 {
-	std::string message = "Oops";
 	Color background = { 0.F, 0.F, 0.F, 1.F };
 	Visuals visuals;
 

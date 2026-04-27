@@ -10,6 +10,10 @@
 class Visuals : public Visual
 {
 public:
+	Visuals() = default;
+	Visuals( const Visuals & ) = delete;
+	Visuals &operator=( const Visuals & ) = delete;
+
 	template<typename Shape>
 	Shape &add( std::unique_ptr<Shape> &&visual )
 	{

@@ -18,6 +18,8 @@ public:
 	void visit( const Rectangle &rect ) override { _callback( const_cast<Rectangle &>( rect ) ); }
 	void visit( const RoundRectangle &rect ) override { _callback( const_cast<RoundRectangle &>( rect ) ); }
 	void visit( const Path &path ) override { _callback( const_cast<Path &>( path ) ); }
+	void visit( const Line &line ) override { _callback( const_cast<Line &>( line ) ); }
+	void visit( const ArrowTip &arrow ) override { _callback( const_cast<ArrowTip &>( arrow ) ); }
 	
 	void visit( const Visuals &visuals ) override
 	{

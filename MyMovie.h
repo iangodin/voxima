@@ -14,109 +14,95 @@
 
 #include <coroutine>
 
-Director background_rain( Stage &stage, int64_t frames )
+Font font( "Roboto-Regular.ttf" );
+
+Director scale_in( Visual &visual, int64_t frames )
 {
-	while ( frames > 0 )
-	{
-		stage.message += ".";
-		--frames;
-		co_yield {};
-		}
-}
-
-Director background_snow( Stage &stage, int64_t frames )
-{
-	while ( frames > 0 )
-	{
-		stage.message += "o";
-		--frames;
-		co_yield {};
-		}
-}
-
-Scene my_introduction( Stage &stage )
-{
-	stage.message = "My introduction";
-	co_await wait_for( 5 );
-
-	co_return;
-}
-
-Scene my_show( Stage &stage )
-{
-	stage.message = "My show";
-
-	Font font( "Roboto-Regular.ttf" );
-	auto text_group = font.create_text( "Hello World!", 2.0f );
-	text_group->position = { 0.0f, 2.0f };
-	text_group->color = { 1.0f, 1.0f, 1.0f, 1.0f };
-	CallbackVisitor outliner( []( Visual &visual )
-	{
-		visual.stroke_thickness = 0.02F;
-		visual.color.a = 0.F;
-	} );
-	text_group->accept( outliner );
-
-	auto &text = stage.visuals.add( std::move( text_group ) );
-
-	auto &rect = stage.visuals.add( std::make_unique<Rectangle>() );
-	rect.position = { 0.0f, 0.0f };
-	rect.rotation = 0.0f;
-	rect.half_width = 2.0f;
-	rect.half_height = 1.0f;
-	rect.color = { 0.0f, 0.8f, 0.0f, 1.0f }; // Nice green
-	rect.stroke_thickness = 0.1f;
-	rect.stroke_color = { 1.0f, 1.0f, 1.0f, 1.0f }; // White stroke
-
-	auto &round_rect = stage.visuals.add( std::make_unique<RoundRectangle>() );
-	round_rect.position = { 4.0f, 0.0f };
-	round_rect.half_width = 1.0f;
-	round_rect.half_height = 1.0f;
-	round_rect.top_left_radius = 0.5f;
-	round_rect.top_right_radius = 0.0f; // Sharp
-	round_rect.bottom_left_radius = 0.2f;
-	round_rect.bottom_right_radius = 0.8f;
-	round_rect.color = { 0.8f, 0.2f, 0.2f, 1.0f }; // Reddish
-	round_rect.stroke_thickness = 0.05f;
-	round_rect.stroke_color = { 0.0f, 0.0f, 0.0f, 1.0f }; // Black stroke
-
-	int64_t frames = 20;
-
 	co_await together(
-//		ease_out_cubic( text.position.x, -10.0f, 0.0f, frames ),
-		ease_out_cubic( text.rotation, -90.0f, 0.0f, frames ),
-		ease_in_out_cubic( rect.rotation, 0.0f, 90.0f, frames )
-	);
-
-    co_return;
+		ease_in_out_cubic( visual.scale_x, 0.F, 1.F, frames ),
+		ease_in_out_cubic( visual.scale_y, 0.F, 1.F, frames ) );
 }
 
-Scene my_ending( Stage &stage )
+Director scale_x_in( Visual &visual, int64_t frames )
 {
-	stage.message = "My ending";
-	co_await together(
-		background_rain( stage, 3 ),
-		background_snow( stage, 1 ),
-		wait_for( 5 )
-	);
-
-	stage.message = "Plot twist!";
-
-    co_return;
+	co_await ease_in_out_cubic( visual.scale_x, 0.F, 1.F, frames );
 }
 
-Scene my_credits( Stage &stage )
+Visuals &create_node( Stage &stage, std::string title, float x, float y, float w, float h )
 {
-	stage.message = "Credits rolling";
-	co_await wait_for( 5 );
+	auto &group = stage.visuals.add( std::make_unique<Visuals>() );
+	group.position = { x, y };
 
-    co_return;
+	auto &rect = group.add( std::make_unique<RoundRectangle>() );
+	rect.position = { 0.F, 0.F };
+	rect.half_width = w / 2.F;
+	rect.half_height = h / 2.F;
+	rect.color = { 0.1F, 0.6F, 0.2F, 1.0F };
+	rect.stroke_thickness = 0.03f;
+	rect.stroke_color = { 0.2f, 0.8f, 0.4f, 1.0f };
+	rect.top_left_radius = 0.05,
+	rect.top_right_radius = 0.05,
+	rect.bottom_left_radius = 0.05,
+	rect.bottom_right_radius = 0.05;
+
+	auto &text = group.add( font.create_text( title, 0.3F ) );
+	text.position = { 0.F, 0.F };
+	text.color = { 1.F, 1.F, 1.F, 1.F };
+
+	return group;
+}
+
+std::pair<Line &, ArrowTip &> create_arrow( Stage &stage, Point start, Point end )
+{
+	Point relative = end - start;
+
+	auto &group = stage.visuals.add( std::make_unique<Visuals>() );
+	group.position = start;
+
+	auto &line = group.add( std::make_unique<Line>() );
+	line.start = { 0.F, 0.F };
+	line.end = relative;
+	line.stroke_thickness = 0.05F;
+	line.stroke_color = { 1.0F, 1.0F, 1.0F, 1.0F };
+
+	auto &arrow = group.add( std::make_unique<ArrowTip>() );
+	arrow.start = { 0.F, 0.F };
+	arrow.end = relative;
+	arrow.size = 0.08;
+	arrow.stroke_thickness = 0.05F;
+	arrow.stroke_color = { 1.0F, 1.0F, 1.0F, 1.0F };
+
+	return { line, arrow };
+}
+
+Scene my_diagram( Stage &stage )
+{
+	auto &scene_node = create_node( stage, "Scene", -6.F, 0.F, 1.0F, 0.5F );
+	co_await scale_in( scene_node, 12 );
+
+	{
+		auto [line, arrow] = create_arrow( stage, { -5.F, 0.F }, { -4.0, 0.F } );
+		co_await together(
+			ease_in_out_cubic( line.end.x, line.start.x, line.end.x, 12 ),
+			ease_in_out_cubic( arrow.end.x, arrow.start.x, arrow.end.x, 12 ) );
+	}
+
+	auto &oetf_node = create_node( stage, "OETF", -3.F, 0.F, 1.0F, 0.5F );
+	co_await scale_in( oetf_node, 12 );
+
+	{
+		auto [line, arrow] = create_arrow( stage, { -2.F, 0.F }, { -1.0, 0.F } );
+		co_await together(
+			ease_in_out_cubic( line.end.x, line.start.x, line.end.x, 12 ),
+			ease_in_out_cubic( arrow.end.x, arrow.start.x, arrow.end.x, 12 ) );
+	}
+
+	auto &signal_node = create_node( stage, "Signal", 0.F, 0.F, 1.0F, 0.5F );
+	co_await scale_in( signal_node, 12 );
 }
 
 Screenplay my_movie( Stage &stage )
 {
-//	co_await my_introduction( stage );
-	co_await my_show( stage );
-//	co_await my_ending( stage );
-//	co_await my_credits( stage );
+	co_await my_diagram( stage );
 };
+

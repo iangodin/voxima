@@ -2,6 +2,8 @@
 
 mkdir -p frames
 rm -f frames/*
+
+make
 build/poc
 
 i=0
