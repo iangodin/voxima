@@ -16,7 +16,7 @@
 
 #include <coroutine>
 
-Font font( "Roboto-Regular.ttf" );
+Font font( "fonts/FiraCode-Regular.ttf" );
 
 Director scale_in( Visual &visual, int64_t frames )
 {
@@ -89,7 +89,7 @@ Scene my_diagram( Stage &stage )
 			ease_in_out_cubic( arrow.end.x, arrow.start.x, arrow.end.x, 12 ) );
 	}
 
-	auto &oetf_node = create_node( stage, "OETF", -3.F, 0.F, 1.0F, 0.5F );
+	auto &oetf_node = create_node( stage, "O<=F", -3.F, 0.F, 1.0F, 0.5F );
 	co_await scale_in( oetf_node, 12 );
 
 	{

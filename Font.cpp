@@ -39,7 +39,8 @@ std::unique_ptr<Group> Font::create_text( const std::string &text, float font_si
     hb_buffer_t* buffer = hb_buffer_create();
     hb_buffer_add_utf8( buffer, text.c_str(), -1, 0, -1 );
     hb_buffer_guess_segment_properties( buffer );
-    hb_font_set_scale(_impl->hb_font, 2048, 2048);
+    int upem = _impl->ft_face->units_per_EM;
+    hb_font_set_scale(_impl->hb_font, upem, upem);
     hb_shape( _impl->hb_font, buffer, NULL, 0 );
 
     unsigned int glyph_count;
