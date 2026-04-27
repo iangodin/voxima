@@ -10,6 +10,7 @@
 #include "Path.h"
 #include "Font.h"
 #include "Image.h"
+#include "Ellipse.h"
 #include "Animation.h"
 #include "CallbackVisitor.h"
 
@@ -104,14 +105,13 @@ Scene my_diagram( Stage &stage )
 
 Screenplay my_movie( Stage &stage )
 {
-	auto &img = stage.visuals.add( std::make_unique<Image>() );
-	img.path = "testcard.png";
-	img.position = { 4.0, 0.0 };
-	img.half_width = 2.0;
-	img.half_height = 2.0;
+	auto &ellipse = stage.visuals.add( std::make_unique<Ellipse>() );
+	ellipse.position = { 4.0, 0.0 };
+	ellipse.half_width = 2.0;
+	ellipse.half_height = 1.0;
 
 	co_await together(
-		ease_in_out_cubic( img.rotation, -90.F, 0.F, 60 ),
+		ease_in_out_cubic( ellipse.rotation, -90.F, 0.F, 60 ),
 		my_diagram( stage ) );
 }
 

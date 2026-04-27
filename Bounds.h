@@ -4,6 +4,7 @@
 #include "Circle.h"
 #include "Rectangle.h"
 #include "RoundRectangle.h"
+#include "Ellipse.h"
 #include "Path.h"
 #include "Line.h"
 #include "ArrowTip.h"
@@ -44,6 +45,11 @@ public:
         bounds.add( { rect.position.x + rect.half_width, rect.position.y + rect.half_height } );
     }
 
+    void visit( const Ellipse &ellipse ) override {
+        bounds.add( { ellipse.position.x - ellipse.half_width, ellipse.position.y - ellipse.half_height } );
+        bounds.add( { ellipse.position.x + ellipse.half_width, ellipse.position.y + ellipse.half_height } );
+    }
+
     void visit( const Path &path ) override {
         for ( const auto &cmd : path.commands ) {
             bounds.add( { path.position.x + cmd.to.x, path.position.y + cmd.to.y } );
@@ -57,7 +63,6 @@ public:
 
     void visit( const ArrowTip &arrow ) override {
         bounds.add( { arrow.position.x + arrow.end.x, arrow.position.y + arrow.end.y } );
-        // The arrow is essentially a small triangle around arrow.end
         float s = arrow.size * 2.0f;
         bounds.add( { arrow.position.x + arrow.end.x - s, arrow.position.y + arrow.end.y - s } );
         bounds.add( { arrow.position.x + arrow.end.x + s, arrow.position.y + arrow.end.y + s } );
@@ -68,8 +73,8 @@ public:
         bounds.add( { image.position.x + image.half_width, image.position.y + image.half_height } );
     }
 
-    void visit( const Group &visuals ) override {
-        for ( const auto &v : visuals ) {
+    void visit( const Group &group ) override {
+        for ( const auto &v : group ) {
             v->accept( *this );
         }
     }
