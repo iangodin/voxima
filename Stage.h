@@ -6,7 +6,6 @@
 #include "Color.h"
 
 #include <string>
-#include <fstream>
 #include <vector>
 #include <iostream>
 
@@ -15,9 +14,8 @@ struct Stage
 	Color background = { 0.F, 0.F, 0.F, 1.F };
 	Visuals visuals;
 
-	void save_svg( const std::string &filename ) const
+	void save_svg( std::ostream &file ) const
 	{
-		std::ofstream file( filename );
 		if ( !file ) return;
 
 		file << "<svg width=\"1280\" height=\"720\" "

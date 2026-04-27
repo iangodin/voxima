@@ -9,6 +9,8 @@
 #include "RoundRectangle.h"
 #include "MyMovie.h"
 
+#include <lunasvg/lunasvg.h>
+
 #include <iostream>
 #include <sstream>
 #include <iomanip>
@@ -27,9 +29,26 @@ int main()
 	// 3. Run until 'tick' returns false
 	while ( producer.tick() )
 	{
-		std::ostringstream oss;
-		oss << "frames/frame_" << std::setfill('0') << std::setw(4) << producer.current_frame() << ".svg";
-		stage.save_svg( oss.str() );
+		std::ostringstream filename;
+		filename << "frames/frame_" << std::setfill('0') << std::setw(4) << producer.current_frame() << ".png";
+		std::ostringstream svg;
+		stage.save_svg( svg );
+
+		auto doc = lunasvg::Document::loadFromData( svg.str() );
+		if ( doc == nullptr )
+		{
+			std::cerr << "ERROR: could not load SVG\n";
+			return -1;
+		}
+
+		auto bitmap = doc->renderToBitmap();
+		if ( bitmap.isNull() )
+		{
+			std::cerr << "ERROR: could not render to bitmap\n";
+			return -1;
+		}
+
+		bitmap.writeToPng( filename.str() );
 
 		std::cout << "Produced frame " << producer.current_frame() << '\n';
 	}
