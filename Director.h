@@ -114,7 +114,10 @@ Director together(Tasks... tasks)
 			if (!tasks.handle.done())
 			{
 				tasks.resume();
-				any_running = true;
+				if (!tasks.handle.done())
+				{
+					any_running = true;
+				}
 			}
 		}());
 
