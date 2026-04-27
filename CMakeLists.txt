@@ -14,10 +14,11 @@ else()
 endif()
 
 find_package( stb REQUIRED )
-find_package( lunasvg REQUIRED )
+find_package( lunasvg 3.5.0 REQUIRED )
+find_package( plutovg 1.3.2 REQUIRED )
 
 add_executable( poc main.cpp Font.cpp )
 
 target_compile_options( poc PUBLIC -fcoroutines )
-target_link_libraries( poc PUBLIC stb::stb lunasvg::lunasvg )
+target_link_libraries( poc PUBLIC stb::stb lunasvg::lunasvg plutovg::plutovg )
 

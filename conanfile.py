@@ -11,7 +11,8 @@ class MyProjectConan(ConanFile):
     self.requires("stb/cci.20240531")
     self.requires("catch2/3.13.0")
     self.requires("cpptrace/1.0.4")
-    self.requires("lunasvg/3.5.0")
+    self.requires("lunasvg/3.5.1")
+    self.requires("plutovg/1.3.2")
 
   def generate(self):
     deps = CMakeDeps(self)

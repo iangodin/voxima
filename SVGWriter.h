@@ -7,6 +7,7 @@
 #include "Path.h"
 #include "Line.h"
 #include "ArrowTip.h"
+#include "Image.h"
 #include "Visuals.h"
 #include "Color.h"
 
@@ -204,6 +205,28 @@ public:
 			     << color_attributes( final_color ) << " "
 			     << stroke_attributes( arrow.stroke_thickness, final_stroke_color ) << " />\n";
 		}
+		_indent -= 2;
+
+		_out << indent() << "</g>\n";
+	}
+
+	void visit( const Image &image ) override
+	{
+		_out << indent() << "<g transform=\"translate(" << image.position.x 
+		     << "," << image.position.y << ") rotate(" << image.rotation 
+		     << ") scale(" << image.scale_x << "," << image.scale_y << ")\">\n";
+		
+		_indent += 2;
+		float x = -image.half_width;
+		float y = -image.half_height;
+		float w = image.half_width * 2.0f;
+		float h = image.half_height * 2.0f;
+
+		// Note: We need a transform="scale(1, -1)" on the image itself
+		// so it's not flipped upside down by the global scale(1, -1)
+		_out << indent() << "<image href=\"" << image.path << "\" x=\"" << x 
+		     << "\" y=\"" << -y - h << "\" width=\"" << w 
+		     << "\" height=\"" << h << "\" transform=\"scale(1, -1)\" />\n";
 		_indent -= 2;
 
 		_out << indent() << "</g>\n";

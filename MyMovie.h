@@ -9,6 +9,7 @@
 #include "RoundRectangle.h"
 #include "Path.h"
 #include "Font.h"
+#include "Image.h"
 #include "Animation.h"
 #include "CallbackVisitor.h"
 
@@ -103,6 +104,14 @@ Scene my_diagram( Stage &stage )
 
 Screenplay my_movie( Stage &stage )
 {
-	co_await my_diagram( stage );
-};
+	auto &img = stage.visuals.add( std::make_unique<Image>() );
+	img.path = "testcard.png";
+	img.position = { 4.0, 0.0 };
+	img.half_width = 2.0;
+	img.half_height = 2.0;
+
+	co_await together(
+		ease_in_out_cubic( img.rotation, -90.F, 0.F, 60 ),
+		my_diagram( stage ) );
+}
 

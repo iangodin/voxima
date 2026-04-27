@@ -7,6 +7,7 @@
 #include "Path.h"
 #include "Line.h"
 #include "ArrowTip.h"
+#include "Image.h"
 #include "Visuals.h"
 #include "Point.h"
 #include <algorithm>
@@ -60,6 +61,11 @@ public:
         float s = arrow.size * 2.0f;
         bounds.add( { arrow.position.x + arrow.end.x - s, arrow.position.y + arrow.end.y - s } );
         bounds.add( { arrow.position.x + arrow.end.x + s, arrow.position.y + arrow.end.y + s } );
+    }
+
+    void visit( const Image &image ) override {
+        bounds.add( { image.position.x - image.half_width, image.position.y - image.half_height } );
+        bounds.add( { image.position.x + image.half_width, image.position.y + image.half_height } );
     }
 
     void visit( const Visuals &visuals ) override {
