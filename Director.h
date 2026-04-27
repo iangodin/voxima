@@ -35,7 +35,7 @@ struct Director
 		{
 		}
 
-		std::suspend_always yield_value( int )
+		std::suspend_always yield_value( NextFrame )
 		{
             return {};
         }
@@ -97,7 +97,7 @@ inline Director wait_for( int64_t frames )
 {
 	while ( frames > 0 )
 	{
-		co_yield 0;
+		co_yield {};
 		--frames;
 	}
 }
@@ -123,7 +123,7 @@ Director together(Tasks... tasks)
 			break;
 		}
 
-		co_yield 0;
+		co_yield {};
 	}
 	co_return;
 }

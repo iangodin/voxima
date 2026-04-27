@@ -36,7 +36,7 @@ struct Screenplay
 		{
 		}
 
-		std::suspend_always yield_value( int )
+		std::suspend_always yield_value( NextFrame )
 		{
             return {};
         }

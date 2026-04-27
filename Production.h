@@ -7,6 +7,8 @@
 
 class Producer;
 
+struct NextFrame {};
+
 struct ProductionPromise
 {
 	Producer* producer_ptr = nullptr;

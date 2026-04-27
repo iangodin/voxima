@@ -14,8 +14,18 @@ Director background_rain( Stage &stage, int64_t frames )
 	{
 		stage.message += ".";
 		--frames;
-		co_await wait_for( 1 );
-	}
+		co_yield {};
+		}
+}
+
+Director background_snow( Stage &stage, int64_t frames )
+{
+	while ( frames > 0 )
+	{
+		stage.message += "o";
+		--frames;
+		co_yield {};
+		}
 }
 
 Scene my_introduction( Stage &stage )
@@ -37,10 +47,13 @@ Scene my_show( Stage &stage )
 Scene my_ending( Stage &stage )
 {
 	stage.message = "My ending";
-	co_await background_rain( stage, 3 );
+	co_await together(
+		background_rain( stage, 3 ),
+		background_snow( stage, 1 ),
+		wait_for( 5 )
+	);
 
 	stage.message = "Plot twist!";
-	co_await wait_for( 2 );
 
     co_return;
 }
