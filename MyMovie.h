@@ -5,6 +5,8 @@
 #include "Producer.h"
 #include "Screenplay.h"
 #include "Director.h"
+#include "Rectangle.h"
+#include "Animation.h"
 
 #include <coroutine>
 
@@ -39,7 +41,18 @@ Scene my_introduction( Stage &stage )
 Scene my_show( Stage &stage )
 {
 	stage.message = "My show";
-	co_await wait_for( 5 );
+
+	auto &rect = stage.visuals.add( std::make_unique<Rectangle>() );
+	rect.position = { 0.0f, 0.0f };
+	rect.rotation = 0.0f;
+	rect.half_width = 2.0f;
+	rect.half_height = 1.0f;
+	rect.color = { 0.0f, 0.8f, 0.0f, 1.0f }; // Nice green
+
+	int64_t frames = 20;
+	float start = 0.F;
+	float end = 90.F;
+	co_await ease_in_out_cubic( rect.rotation, start, end, frames );
 
     co_return;
 }
@@ -68,8 +81,8 @@ Scene my_credits( Stage &stage )
 
 Screenplay my_movie( Stage &stage )
 {
-	co_await my_introduction( stage );
+//	co_await my_introduction( stage );
 	co_await my_show( stage );
-	co_await my_ending( stage );
-	co_await my_credits( stage );
+//	co_await my_ending( stage );
+//	co_await my_credits( stage );
 };
