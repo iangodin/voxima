@@ -1,4 +1,3 @@
-
 #pragma once
 
 #include "Visual.h"
@@ -7,12 +6,12 @@
 #include <vector>
 #include <memory>
 
-class Visuals : public Visual
+class Group : public Visual
 {
 public:
-	Visuals() = default;
-	Visuals( const Visuals & ) = delete;
-	Visuals &operator=( const Visuals & ) = delete;
+	Group() = default;
+	Group( const Group & ) = delete;
+	Group &operator=( const Group & ) = delete;
 
 	template<typename Shape>
 	Shape &add( std::unique_ptr<Shape> &&visual )
@@ -40,4 +39,3 @@ public:
 private:
 	std::vector<std::unique_ptr<Visual>> _visuals;
 };
-

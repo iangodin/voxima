@@ -5,7 +5,7 @@
 #include "Rectangle.h"
 #include "RoundRectangle.h"
 #include "Path.h"
-#include "Visuals.h"
+#include "Group.h"
 #include <functional>
 
 class CallbackVisitor : public VisualVisitor
@@ -21,9 +21,9 @@ public:
 	void visit( const Line &line ) override { _callback( const_cast<Line &>( line ) ); }
 	void visit( const ArrowTip &arrow ) override { _callback( const_cast<ArrowTip &>( arrow ) ); }
 	
-	void visit( const Visuals &visuals ) override
+	void visit( const Group &visuals ) override
 	{
-		_callback( const_cast<Visuals &>( visuals ) );
+		_callback( const_cast<Group &>( visuals ) );
 		for ( const auto &v : visuals )
 		{
 			v->accept( *this );

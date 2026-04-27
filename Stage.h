@@ -1,7 +1,7 @@
 
 #pragma once
 
-#include "Visuals.h"
+#include "Group.h"
 #include "SVGWriter.h"
 #include "Color.h"
 
@@ -12,7 +12,7 @@
 struct Stage
 {
 	Color background = { 0.F, 0.F, 0.F, 1.F };
-	Visuals visuals;
+	Group visuals;
 
 	void save_svg( std::ostream &file ) const
 	{

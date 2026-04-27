@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Visuals.h"
+#include "Group.h"
 
 #include <string>
 #include <memory>
@@ -11,7 +11,7 @@ public:
 	Font( const std::string &path );
 	~Font();
 
-	std::unique_ptr<Visuals> create_text( const std::string &text, float font_size ) const;
+	std::unique_ptr<Group> create_text( const std::string &text, float font_size ) const;
 
 private:
 	struct Impl;

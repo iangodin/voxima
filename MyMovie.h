@@ -29,9 +29,9 @@ Director scale_x_in( Visual &visual, int64_t frames )
 	co_await ease_in_out_cubic( visual.scale_x, 0.F, 1.F, frames );
 }
 
-Visuals &create_node( Stage &stage, std::string title, float x, float y, float w, float h )
+Group &create_node( Stage &stage, std::string title, float x, float y, float w, float h )
 {
-	auto &group = stage.visuals.add( std::make_unique<Visuals>() );
+	auto &group = stage.visuals.add( std::make_unique<Group>() );
 	group.position = { x, y };
 
 	auto &rect = group.add( std::make_unique<RoundRectangle>() );
@@ -57,7 +57,7 @@ std::pair<Line &, ArrowTip &> create_arrow( Stage &stage, Point start, Point end
 {
 	Point relative = end - start;
 
-	auto &group = stage.visuals.add( std::make_unique<Visuals>() );
+	auto &group = stage.visuals.add( std::make_unique<Group>() );
 	group.position = start;
 
 	auto &line = group.add( std::make_unique<Line>() );

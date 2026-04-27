@@ -8,7 +8,7 @@
 #include "Line.h"
 #include "ArrowTip.h"
 #include "Image.h"
-#include "Visuals.h"
+#include "Group.h"
 #include "Point.h"
 #include <algorithm>
 #include <limits>
@@ -68,7 +68,7 @@ public:
         bounds.add( { image.position.x + image.half_width, image.position.y + image.half_height } );
     }
 
-    void visit( const Visuals &visuals ) override {
+    void visit( const Group &visuals ) override {
         for ( const auto &v : visuals ) {
             v->accept( *this );
         }

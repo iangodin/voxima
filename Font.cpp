@@ -31,9 +31,9 @@ Font::Font( const std::string &path ) : _impl( std::make_unique<Impl>() )
 
 Font::~Font() = default;
 
-std::unique_ptr<Visuals> Font::create_text( const std::string &text, float font_size ) const
+std::unique_ptr<Group> Font::create_text( const std::string &text, float font_size ) const
 {
-	auto group = std::make_unique<Visuals>();
+	auto group = std::make_unique<Group>();
 	if ( _impl->buffer.empty() ) return group;
 
 	float scale = stbtt_ScaleForMappingEmToPixels( &_impl->font, font_size );

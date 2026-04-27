@@ -8,7 +8,7 @@
 #include "Line.h"
 #include "ArrowTip.h"
 #include "Image.h"
-#include "Visuals.h"
+#include "Group.h"
 #include "Color.h"
 
 #include <ostream>
@@ -232,7 +232,7 @@ public:
 		_out << indent() << "</g>\n";
 	}
 
-	void visit( const Visuals &visuals ) override
+	void visit( const Group &visuals ) override
 	{
 		Color old_color = _current_color;
 		Color old_stroke_color = _current_stroke_color;

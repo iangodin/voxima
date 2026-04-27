@@ -9,7 +9,7 @@ struct Line;
 struct ArrowTip;
 struct Text;
 struct Image;
-struct Visuals;
+struct Group;
 
 struct VisualVisitor
 {
@@ -21,5 +21,5 @@ struct VisualVisitor
 	virtual void visit( const Line &line ) = 0;
 	virtual void visit( const ArrowTip &arrow ) = 0;
 	virtual void visit( const Image &image ) = 0;
-	virtual void visit( const Visuals &visuals ) = 0;
+	virtual void visit( const Group &visuals ) = 0;
 };

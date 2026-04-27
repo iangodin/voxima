@@ -3,7 +3,7 @@
 #include "Screenplay.h"
 #include "Producer.h"
 #include "Timer.h"
-#include "Visuals.h"
+#include "Group.h"
 #include "Circle.h"
 #include "Rectangle.h"
 #include "RoundRectangle.h"
