@@ -13,6 +13,7 @@
 
 #include <iostream>
 #include <sstream>
+#include <fstream>
 #include <iomanip>
 
 int main()
@@ -37,10 +38,14 @@ int main()
 		}
 
 		Timer timer2;
-		std::ostringstream filename;
-		filename << "frames/frame_" << std::setfill('0') << std::setw(4) << producer.current_frame() << ".png";
 		std::ostringstream svg;
 		stage.save_svg( svg );
+
+		std::ostringstream svgfile;
+		svgfile << "frames/frame_" << std::setfill('0') << std::setw(4) << producer.current_frame() << ".svg";
+		std::ofstream svgoutput( svgfile.str() );
+		svgoutput << svg.str();
+		svgoutput.close();
 		std::cout << "SVG generation: " << timer2.stop() << "ms\n";
 
 		Timer timer3;
@@ -62,6 +67,8 @@ int main()
 		std::cout << "SVG rendering: " << timer4.stop() << "ms\n";
 
 		Timer timer5;
+		std::ostringstream filename;
+		filename << "frames/frame_" << std::setfill('0') << std::setw(4) << producer.current_frame() << ".png";
 		bitmap.writeToPng( filename.str() );
 		std::cout << "PNG writing: " << timer5.stop() << "ms\n";
 

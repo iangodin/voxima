@@ -1,90 +1,106 @@
-
-#define STB_TRUETYPE_IMPLEMENTATION
-#include "stb_truetype.h"
 #include "Font.h"
 #include "Path.h"
 #include "Bounds.h"
-#include <fstream>
+#include <ft2build.h>
+#include FT_FREETYPE_H
+#include FT_OUTLINE_H
+#include <hb.h>
+#include <hb-ft.h>
 #include <vector>
+#include <iostream>
 
 struct Font::Impl
 {
-	std::vector<unsigned char> buffer;
-	stbtt_fontinfo font;
+    FT_Library ft_library;
+    FT_Face ft_face;
+    hb_font_t* hb_font;
+    std::vector<unsigned char> buffer;
 };
 
 Font::Font( const std::string &path ) : _impl( std::make_unique<Impl>() )
 {
-	std::ifstream file( path, std::ios::binary | std::ios::ate );
-	if ( !file ) return;
+    if ( FT_Init_FreeType( &_impl->ft_library ) != 0 ) return;
+    if ( FT_New_Face( _impl->ft_library, path.c_str(), 0, &_impl->ft_face ) != 0 ) return;
 
-	std::streamsize size = file.tellg();
-	file.seekg( 0, std::ios::beg );
-	_impl->buffer.resize( size );
-	if ( !file.read( (char*)_impl->buffer.data(), size ) ) return;
-
-	if ( !stbtt_InitFont( &_impl->font, _impl->buffer.data(), 0 ) )
-	{
-		_impl->buffer.clear();
-	}
+    _impl->hb_font = hb_ft_font_create( _impl->ft_face, NULL );
 }
 
-Font::~Font() = default;
+Font::~Font()
+{
+    hb_font_destroy( _impl->hb_font );
+    FT_Done_Face( _impl->ft_face );
+    FT_Done_FreeType( _impl->ft_library );
+}
 
 std::unique_ptr<Group> Font::create_text( const std::string &text, float font_size ) const
 {
-	auto group = std::make_unique<Group>();
-	if ( _impl->buffer.empty() ) return group;
+    auto group = std::make_unique<Group>();
 
-	float scale = stbtt_ScaleForMappingEmToPixels( &_impl->font, font_size );
+    hb_buffer_t* buffer = hb_buffer_create();
+    hb_buffer_add_utf8( buffer, text.c_str(), -1, 0, -1 );
+    hb_buffer_guess_segment_properties( buffer );
+    hb_font_set_scale(_impl->hb_font, 2048, 2048);
+    hb_shape( _impl->hb_font, buffer, NULL, 0 );
 
-	float x_pos = 0.0f;
-	for ( char c : text )
-	{
-		auto path = std::make_unique<Path>();
+    unsigned int glyph_count;
+    hb_glyph_info_t* glyph_info = hb_buffer_get_glyph_infos( buffer, &glyph_count );
+    hb_glyph_position_t* glyph_pos = hb_buffer_get_glyph_positions( buffer, &glyph_count );
 
-		stbtt_vertex *vertices;
-		int num_verts = stbtt_GetCodepointShape( &_impl->font, c, &vertices );
+    float units_per_em = static_cast<float>(_impl->ft_face->units_per_EM);
+    float scale = font_size / units_per_em;
+    float current_x = 0.0f;
+    float current_y = 0.0f;
 
-		for ( int i = 0; i < num_verts; ++i )
-		{
-			stbtt_vertex v = vertices[i];
-			switch ( v.type )
-			{
-				case STBTT_vmove:
-					path->commands.push_back({ PathCommand::MoveTo, { v.x * scale, v.y * scale } });
-					break;
-				case STBTT_vline:
-					path->commands.push_back({ PathCommand::LineTo, { v.x * scale, v.y * scale } });
-					break;
-				case STBTT_vcurve:
-					path->commands.push_back({ PathCommand::QuadTo, { v.x * scale, v.y * scale }, { v.cx * scale, v.cy * scale } });
-					break;
-				case STBTT_vcubic:
-					path->commands.push_back({ PathCommand::CubicTo, { v.x * scale, v.y * scale }, { v.cx * scale, v.cy * scale }, { v.cx1 * scale, v.cy1 * scale } });
-					break;
-			}
-		}
-		stbtt_FreeShape( &_impl->font, vertices );
+    struct DecomposeContext { Path* path; float scale; };
 
-		int advance, lsb;
-		stbtt_GetCodepointHMetrics( &_impl->font, c, &advance, &lsb );
+    for ( unsigned int i = 0; i < glyph_count; ++i )
+    {
+        hb_codepoint_t glyph_id = glyph_info[i].codepoint;
+        hb_glyph_position_t pos = glyph_pos[i];
 
-		path->position = { x_pos + (lsb * scale), 0.0f };
-		group->add( std::move( path ) );
+        FT_Load_Glyph( _impl->ft_face, glyph_id, FT_LOAD_DEFAULT );
+        
+        auto path = std::make_unique<Path>();
+        DecomposeContext ctx = { path.get(), scale };
 
-		x_pos += advance * scale;
-	}
+        FT_Outline_Funcs funcs = { 
+            [](const FT_Vector* to, void* user) -> int {
+                auto* ctx = static_cast<DecomposeContext*>(user);
+                ctx->path->commands.push_back({ PathCommand::MoveTo, { (float)to->x * ctx->scale, (float)to->y * ctx->scale } });
+                return 0;
+            },
+            [](const FT_Vector* to, void* user) -> int {
+                auto* ctx = static_cast<DecomposeContext*>(user);
+                ctx->path->commands.push_back({ PathCommand::LineTo, { (float)to->x * ctx->scale, (float)to->y * ctx->scale } });
+                return 0;
+            },
+            [](const FT_Vector* control, const FT_Vector* to, void* user) -> int {
+                auto* ctx = static_cast<DecomposeContext*>(user);
+                ctx->path->commands.push_back({ PathCommand::QuadTo, { (float)to->x * ctx->scale, (float)to->y * ctx->scale }, { (float)control->x * ctx->scale, (float)control->y * ctx->scale } });
+                return 0;
+            },
+            [](const FT_Vector* control1, const FT_Vector* control2, const FT_Vector* to, void* user) -> int {
+                auto* ctx = static_cast<DecomposeContext*>(user);
+                ctx->path->commands.push_back({ PathCommand::CubicTo, { (float)to->x * ctx->scale, (float)to->y * ctx->scale }, { (float)control1->x * ctx->scale, (float)control1->y * ctx->scale }, { (float)control2->x * ctx->scale, (float)control2->y * ctx->scale } });
+                return 0;
+            }, 0, 0 };
+        FT_Outline_Decompose( &_impl->ft_face->glyph->outline, &funcs, &ctx );
 
-	BoundingBoxVisitor visitor;
-	group->accept( visitor );
-	Point center = { ( visitor.bounds.min.x + visitor.bounds.max.x ) / 2.0f,
-					 ( visitor.bounds.min.y + visitor.bounds.max.y ) / 2.0f };
+        path->position = Point{ current_x + (pos.x_offset * scale), current_y + (pos.y_offset * scale) };
+        group->add( std::move( path ) );
 
-	for ( auto &v : *group ) {
-		v->position.x -= center.x;
-		v->position.y -= center.y;
-	}
+        current_x += pos.x_advance * scale;
+        current_y += pos.y_advance * scale;
+    }
 
-	return group;
+    hb_buffer_destroy( buffer );
+
+    BoundingBoxVisitor visitor;
+    group->accept( visitor );
+    Point center = { ( visitor.bounds.min.x + visitor.bounds.max.x ) / 2.0f, 
+                     ( visitor.bounds.min.y + visitor.bounds.max.y ) / 2.0f };
+
+    group->position = { -center.x, -center.y };
+
+    return group;
 }

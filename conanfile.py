@@ -13,6 +13,9 @@ class MyProjectConan(ConanFile):
     self.requires("cpptrace/1.0.4")
     self.requires("lunasvg/3.5.1")
     self.requires("plutovg/1.3.2")
+    self.requires("freetype/2.14.1")
+    self.requires("harfbuzz/12.3.0")
+    self.requires("doctest/2.4.12")
 
   def generate(self):
     deps = CMakeDeps(self)
