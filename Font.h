@@ -4,6 +4,7 @@
 #include "stb_truetype.h"
 #include "Visuals.h"
 #include "Path.h"
+#include "Bounds.h"
 #include <string>
 #include <vector>
 #include <fstream>
@@ -52,16 +53,16 @@ public:
 				switch ( v.type )
 				{
 					case STBTT_vmove:
-						path->commands.push_back({ PathCommand::MoveTo, { v.x * scale, -v.y * scale } });
+						path->commands.push_back({ PathCommand::MoveTo, { v.x * scale, v.y * scale } });
 						break;
 					case STBTT_vline:
-						path->commands.push_back({ PathCommand::LineTo, { v.x * scale, -v.y * scale } });
+						path->commands.push_back({ PathCommand::LineTo, { v.x * scale, v.y * scale } });
 						break;
 					case STBTT_vcurve:
-						path->commands.push_back({ PathCommand::QuadTo, { v.x * scale, -v.y * scale }, { v.cx * scale, -v.cy * scale } });
+						path->commands.push_back({ PathCommand::QuadTo, { v.x * scale, v.y * scale }, { v.cx * scale, v.cy * scale } });
 						break;
 					case STBTT_vcubic:
-						path->commands.push_back({ PathCommand::CubicTo, { v.x * scale, -v.y * scale }, { v.cx * scale, -v.cy * scale }, { v.cx1 * scale, -v.cy1 * scale } });
+						path->commands.push_back({ PathCommand::CubicTo, { v.x * scale, v.y * scale }, { v.cx * scale, v.cy * scale }, { v.cx1 * scale, v.cy1 * scale } });
 						break;
 				}
 			}
@@ -74,6 +75,16 @@ public:
 			group->add( std::move( path ) );
 
 			x_pos += advance * scale;
+		}
+
+		BoundingBoxVisitor visitor;
+		group->accept( visitor );
+		Point center = { ( visitor.bounds.min.x + visitor.bounds.max.x ) / 2.0f, 
+		                 ( visitor.bounds.min.y + visitor.bounds.max.y ) / 2.0f };
+
+		for ( auto &v : *group ) {
+			v->position.x -= center.x;
+			v->position.y -= center.y;
 		}
 
 		return group;

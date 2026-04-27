@@ -23,3 +23,4 @@ struct Path : public Visual
 		visitor.visit( *this );
 	}
 };
+

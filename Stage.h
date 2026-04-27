@@ -7,6 +7,8 @@
 
 #include <string>
 #include <fstream>
+#include <vector>
+#include <iostream>
 
 struct Stage
 {
@@ -22,14 +24,14 @@ struct Stage
 		file << "<svg width=\"1280\" height=\"720\" "
 		     << "viewBox=\"-8 -4.5 16 9\" "
 		     << "xmlns=\"http://www.w3.org/2000/svg\">\n";
-		
+
 		// Background
-		file << "  <rect x=\"-8\" y=\"-4.5\" width=\"16\" height=\"9\" " 
+		file << "  <rect x=\"-8\" y=\"-4.5\" width=\"16\" height=\"9\" "
 		     << SVGWriter::color_attributes( background ) << " />\n";
 
 		// Flip the Y-axis for all visuals
 		file << "  <g transform=\"scale(1, -1)\">\n";
-		
+
 		SVGWriter writer( file );
 		visuals.accept( writer );
 

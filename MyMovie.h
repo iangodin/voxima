@@ -10,6 +10,7 @@
 #include "Path.h"
 #include "Font.h"
 #include "Animation.h"
+#include "CallbackVisitor.h"
 
 #include <coroutine>
 
@@ -46,10 +47,16 @@ Scene my_show( Stage &stage )
 	stage.message = "My show";
 
 	Font font( "Roboto-Regular.ttf" );
-	auto text_group = font.create_text( "Hello!", 2.0f );
-	text_group->position = { -4.0f, 2.0f };
+	auto text_group = font.create_text( "Hello World!", 2.0f );
+	text_group->position = { 0.0f, 2.0f };
 	text_group->color = { 1.0f, 1.0f, 1.0f, 1.0f };
-	
+	CallbackVisitor outliner( []( Visual &visual )
+	{
+		visual.stroke_thickness = 0.02F;
+		visual.color.a = 0.F;
+	} );
+	text_group->accept( outliner );
+
 	auto &text = stage.visuals.add( std::move( text_group ) );
 
 	auto &rect = stage.visuals.add( std::make_unique<Rectangle>() );

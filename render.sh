@@ -1,6 +1,9 @@
 #! /usr/bin/env bash
 
 mkdir -p frames
+rm -f frames/*
+build/poc
+
 i=0
 for f in frames/frame_*.svg; do
   printf -v idx "%04d" $i

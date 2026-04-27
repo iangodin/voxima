@@ -6,7 +6,7 @@
 #include "Visuals.h"
 #include "Circle.h"
 #include "Rectangle.h"
-
+#include "RoundRectangle.h"
 #include "MyMovie.h"
 
 #include <iostream>
