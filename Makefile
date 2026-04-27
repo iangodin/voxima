@@ -1,0 +1,3 @@
+
+default:
+	cmake --build build
