@@ -78,11 +78,12 @@ std::unique_ptr<Group> Font::create_math( const std::string &formula, float font
         std::cout << "Glyph index: " << g.index << ", x: " << g.x.value() << ", y: " << g.y.value() << ", size: " << g.size.value() << std::endl;
     }
 
+    int upem = _face->get_ft_face()->units_per_EM;
     //float base_upem = static_cast<float>(_face->get_ft_face()->units_per_EM);
     for (const auto& g : layout.glyphs) {
         // g.size is the size of the font for this specific glyph (e.g. script size)
         // We need to scale the glyph path by this size.
-        float glyph_scale = static_cast<float>(g.size.value()) * font_size / internal_font_size;
+        float glyph_scale = static_cast<float>(g.size.value()) * font_size / ( internal_font_size * static_cast<float>( upem ) );
 
         auto path = get_glyph_path(static_cast<unsigned int>(g.index), glyph_scale);
         // mfl already provided the absolute position in points.
