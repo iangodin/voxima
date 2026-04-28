@@ -109,7 +109,7 @@ Screenplay my_movie( Stage &stage )
 	ellipse.half_width = 2.0;
 	ellipse.half_height = 1.0;
 
-	auto &math = stage.visuals.add( math_font.create_math( "\\sqrt{x^2 + y^2}", 1.F ) );
+	auto &math = stage.visuals.add( math_font.create_math( "\\sqrt{x^2+y^2}", 1.F ) );
 	math.position = { 0.F, -2.5F };
 	math.color = { 0.3F, 0.8F, 0.5F, 1.F };
 

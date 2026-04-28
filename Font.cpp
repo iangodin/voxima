@@ -10,6 +10,7 @@
 #include <hb-ft.h>
 #include <vector>
 #include <iostream>
+#include <cstring>
 
 Font::Font( const std::string &path ) : _path(path), _face( std::make_unique<MFLFontFace>(path) )
 {
@@ -76,6 +77,10 @@ std::unique_ptr<Group> Font::create_math( const std::string &formula, float font
     std::cout << "Formula: " << formula << " returned " << layout.glyphs.size() << " glyphs." << std::endl;
     for (const auto& g : layout.glyphs) {
         std::cout << "Glyph index: " << g.index << ", x: " << g.x.value() << ", y: " << g.y.value() << ", size: " << g.size.value() << std::endl;
+		int64_t gx;
+		double tmp = g.x.value();
+		std::memcpy( &gx, &tmp, sizeof( gx ) );
+		std::cout << "g.x = " << *reinterpret_cast<const int64_t*>( static_cast<void*>(&gx) ) << std::endl;
     }
 
     int upem = _face->get_ft_face()->units_per_EM;
@@ -88,8 +93,8 @@ std::unique_ptr<Group> Font::create_math( const std::string &formula, float font
         auto path = get_glyph_path(static_cast<unsigned int>(g.index), glyph_scale);
         // mfl already provided the absolute position in points.
         path->position = Point{
-			static_cast<float>(g.x.value()) * font_size / ( 64.F * static_cast<float>( upem ) ),
-			static_cast<float>(g.y.value()) * font_size / ( 64.F * static_cast<float>( upem ) ) };
+			static_cast<float>(g.x.value()) * font_size / internal_font_size,
+			static_cast<float>(g.y.value()) * font_size / internal_font_size };
         group->add(std::move(path));
     }
 
