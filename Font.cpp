@@ -88,8 +88,8 @@ std::unique_ptr<Group> Font::create_math( const std::string &formula, float font
         auto path = get_glyph_path(static_cast<unsigned int>(g.index), glyph_scale);
         // mfl already provided the absolute position in points.
         path->position = Point{
-			static_cast<float>(g.x.value()) * font_size,
-			static_cast<float>(g.y.value()) * font_size };
+			static_cast<float>(g.x.value()) * font_size / ( 64.F * static_cast<float>( upem ) ),
+			static_cast<float>(g.y.value()) * font_size / ( 64.F * static_cast<float>( upem ) ) };
         group->add(std::move(path));
     }
 

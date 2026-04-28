@@ -93,12 +93,22 @@ mfl::math_constants MFLFontFace::constants() const
 
 mfl::math_glyph_info MFLFontFace::glyph_info(const size_t glyph_index) const
 {
-    FT_Load_Glyph(ft_face_, static_cast<FT_UInt>( glyph_index ), FT_LOAD_NO_SCALE);
+    if ( FT_Load_Glyph(ft_face_, static_cast<FT_UInt>( glyph_index ), FT_LOAD_DEFAULT) != 0 )
+	{
+		std::cout << "DEBUG: " << glyph_index << " error - using 0 metrics\n";
+		return { glyph_index, 0, 0, 0, 0, 0 };
+	}
     const auto& metrics = ft_face_->glyph->metrics;
     int upem = ft_face_->units_per_EM;
 
     const auto italic_correction = hb_ot_math_get_glyph_italics_correction(hb_font_, static_cast<hb_codepoint_t>(glyph_index));
 
+	std::cout << "DEBUG: " << glyph_index << " - "
+        << units_to_mfl_dist(static_cast<int>(metrics.horiAdvance), upem) << ' '
+        << units_to_mfl_dist(static_cast<int>(metrics.horiBearingY), upem) << ' '
+        << units_to_mfl_dist(static_cast<int>(metrics.height - metrics.horiBearingY), upem) << ' '
+        << units_to_mfl_dist(static_cast<int>(italic_correction), upem) << ' '
+        << units_to_mfl_dist(hb_ot_math_get_glyph_top_accent_attachment(hb_font_, static_cast<hb_codepoint_t>(glyph_index)), upem) << '\n';
     return {
         glyph_index,
         units_to_mfl_dist(static_cast<int>(metrics.horiAdvance), upem),
