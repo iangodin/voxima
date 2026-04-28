@@ -19,5 +19,7 @@ struct Visual
 
 	virtual ~Visual() = default;
 	virtual void accept( VisualVisitor &visitor ) const = 0;
+
+	virtual Visual &operator*=( float scale ) = 0;
 };
 

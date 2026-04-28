@@ -44,6 +44,16 @@ public:
 		visitor.visit( *this );
 	}
 
+	Group &operator*=( float scale ) override
+	{
+		for ( auto &visual: _visuals )
+		{
+			*visual *= scale;
+		}
+		position *= scale;
+		return *this;
+	}
+
 private:
 	std::vector<std::unique_ptr<Visual>> _visuals;
 };

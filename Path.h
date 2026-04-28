@@ -22,5 +22,17 @@ struct Path : public Visual
 	{
 		visitor.visit( *this );
 	}
+
+	Path &operator*=( float scale ) override
+	{
+		for ( auto &command: commands )
+		{
+			command.to *= scale;
+			command.ctrl1 *= scale;
+			command.ctrl2 *= scale;
+		}
+		position *= scale;
+		return *this;
+	}
 };
 

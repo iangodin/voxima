@@ -13,4 +13,12 @@ struct Rectangle : public Visual
 	{
 		visitor.visit( *this );
 	}
+
+	Rectangle &operator*=( float scale ) override
+	{
+		half_width *= scale;
+		half_height *= scale;
+		position *= scale;
+		return *this;
+	}
 };

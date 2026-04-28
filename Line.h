@@ -13,4 +13,12 @@ struct Line : public Visual
 	{
 		visitor.visit( *this );
 	}
+
+	Line &operator*=( float scale ) override
+	{
+		start *= scale;
+		end *= scale;
+		position *= scale;
+		return *this;
+	}
 };

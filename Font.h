@@ -24,5 +24,5 @@ private:
 	Freetype _ft;
     std::unique_ptr<MFLFontFace> _face;
     std::unique_ptr<Path> get_glyph_path(unsigned int glyph_id, float scale, mfl::font_family family ) const;
-    void center_group(Group* group) const;
+    void center_group( Group &group) const;
 };

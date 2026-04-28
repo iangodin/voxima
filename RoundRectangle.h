@@ -18,4 +18,16 @@ struct RoundRectangle : public Visual
 	{
 		visitor.visit( *this );
 	}
+
+	RoundRectangle &operator*=( float scale ) override
+	{
+		half_width *= scale;
+		half_height *= scale;
+		position *= scale;
+		top_left_radius *= scale;
+		top_right_radius *= scale;
+		bottom_left_radius *= scale;
+		bottom_right_radius *= scale;
+		return *this;
+	}
 };

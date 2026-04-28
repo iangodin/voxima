@@ -15,4 +15,13 @@ struct ArrowTip : public Visual
 	{
 		visitor.visit( *this );
 	}
+
+	ArrowTip &operator*=( float scale ) override
+	{
+		start *= scale;
+		end *= scale;
+		size *= scale;
+		position *= scale;
+		return *this;
+	}
 };

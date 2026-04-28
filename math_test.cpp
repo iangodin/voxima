@@ -16,32 +16,34 @@ Font math_font( "" );
 
 Screenplay math_test( Stage &stage )
 {
+	float font_size = 0.5F;
+
 //	stage.visuals.add( math_font.create_text(
 //		"Math Layout Test", 1.F ) );
 //	co_await wait_for( 1 );
 
 	stage.visuals.add( math_font.create_math(
-		"\\int_{0}^{\\infty} \\frac{\\sin(x)}{x} dx = \\frac{\\pi}{2}", 1.F ) );
+		"\\int_{0}^{\\infty} \\frac{\\sin(x)}{x} dx = \\frac{\\pi}{2}", font_size ) );
 	co_await wait_for( 1 );
 
 	stage.visuals.set( 0, math_font.create_math(
-		"x+y", 1.F ) );
+		"x+y", font_size) );
 	co_await wait_for( 1 );
 
 	stage.visuals.set( 0, math_font.create_math(
-		"\\sqrt{x^2+y^2}", 1.F ) );
+		"\\sqrt{x^2+y^2}", font_size ) );
 	co_await wait_for( 1 );
 
 	stage.visuals.set( 0, math_font.create_math(
-		"\\sum_{n=1}^{\\infty} \\frac{1}{n^2} = \\frac{\\pi^2}{6}", 1.F ) );
+		"\\sum_{n=1}^{\\infty} \\frac{1}{n^2} = \\frac{\\pi^2}{6}", font_size ) );
 	co_await wait_for( 1 );
 
 	stage.visuals.set( 0, math_font.create_math(
-		"x = \\sum_{i=1}^{n} \\left( \\frac{i^2}{2} \\right)", 1.F ) );
+		"x = \\sum_{i=1}^{n} \\left( \\frac{i^2}{2} \\right)", font_size ) );
 	co_await wait_for( 1 );
 
 	stage.visuals.set( 0, math_font.create_math(
-		"A = \\left[\\matrix{\\frac{1}{2} & \\beta \\cr \\gamma & \\delta^2}\\right]", 1.F ) );
+		"A = \\left[\\matrix{\\frac{1}{2} & \\beta \\cr \\gamma & \\delta^2}\\right]", font_size ) );
 	co_await wait_for( 1 );
 }
 

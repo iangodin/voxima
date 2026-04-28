@@ -12,4 +12,11 @@ struct Circle : public Visual
 	{
 		visitor.visit( *this );
 	}
+
+	Circle &operator*=( float scale ) override
+	{
+		radius *= scale;
+		position *= scale;
+		return *this;
+	}
 };
