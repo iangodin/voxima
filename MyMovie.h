@@ -104,14 +104,16 @@ Scene my_diagram( Stage &stage )
 
 Screenplay my_movie( Stage &stage )
 {
+	/*
 	auto &ellipse = stage.visuals.add( std::make_unique<Ellipse>() );
 	ellipse.position = { 4.0, 0.0 };
 	ellipse.half_width = 2.0;
 	ellipse.half_height = 1.0;
+	*/
 
-	auto &math = stage.visuals.add( math_font.create_math( "\\sqrt{x^2+y^2}", 1.F ) );
-	math.position = { 0.F, -2.5F };
-	math.color = { 0.3F, 0.8F, 0.5F, 1.F };
+	auto &math = stage.visuals.add( math_font.create_math(
+		"\\int_{0}^{\\infty} \\frac{\\sin(x)}{x} dx = \\frac{\\pi}{2}", 1.F ) );
+	math.position = { 0.F, 0.F };
 
 	co_await wait_for( 30 );
 

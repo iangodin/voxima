@@ -19,9 +19,18 @@ find_package( Freetype 2.14.1 REQUIRED )
 
 add_subdirectory( mfl )
 
-add_executable( poc main.cpp Font.cpp MFLFontFace.cpp Freetype.cpp freetype_error.cpp )
+add_library( visuals STATIC Font.cpp MFLFontFace.cpp Freetype.cpp freetype_error.cpp )
+target_compile_features( visuals PUBLIC cxx_std_20 )
+target_compile_options( visuals PUBLIC -fcoroutines )
+target_link_libraries( visuals PUBLIC stb::stb lunasvg::lunasvg plutovg::plutovg Freetype::Freetype harfbuzz::harfbuzz mfl )
 
-target_compile_features( poc PUBLIC cxx_std_20 )
-target_compile_options( poc PUBLIC -fcoroutines )
-target_link_libraries( poc PUBLIC stb::stb lunasvg::lunasvg plutovg::plutovg Freetype::Freetype harfbuzz::harfbuzz mfl )
+add_executable( test main.cpp )
+target_compile_features( test PUBLIC cxx_std_20 )
+target_compile_options( test PUBLIC -fcoroutines )
+target_link_libraries( test PUBLIC visuals )
+
+add_executable( math_test math_test.cpp )
+target_compile_features( math_test PUBLIC cxx_std_20 )
+target_compile_options( math_test PUBLIC -fcoroutines )
+target_link_libraries( math_test PUBLIC visuals )
 

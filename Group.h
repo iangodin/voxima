@@ -21,6 +21,14 @@ public:
 		return *shape;
 	}
 
+	template<typename Shape>
+	Shape &set( size_t i, std::unique_ptr<Shape> &&visual )
+	{
+		auto *shape = visual.get();
+		_visuals.at( i ) = std::move( visual );
+		return *shape;
+	}
+
 	auto begin( void ) const
 	{
 		return _visuals.begin();
