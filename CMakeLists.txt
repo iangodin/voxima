@@ -19,7 +19,7 @@ find_package( Freetype 2.14.1 REQUIRED )
 
 add_subdirectory( mfl )
 
-add_executable( poc main.cpp Font.cpp MFLFontFace.cpp )
+add_executable( poc main.cpp Font.cpp MFLFontFace.cpp Freetype.cpp freetype_error.cpp )
 
 target_compile_features( poc PUBLIC cxx_std_20 )
 target_compile_options( poc PUBLIC -fcoroutines )
