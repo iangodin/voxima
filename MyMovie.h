@@ -17,6 +17,7 @@
 #include <coroutine>
 
 Font font( "fonts/FiraCode-Regular.ttf" );
+Font math_font( "fonts/FiraMath-Regular.otf" );
 
 Director scale_in( Visual &visual, int64_t frames )
 {
@@ -107,6 +108,12 @@ Screenplay my_movie( Stage &stage )
 	ellipse.position = { 4.0, 0.0 };
 	ellipse.half_width = 2.0;
 	ellipse.half_height = 1.0;
+
+	auto &math = stage.visuals.add( math_font.create_math( "x^2", 1.0F ) );
+	math.position = { 0.F, -2.5F };
+	math.color = { 0.8F, 0.4F, 0.5F, 1.F };
+
+//	co_await wait_for( 30 );
 
 	co_await together(
 		ease_in_out_cubic( ellipse.rotation, -90.F, 0.F, 60 ),

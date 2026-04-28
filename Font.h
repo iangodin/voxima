@@ -16,6 +16,7 @@ public:
     std::unique_ptr<Group> create_math( const std::string &formula, float font_size ) const;
 
 private:
+    std::string _path;
     std::unique_ptr<MFLFontFace> _face;
     std::unique_ptr<Path> get_glyph_path(unsigned int glyph_id, float scale) const;
     void center_group(Group* group) const;

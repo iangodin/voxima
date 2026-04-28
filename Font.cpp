@@ -2,6 +2,7 @@
 #include "MFLFontFace.h"
 #include "Path.h"
 #include "Bounds.h"
+#include "mfl/layout.hpp"
 #include <ft2build.h>
 #include FT_FREETYPE_H
 #include FT_OUTLINE_H
@@ -10,7 +11,7 @@
 #include <vector>
 #include <iostream>
 
-Font::Font( const std::string &path ) : _face( std::make_unique<MFLFontFace>(path) )
+Font::Font( const std::string &path ) : _path(path), _face( std::make_unique<MFLFontFace>(path) )
 {
 }
 
@@ -55,20 +56,51 @@ std::unique_ptr<Group> Font::create_text( const std::string &text, float font_si
     return group;
 }
 
-std::unique_ptr<Group> Font::create_math( const std::string & /*formula*/, float /*font_size*/ ) const
+std::unique_ptr<Group> Font::create_math( const std::string &formula, float font_size ) const
 {
-    return std::make_unique<Group>();
+    auto group = std::make_unique<Group>();
+
+    auto create_font = [this](const mfl::font_family /*family*/) -> std::unique_ptr<mfl::abstract_font_face> {
+        return std::make_unique<MFLFontFace>(_path);
+    };
+
+    auto layout = mfl::layout(formula, mfl::points{static_cast<double>(font_size)}, create_font);
+
+    if (layout.error) {
+        std::cerr << "MFL Error: " << *layout.error << std::endl;
+        return group;
+    }
+
+    std::cout << "Formula: " << formula << " returned " << layout.glyphs.size() << " glyphs." << std::endl;
+    for (const auto& g : layout.glyphs) {
+        std::cout << "Glyph index: " << g.index << ", x: " << g.x.value() << ", y: " << g.y.value() << ", size: " << g.size.value() << std::endl;
+    }
+
+    float base_upem = static_cast<float>(_face->get_ft_face()->units_per_EM);
+    for (const auto& g : layout.glyphs) {
+        // g.size is the size of the font for this specific glyph (e.g. script size)
+        // We need to scale the glyph path by this size.
+        float glyph_scale = static_cast<float>(g.size.value()) / base_upem;
+
+        auto path = get_glyph_path(static_cast<unsigned int>(g.index), glyph_scale);
+        // mfl already provided the absolute position in points.
+        path->position = Point{static_cast<float>(g.x.value()) * 0.5F, static_cast<float>(g.y.value())};
+        group->add(std::move(path));
+    }
+
+    center_group(group.get());
+    return group;
 }
 
 std::unique_ptr<Path> Font::get_glyph_path(unsigned int glyph_id, float scale) const
 {
     FT_Load_Glyph( _face->get_ft_face(), glyph_id, FT_LOAD_DEFAULT );
-    
+
     auto path = std::make_unique<Path>();
     struct DecomposeContext { Path* path; float scale; };
     DecomposeContext ctx = { path.get(), scale };
 
-    FT_Outline_Funcs funcs = { 
+    FT_Outline_Funcs funcs = {
         [](const FT_Vector* to, void* user) -> int {
             auto* d_ctx = static_cast<DecomposeContext*>(user);
             d_ctx->path->commands.push_back({ PathCommand::MoveTo, { static_cast<float>(to->x) * d_ctx->scale, static_cast<float>(to->y) * d_ctx->scale } });
@@ -97,7 +129,7 @@ void Font::center_group(Group* group) const
 {
     BoundingBoxVisitor visitor;
     group->accept( visitor );
-    Point center = { ( visitor.bounds.min.x + visitor.bounds.max.x ) / 2.0f, 
+    Point center = { ( visitor.bounds.min.x + visitor.bounds.max.x ) / 2.0f,
                      ( visitor.bounds.min.y + visitor.bounds.max.y ) / 2.0f };
 
     for ( auto &v : *group ) {
