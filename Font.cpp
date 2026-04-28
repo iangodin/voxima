@@ -98,7 +98,7 @@ std::unique_ptr<Group> Font::create_math( const std::string &formula, float font
 
 std::unique_ptr<Path> Font::get_glyph_path(unsigned int glyph_id, float scale) const
 {
-    FT_Load_Glyph( _face->get_ft_face(), glyph_id, FT_LOAD_DEFAULT );
+    FT_Load_Glyph( _face->get_ft_face(), glyph_id, FT_LOAD_NO_SCALE );
 
     auto path = std::make_unique<Path>();
     struct DecomposeContext { Path* path; float scale; };

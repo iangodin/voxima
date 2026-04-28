@@ -93,7 +93,7 @@ mfl::math_constants MFLFontFace::constants() const
 
 mfl::math_glyph_info MFLFontFace::glyph_info(const size_t glyph_index) const
 {
-    FT_Load_Glyph(ft_face_, static_cast<FT_UInt>( glyph_index ), FT_LOAD_DEFAULT);
+    FT_Load_Glyph(ft_face_, static_cast<FT_UInt>( glyph_index ), FT_LOAD_NO_SCALE);
     const auto& metrics = ft_face_->glyph->metrics;
     int upem = ft_face_->units_per_EM;
 
