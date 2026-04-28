@@ -120,7 +120,7 @@ std::unique_ptr<Group> Font::create_math( const std::string &formula, float font
 
 		// Position is the center of the rectangle.
 		// We shift x by half_width.
-		rect->position = Point{ lx + rect->half_width, ly };
+		rect->position = Point{ lx + rect->half_width, ly + rect->half_height };
 
 		group->add(std::move(rect));
 	}

@@ -17,9 +17,11 @@ namespace
     std::int32_t units_to_mfl_dist(const int native_units, const int upem)
     {
 		(void)upem;
+		return static_cast<std::int32_t>((static_cast<double>(native_units) / upem) * mfl_unit_distance);
+
 		// scaled 26.6 pixels → MFL units
 		// divide by (internal_font_size * 64) to normalize to em, then multiply by mfl_unit_distance
-		return static_cast<std::int32_t>((static_cast<double>(native_units) / 64.0) * mfl_unit_distance);
+		//return static_cast<std::int32_t>((static_cast<double>(native_units) / 64.0) * mfl_unit_distance);
     }
 
     std::vector<mfl::size_variant> get_size_variants(hb_font_t* font, const size_t glyph_index, const hb_direction_t dir, const int upem)
@@ -56,7 +58,12 @@ MFLFontFace::MFLFontFace(const std::string& path)
     }
 
     hb_font_ = hb_ft_font_create(ft_face_, NULL);
-	//hb_ot_font_set_funcs( hb_font_ );
+
+	hb_ot_font_set_funcs( hb_font_ );
+
+	int upem = ft_face_->units_per_EM;
+	hb_font_set_scale( hb_font_, upem, upem );
+
 }
 
 MFLFontFace::~MFLFontFace()
@@ -112,16 +119,10 @@ mfl::math_glyph_info MFLFontFace::glyph_info(const size_t glyph_index) const
 		return { glyph_index, 0, 0, 0, 0, 0 };
 	}
     const auto& metrics = ft_face_->glyph->metrics;
-    int upem = ft_face_->units_per_EM;
+    const int upem = ft_face_->units_per_EM;
 
     const auto italic_correction = hb_ot_math_get_glyph_italics_correction(hb_font_, static_cast<hb_codepoint_t>(glyph_index));
 
-	std::cout << "DEBUG: " << glyph_index << " - "
-        << units_to_mfl_dist(static_cast<int>(metrics.horiAdvance), upem) << ' '
-        << units_to_mfl_dist(static_cast<int>(metrics.horiBearingY), upem) << ' '
-        << units_to_mfl_dist(static_cast<int>(metrics.height - metrics.horiBearingY), upem) << ' '
-        << units_to_mfl_dist(static_cast<int>(italic_correction), upem) << ' '
-        << units_to_mfl_dist(hb_ot_math_get_glyph_top_accent_attachment(hb_font_, static_cast<hb_codepoint_t>(glyph_index)), upem) << '\n';
     return {
         glyph_index,
         units_to_mfl_dist(static_cast<int>(metrics.horiAdvance), upem),
