@@ -98,6 +98,33 @@ std::unique_ptr<Group> Font::create_math( const std::string &formula, float font
         group->add(std::move(path));
     }
 
+	for (const auto& line : layout.lines)
+	{
+		auto rect = std::make_unique<Rectangle>();
+
+		const float master_scale = font_size / internal_font_size;
+
+		// Convert MFL points to your coordinate units
+		float lx = static_cast<float>(line.x.value()) * master_scale;
+		float ly = static_cast<float>(line.y.value()) * master_scale;
+		float l_len = static_cast<float>(line.length.value()) * master_scale;
+		float l_thick = static_cast<float>(line.thickness.value()) * master_scale;
+		std::cout << "DEBUG: thick - " << line.thickness.value() << '\n';
+
+		// Most MFL lines are horizontal (fraction bars, radical bars)
+		// In this case: length is Width, thickness is Height.
+		// MFL usually positions (x, y) at the left-bottom or left-middle.
+
+		rect->half_width = l_len / 2.0f;
+		rect->half_height = l_thick / 2.0f;
+
+		// Position is the center of the rectangle.
+		// We shift x by half_width.
+		rect->position = Point{ lx + rect->half_width, ly };
+
+		group->add(std::move(rect));
+	}
+
     center_group(group.get());
     return group;
 }

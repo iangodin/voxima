@@ -45,11 +45,18 @@ namespace
 
 MFLFontFace::MFLFontFace(const std::string& path)
 {
-    if (FT_Init_FreeType(&ft_library_) != 0) throw std::runtime_error("Could not init FreeType");
-    if (FT_New_Face(ft_library_, path.c_str(), 0, &ft_face_) != 0) {
+    if (FT_Init_FreeType(&ft_library_) != 0)
+	{
+		throw std::runtime_error("Could not init FreeType");
+	}
+
+    if (FT_New_Face(ft_library_, path.c_str(), 0, &ft_face_) != 0)
+	{
         throw std::runtime_error("Could not load font: " + path);
     }
+
     hb_font_ = hb_ft_font_create(ft_face_, NULL);
+	//hb_ot_font_set_funcs( hb_font_ );
 }
 
 MFLFontFace::~MFLFontFace()
@@ -62,8 +69,11 @@ MFLFontFace::~MFLFontFace()
 mfl::math_constants MFLFontFace::constants() const
 {
     int upem = ft_face_->units_per_EM;
-    const auto get_constant = [&](const hb_ot_math_constant_t c) {
-        return units_to_mfl_dist(hb_ot_math_get_constant(hb_font_, c), upem);
+    const auto get_constant = [&](const hb_ot_math_constant_t c)
+	{
+		int value = hb_ot_math_get_constant( hb_font_, c );
+		return static_cast<int32_t>( (static_cast<double>( value ) / static_cast<double>( upem )) * mfl_unit_distance );
+        //return units_to_mfl_dist(hb_ot_math_get_constant(hb_font_, c), upem);
     };
 
     return {
