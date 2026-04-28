@@ -33,10 +33,16 @@ namespace
 
 Freetype::Freetype()
 	: ft_library_(load_library(), FT_Done_FreeType)
+/*
 	, italic_face_(load_font(ft_library_.get(), "FiraSans-Italic.ttf"), FT_Done_Face)
 	, normal_face_(load_font(ft_library_.get(), "FiraMath-Regular.otf"), FT_Done_Face)
 	, bold_face_(load_font(ft_library_.get(), "FiraSans-Bold.ttf"), FT_Done_Face)
 	, mono_face_(load_font(ft_library_.get(), "FiraCode-Regular.ttf"), FT_Done_Face)
+*/
+	, italic_face_(load_font(ft_library_.get(), "STIX2Text-Italic.otf"), FT_Done_Face)
+	, normal_face_(load_font(ft_library_.get(), "STIX2Math-Regular.otf"), FT_Done_Face)
+	, bold_face_(load_font(ft_library_.get(), "STIX2Text-Bold.otf"), FT_Done_Face)
+	, mono_face_(load_font(ft_library_.get(), "DejaVuSansMono.otf"), FT_Done_Face)
 {
 }
 
