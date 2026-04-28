@@ -1,16 +1,20 @@
+
 #include "MFLFontFace.h"
+
 #include <hb-ft.h>
 #include <hb-ot.h>
+
 #include <ranges>
 #include <vector>
 #include <algorithm>
+#include <stdexcept>
 
 namespace
 {
     // MFL unit_distance is 65536 (1.0 pt)
     constexpr double mfl_unit_distance = 65536.0;
 
-    std::int32_t units_to_mfl_dist(const int native_units, const int upem) 
+    std::int32_t units_to_mfl_dist(const int native_units, const int upem)
     {
         return static_cast<std::int32_t>((static_cast<double>(native_units) / static_cast<double>(upem)) * mfl_unit_distance);
     }
@@ -89,7 +93,7 @@ mfl::math_constants MFLFontFace::constants() const
 
 mfl::math_glyph_info MFLFontFace::glyph_info(const size_t glyph_index) const
 {
-    FT_Load_Char(ft_face_, static_cast<FT_ULong>(glyph_index), FT_LOAD_DEFAULT);
+    FT_Load_Glyph(ft_face_, static_cast<FT_UInt>( glyph_index ), FT_LOAD_DEFAULT);
     const auto& metrics = ft_face_->glyph->metrics;
     int upem = ft_face_->units_per_EM;
 
@@ -108,8 +112,33 @@ mfl::math_glyph_info MFLFontFace::glyph_info(const size_t glyph_index) const
 size_t MFLFontFace::glyph_index_from_code_point(const mfl::code_point char_code, const bool use_large_variant) const
 {
     hb_codepoint_t base_index = 0;
-    hb_font_get_glyph(hb_font_, char_code, 0, &base_index);
-    return base_index + (use_large_variant ? 1 : 0);
+    if (!hb_font_get_glyph(hb_font_, char_code, 0, &base_index)) {
+        return 0; // .notdef
+    }
+
+    if (!use_large_variant) {
+        return base_index;
+    }
+
+    // Ask HarfBuzz for the vertical size variants (most large ops grow vertically)
+    constexpr uint32_t max_variants = 20;
+    std::array<hb_ot_math_glyph_variant_t, max_variants> variants{};
+    uint32_t count = max_variants;
+    hb_ot_math_get_glyph_variants(hb_font_, base_index, HB_DIRECTION_BTT, 0, &count, variants.data());
+
+    if (count > 0) {
+        return variants[0].glyph; // first = smallest larger variant
+    }
+
+    // Fall back to horizontal variants (e.g. for wide operators)
+    count = max_variants;
+    hb_ot_math_get_glyph_variants(hb_font_, base_index, HB_DIRECTION_LTR, 0, &count, variants.data());
+
+    if (count > 0) {
+        return variants[0].glyph;
+    }
+
+    return base_index; // no variants found, return base
 }
 
 std::vector<mfl::size_variant> MFLFontFace::horizontal_size_variants(const mfl::code_point char_code) const
@@ -124,4 +153,9 @@ std::vector<mfl::size_variant> MFLFontFace::vertical_size_variants(const mfl::co
 
 std::optional<mfl::glyph_assembly> MFLFontFace::horizontal_assembly(const mfl::code_point /*char_code*/) const { return std::nullopt; }
 std::optional<mfl::glyph_assembly> MFLFontFace::vertical_assembly(const mfl::code_point /*char_code*/) const { return std::nullopt; }
-void MFLFontFace::set_size(const mfl::points size) { FT_Set_Char_Size(ft_face_, 0, static_cast<FT_F26Dot6>(size.value()), 0, 0); }
+void MFLFontFace::set_size(const mfl::points /*size*/)
+{
+	const float internal_font_size = 100.F;
+	FT_Set_Char_Size(ft_face_, 0, static_cast<FT_F26Dot6>(internal_font_size * 64.F), 0, 0);
+}
+

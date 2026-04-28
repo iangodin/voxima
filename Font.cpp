@@ -58,13 +58,15 @@ std::unique_ptr<Group> Font::create_text( const std::string &text, float font_si
 
 std::unique_ptr<Group> Font::create_math( const std::string &formula, float font_size ) const
 {
+	const float internal_font_size = 100.F;
+
     auto group = std::make_unique<Group>();
 
     auto create_font = [this](const mfl::font_family /*family*/) -> std::unique_ptr<mfl::abstract_font_face> {
         return std::make_unique<MFLFontFace>(_path);
     };
 
-    auto layout = mfl::layout(formula, mfl::points{static_cast<double>(font_size)}, create_font);
+    auto layout = mfl::layout(formula, mfl::points{static_cast<double>(internal_font_size)}, create_font);
 
     if (layout.error) {
         std::cerr << "MFL Error: " << *layout.error << std::endl;
@@ -76,15 +78,17 @@ std::unique_ptr<Group> Font::create_math( const std::string &formula, float font
         std::cout << "Glyph index: " << g.index << ", x: " << g.x.value() << ", y: " << g.y.value() << ", size: " << g.size.value() << std::endl;
     }
 
-    float base_upem = static_cast<float>(_face->get_ft_face()->units_per_EM);
+    //float base_upem = static_cast<float>(_face->get_ft_face()->units_per_EM);
     for (const auto& g : layout.glyphs) {
         // g.size is the size of the font for this specific glyph (e.g. script size)
         // We need to scale the glyph path by this size.
-        float glyph_scale = static_cast<float>(g.size.value()) / base_upem;
+        float glyph_scale = static_cast<float>(g.size.value()) * font_size / internal_font_size;
 
         auto path = get_glyph_path(static_cast<unsigned int>(g.index), glyph_scale);
         // mfl already provided the absolute position in points.
-        path->position = Point{static_cast<float>(g.x.value()) * 0.5F, static_cast<float>(g.y.value())};
+        path->position = Point{
+			static_cast<float>(g.x.value()) * font_size,
+			static_cast<float>(g.y.value()) * font_size };
         group->add(std::move(path));
     }
 

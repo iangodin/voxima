@@ -109,14 +109,16 @@ Screenplay my_movie( Stage &stage )
 	ellipse.half_width = 2.0;
 	ellipse.half_height = 1.0;
 
-	auto &math = stage.visuals.add( math_font.create_math( "x^2", 1.0F ) );
+	auto &math = stage.visuals.add( math_font.create_math( "x^2", 0.1F ) );
 	math.position = { 0.F, -2.5F };
 	math.color = { 0.8F, 0.4F, 0.5F, 1.F };
 
-//	co_await wait_for( 30 );
+	co_await wait_for( 30 );
 
+	/*
 	co_await together(
 		ease_in_out_cubic( ellipse.rotation, -90.F, 0.F, 60 ),
 		my_diagram( stage ) );
+	*/
 }
 
