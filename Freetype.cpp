@@ -40,9 +40,9 @@ Freetype::Freetype()
 	, mono_face_(load_font(ft_library_.get(), "FiraCode-Regular.ttf"), FT_Done_Face)
 */
 	, italic_face_(load_font(ft_library_.get(), "STIX2Text-Italic.otf"), FT_Done_Face)
-	, normal_face_(load_font(ft_library_.get(), "STIX2Math-Regular.otf"), FT_Done_Face)
+	, normal_face_(load_font(ft_library_.get(), "STIX2Math.otf"), FT_Done_Face)
 	, bold_face_(load_font(ft_library_.get(), "STIX2Text-Bold.otf"), FT_Done_Face)
-	, mono_face_(load_font(ft_library_.get(), "DejaVuSansMono.otf"), FT_Done_Face)
+	, mono_face_(load_font(ft_library_.get(), "DejaVuSansMono.ttf"), FT_Done_Face)
 {
 }
 

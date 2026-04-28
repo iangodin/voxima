@@ -21,7 +21,7 @@ Screenplay math_test( Stage &stage )
 //	co_await wait_for( 1 );
 
 	stage.visuals.add( math_font.create_math(
-		"\\int_{0}^{\\infty} \\frac{\\sin(x)}{x} dx = \\frac{\\pi}{2}", 2.F ) );
+		"\\int_{0}^{\\infty} \\frac{\\sin(x)}{x} dx = \\frac{\\pi}{2}", 1.F ) );
 	co_await wait_for( 1 );
 
 	stage.visuals.set( 0, math_font.create_math(
