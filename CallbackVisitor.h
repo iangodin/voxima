@@ -21,6 +21,8 @@ public:
 	void visit( const Line &line ) override { _callback( const_cast<Line &>( line ) ); }
 	void visit( const ArrowTip &arrow ) override { _callback( const_cast<ArrowTip &>( arrow ) ); }
 	
+	void visit( const Ellipse &ellipse ) override { _callback( const_cast<Ellipse &>( ellipse ) ); }
+	void visit( const Image &image ) override { _callback( const_cast<Image &>( image ) ); }
 	void visit( const Group &visuals ) override
 	{
 		_callback( const_cast<Group &>( visuals ) );

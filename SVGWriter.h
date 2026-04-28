@@ -305,8 +305,7 @@ public:
 private:
 	std::string indent() const
 	{
-		return std::string( _indent, ' ' );
-	}
+		return std::string( static_cast<std::size_t>(_indent), ' ' );	}
 
 	std::ostream &_out;
 	int _indent;

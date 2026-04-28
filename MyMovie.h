@@ -42,11 +42,10 @@ Group &create_node( Stage &stage, std::string title, float x, float y, float w, 
 	rect.color = { 0.1F, 0.6F, 0.2F, 1.0F };
 	rect.stroke_thickness = 0.03f;
 	rect.stroke_color = { 0.2f, 0.8f, 0.4f, 1.0f };
-	rect.top_left_radius = 0.05,
-	rect.top_right_radius = 0.05,
-	rect.bottom_left_radius = 0.05,
-	rect.bottom_right_radius = 0.05;
-
+	rect.top_left_radius = 0.05f,
+	rect.top_right_radius = 0.05f,
+	rect.bottom_left_radius = 0.05f,
+	rect.bottom_right_radius = 0.05f;
 	auto &text = group.add( font.create_text( title, 0.3F ) );
 	text.position = { 0.F, 0.F };
 	text.color = { 1.F, 1.F, 1.F, 1.F };
@@ -70,8 +69,7 @@ std::pair<Line &, ArrowTip &> create_arrow( Stage &stage, Point start, Point end
 	auto &arrow = group.add( std::make_unique<ArrowTip>() );
 	arrow.start = { 0.F, 0.F };
 	arrow.end = relative;
-	arrow.size = 0.08;
-	arrow.stroke_thickness = 0.05F;
+	arrow.size = 0.08f;	arrow.stroke_thickness = 0.05F;
 	arrow.stroke_color = { 1.0F, 1.0F, 1.0F, 1.0F };
 
 	return { line, arrow };
