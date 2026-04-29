@@ -1,11 +1,12 @@
-
 #include "MFLFontFace.h"
+#include "freetype_error.hpp"
 
 #include <harfbuzz/hb-ft.h>
 #include <harfbuzz/hb-ot.h>
 
 #include <algorithm>
 #include <ranges>
+#include <stdexcept>
 
 namespace
 {
@@ -14,6 +15,13 @@ namespace
 	constexpr int font_unit_factor = 1024;
 
 	std::int32_t font_units_to_dist(const int u) { return u * font_unit_factor; }
+
+	void ft_set_size(FT_Face face, const mfl::points size)
+	{
+		const auto fp_size = static_cast<FT_F26Dot6>(size.value() * 64.0);
+		if (const auto err = FT_Set_Char_Size(face, fp_size, fp_size, 0, 0); err != 0)
+			throw std::invalid_argument(ft_error_string(err));
+	}
 
 	std::vector<mfl::size_variant> get_size_variants(hb_font_t* font, const size_t glyph_index, const hb_direction_t dir)
 	{
@@ -83,11 +91,6 @@ namespace
 						  assembly_parts.begin());
 		return mfl::glyph_assembly{.parts = assembly_parts, .italic_correction = font_units_to_dist(italic_correction)};
 	}
-}
-
-MFLFontFace::MFLFontFace( const mfl::font_family family, const Freetype& ft ) :
-	ft_face_(ft.face(family))
-{
 }
 
 MFLFontFace::MFLFontFace( FT_Face ft_face ) :

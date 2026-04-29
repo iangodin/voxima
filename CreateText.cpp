@@ -120,9 +120,14 @@ std::unique_ptr<Glyph> create_glyph( unsigned int glyph_id, const FontFace *font
 
 Group &create_text( Stage &stage, const std::string &text, const TextStyle &style )
 {
-	auto &group = stage.visuals.add( std::make_unique<Group>() );
+	return create_text( stage.visuals, stage.theme, text, style );
+}
 
-	FontStack stack = stage.theme.get_stack( style );
+Group &create_text( Group &group, Theme &theme, const std::string &text, const TextStyle &style )
+{
+	auto &subgroup = group.add( std::make_unique<Group>() );
+
+	FontStack stack = theme.get_stack( style );
 
 	std::vector<hb_font_t *> hb_fonts;
 	{
@@ -177,7 +182,7 @@ Group &create_text( Stage &stage, const std::string &text, const TextStyle &styl
 				current_y + static_cast<float>(pos.y_offset) };
 
 			*glyph *= glyph_scale;
-			group.add( std::move( glyph ) );
+			subgroup.add( std::move( glyph ) );
 
 			current_x += static_cast<float>(pos.x_advance);
 			current_y += static_cast<float>(pos.y_advance);
@@ -191,8 +196,8 @@ Group &create_text( Stage &stage, const std::string &text, const TextStyle &styl
 		hb_font_destroy( hb_font );
 	}
 
-	center_group( group );
+	center_group( subgroup );
 
-	return group;
+	return subgroup;
 }
 

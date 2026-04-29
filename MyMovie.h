@@ -8,16 +8,14 @@
 #include "Rectangle.h"
 #include "RoundRectangle.h"
 #include "Path.h"
-#include "Font.h"
+#include "CreateText.h"
+#include "CreateMath.h"
 #include "Image.h"
 #include "Ellipse.h"
 #include "Animation.h"
 #include "CallbackVisitor.h"
 
 #include <coroutine>
-
-Font font( "fonts/FiraCode-Regular.ttf" );
-Font math_font( "fonts/FiraMath-Regular.otf" );
 
 Director scale_in( Visual &visual, int64_t frames )
 {
@@ -47,7 +45,7 @@ Group &create_node( Stage &stage, std::string title, float x, float y, float w, 
 	rect.top_right_radius = 0.05f,
 	rect.bottom_left_radius = 0.05f,
 	rect.bottom_right_radius = 0.05f;
-	auto &text = group.add( font.create_text( title, 0.3F ) );
+	auto &text = create_text( group, stage.theme, title, TextStyle( "prose" ) );
 	text.position = { 0.F, 0.F };
 	text.color = { 1.F, 1.F, 1.F, 1.F };
 
@@ -111,8 +109,8 @@ Screenplay my_movie( Stage &stage )
 	ellipse.half_height = 1.0;
 	*/
 
-	auto &math = stage.visuals.add( math_font.create_math(
-		"\\int_{0}^{\\infty} \\frac{\\sin(x)}{x} dx = \\frac{\\pi}{2}", 1.F ) );
+	auto &math = create_math( stage,
+		"\\int_{0}^{\\infty} \\frac{\\sin(x)}{x} dx = \\frac{\\pi}{2}", TextStyle( "math" ) );
 	math.position = { 0.F, 0.F };
 
 	co_await wait_for( 30 );

@@ -29,6 +29,11 @@ public:
 		return *shape;
 	}
 
+	void clear( void )
+	{
+		_visuals.clear();
+	}
+
 	auto begin( void ) const
 	{
 		return _visuals.begin();

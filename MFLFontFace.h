@@ -1,7 +1,5 @@
 #pragma once
 
-#include "Freetype.h"
-
 #include <mfl/abstract_font_face.hpp>
 #include <mfl/font_family.hpp>
 #include <mfl/units.hpp>
@@ -12,7 +10,6 @@
 class MFLFontFace : public mfl::abstract_font_face
 {
 public:
-	MFLFontFace( const mfl::font_family family, const Freetype &ft );
 	MFLFontFace( FT_Face ft_face );
 
 	[[nodiscard]] mfl::math_constants constants( void ) const override;

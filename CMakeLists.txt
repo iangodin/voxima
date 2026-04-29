@@ -23,9 +23,8 @@ enable_testing()
 add_subdirectory( mfl )
 
 add_library( visuals STATIC
-	Font.cpp
+	CreateMath.cpp
 	MFLFontFace.cpp
-	Freetype.cpp
 	freetype_error.cpp
 	Theme.cpp
 	FontStack.cpp

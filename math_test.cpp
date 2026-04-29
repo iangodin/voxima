@@ -2,7 +2,7 @@
 #include "Stage.h"
 #include "Screenplay.h"
 #include "Producer.h"
-#include "Font.h"
+#include "CreateMath.h"
 #include "Group.h"
 #include "NewComputerModern.h"
 #include "CreateText.h"
@@ -14,39 +14,45 @@
 #include <fstream>
 #include <iomanip>
 
-Font math_font( "" );
-
 Screenplay math_test( Stage &stage )
 {
+	auto large = TextStyle( "prose" ).huge();
+	auto math_style = TextStyle( "math" ).huge();
+
 	create_text( stage,
-		"Math Layout Test 😀", TextStyle{ "prose" }.huge() );
+		"Math Layout Test 😀", large );
 	co_await wait_for( 1 );
+	stage.visuals.clear();
 
-	/*
-	stage.visuals.set( 0, math_font.create_math(
-		"\\int_{0}^{\\infty} \\frac{\\sin(x)}{x} dx = \\frac{\\pi}{2}", font_size ) );
+	create_math( stage,
+		"\\int_{0}^{\\infty} \\frac{\\sin(x)}{x} dx = \\frac{\\pi}{2}", math_style );
 	co_await wait_for( 1 );
+	stage.visuals.clear();
 
-	stage.visuals.set( 0, math_font.create_math(
-		"x+y", font_size) );
+	create_math( stage,
+		"x+y", math_style );
 	co_await wait_for( 1 );
+	stage.visuals.clear();
 
-	stage.visuals.set( 0, math_font.create_math(
-		"\\sqrt{x^2+y^2}", font_size ) );
+	create_math( stage,
+		"\\sqrt{x^2+y^2}", math_style );
 	co_await wait_for( 1 );
+	stage.visuals.clear();
 
-	stage.visuals.set( 0, math_font.create_math(
-		"\\sum_{n=1}^{\\infty} \\frac{1}{n^2} = \\frac{\\pi^2}{6}", font_size ) );
+	create_math( stage,
+		"\\sum_{n=1}^{\\infty} \\frac{1}{n^2} = \\frac{\\pi^2}{6}", math_style );
 	co_await wait_for( 1 );
+	stage.visuals.clear();
 
-	stage.visuals.set( 0, math_font.create_math(
-		"x = \\sum_{i=1}^{n} \\left( \\frac{i^2}{2} \\right)", font_size ) );
+	create_math( stage,
+		"x = \\sum_{i=1}^{n} \\left( \\frac{i^2}{2} \\right)", math_style );
 	co_await wait_for( 1 );
+	stage.visuals.clear();
 
-	stage.visuals.set( 0, math_font.create_math(
-		"A = \\left[\\matrix{\\frac{1}{2} & \\beta \\cr \\gamma & \\delta^2}\\right]", font_size ) );
+	create_math( stage,
+		"A = \\left[\\matrix{\\frac{1}{2} & \\beta \\cr \\gamma & \\delta^2}\\right]", math_style );
 	co_await wait_for( 1 );
-	*/
+	stage.visuals.clear();
 }
 
 int main()

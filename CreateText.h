@@ -9,6 +9,10 @@
 #include <string>
 #include <vector>
 #include <string_view>
+#include <memory>
+
+class Glyph;
+class FontFace;
 
 struct TextRange
 {
@@ -19,4 +23,8 @@ struct TextRange
 
 std::vector<TextRange> create_ranges( std::string_view str, const FontStack &font );
 
+void center_group( Group &group );
+std::unique_ptr<Glyph> create_glyph( unsigned int glyph_id, const FontFace *font_face );
+
 Group &create_text( Stage &stage, const std::string &text, const TextStyle &style );
+Group &create_text( Group &group, Theme &theme, const std::string &text, const TextStyle &style );
