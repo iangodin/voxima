@@ -43,29 +43,22 @@ public:
 
 	void visit( const Circle &circle ) override
 	{
-		_out << indent() << "<g transform=\"translate(" << circle.position.x
-		     << "," << circle.position.y << ") rotate(" << circle.rotation
-		     << ") scale(" << circle.scale_x << "," << circle.scale_y << ")\">\n";
+		open_g( circle );
 
-		_indent += 2;
 		Color final_color = _current_color * circle.color;
 		Color final_stroke_color = _current_stroke_color * circle.stroke_color;
 
 		_out << indent() << "<circle cx=\"0\" cy=\"0\" r=\"" << circle.radius << "\" "
 		     << color_attributes( final_color ) << " "
 		     << stroke_attributes( circle.stroke_thickness, final_stroke_color ) << " />\n";
-		_indent -= 2;
 
-		_out << indent() << "</g>\n";
+		close_g();
 	}
 
 	void visit( const Rectangle &rectangle ) override
 	{
-		_out << indent() << "<g transform=\"translate(" << rectangle.position.x
-		     << "," << rectangle.position.y << ") rotate(" << rectangle.rotation
-		     << ") scale(" << rectangle.scale_x << "," << rectangle.scale_y << ")\">\n";
+		open_g( rectangle );
 
-		_indent += 2;
 		Color final_color = _current_color * rectangle.color;
 		Color final_stroke_color = _current_stroke_color * rectangle.stroke_color;
 
@@ -78,18 +71,14 @@ public:
 		     << "\" height=\"" << hh * 2.0f << "\" "
 		     << color_attributes( final_color ) << " "
 		     << stroke_attributes( rectangle.stroke_thickness, final_stroke_color ) << " />\n";
-		_indent -= 2;
 
-		_out << indent() << "</g>\n";
+		close_g();
 	}
 
 	void visit( const RoundRectangle &rect ) override
 	{
-		_out << indent() << "<g transform=\"translate(" << rect.position.x
-		     << "," << rect.position.y << ") rotate(" << rect.rotation
-		     << ") scale(" << rect.scale_x << "," << rect.scale_y << ")\">\n";
+		open_g( rect );
 
-		_indent += 2;
 		Color final_color = _current_color * rect.color;
 		Color final_stroke_color = _current_stroke_color * rect.stroke_color;
 
@@ -121,18 +110,14 @@ public:
 			     << " Z\" " << color_attributes( final_color ) << " "
 			     << stroke_attributes( rect.stroke_thickness, final_stroke_color ) << " />\n";
 		}
-		_indent -= 2;
 
-		_out << indent() << "</g>\n";
+		close_g();
 	}
 
 	void visit( const Ellipse &ellipse ) override
 	{
-		_out << indent() << "<g transform=\"translate(" << ellipse.position.x
-		     << "," << ellipse.position.y << ") rotate(" << ellipse.rotation
-		     << ") scale(" << ellipse.scale_x << "," << ellipse.scale_y << ")\">\n";
+		open_g( ellipse );
 
-		_indent += 2;
 		Color final_color = _current_color * ellipse.color;
 		Color final_stroke_color = _current_stroke_color * ellipse.stroke_color;
 
@@ -140,18 +125,14 @@ public:
 		     << "\" ry=\"" << ellipse.half_height << "\" "
 		     << color_attributes( final_color ) << " "
 		     << stroke_attributes( ellipse.stroke_thickness, final_stroke_color ) << " />\n";
-		_indent -= 2;
 
-		_out << indent() << "</g>\n";
+		close_g();
 	}
 
 	void visit( const Path &path ) override
 	{
-		_out << indent() << "<g transform=\"translate(" << path.position.x
-		     << "," << path.position.y << ") rotate(" << path.rotation
-		     << ") scale(" << path.scale_x << "," << path.scale_y << ")\">\n";
+		open_g( path );
 
-		_indent += 2;
 		Color final_color = _current_color * path.color;
 		Color final_stroke_color = _current_stroke_color * path.stroke_color;
 
@@ -160,8 +141,7 @@ public:
 		_out << " Z\" " << color_attributes( final_color ) << " "
 		     << stroke_attributes( path.stroke_thickness, final_stroke_color ) << " />\n";
 
-		_indent -= 2;
-		_out << indent() << "</g>\n";
+		close_g();
 	}
 
 	void visit( const Glyph &glyph ) override
@@ -172,46 +152,35 @@ public:
 			_glyphs[key] = glyph.commands;
 		}
 
-		_out << indent() << "<g transform=\"translate(" << glyph.position.x
-		     << "," << glyph.position.y << ") rotate(" << glyph.rotation
-		     << ") scale(" << glyph.scale_x << "," << glyph.scale_y << ")\">\n";
+		open_g( glyph );
 
-		_indent += 2;
 		Color final_color = _current_color * glyph.color;
 		Color final_stroke_color = _current_stroke_color * glyph.stroke_color;
 
 		_out << indent() << "<use href=\"#glyph_" << glyph.font_face << "_" << glyph.index << "\" "
 		     << color_attributes( final_color ) << " "
 		     << stroke_attributes( glyph.stroke_thickness, final_stroke_color ) << " />\n";
-		_indent -= 2;
 
-		_out << indent() << "</g>\n";
+		close_g();
 	}
 
 	void visit( const Line &line ) override
 	{
-		_out << indent() << "<g transform=\"translate(" << line.position.x
-		     << "," << line.position.y << ") rotate(" << line.rotation
-		     << ") scale(" << line.scale_x << "," << line.scale_y << ")\">\n";
+		open_g( line );
 
-		_indent += 2;
 		Color final_stroke_color = _current_stroke_color * line.stroke_color;
 
 		_out << indent() << "<line x1=\"" << line.start.x << "\" y1=\"" << line.start.y
 		     << "\" x2=\"" << line.end.x << "\" y2=\"" << line.end.y << "\" "
 		     << stroke_attributes( line.stroke_thickness, final_stroke_color ) << " />\n";
-		_indent -= 2;
 
-		_out << indent() << "</g>\n";
+		close_g();
 	}
 
 	void visit( const ArrowTip &arrow ) override
 	{
-		_out << indent() << "<g transform=\"translate(" << arrow.position.x
-		     << "," << arrow.position.y << ") rotate(" << arrow.rotation
-		     << ") scale(" << arrow.scale_x << "," << arrow.scale_y << ")\">\n";
+		open_g( arrow );
 
-		_indent += 2;
 		Color final_color = _current_color * arrow.color;
 		Color final_stroke_color = _current_stroke_color * arrow.stroke_color;
 
@@ -242,18 +211,14 @@ public:
 			     << color_attributes( final_color ) << " "
 			     << stroke_attributes( arrow.stroke_thickness, final_stroke_color ) << " />\n";
 		}
-		_indent -= 2;
 
-		_out << indent() << "</g>\n";
+		close_g();
 	}
 
 	void visit( const Image &image ) override
 	{
-		_out << indent() << "<g transform=\"translate(" << image.position.x
-		     << "," << image.position.y << ") rotate(" << image.rotation
-		     << ") scale(" << image.scale_x << "," << image.scale_y << ")\">\n";
+		open_g( image );
 
-		_indent += 2;
 		float x = -image.half_width;
 		float y = -image.half_height;
 		float w = image.half_width * 2.0f;
@@ -264,9 +229,8 @@ public:
 		_out << indent() << "<image href=\"" << image.path << "\" x=\"" << x
 		     << "\" y=\"" << -y - h << "\" width=\"" << w
 		     << "\" height=\"" << h << "\" transform=\"scale(1, -1)\" />\n";
-		_indent -= 2;
 
-		_out << indent() << "</g>\n";
+		close_g();
 	}
 
 	void visit( const Group &group ) override
@@ -277,18 +241,12 @@ public:
 		_current_color = _current_color * group.color;
 		_current_stroke_color = _current_stroke_color * group.stroke_color;
 
-		_out << indent() << "<g transform=\"translate(" << group.position.x
-		     << "," << group.position.y << ") rotate(" << group.rotation
-		     << ") scale(" << group.scale_x << "," << group.scale_y << ")\">\n";
-
-		_indent += 2;
+		open_g( group );
 		for ( const auto &v : group )
 		{
 			v->accept( *this );
 		}
-		_indent -= 2;
-
-		_out << indent() << "</g>\n";
+		close_g();
 
 		_current_color = old_color;
 		_current_stroke_color = old_stroke_color;
@@ -350,7 +308,22 @@ private:
 
 	std::string indent() const
 	{
-		return std::string( static_cast<std::size_t>(_indent), ' ' );	}
+		return std::string( static_cast<std::size_t>(_indent), ' ' );
+	}
+
+	void open_g( const Visual &v )
+	{
+		_out << indent() << "<g transform=\"translate(" << v.position.x
+		     << "," << v.position.y << ") rotate(" << v.rotation
+		     << ") scale(" << v.scale_x << "," << v.scale_y << ")\">\n";
+		_indent += 2;
+	}
+
+	void close_g()
+	{
+		_indent -= 2;
+		_out << indent() << "</g>\n";
+	}
 
 	std::ostream &_out;
 	int _indent;
