@@ -111,9 +111,9 @@ std::unique_ptr<Group> Font::create_math( const std::string& formula, float font
 		// But remember T = Pos / Scale.
 		// Here Pos = g.x. Scale = glyph_scale.
 		// So T = g.x / glyph_scale.
-		glyph->position = Point{ 
-			static_cast<float>(g.x.value()) / glyph_scale, 
-			static_cast<float>(g.y.value()) / glyph_scale 
+		glyph->position = Point{
+			static_cast<float>(g.x.value()) / glyph_scale,
+			static_cast<float>(g.y.value()) / glyph_scale
 		};
 
 		group->add(std::move(glyph));
@@ -142,7 +142,7 @@ std::unique_ptr<Group> Font::create_math( const std::string& formula, float font
 std::unique_ptr<Glyph> Font::create_glyph(unsigned int glyph_id, mfl::font_family family ) const
 {
 	auto glyph = std::make_unique<Glyph>();
-	glyph->family = family;
+	glyph->font_face = reinterpret_cast<const FontFace *>( static_cast<intptr_t>( family ) );
 	glyph->index = glyph_id;
 
 	FT_Face face = _ft.face( family );

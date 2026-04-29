@@ -4,6 +4,7 @@
 #include "Group.h"
 #include "SVGWriter.h"
 #include "Color.h"
+#include "Theme.h"
 
 #include <string>
 #include <vector>
@@ -12,6 +13,7 @@
 
 struct Stage
 {
+	Theme theme;
 	Color background = { 0.F, 0.F, 0.F, 1.F };
 	Group visuals;
 

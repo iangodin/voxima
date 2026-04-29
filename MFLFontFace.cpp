@@ -85,7 +85,15 @@ namespace
 	}
 }
 
-MFLFontFace::MFLFontFace(const mfl::font_family family, const Freetype& ft) : ft_face_(ft.face(family)) {}
+MFLFontFace::MFLFontFace( const mfl::font_family family, const Freetype& ft ) :
+	ft_face_(ft.face(family))
+{
+}
+
+MFLFontFace::MFLFontFace( FT_Face ft_face ) :
+	ft_face_(ft_face)
+{
+}
 
 mfl::math_constants MFLFontFace::constants() const
 {

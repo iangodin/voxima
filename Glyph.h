@@ -4,12 +4,15 @@
 #include "Visual.h"
 #include "VisualVisitor.h"
 #include "Path.h"
-#include <mfl/font_family.hpp>
+
+#include <cstdint>
+
+class FontFace;
 
 struct Glyph : public Visual
 {
-	mfl::font_family family;
-	unsigned int index;
+	const FontFace *font_face = nullptr;
+	uint32_t index = 0;
 	std::vector<PathCommand> commands;
 
 	void accept( VisualVisitor &visitor ) const override
