@@ -43,9 +43,9 @@ public:
 
 	void visit( const Circle &circle ) override
 	{
-		_out << indent() << "<g transform=\"scale(" << circle.scale_x << "," << circle.scale_y
-		     << ") rotate(" << circle.rotation << ") translate(" << circle.position.x
-		     << "," << circle.position.y << ")\">\n";
+		_out << indent() << "<g transform=\"translate(" << circle.position.x
+		     << "," << circle.position.y << ") rotate(" << circle.rotation
+		     << ") scale(" << circle.scale_x << "," << circle.scale_y << ")\">\n";
 
 		_indent += 2;
 		Color final_color = _current_color * circle.color;
@@ -61,9 +61,9 @@ public:
 
 	void visit( const Rectangle &rectangle ) override
 	{
-		_out << indent() << "<g transform=\"scale(" << rectangle.scale_x << "," << rectangle.scale_y
-		     << ") rotate(" << rectangle.rotation << ") translate(" << rectangle.position.x
-		     << "," << rectangle.position.y << ")\">\n";
+		_out << indent() << "<g transform=\"translate(" << rectangle.position.x
+		     << "," << rectangle.position.y << ") rotate(" << rectangle.rotation
+		     << ") scale(" << rectangle.scale_x << "," << rectangle.scale_y << ")\">\n";
 
 		_indent += 2;
 		Color final_color = _current_color * rectangle.color;
@@ -85,9 +85,9 @@ public:
 
 	void visit( const RoundRectangle &rect ) override
 	{
-		_out << indent() << "<g transform=\"scale(" << rect.scale_x << "," << rect.scale_y
-		     << ") rotate(" << rect.rotation << ") translate(" << rect.position.x
-		     << "," << rect.position.y << ")\">\n";
+		_out << indent() << "<g transform=\"translate(" << rect.position.x
+		     << "," << rect.position.y << ") rotate(" << rect.rotation
+		     << ") scale(" << rect.scale_x << "," << rect.scale_y << ")\">\n";
 
 		_indent += 2;
 		Color final_color = _current_color * rect.color;
@@ -147,9 +147,9 @@ public:
 
 	void visit( const Path &path ) override
 	{
-		_out << indent() << "<g transform=\"scale(" << path.scale_x << "," << path.scale_y
-		     << ") rotate(" << path.rotation << ") translate(" << path.position.x
-		     << "," << path.position.y << ")\">\n";
+		_out << indent() << "<g transform=\"translate(" << path.position.x
+		     << "," << path.position.y << ") rotate(" << path.rotation
+		     << ") scale(" << path.scale_x << "," << path.scale_y << ")\">\n";
 
 		_indent += 2;
 		Color final_color = _current_color * path.color;
@@ -172,9 +172,9 @@ public:
 			_glyphs[key] = glyph.commands;
 		}
 
-		_out << indent() << "<g transform=\"scale(" << glyph.scale_x << "," << glyph.scale_y
-		     << ") rotate(" << glyph.rotation << ") translate(" << glyph.position.x
-		     << "," << glyph.position.y << ")\">\n";
+		_out << indent() << "<g transform=\"translate(" << glyph.position.x
+		     << "," << glyph.position.y << ") rotate(" << glyph.rotation
+		     << ") scale(" << glyph.scale_x << "," << glyph.scale_y << ")\">\n";
 
 		_indent += 2;
 		Color final_color = _current_color * glyph.color;
@@ -190,9 +190,9 @@ public:
 
 	void visit( const Line &line ) override
 	{
-		_out << indent() << "<g transform=\"scale(" << line.scale_x << "," << line.scale_y
-		     << ") rotate(" << line.rotation << ") translate(" << line.position.x
-		     << "," << line.position.y << ")\">\n";
+		_out << indent() << "<g transform=\"translate(" << line.position.x
+		     << "," << line.position.y << ") rotate(" << line.rotation
+		     << ") scale(" << line.scale_x << "," << line.scale_y << ")\">\n";
 
 		_indent += 2;
 		Color final_stroke_color = _current_stroke_color * line.stroke_color;
@@ -207,9 +207,9 @@ public:
 
 	void visit( const ArrowTip &arrow ) override
 	{
-		_out << indent() << "<g transform=\"scale(" << arrow.scale_x << "," << arrow.scale_y
-		     << ") rotate(" << arrow.rotation << ") translate(" << arrow.position.x
-		     << "," << arrow.position.y << ")\">\n";
+		_out << indent() << "<g transform=\"translate(" << arrow.position.x
+		     << "," << arrow.position.y << ") rotate(" << arrow.rotation
+		     << ") scale(" << arrow.scale_x << "," << arrow.scale_y << ")\">\n";
 
 		_indent += 2;
 		Color final_color = _current_color * arrow.color;
@@ -249,9 +249,9 @@ public:
 
 	void visit( const Image &image ) override
 	{
-		_out << indent() << "<g transform=\"scale(" << image.scale_x << "," << image.scale_y
-		     << ") rotate(" << image.rotation << ") translate(" << image.position.x
-		     << "," << image.position.y << ")\">\n";
+		_out << indent() << "<g transform=\"translate(" << image.position.x
+		     << "," << image.position.y << ") rotate(" << image.rotation
+		     << ") scale(" << image.scale_x << "," << image.scale_y << ")\">\n";
 
 		_indent += 2;
 		float x = -image.half_width;
@@ -277,9 +277,9 @@ public:
 		_current_color = _current_color * group.color;
 		_current_stroke_color = _current_stroke_color * group.stroke_color;
 
-		_out << indent() << "<g transform=\"scale(" << group.scale_x << "," << group.scale_y
-		     << ") rotate(" << group.rotation << ") translate(" << group.position.x
-		     << "," << group.position.y << ")\">\n";
+		_out << indent() << "<g transform=\"translate(" << group.position.x
+		     << "," << group.position.y << ") rotate(" << group.rotation
+		     << ") scale(" << group.scale_x << "," << group.scale_y << ")\">\n";
 
 		_indent += 2;
 		for ( const auto &v : group )
