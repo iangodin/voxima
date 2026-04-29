@@ -7,6 +7,7 @@
 #include "Circle.h"
 #include "Rectangle.h"
 #include "RoundRectangle.h"
+#include "NewComputerModern.h"
 #include "MyMovie.h"
 
 #include <lunasvg/lunasvg.h>
@@ -19,6 +20,7 @@
 int main()
 {
 	Stage stage;
+	stage.theme = NewComputerModern::create_theme();
 	stage.background = { 0.1f, 0.1f, 0.2f, 1.0f }; // Dark blue background
 
 	// 1. Create the narrative

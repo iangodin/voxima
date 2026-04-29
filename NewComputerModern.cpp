@@ -22,23 +22,23 @@ FontStack intent_prose( const TextStyle &style, Theme &theme )
 	switch ( properties.scale.value_or( Scale::NORMAL ) )
 	{
 		case Scale::TINY:
-			fonts.push( theme.load_font( "NewCM08-Regular.otf", 0, 0.1F ) );
-			break;
-
-		case Scale::SMALL:
-			fonts.push( theme.load_font( "NewCM08-Regular.otf", 0, 0.15F ) );
-			break;
-
-		case Scale::NORMAL:
 			fonts.push( theme.load_font( "NewCM08-Regular.otf", 0, 0.2F ) );
 			break;
 
-		case Scale::LARGE:
+		case Scale::SMALL:
 			fonts.push( theme.load_font( "NewCM08-Regular.otf", 0, 0.25F ) );
 			break;
 
+		case Scale::NORMAL:
+			fonts.push( theme.load_font( "NewCM08-Regular.otf", 0, 0.3F ) );
+			break;
+
+		case Scale::LARGE:
+			fonts.push( theme.load_font( "NewCM08-Regular.otf", 0, 0.75 ) );
+			break;
+
 		case Scale::HUGE:
-			fonts.push( theme.load_font( "NewCM08-Regular.otf", 0, 0.35F ) );
+			fonts.push( theme.load_font( "NewCM08-Regular.otf", 0, 1.5 ) );
 			break;
 	}
 

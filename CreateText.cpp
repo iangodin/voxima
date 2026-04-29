@@ -1,4 +1,6 @@
 
+#include "CreateText.h"
+
 #include "Utf8.h"
 #include "FontStack.h"
 #include "FontFace.h"

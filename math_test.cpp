@@ -4,6 +4,8 @@
 #include "Producer.h"
 #include "Font.h"
 #include "Group.h"
+#include "NewComputerModern.h"
+#include "CreateText.h"
 
 #include <lunasvg/lunasvg.h>
 
@@ -18,8 +20,8 @@ Screenplay math_test( Stage &stage )
 {
 	float font_size = 0.5F;
 
-	stage.visuals.add( math_font.create_text(
-		"Math Layout Test", font_size * 2.F ) );
+	create_text( stage,
+		"Math Layout Test", TextStyle{ "prose" }.huge() );
 	co_await wait_for( 1 );
 
 	stage.visuals.set( 0, math_font.create_math(
@@ -50,6 +52,7 @@ Screenplay math_test( Stage &stage )
 int main()
 {
 	Stage stage;
+	stage.theme = NewComputerModern::create_theme();
 	stage.background = { 0.1f, 0.1f, 0.2f, 1.0f }; // Dark blue background
 
 	auto movie = math_test( stage );
