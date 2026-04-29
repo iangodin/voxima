@@ -5,6 +5,7 @@
 #include "Rectangle.h"
 #include "RoundRectangle.h"
 #include "Path.h"
+#include "Glyph.h"
 #include "Group.h"
 #include <functional>
 
@@ -20,6 +21,7 @@ public:
 	void visit( const Path &path ) override { _callback( const_cast<Path &>( path ) ); }
 	void visit( const Line &line ) override { _callback( const_cast<Line &>( line ) ); }
 	void visit( const ArrowTip &arrow ) override { _callback( const_cast<ArrowTip &>( arrow ) ); }
+	void visit( const Glyph &glyph ) override { _callback( const_cast<Glyph &>( glyph ) ); }
 	
 	void visit( const Ellipse &ellipse ) override { _callback( const_cast<Ellipse &>( ellipse ) ); }
 	void visit( const Image &image ) override { _callback( const_cast<Image &>( image ) ); }

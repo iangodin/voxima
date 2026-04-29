@@ -9,7 +9,7 @@
 #include <memory>
 
 class MFLFontFace;
-class Path;
+class Glyph;
 
 class Font
 {
@@ -23,6 +23,7 @@ private:
     std::string _path;
 	Freetype _ft;
     std::unique_ptr<MFLFontFace> _face;
-    std::unique_ptr<Path> get_glyph_path(unsigned int glyph_id, float scale, mfl::font_family family ) const;
-    void center_group( Group &group) const;
+    std::unique_ptr<Glyph> create_glyph( unsigned int glyph_id, mfl::font_family family ) const;
+    void center_group( Group &group ) const;
 };
+

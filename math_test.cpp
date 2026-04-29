@@ -18,11 +18,11 @@ Screenplay math_test( Stage &stage )
 {
 	float font_size = 0.5F;
 
-//	stage.visuals.add( math_font.create_text(
-//		"Math Layout Test", 1.F ) );
-//	co_await wait_for( 1 );
+	stage.visuals.add( math_font.create_text(
+		"Math Layout Test", font_size * 2.F ) );
+	co_await wait_for( 1 );
 
-	stage.visuals.add( math_font.create_math(
+	stage.visuals.set( 0, math_font.create_math(
 		"\\int_{0}^{\\infty} \\frac{\\sin(x)}{x} dx = \\frac{\\pi}{2}", font_size ) );
 	co_await wait_for( 1 );
 

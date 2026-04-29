@@ -10,6 +10,7 @@
 #include "ArrowTip.h"
 #include "Image.h"
 #include "Group.h"
+#include "Glyph.h"
 #include "Point.h"
 #include <algorithm>
 #include <limits>
@@ -75,6 +76,16 @@ public:
     void visit( const Image &image ) override {
         bounds.add( { image.position.x - image.half_width, image.position.y - image.half_height } );
         bounds.add( { image.position.x + image.half_width, image.position.y + image.half_height } );
+    }
+
+    void visit( const Glyph &glyph ) override {
+        for ( const auto &cmd : glyph.commands ) {
+            bounds.add( { ( glyph.position.x + cmd.to.x ) * glyph.scale_x, ( glyph.position.y + cmd.to.y ) * glyph.scale_y } );
+            if ( cmd.type == PathCommand::QuadTo || cmd.type == PathCommand::CubicTo )
+                bounds.add( { ( glyph.position.x + cmd.ctrl1.x ) * glyph.scale_x, ( glyph.position.y + cmd.ctrl1.y ) * glyph.scale_y } );
+            if ( cmd.type == PathCommand::CubicTo )
+                bounds.add( { ( glyph.position.x + cmd.ctrl2.x ) * glyph.scale_x, ( glyph.position.y + cmd.ctrl2.y ) * glyph.scale_y } );
+        }
     }
 
     void visit( const Group &group ) override {

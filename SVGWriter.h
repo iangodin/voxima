@@ -10,11 +10,13 @@
 #include "ArrowTip.h"
 #include "Image.h"
 #include "Group.h"
+#include "Glyph.h"
 #include "Color.h"
 
 #include <ostream>
 #include <iomanip>
 #include <string>
+#include <map>
 
 class SVGWriter : public VisualVisitor
 {
@@ -23,6 +25,20 @@ public:
 		: _out( out ), _indent( indent_level ) 
 	{
 		_out << std::fixed << std::setprecision( 4 );
+	}
+
+	void write_defs( std::ostream &out )
+	{
+		if ( _glyphs.empty() ) return;
+
+		out << "  <defs>\n";
+		for ( const auto &[key, commands] : _glyphs )
+		{
+			out << "    <path id=\"glyph_" << static_cast<int>( key.first ) << "_" << key.second << "\" d=\"";
+			emit_path_data( commands, out );
+			out << " Z\" />\n";
+		}
+		out << "  </defs>\n";
 	}
 
 	void visit( const Circle &circle ) override
@@ -140,34 +156,35 @@ public:
 		Color final_stroke_color = _current_stroke_color * path.stroke_color;
 
 		_out << indent() << "<path d=\"";
-		for ( size_t i = 0; i < path.commands.size(); ++i )
-		{
-			const auto &cmd = path.commands[i];
-			if ( i > 0 ) _out << " ";
-			
-			switch ( cmd.type )
-			{
-				case PathCommand::MoveTo:
-					_out << "M " << cmd.to.x << "," << cmd.to.y;
-					break;
-				case PathCommand::LineTo:
-					_out << "L " << cmd.to.x << "," << cmd.to.y;
-					break;
-				case PathCommand::QuadTo:
-					_out << "Q " << cmd.ctrl1.x << "," << cmd.ctrl1.y 
-					     << " " << cmd.to.x << "," << cmd.to.y;
-					break;
-				case PathCommand::CubicTo:
-					_out << "C " << cmd.ctrl1.x << "," << cmd.ctrl1.y 
-					     << " " << cmd.ctrl2.x << "," << cmd.ctrl2.y 
-					     << " " << cmd.to.x << "," << cmd.to.y;
-					break;
-			}
-		}
+		emit_path_data( path.commands, _out );
 		_out << " Z\" " << color_attributes( final_color ) << " "
 		     << stroke_attributes( path.stroke_thickness, final_stroke_color ) << " />\n";
 		
 		_indent -= 2;
+		_out << indent() << "</g>\n";
+	}
+
+	void visit( const Glyph &glyph ) override
+	{
+		auto key = std::make_pair( glyph.family, glyph.index );
+		if ( !_glyphs.contains( key ) )
+		{
+			_glyphs[key] = glyph.commands;
+		}
+
+		_out << indent() << "<g transform=\"scale(" << glyph.scale_x << "," << glyph.scale_y 
+		     << ") rotate(" << glyph.rotation << ") translate(" << glyph.position.x 
+		     << "," << glyph.position.y << ")\">\n";
+		
+		_indent += 2;
+		Color final_color = _current_color * glyph.color;
+		Color final_stroke_color = _current_stroke_color * glyph.stroke_color;
+
+		_out << indent() << "<use href=\"#glyph_" << static_cast<int>( glyph.family ) << "_" << glyph.index << "\" "
+		     << color_attributes( final_color ) << " "
+		     << stroke_attributes( glyph.stroke_thickness, final_stroke_color ) << " />\n";
+		_indent -= 2;
+
 		_out << indent() << "</g>\n";
 	}
 
@@ -303,6 +320,34 @@ public:
 	}
 
 private:
+	void emit_path_data( const std::vector<PathCommand> &commands, std::ostream &out ) const
+	{
+		for ( size_t i = 0; i < commands.size(); ++i )
+		{
+			const auto &cmd = commands[i];
+			if ( i > 0 ) out << " ";
+			
+			switch ( cmd.type )
+			{
+				case PathCommand::MoveTo:
+					out << "M " << cmd.to.x << "," << cmd.to.y;
+					break;
+				case PathCommand::LineTo:
+					out << "L " << cmd.to.x << "," << cmd.to.y;
+					break;
+				case PathCommand::QuadTo:
+					out << "Q " << cmd.ctrl1.x << "," << cmd.ctrl1.y 
+					     << " " << cmd.to.x << "," << cmd.to.y;
+					break;
+				case PathCommand::CubicTo:
+					out << "C " << cmd.ctrl1.x << "," << cmd.ctrl1.y 
+					     << " " << cmd.ctrl2.x << "," << cmd.ctrl2.y 
+					     << " " << cmd.to.x << "," << cmd.to.y;
+					break;
+			}
+		}
+	}
+
 	std::string indent() const
 	{
 		return std::string( static_cast<std::size_t>(_indent), ' ' );	}
@@ -311,4 +356,5 @@ private:
 	int _indent;
 	Color _current_color = { 1.F, 1.F, 1.F, 1.F };
 	Color _current_stroke_color = { 1.F, 1.F, 1.F, 1.F };
+	std::map<std::pair<mfl::font_family, unsigned int>, std::vector<PathCommand>> _glyphs;
 };

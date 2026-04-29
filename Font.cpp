@@ -1,7 +1,7 @@
 
 #include "Font.h"
 #include "MFLFontFace.h"
-#include "Path.h"
+#include "Glyph.h"
 #include "Bounds.h"
 
 #include <mfl/font_family.hpp>
@@ -49,7 +49,7 @@ std::unique_ptr<Group> Font::create_text( const std::string &text, float font_si
 	hb_glyph_info_t* glyph_info = hb_buffer_get_glyph_infos( buffer, &glyph_count );
 	hb_glyph_position_t* glyph_pos = hb_buffer_get_glyph_positions( buffer, &glyph_count );
 
-	float scale = font_size * internal_scale / static_cast<float>(upem);
+	float glyph_scale = font_size * internal_scale / static_cast<float>(upem);
 	float current_x = 0.0f;
 	float current_y = 0.0f;
 
@@ -58,12 +58,14 @@ std::unique_ptr<Group> Font::create_text( const std::string &text, float font_si
 		hb_codepoint_t glyph_id = glyph_info[i].codepoint;
 		hb_glyph_position_t pos = glyph_pos[i];
 
-		auto path = get_glyph_path(glyph_id, scale, mfl::font_family::sans );
-		path->position = Point{ current_x + (static_cast<float>(pos.x_offset) * scale), current_y + (static_cast<float>(pos.y_offset) * scale) };
-		group->add( std::move( path ) );
+		auto glyph = create_glyph( glyph_id, mfl::font_family::sans );
+		glyph->scale_x = glyph_scale;
+		glyph->scale_y = glyph_scale;
+		glyph->position = Point{ current_x + static_cast<float>(pos.x_offset), current_y + static_cast<float>(pos.y_offset) };
+		group->add( std::move( glyph ) );
 
-		current_x += static_cast<float>(pos.x_advance) * scale;
-		current_y += static_cast<float>(pos.y_advance) * scale;
+		current_x += static_cast<float>(pos.x_advance);
+		current_y += static_cast<float>(pos.y_advance);
 	}
 
 	hb_buffer_destroy( buffer );
@@ -98,13 +100,23 @@ std::unique_ptr<Group> Font::create_math( const std::string& formula, float font
 		float upem = static_cast<float>(face->units_per_EM);
 
 		float glyph_scale = static_cast<float>(g.size.value()) / upem;
-		auto path = get_glyph_path( static_cast<unsigned int>(g.index), glyph_scale, g.family );
+		auto glyph = create_glyph( static_cast<unsigned int>(g.index), g.family );
+		glyph->scale_x = glyph_scale;
+		glyph->scale_y = glyph_scale;
 
 		// MFL points are now 1:1 with your world units
-		const float x = static_cast<float>(g.x.value());
-		const float y = static_cast<float>(g.y.value());
-		path->position = Point{ x, y };
-		group->add(std::move(path));
+		// We need to unscale them by the glyph_scale and rescale by internal_scale?
+		// Wait, MFL's g.x and g.y are already in the "internal scaled world" (because we passed font_size * internal_scale).
+		// So g.x and g.y are already at the correct position for internal_scale.
+		// But remember T = Pos / Scale.
+		// Here Pos = g.x. Scale = glyph_scale.
+		// So T = g.x / glyph_scale.
+		glyph->position = Point{ 
+			static_cast<float>(g.x.value()) / glyph_scale, 
+			static_cast<float>(g.y.value()) / glyph_scale 
+		};
+
+		group->add(std::move(glyph));
 	}
 
 	// 3. Process Lines (Fraction bars, radicals, etc.)
@@ -115,7 +127,7 @@ std::unique_ptr<Group> Font::create_math( const std::string& formula, float font
 		const float x = static_cast<float>(line.x.value()) + hw;
 		const float y = static_cast<float>(line.y.value()) + hh;
 
-		auto rect = std::make_unique<Rectangle>(); // Or your custom Line/Path object
+		auto rect = std::make_unique<Rectangle>();
 		rect->half_width = hw;
 		rect->half_height = hh;
 		rect->position = Point{ x, y };
@@ -127,48 +139,47 @@ std::unique_ptr<Group> Font::create_math( const std::string& formula, float font
 	return group;
 }
 
-std::unique_ptr<Path> Font::get_glyph_path(unsigned int glyph_id, float scale, mfl::font_family family ) const
+std::unique_ptr<Glyph> Font::create_glyph(unsigned int glyph_id, mfl::font_family family ) const
 {
-	auto path = std::make_unique<Path>();
+	auto glyph = std::make_unique<Glyph>();
+	glyph->family = family;
+	glyph->index = glyph_id;
 
 	FT_Face face = _ft.face( family );
 
 	if ( FT_Load_Glyph( face, glyph_id, FT_LOAD_NO_SCALE ) != 0 )
 	{
-		return path;
+		return glyph;
 	}
-
-	struct DecomposeContext { Path* path; float scale; };
-	DecomposeContext ctx = { path.get(), scale };
 
 	FT_Outline_Funcs funcs =
 	{
 		[](const FT_Vector* to, void* user) -> int
 		{
-			auto* d_ctx = static_cast<DecomposeContext*>(user);
-			d_ctx->path->commands.push_back({ PathCommand::MoveTo, { static_cast<float>(to->x) * d_ctx->scale, static_cast<float>(to->y) * d_ctx->scale } });
+			auto* g = static_cast<Glyph*>(user);
+			g->commands.push_back({ PathCommand::MoveTo, { static_cast<float>(to->x), static_cast<float>(to->y) } });
 			return 0;
 		},
 		[](const FT_Vector* to, void* user) -> int
 		{
-			auto* d_ctx = static_cast<DecomposeContext*>(user);
-			d_ctx->path->commands.push_back({ PathCommand::LineTo, { static_cast<float>(to->x) * d_ctx->scale, static_cast<float>(to->y) * d_ctx->scale } });
+			auto* g = static_cast<Glyph*>(user);
+			g->commands.push_back({ PathCommand::LineTo, { static_cast<float>(to->x), static_cast<float>(to->y) } });
 			return 0;
 		},
 		[](const FT_Vector* control, const FT_Vector* to, void* user) -> int
 		{
-			auto* d_ctx = static_cast<DecomposeContext*>(user);
-			d_ctx->path->commands.push_back({ PathCommand::QuadTo, { static_cast<float>(to->x) * d_ctx->scale, static_cast<float>(to->y) * d_ctx->scale }, { static_cast<float>(control->x) * d_ctx->scale, static_cast<float>(control->y) * d_ctx->scale } });
+			auto* g = static_cast<Glyph*>(user);
+			g->commands.push_back({ PathCommand::QuadTo, { static_cast<float>(to->x), static_cast<float>(to->y) }, { static_cast<float>(control->x), static_cast<float>(control->y) } });
 			return 0;
 		},
 		[](const FT_Vector* control1, const FT_Vector* control2, const FT_Vector* to, void* user) -> int
 		{
-			auto* d_ctx = static_cast<DecomposeContext*>(user);
-			d_ctx->path->commands.push_back({ PathCommand::CubicTo, { static_cast<float>(to->x) * d_ctx->scale, static_cast<float>(to->y) * d_ctx->scale }, { static_cast<float>(control1->x) * d_ctx->scale, static_cast<float>(control1->y) * d_ctx->scale }, { static_cast<float>(control2->x) * d_ctx->scale, static_cast<float>(control2->y) * d_ctx->scale } });
+			auto* g = static_cast<Glyph*>(user);
+			g->commands.push_back({ PathCommand::CubicTo, { static_cast<float>(to->x), static_cast<float>(to->y) }, { static_cast<float>(control1->x), static_cast<float>(control1->y) }, { static_cast<float>(control2->x), static_cast<float>(control2->y) } });
 			return 0;
 		}, 0, 0 };
-	FT_Outline_Decompose( &face->glyph->outline, &funcs, &ctx );
-	return path;
+	FT_Outline_Decompose( &face->glyph->outline, &funcs, glyph.get() );
+	return glyph;
 }
 
 void Font::center_group( Group &group) const
@@ -181,8 +192,8 @@ void Font::center_group( Group &group) const
 
 	for ( auto &v : group )
 	{
-		v->position.x -= center.x;
-		v->position.y -= center.y;
+		v->position.x -= center.x / v->scale_x;
+		v->position.y -= center.y / v->scale_y;
 	}
 	group.position = { 0.0f, 0.0f };
 }
