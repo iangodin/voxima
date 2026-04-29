@@ -30,6 +30,7 @@ add_library( visuals STATIC
 	FontStack.cpp
 	NewComputerModern.cpp
 	CreateText.cpp
+	SVGWriter.cpp
 )
 
 target_compile_features( visuals PUBLIC cxx_std_20 )
