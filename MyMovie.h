@@ -14,6 +14,7 @@
 #include "Ellipse.h"
 #include "Animation.h"
 #include "CallbackVisitor.h"
+#include "NewComputerModern.h"
 
 #include <coroutine>
 
@@ -102,23 +103,17 @@ Scene my_diagram( Stage &stage )
 
 Screenplay my_movie( Stage &stage )
 {
-	/*
+	stage.theme = NewComputerModern::create_theme();
+
 	auto &ellipse = stage.visuals.add( std::make_unique<Ellipse>() );
 	ellipse.position = { 4.0, 0.0 };
 	ellipse.half_width = 2.0;
 	ellipse.half_height = 1.0;
-	*/
-
-	auto &math = create_math( stage,
-		"\\int_{0}^{\\infty} \\frac{\\sin(x)}{x} dx = \\frac{\\pi}{2}", TextStyle( "math" ) );
-	math.position = { 0.F, 0.F };
 
 	co_await wait_for( 30 );
 
-	/*
 	co_await together(
 		ease_in_out_cubic( ellipse.rotation, -90.F, 0.F, 60 ),
 		my_diagram( stage ) );
-	*/
 }
 

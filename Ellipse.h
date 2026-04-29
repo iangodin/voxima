@@ -12,4 +12,12 @@ struct Ellipse : public Visual
 	{
 		visitor.visit( *this );
 	}
+
+	Ellipse &operator*=( float scale ) override
+	{
+		half_width *= scale;
+		half_height *= scale;
+		position *= scale;
+		return *this;
+	}
 };
