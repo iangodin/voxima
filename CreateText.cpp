@@ -22,13 +22,6 @@
 #include <algorithm>
 #include <optional>
 
-struct TextRange
-{
-	size_t font_index = 0;
-	size_t start = 0;
-	size_t length = 0;
-};
-
 std::vector<TextRange> create_ranges( std::string_view str, const FontStack &font )
 {
 	std::vector<TextRange> ranges;
@@ -48,22 +41,23 @@ std::vector<TextRange> create_ranges( std::string_view str, const FontStack &fon
 		{
 			current_face = entry.font_index;
 		}
+
 		if ( entry.font_index != current_face )
 		{
-			ranges.push_back( { entry.font_index, start_offset, offset - start_offset } );
+			ranges.push_back( { current_face.value(), start_offset, offset - start_offset } );
 			current_face = entry.font_index;
 			start_offset = offset;
 		}
 	}
 
-	if ( start_offset < str.size() )
+	if ( current_face.has_value() )
 	{
-		ranges.push_back( { current_face.value(), start_offset, str.size() } );
+		ranges.push_back( { current_face.value(), start_offset, str.size() - start_offset } );
 	}
 	return ranges;
 }
 
-void center_group( Group &group)
+void center_group( Group &group )
 {
 	BoundingBoxVisitor visitor;
 	group.accept( visitor );
@@ -126,8 +120,6 @@ std::unique_ptr<Glyph> create_glyph( unsigned int glyph_id, const FontFace *font
 
 Group &create_text( Stage &stage, const std::string &text, const TextStyle &style )
 {
-	constexpr float internal_scale = 60.F;
-
 	auto &group = stage.visuals.add( std::make_unique<Group>() );
 
 	FontStack stack = stage.theme.get_stack( style );
@@ -146,6 +138,9 @@ Group &create_text( Stage &stage, const std::string &text, const TextStyle &styl
 	}
 
 	auto ranges = create_ranges( text, stack );
+
+	float current_x = 0.0f;
+	float current_y = 0.0f;
 
 	hb_buffer_t *buffer = hb_buffer_create();
 	for ( auto &range: ranges )
@@ -167,19 +162,21 @@ Group &create_text( Stage &stage, const std::string &text, const TextStyle &styl
 		hb_glyph_position_t *glyph_pos = hb_buffer_get_glyph_positions( buffer, &glyph_count );
 
 		const float font_size = font_face.scale;
-		const float glyph_scale = font_size * internal_scale / static_cast<float>(upem);
-		float current_x = 0.0f;
-		float current_y = 0.0f;
+		const float glyph_scale = font_size / ( static_cast<float>(upem) );
+		std::cout << "FONT " << range.font_index << " upem: " << upem << " scale: " << glyph_scale << '\n';
 
+		std::cout << "Shapes for font " << range.font_index << " " << glyph_count << '\n';
 		for ( unsigned int i = 0; i < glyph_count; ++i )
 		{
 			hb_codepoint_t glyph_id = glyph_info[i].codepoint;
 			hb_glyph_position_t pos = glyph_pos[i];
 
 			auto glyph = create_glyph( glyph_id, &font_face );
-			glyph->scale_x = glyph_scale;
-			glyph->scale_y = glyph_scale;
-			glyph->position = Point{ current_x + static_cast<float>(pos.x_offset), current_y + static_cast<float>(pos.y_offset) };
+			glyph->position = Point{
+				current_x + static_cast<float>(pos.x_offset),
+				current_y + static_cast<float>(pos.y_offset) };
+
+			*glyph *= glyph_scale;
 			group.add( std::move( glyph ) );
 
 			current_x += static_cast<float>(pos.x_advance);
@@ -194,7 +191,6 @@ Group &create_text( Stage &stage, const std::string &text, const TextStyle &styl
 		hb_font_destroy( hb_font );
 	}
 
-	group *= 1.F / internal_scale;
 	center_group( group );
 
 	return group;

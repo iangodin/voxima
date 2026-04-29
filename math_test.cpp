@@ -18,12 +18,11 @@ Font math_font( "" );
 
 Screenplay math_test( Stage &stage )
 {
-	float font_size = 0.5F;
-
 	create_text( stage,
-		"Math Layout Test", TextStyle{ "prose" }.huge() );
+		"Math Layout Test 😀", TextStyle{ "prose" }.huge() );
 	co_await wait_for( 1 );
 
+	/*
 	stage.visuals.set( 0, math_font.create_math(
 		"\\int_{0}^{\\infty} \\frac{\\sin(x)}{x} dx = \\frac{\\pi}{2}", font_size ) );
 	co_await wait_for( 1 );
@@ -47,6 +46,7 @@ Screenplay math_test( Stage &stage )
 	stage.visuals.set( 0, math_font.create_math(
 		"A = \\left[\\matrix{\\frac{1}{2} & \\beta \\cr \\gamma & \\delta^2}\\right]", font_size ) );
 	co_await wait_for( 1 );
+	*/
 }
 
 int main()

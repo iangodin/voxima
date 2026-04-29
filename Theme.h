@@ -39,6 +39,8 @@ public:
 	FontStack get_stack( const TextStyle &style );
 	MathFonts get_math( const TextStyle &style );
 
+	constexpr static float FONT_SCALE = 120.F;
+
 private:
 	FT_Library _library = nullptr;
 	std::map<std::pair<std::string, size_t>, FontFacePtr> _faces;

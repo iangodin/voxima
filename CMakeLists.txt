@@ -16,6 +16,9 @@ find_package( lunasvg 3.5.0 REQUIRED )
 find_package( plutovg 1.3.2 REQUIRED )
 find_package( harfbuzz 12.3.0 REQUIRED )
 find_package( Freetype 2.14.1 REQUIRED )
+find_package( Catch2 REQUIRED )
+
+enable_testing()
 
 add_subdirectory( mfl )
 
@@ -32,12 +35,13 @@ add_library( visuals STATIC
 
 target_compile_features( visuals PUBLIC cxx_std_20 )
 target_compile_options( visuals PUBLIC -fcoroutines )
+target_include_directories( visuals PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} )
 target_link_libraries( visuals PUBLIC stb::stb lunasvg::lunasvg plutovg::plutovg Freetype::Freetype harfbuzz::harfbuzz mfl )
 
-add_executable( test main.cpp )
-target_compile_features( test PUBLIC cxx_std_20 )
-target_compile_options( test PUBLIC -fcoroutines )
-target_link_libraries( test PUBLIC visuals )
+add_executable( canim main.cpp )
+target_compile_features( canim PUBLIC cxx_std_20 )
+target_compile_options( canim PUBLIC -fcoroutines )
+target_link_libraries( canim PUBLIC visuals )
 
 add_executable( math_test math_test.cpp )
 target_compile_features( math_test PUBLIC cxx_std_20 )
@@ -49,3 +53,4 @@ target_compile_features( test_font PUBLIC cxx_std_20 )
 target_compile_options( test_font PUBLIC -fcoroutines )
 target_link_libraries( test_font PUBLIC visuals )
 
+add_subdirectory( tests )

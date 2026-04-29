@@ -65,9 +65,15 @@ FontFace Theme::load_font( const std::string &name, size_t face_index, float sca
 	std::filesystem::path path = "fonts";
 	path /= name;
 
-	if ( auto err = FT_New_Face( _library, path.string().c_str(), static_cast<FT_Long>( face_index ), &face ); err != 0 )
+	if ( const auto err = FT_New_Face( _library, path.string().c_str(), static_cast<FT_Long>( face_index ), &face ); err != 0 )
 	{
 		throw std::runtime_error( std::format( "Failed to load font {}: {}", path.string(), ft_error_string( err ) ) );
+	}
+
+	const auto ft_size = static_cast<FT_F26Dot6>( scale * FONT_SCALE * 64.F );
+	if ( const auto err = FT_Set_Char_Size( face, ft_size, ft_size, 0, 0 ); err != 0)
+	{
+		throw std::invalid_argument( std::format( "Failed to set char size {}: {}", path.string(), ft_error_string( err ) ) );
 	}
 
 	FontFacePtr ptr( face, FT_Done_Face );
