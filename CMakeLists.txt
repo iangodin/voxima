@@ -29,6 +29,7 @@ add_library( visuals STATIC
 	Theme.cpp
 	FontStack.cpp
 	NewComputerModern.cpp
+	Fira.cpp
 	CreateText.cpp
 	SVGWriter.cpp
 )
