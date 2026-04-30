@@ -53,4 +53,8 @@ target_compile_features( test_font PUBLIC cxx_std_20 )
 target_compile_options( test_font PUBLIC -fcoroutines )
 target_link_libraries( test_font PUBLIC visuals )
 
+add_executable( list_font list_font.cpp )
+target_compile_features( list_font PUBLIC cxx_std_20 )
+target_link_libraries( list_font PUBLIC Freetype::Freetype )
+
 add_subdirectory( tests )

@@ -77,7 +77,8 @@ std::pair<Line &, ArrowTip &> create_arrow( Stage &stage, Point start, Point end
 
 Scene my_diagram( Stage &stage )
 {
-	auto &scene_node = create_node( stage, "Scene", -6.F, 0.F, 1.0F, 0.5F );
+	auto &scene_node = create_node( stage, "場面", -6.F, 0.F, 1.0F, 0.5F );
+
 	co_await scale_in( scene_node, 12 );
 
 	{
