@@ -191,6 +191,30 @@ public:
 		return *this;
 	}
 
+	TextStyle &compressed( void )
+	{
+		_width = Width::COMPRESSED;
+		return *this;
+	}
+
+	TextStyle &condensed( void )
+	{
+		_width = Width::CONDENSED;
+		return *this;
+	}
+
+	TextStyle &standard( void )
+	{
+		_width = Width::STANDARD;
+		return *this;
+	}
+
+	TextStyle &expanded( void )
+	{
+		_width = Width::EXPANDED;
+		return *this;
+	}
+
 	bool operator<( const TextStyle &other ) const
 	{
 		if ( _intent != other._intent ) return _intent < other._intent;
