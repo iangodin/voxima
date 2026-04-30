@@ -111,6 +111,7 @@ FontStack intent_prose( const TextStyle &style, Theme &theme )
 	fonts.push( theme.load_font( get_font_filename( properties, "NewCM" ), 0, font_size ) );
 	fonts.push( theme.load_font( get_devanagari_filename( properties ), 0, font_size ) );
 	fonts.push( theme.load_font( "SourceHanSerif.ttc", get_cjk_face_index( properties ), font_size ) );
+	fonts.push( theme.load_font( "Symbola-Emoji.ttf", 0, font_size ) );
 	fonts.push( theme.load_font( "AND-Regular.otf", 0, font_size ) );
 	return fonts;
 }
@@ -125,6 +126,7 @@ FontStack intent_code( const TextStyle &style, Theme &theme )
 	fonts.push( theme.load_font( get_font_filename( properties, "NewCMMono" ), 0, font_size ) );
 	fonts.push( theme.load_font( get_devanagari_filename( properties ), 0, font_size ) );
 	fonts.push( theme.load_font( "SourceHanSerif.ttc", get_cjk_face_index( properties ), font_size ) );
+	fonts.push( theme.load_font( "Symbola-Emoji.ttf", 0, font_size ) );
 	fonts.push( theme.load_font( "AND-Regular.otf", 0, font_size ) );
 	return fonts;
 }
@@ -139,6 +141,7 @@ FontStack intent_title( const TextStyle &style, Theme &theme )
 	fonts.push( theme.load_font( get_font_filename( properties, "NewCMUncial" ), 0, font_size ) );
 	fonts.push( theme.load_font( get_devanagari_filename( properties ), 0, font_size ) );
 	fonts.push( theme.load_font( "SourceHanSerif.ttc", get_cjk_face_index( properties ), font_size ) );
+	fonts.push( theme.load_font( "Symbola-Emoji.ttf", 0, font_size ) );
 	fonts.push( theme.load_font( "AND-Regular.otf", 0, font_size ) );
 	return fonts;
 }
@@ -153,6 +156,7 @@ FontStack intent_annotation( const TextStyle &style, Theme &theme )
 	fonts.push( theme.load_font( get_font_filename( properties, "NewCM" ), 0, font_size ) );
 	fonts.push( theme.load_font( get_devanagari_filename( properties ), 0, font_size ) );
 	fonts.push( theme.load_font( "SourceHanSerif.ttc", get_cjk_face_index( properties ), font_size ) );
+	fonts.push( theme.load_font( "Symbola-Emoji.ttf", 0, font_size ) );
 	fonts.push( theme.load_font( "AND-Regular.otf", 0, font_size ) );
 	return fonts;
 }
@@ -167,6 +171,7 @@ FontStack intent_label( const TextStyle &style, Theme &theme )
 	fonts.push( theme.load_font( get_font_filename( properties, "NewCMSans" ), 0, font_size ) );
 	fonts.push( theme.load_font( get_devanagari_filename( properties ), 0, font_size ) );
 	fonts.push( theme.load_font( "SourceHanSerif.ttc", get_cjk_face_index( properties ), font_size ) );
+	fonts.push( theme.load_font( "Symbola-Emoji.ttf", 0, font_size ) );
 	fonts.push( theme.load_font( "AND-Regular.otf", 0, font_size ) );
 	return fonts;
 }
@@ -181,6 +186,7 @@ FontStack intent_math( const TextStyle &style, Theme &theme )
 	fonts.push( theme.load_font( get_font_filename( properties, "NewCMMath" ), 0, font_size ) );
 	fonts.push( theme.load_font( get_devanagari_filename( properties ), 0, font_size ) );
 	fonts.push( theme.load_font( "SourceHanSerif.ttc", get_cjk_face_index( properties ), font_size ) );
+	fonts.push( theme.load_font( "Symbola-Emoji.ttf", 0, font_size ) );
 	fonts.push( theme.load_font( "AND-Regular.otf", 0, font_size ) );
 	return fonts;
 }
@@ -195,6 +201,7 @@ FontStack intent_caption( const TextStyle &style, Theme &theme )
 	fonts.push( theme.load_font( get_font_filename( properties, "NewCM" ), 0, font_size ) );
 	fonts.push( theme.load_font( get_devanagari_filename( properties ), 0, font_size ) );
 	fonts.push( theme.load_font( "SourceHanSerif.ttc", get_cjk_face_index( properties ), font_size ) );
+	fonts.push( theme.load_font( "Symbola-Emoji.ttf", 0, font_size ) );
 	fonts.push( theme.load_font( "AND-Regular.otf", 0, font_size ) );
 	return fonts;
 }

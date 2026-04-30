@@ -88,7 +88,7 @@ Scene my_diagram( Stage &stage )
 			ease_in_out_cubic( arrow.end.x, arrow.start.x, arrow.end.x, 12 ) );
 	}
 
-	auto &oetf_node = create_node( stage, "O<=F", -3.F, 0.F, 1.0F, 0.5F );
+	auto &oetf_node = create_node( stage, "😎😱💩👽", -3.F, 0.F, 1.0F, 0.5F );
 	co_await scale_in( oetf_node, 12 );
 
 	{
