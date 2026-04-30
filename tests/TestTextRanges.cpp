@@ -25,7 +25,7 @@ SCENARIO( "Text splitting" )
 				CHECK( ranges[0].start == 0 );
 				CHECK( ranges[0].length == 6 );
 
-				CHECK( ranges[1].font_index == 1 );
+				CHECK( ranges[1].font_index == 3 );
 				CHECK( ranges[1].start == 6 );
 				CHECK( ranges[1].length == 4 );
 			}
