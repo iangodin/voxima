@@ -1,4 +1,5 @@
 /build/
 /frames/
 /.cache/
+/fonts/
 /CMakeUserPresets.json
