@@ -12,6 +12,7 @@
 #include FT_TRUETYPE_TAGS_H
 #include FT_TRUETYPE_IDS_H
 #include FT_SFNT_NAMES_H
+#include FT_MULTIPLE_MASTERS_H
 
 // RAII Deleter for FreeType resources
 struct FT_Deleter {
@@ -89,8 +90,61 @@ private:
 
         std::cout << std::format("  Glyph Count:      {}\n", face->num_glyphs);
 
+        report_variable_axes(face.get());
         report_features(face.get());
         std::cout << "\n";
+    }
+
+    std::string tag_to_string(FT_ULong tag) const {
+        char buf[5];
+        buf[0] = static_cast<char>((tag >> 24) & 0xFF);
+        buf[1] = static_cast<char>((tag >> 16) & 0xFF);
+        buf[2] = static_cast<char>((tag >> 8) & 0xFF);
+        buf[3] = static_cast<char>(tag & 0xFF);
+        buf[4] = '\0';
+        return std::string(buf);
+    }
+
+    std::string translate_tag(FT_ULong tag) const {
+        if (tag == FT_MAKE_TAG('w','g','h','t')) return "Weight";
+        if (tag == FT_MAKE_TAG('w','d','t','h')) return "Width";
+        if (tag == FT_MAKE_TAG('s','l','n','t')) return "Slant";
+        if (tag == FT_MAKE_TAG('i','t','a','l')) return "Italic";
+        if (tag == FT_MAKE_TAG('o','p','s','z')) return "Optical Size";
+        if (tag == FT_MAKE_TAG('G','R','A','D')) return "Grade";
+        if (tag == FT_MAKE_TAG('O','U','T','F')) return "Outline";
+        if (tag == FT_MAKE_TAG('F','I','L','L')) return "Fill";
+        return "Unknown";
+    }
+
+    void report_variable_axes(FT_Face face) const {
+        std::cout << "  Variable Axes:    ";
+        if (!FT_HAS_MULTIPLE_MASTERS(face)) {
+            std::cout << "None\n";
+            return;
+        }
+
+        FT_MM_Var* mm_var = nullptr;
+        if (FT_Get_MM_Var(face, &mm_var) != 0) {
+            std::cout << "Failed to query axes\n";
+            return;
+        }
+
+        std::cout << "\n";
+        for (FT_UInt i = 0; i < mm_var->num_axis; ++i) {
+            auto& axis = mm_var->axis[i];
+            std::string tag = tag_to_string(axis.tag);
+            std::string name = translate_tag(axis.tag);
+            
+            float min = static_cast<float>(axis.minimum) / 65536.0f;
+            float max = static_cast<float>(axis.maximum) / 65536.0f;
+            float def = static_cast<float>(axis.def) / 65536.0f;
+
+            std::cout << std::format("    - [{}] {:<12} (min: {:>6.1f}, max: {:>6.1f}, default: {:>6.1f})\n", 
+                tag, name, min, max, def);
+        }
+
+        FT_Done_MM_Var(face->glyph->library, mm_var);
     }
 
     void report_features(FT_Face face) const {
