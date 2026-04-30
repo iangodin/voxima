@@ -17,9 +17,7 @@ enum class TypeClass
 enum class Weight
 {
 	LIGHT,
-	BOOK,
 	REGULAR,
-	MEDIUM,
 	BOLD,
 	BLACK,
 };
@@ -35,9 +33,17 @@ enum class Scale
 {
 	TINY,
 	SMALL,
-	NORMAL,
+	MEDIUM,
 	LARGE,
 	HUGE,
+};
+
+enum class Width
+{
+	COMPRESSED,
+	CONDENSED,
+	STANDARD,
+	EXPANDED,
 };
 
 namespace Intent
@@ -56,6 +62,7 @@ struct TextProperties
 	std::optional<TypeClass> typeclass;
 	std::optional<Weight> weight;
 	std::optional<Slant> slant;
+	std::optional<Width> width;
 	std::optional<Scale> scale;
 };
 
@@ -72,6 +79,7 @@ public:
 		_typeclass( properties.typeclass ),
 		_weight( properties.weight ),
 		_slant( properties.slant ),
+		_width( properties.width ),
 		_scale( properties.scale )
 	{
 	}
@@ -117,21 +125,9 @@ public:
 		return *this;
 	}
 
-	TextStyle &book( void )
-	{
-		_weight = Weight::BOOK;
-		return *this;
-	}
-
 	TextStyle &regular( void )
 	{
 		_weight = Weight::REGULAR;
-		return *this;
-	}
-
-	TextStyle &medium( void )
-	{
-		_weight = Weight::MEDIUM;
 		return *this;
 	}
 
@@ -177,9 +173,9 @@ public:
 		return *this;
 	}
 
-	TextStyle &normal( void )
+	TextStyle &medium( void )
 	{
-		_scale = Scale::NORMAL;
+		_scale = Scale::MEDIUM;
 		return *this;
 	}
 
@@ -201,6 +197,7 @@ public:
 		if ( _typeclass != other._typeclass ) return _typeclass < other._typeclass;
 		if ( _weight != other._weight ) return _weight < other._weight;
 		if ( _slant != other._slant ) return _slant < other._slant;
+		if ( _width != other._width ) return _width < other._width;
 		return _scale < other._scale;
 	}
 
@@ -210,6 +207,7 @@ public:
 			.typeclass = _typeclass,
 			.weight = _weight,
 			.slant = _slant,
+			.width = _width,
 			.scale = _scale,
 		};
 	}
@@ -219,6 +217,7 @@ private:
 	std::optional<TypeClass> _typeclass;
 	std::optional<Weight> _weight;
 	std::optional<Slant> _slant;
+	std::optional<Width> _width;
 	std::optional<Scale> _scale;
 };
 
