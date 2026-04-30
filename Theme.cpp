@@ -4,9 +4,68 @@
 #include "MathFonts.h"
 #include "freetype_error.hpp"
 
+#include FT_MULTIPLE_MASTERS_H
+
 #include <stdexcept>
 #include <filesystem>
 #include <format>
+#include <algorithm>
+
+namespace
+{
+
+void apply_variations( FT_Face face, const FontKey &key )
+{
+	if ( !FT_HAS_MULTIPLE_MASTERS( face ) )
+	{
+		return;
+	}
+
+	FT_MM_Var *mm_var = nullptr;
+	if ( FT_Get_MM_Var( face, &mm_var ) != 0 )
+	{
+		return;
+	}
+
+	std::vector<FT_Fixed> coords( mm_var->num_axis );
+	for ( FT_UInt i = 0; i < mm_var->num_axis; ++i )
+	{
+		FT_Tag tag = static_cast<FT_Tag>( mm_var->axis[i].tag );
+		FT_Fixed value = mm_var->axis[i].def;
+
+		if ( tag == FT_MAKE_TAG( 'w', 'g', 'h', 't' ) )
+		{
+			value = static_cast<FT_Fixed>( key.weight ) << 16;
+		}
+		else if ( tag == FT_MAKE_TAG( 'w', 'd', 't', 'h' ) )
+		{
+			value = static_cast<FT_Fixed>( key.width ) << 16;
+		}
+		else if ( tag == FT_MAKE_TAG( 's', 'l', 'n', 't' ) )
+		{
+			value = static_cast<FT_Fixed>( key.slant ) << 16;
+		}
+		else if ( tag == FT_MAKE_TAG( 'i', 't', 'a', 'l' ) )
+		{
+			value = ( key.slant > 0 ? 1 : 0 ) << 16;
+		}
+		else if ( tag == FT_MAKE_TAG( 'O', 'U', 'T', 'F' ) )
+		{
+			value = static_cast<FT_Fixed>( key.style1 ) << 16;
+		}
+		else if ( tag == FT_MAKE_TAG( 'F', 'I', 'L', 'L' ) )
+		{
+			value = static_cast<FT_Fixed>( key.style2 ) << 16;
+		}
+
+		coords[i] = std::clamp( value, mm_var->axis[i].minimum, mm_var->axis[i].maximum );
+	}
+
+	FT_Set_Var_Design_Coordinates( face, mm_var->num_axis, coords.data() );
+	FT_Done_MM_Var( face->glyph->library, mm_var );
+}
+
+}
 
 Theme::Theme()
 {
@@ -54,7 +113,21 @@ Theme &Theme::operator=( Theme &&other )
 
 FontFace Theme::load_font( const std::string &name, size_t face_index, float scale )
 {
-	auto key = std::make_pair( name, face_index );
+	return load_variable_font( name, face_index, scale, 400, 100, 0 );
+}
+
+FontFace Theme::load_variable_font( const std::string &name, size_t face_index, float scale, int weight, int width, int slant )
+{
+	return load_font_internal( { name, face_index, weight, width, slant, 0, 0 }, scale );
+}
+
+FontFace Theme::load_emoji_font( const std::string &name, size_t face_index, float scale, int outline, int fill )
+{
+	return load_font_internal( { name, face_index, 400, 100, 0, outline, fill }, scale );
+}
+
+FontFace Theme::load_font_internal( const FontKey &key, float scale )
+{
 	auto it = _faces.find( key );
 	if ( it != _faces.end() )
 	{
@@ -63,12 +136,14 @@ FontFace Theme::load_font( const std::string &name, size_t face_index, float sca
 
 	FT_Face face = nullptr;
 	std::filesystem::path path = "fonts";
-	path /= name;
+	path /= key.name;
 
-	if ( const auto err = FT_New_Face( _library, path.string().c_str(), static_cast<FT_Long>( face_index ), &face ); err != 0 )
+	if ( const auto err = FT_New_Face( _library, path.string().c_str(), static_cast<FT_Long>( key.face_index ), &face ); err != 0 )
 	{
 		throw std::runtime_error( std::format( "Failed to load font {}: {}", path.string(), ft_error_string( err ) ) );
 	}
+
+	apply_variations( face, key );
 
 	const auto ft_size = static_cast<FT_F26Dot6>( scale * FONT_SCALE * 64.F );
 	if ( const auto err = FT_Set_Char_Size( face, ft_size, ft_size, 0, 0 ); err != 0)
