@@ -19,12 +19,7 @@ public:
 		_stack.push_back( { std::move( face ), scale } );
 	}
 
-	const FontFace &base_font( void ) const
-	{
-		return _stack.at( 0 );
-	}
-
-	const FontFace &at( size_t i ) const
+	const FontFace &font( size_t i ) const
 	{
 		return _stack.at( i );
 	}

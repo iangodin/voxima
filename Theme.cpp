@@ -116,10 +116,10 @@ MathFonts Theme::get_math( const TextStyle &style )
 	auto mono_stack = get_stack( TextStyle( "math", base_style ).mono() );
 
 	return {
-		roman_stack.base_font(),
-		italic_stack.base_font(),
-		bold_stack.base_font(),
-		sans_stack.base_font(),
-		mono_stack.base_font()
+		roman_stack.font( 0 ),
+		italic_stack.font( 0 ),
+		bold_stack.font( 0 ),
+		sans_stack.font( 0 ),
+		mono_stack.font( 0 )
 	};
 }

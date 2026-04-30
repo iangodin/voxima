@@ -139,7 +139,10 @@ Group &create_text( Group &group, Theme &theme, const std::string &text, const T
 			hb_font_set_scale( hb_font, upem, upem);
 			return hb_font;
 		};
-		std::transform( stack.begin(), stack.end(), hb_fonts.begin(), make_hb_font );
+		for ( size_t i = 0; i < stack.size(); ++i )
+		{
+			hb_fonts[i] = make_hb_font( stack.font( i ) );
+		}
 	}
 
 	auto ranges = create_ranges( text, stack );
@@ -159,7 +162,7 @@ Group &create_text( Group &group, Theme &theme, const std::string &text, const T
 
 		hb_shape( hb_fonts.at( range.font_index ), buffer, NULL, 0 );
 
-		const auto &font_face = stack.at( range.font_index );
+		const auto &font_face = stack.font( range.font_index );
 		const int upem = font_face.face->units_per_EM;
 
 		unsigned int glyph_count;
