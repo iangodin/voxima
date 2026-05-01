@@ -1,9 +1,9 @@
 
 #include <catch2/catch_test_macros.hpp>
 
-#include <Theme.h>
-#include <CreateText.h>
-#include <NewComputerModern.h>
+#include <fonts/Theme.h>
+#include <exporters/CreateText.h>
+#include <themes/NewComputerModern.h>
 
 SCENARIO( "Text splitting" )
 {

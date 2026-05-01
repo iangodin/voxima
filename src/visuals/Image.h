@@ -1,0 +1,17 @@
+#pragma once
+
+#include "visuals/Visual.h"
+#include "visuals/VisualVisitor.h"
+#include <string>
+
+struct Image : public Visual
+{
+	std::string path;
+	float half_width = 1.0F;
+	float half_height = 1.0F;
+
+	void accept( VisualVisitor &visitor ) const override
+	{
+		visitor.visit( *this );
+	}
+};

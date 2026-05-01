@@ -20,41 +20,76 @@ find_package( Catch2 REQUIRED )
 
 enable_testing()
 
-add_subdirectory( mfl )
+add_subdirectory( extern/mfl )
 
 add_library( visuals STATIC
-	CreateMath.cpp
-	MFLFontFace.cpp
-	freetype_error.cpp
-	Theme.cpp
-	FontStack.cpp
-	NewComputerModern.cpp
-	Fira.cpp
-	CreateText.cpp
-	SVGWriter.cpp
+	src/core/Animation.h
+	src/core/Director.h
+	src/core/Producer.h
+	src/core/Production.h
+	src/core/Scene.h
+	src/core/Screenplay.h
+	src/core/Stage.h
+	src/exporters/CreateMath.cpp
+	src/exporters/CreateMath.h
+	src/exporters/CreateText.cpp
+	src/exporters/CreateText.h
+	src/exporters/SVGWriter.cpp
+	src/exporters/SVGWriter.h
+	src/themes/Fira.cpp
+	src/themes/Fira.h
+	src/fonts/FontFace.h
+	src/fonts/FontStack.cpp
+	src/fonts/FontStack.h
+	src/fonts/MathFonts.h
+	src/fonts/MFLFontFace.cpp
+	src/fonts/MFLFontFace.h
+	src/themes/NewComputerModern.cpp
+	src/themes/NewComputerModern.h
+	src/fonts/Theme.cpp
+	src/fonts/Theme.h
+	src/utils/freetype_error.cpp
+	src/utils/freetype_error.hpp
+	src/utils/Timer.h
+	src/utils/Utf8.h
+	src/visuals/ArrowTip.h
+	src/visuals/Bounds.h
+	src/visuals/Circle.h
+	src/visuals/Ellipse.h
+	src/visuals/Glyph.h
+	src/visuals/Group.h
+	src/visuals/Image.h
+	src/visuals/Line.h
+	src/visuals/Path.h
+	src/visuals/Point.h
+	src/visuals/Rectangle.h
+	src/visuals/RoundRectangle.h
+	src/visuals/TextStyle.h
+	src/visuals/Visual.h
+	src/visuals/VisualVisitor.h
 )
 
 target_compile_features( visuals PUBLIC cxx_std_20 )
 target_compile_options( visuals PUBLIC -fcoroutines )
-target_include_directories( visuals PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} )
+target_include_directories( visuals PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/src ${CMAKE_CURRENT_SOURCE_DIR}/extern ${CMAKE_CURRENT_SOURCE_DIR} )
 target_link_libraries( visuals PUBLIC stb::stb lunasvg::lunasvg plutovg::plutovg Freetype::Freetype harfbuzz::harfbuzz mfl )
 
-add_executable( canim main.cpp )
+add_executable( canim tools/main.cpp )
 target_compile_features( canim PUBLIC cxx_std_20 )
 target_compile_options( canim PUBLIC -fcoroutines )
 target_link_libraries( canim PUBLIC visuals )
 
-add_executable( math_test math_test.cpp )
+add_executable( math_test tools/math_test.cpp )
 target_compile_features( math_test PUBLIC cxx_std_20 )
 target_compile_options( math_test PUBLIC -fcoroutines )
 target_link_libraries( math_test PUBLIC visuals )
 
-add_executable( test_font test_font.cpp )
+add_executable( test_font tools/test_font.cpp )
 target_compile_features( test_font PUBLIC cxx_std_20 )
 target_compile_options( test_font PUBLIC -fcoroutines )
 target_link_libraries( test_font PUBLIC visuals )
 
-add_executable( list_font list_font.cpp )
+add_executable( list_font tools/list_font.cpp )
 target_compile_features( list_font PUBLIC cxx_std_20 )
 target_link_libraries( list_font PUBLIC Freetype::Freetype )
 
