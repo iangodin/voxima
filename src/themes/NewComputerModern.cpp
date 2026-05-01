@@ -2,7 +2,7 @@
 
 #include "fonts/Theme.h"
 #include "fonts/FontStack.h"
-#include "visuals/TextStyle.h"
+#include "fonts/TextStyle.h"
 
 namespace NewComputerModern
 {
@@ -28,7 +28,7 @@ std::string get_font_filename( const TextProperties &props, std::string_view bas
 	bool is_bold = props.weight == Weight::BOLD || props.weight == Weight::BLACK;
 	bool is_italic = props.slant == Slant::ITALIC || props.slant == Slant::OBLIQUE;
 	bool is_light = props.weight == Weight::LIGHT;
-	
+
 	Scale scale = props.scale.value_or( Scale::MEDIUM );
 	bool is_small = scale == Scale::TINY || scale == Scale::SMALL;
 
@@ -89,7 +89,7 @@ std::string get_devanagari_filename( const TextProperties &props )
 {
 	bool is_bold = props.weight == Weight::BOLD || props.weight == Weight::BLACK;
 	bool is_light = props.weight == Weight::LIGHT;
-	
+
 	Scale scale = props.scale.value_or( Scale::MEDIUM );
 	bool is_small = scale == Scale::TINY || scale == Scale::SMALL;
 

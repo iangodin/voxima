@@ -2,10 +2,13 @@
 #include "core/Stage.h"
 #include "core/Screenplay.h"
 #include "core/Producer.h"
-#include "exporters/CreateMath.h"
+
+#include "visuals/CreateMath.h"
 #include "visuals/Group.h"
+
 #include "themes/NewComputerModern.h"
-#include "exporters/CreateText.h"
+
+#include "visuals/CreateText.h"
 
 #include <lunasvg/lunasvg.h>
 

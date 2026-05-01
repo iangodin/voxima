@@ -30,10 +30,6 @@ add_library( visuals STATIC
 	src/core/Scene.h
 	src/core/Screenplay.h
 	src/core/Stage.h
-	src/exporters/CreateMath.cpp
-	src/exporters/CreateMath.h
-	src/exporters/CreateText.cpp
-	src/exporters/CreateText.h
 	src/exporters/SVGWriter.cpp
 	src/exporters/SVGWriter.h
 	src/themes/Fira.cpp
@@ -48,10 +44,15 @@ add_library( visuals STATIC
 	src/themes/NewComputerModern.h
 	src/fonts/Theme.cpp
 	src/fonts/Theme.h
+	src/fonts/TextStyle.h
 	src/utils/freetype_error.cpp
 	src/utils/freetype_error.hpp
 	src/utils/Timer.h
 	src/utils/Utf8.h
+	src/visuals/CreateMath.cpp
+	src/visuals/CreateMath.h
+	src/visuals/CreateText.cpp
+	src/visuals/CreateText.h
 	src/visuals/ArrowTip.h
 	src/visuals/Bounds.h
 	src/visuals/Circle.h
@@ -64,7 +65,6 @@ add_library( visuals STATIC
 	src/visuals/Point.h
 	src/visuals/Rectangle.h
 	src/visuals/RoundRectangle.h
-	src/visuals/TextStyle.h
 	src/visuals/Visual.h
 	src/visuals/VisualVisitor.h
 )

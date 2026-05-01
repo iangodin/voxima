@@ -1,6 +1,9 @@
-#include "fonts/Theme.h"
+
 #include "themes/NewComputerModern.h"
-#include "visuals/TextStyle.h"
+
+#include "fonts/Theme.h"
+#include "fonts/TextStyle.h"
+
 #include <iostream>
 
 int main()
@@ -14,7 +17,7 @@ int main()
 		FontStack stack = theme.get_stack( style );
 		auto entry = stack.lookup_codepoint( U'A' );
 
-		std::cout << "Found face for 'A' with glyph index " << entry.glyph_index 
+		std::cout << "Found face for 'A' with glyph index " << entry.glyph_index
 		          << std::endl;
 	}
 	catch ( const std::exception &e )

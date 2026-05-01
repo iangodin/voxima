@@ -1,6 +1,6 @@
 #pragma once
 
-#include "visuals/TextStyle.h"
+#include "fonts/TextStyle.h"
 #include "fonts/FontStack.h"
 #include "fonts/FontFace.h"
 #include "fonts/MathFonts.h"

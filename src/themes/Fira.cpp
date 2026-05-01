@@ -2,7 +2,7 @@
 
 #include "fonts/Theme.h"
 #include "fonts/FontStack.h"
-#include "visuals/TextStyle.h"
+#include "fonts/TextStyle.h"
 
 namespace Fira
 {
@@ -26,7 +26,7 @@ float theme_font_size( Scale scale )
 std::string get_fira_filename( const TextProperties &props, std::string_view base_name )
 {
 	std::string family{ base_name };
-	
+
 	// Handle Width
 	if ( base_name == "FiraSans" ) {
 		Width width = props.width.value_or( Width::STANDARD );
@@ -63,7 +63,7 @@ std::string get_fira_filename( const TextProperties &props, std::string_view bas
 	}
 
 	std::string filename = family + "-" + weight + slant + extension;
-	
+
 	// Check if this specific combination exists (simplistic check or just return)
 	// For now, I'll just return it.
 	return filename;
@@ -85,7 +85,7 @@ std::string get_devanagari_filename( const TextProperties &props )
 {
 	bool is_bold = props.weight == Weight::BOLD || props.weight == Weight::BLACK;
 	bool is_light = props.weight == Weight::LIGHT;
-	
+
 	Scale scale = props.scale.value_or( Scale::MEDIUM );
 	bool is_small = scale == Scale::TINY || scale == Scale::SMALL;
 

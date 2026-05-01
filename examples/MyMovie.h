@@ -1,20 +1,23 @@
 
+
+#include "visuals/Rectangle.h"
+#include "visuals/RoundRectangle.h"
+#include "visuals/Path.h"
+#include "visuals/CreateText.h"
+#include "visuals/CreateMath.h"
+#include "visuals/Image.h"
+#include "visuals/Ellipse.h"
+#include "visuals/CallbackVisitor.h"
+
+#include "themes/NewComputerModern.h"
+
+#include "core/Animation.h"
 #include "core/Production.h"
 #include "core/Stage.h"
 #include "core/Scene.h"
 #include "core/Producer.h"
 #include "core/Screenplay.h"
 #include "core/Director.h"
-#include "visuals/Rectangle.h"
-#include "visuals/RoundRectangle.h"
-#include "visuals/Path.h"
-#include "exporters/CreateText.h"
-#include "exporters/CreateMath.h"
-#include "visuals/Image.h"
-#include "visuals/Ellipse.h"
-#include "core/Animation.h"
-#include "visuals/CallbackVisitor.h"
-#include "themes/NewComputerModern.h"
 
 #include <coroutine>
 

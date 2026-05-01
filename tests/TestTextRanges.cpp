@@ -2,7 +2,9 @@
 #include <catch2/catch_test_macros.hpp>
 
 #include <fonts/Theme.h>
-#include <exporters/CreateText.h>
+
+#include <visuals/CreateText.h>
+
 #include <themes/NewComputerModern.h>
 
 SCENARIO( "Text splitting" )

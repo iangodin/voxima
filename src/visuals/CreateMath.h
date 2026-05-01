@@ -2,7 +2,8 @@
 
 #include "visuals/Group.h"
 #include "core/Stage.h"
-#include "visuals/TextStyle.h"
+
+#include "fonts/TextStyle.h"
 
 #include <string>
 
