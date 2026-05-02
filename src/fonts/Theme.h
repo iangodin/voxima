@@ -10,6 +10,7 @@
 
 #include <memory>
 #include <functional>
+#include <filesystem>
 #include <map>
 #include <string>
 #include <tuple>
@@ -29,7 +30,14 @@ struct FontKey
 	bool operator<( const FontKey &other ) const
 	{
 		return std::tie( name, face_index, weight, width, slant, style1, style2 ) <
-			   std::tie( other.name, other.face_index, other.weight, other.width, other.slant, other.style1, other.style2 );
+			std::tie(
+				   other.name,
+				   other.face_index,
+				   other.weight,
+				   other.width,
+				   other.slant,
+				   other.style1,
+				   other.style2 );
 	}
 };
 
@@ -48,8 +56,17 @@ public:
 	Theme &operator=( Theme && );
 
 	FontFace load_font( const std::string &name, size_t face_index, float scale );
-	FontFace load_variable_font( const std::string &name, size_t face_index, float scale, int weight, int width, int slant );
-	FontFace load_emoji_font( const std::string &name, size_t face_index, float scale, int outline, int fill );
+
+	FontFace load_variable_font(
+		const std::string &name,
+		size_t face_index,
+		float scale,
+		int weight,
+		int width,
+		int slant );
+
+	FontFace load_emoji_font(
+		const std::string &name, size_t face_index, float scale, int outline, int fill );
 
 	void register_factory( const std::string &intent, FontFactory factory )
 	{
@@ -58,6 +75,11 @@ public:
 
 	FontStack get_stack( const TextStyle &style );
 	MathFonts get_math( const TextStyle &style );
+
+	void set_font_path( std::string_view path )
+	{
+		_font_path = path;
+	}
 
 	constexpr static float FONT_SCALE = 120.F;
 
@@ -68,4 +90,6 @@ private:
 	std::map<FontKey, FontFacePtr> _faces;
 	std::map<TextStyle, FontStack> _cache;
 	std::map<std::string, FontFactory> _factories;
+
+	std::filesystem::path _font_path = "assets/fonts";
 };

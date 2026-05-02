@@ -11,12 +11,13 @@ else()
 	add_compile_options( -Werror -Wall -Wextra -Wno-missing-field-initializers )
 endif()
 
-find_package( stb REQUIRED )
 find_package( lunasvg 3.5.0 REQUIRED )
 find_package( plutovg 1.3.2 REQUIRED )
 find_package( harfbuzz 12.3.0 REQUIRED )
 find_package( Freetype 2.14.1 REQUIRED )
 find_package( Catch2 REQUIRED )
+find_package( CLI11 REQUIRED )
+find_package( ctre REQUIRED )
 
 enable_testing()
 
@@ -27,6 +28,7 @@ add_library( visuals STATIC
 	src/core/EaseElastic.cpp
 	src/core/Document.cpp
 	src/exporters/SVGWriter.cpp
+	src/exporters/FfmpegRender.cpp
 	src/themes/Fira.cpp
 	src/fonts/FontStack.cpp
 	src/fonts/MFLFontFace.cpp
@@ -40,9 +42,9 @@ add_library( visuals STATIC
 target_compile_features( visuals PUBLIC cxx_std_20 )
 target_compile_options( visuals PUBLIC -fcoroutines )
 target_include_directories( visuals PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/src ${CMAKE_CURRENT_SOURCE_DIR}/extern ${CMAKE_CURRENT_SOURCE_DIR} )
-target_link_libraries( visuals PUBLIC stb::stb lunasvg::lunasvg plutovg::plutovg Freetype::Freetype harfbuzz::harfbuzz mfl )
+target_link_libraries( visuals PUBLIC lunasvg::lunasvg plutovg::plutovg Freetype::Freetype harfbuzz::harfbuzz mfl )
 
-add_executable( canim tools/main.cpp tools/FfmpegRender.cpp )
+add_executable( canim tools/main.cpp )
 target_compile_features( canim PUBLIC cxx_std_20 )
 target_compile_options( canim PUBLIC -fcoroutines )
 target_link_libraries( canim PUBLIC visuals )

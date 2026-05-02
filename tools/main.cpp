@@ -1,26 +1,25 @@
 
-#include "core/Stage.h"
-#include "core/Screenplay.h"
-#include "core/Producer.h"
+#include <core/Stage.h>
+#include <core/Screenplay.h>
+#include <core/Producer.h>
 
-#include "utils/Timer.h"
+#include <utils/Timer.h>
 
-#include "visuals/Group.h"
-#include "visuals/Circle.h"
-#include "visuals/Rectangle.h"
-#include "visuals/RoundRectangle.h"
+#include <visuals/Group.h>
+#include <visuals/Circle.h>
+#include <visuals/Rectangle.h>
+#include <visuals/RoundRectangle.h>
 
-#include "themes/NewComputerModern.h"
+#include <themes/NewComputerModern.h>
+
+#include <exporters/FfmpegRender.h>
 
 #include "examples/MyMovie.h"
-#include "FfmpegRender.h"
 
 #include <lunasvg/lunasvg.h>
 
 #include <iostream>
 #include <sstream>
-#include <fstream>
-#include <iomanip>
 
 int main()
 {
