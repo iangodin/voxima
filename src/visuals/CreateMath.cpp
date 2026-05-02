@@ -17,11 +17,12 @@
 
 Group &create_math( Stage &stage, const std::string &formula, const TextStyle &style )
 {
-	return create_math( stage.visuals, stage.theme, formula, style );
+	return create_math( stage, stage.visuals, formula, style );
 }
 
-Group &create_math( Group &group, Theme &theme, const std::string &formula, const TextStyle &style )
+Group &create_math( Stage &stage, Group &group, const std::string &formula, const TextStyle &style )
 {
+	Theme &theme = *stage.theme;
 	auto &subgroup = group.add( std::make_unique<Group>() );
 	MathFonts fonts = theme.get_math( style );
 

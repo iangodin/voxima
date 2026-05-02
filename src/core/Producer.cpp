@@ -27,7 +27,7 @@ bool Producer::produce( int argc, char *argv[] )
 
 	if ( font_path )
 	{
-		_stage.theme.set_font_path( *font_path );
+		_stage.theme->set_font_path( *font_path );
 	}
 
 	std::optional<FfmpegRender> ffmpeg;

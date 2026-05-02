@@ -13,7 +13,7 @@
 
 struct Stage
 {
-	Theme theme;
+	Theme *theme = nullptr;
 	Color background = { 0.F, 0.F, 0.F, 1.F };
 	Group visuals;
 

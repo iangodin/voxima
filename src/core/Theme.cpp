@@ -68,7 +68,8 @@ void apply_variations( FT_Face face, const FontKey &key )
 
 }
 
-Theme::Theme()
+Theme::Theme( std::string name ) :
+	NamedRegistered<Theme>( std::move( name ) )
 {
 	if ( FT_Init_FreeType( &_library ) != 0 )
 	{
@@ -87,6 +88,7 @@ Theme::~Theme()
 }
 
 Theme::Theme( Theme &&other ) :
+	NamedRegistered<Theme>( std::move( other ) ),
 	_library( other._library ),
 	_faces( std::move( other._faces ) ),
 	_cache( std::move( other._cache ) ),
@@ -117,12 +119,19 @@ FontFace Theme::load_font( const std::string &name, size_t face_index, float sca
 	return load_variable_font( name, face_index, scale, 400, 100, 0 );
 }
 
-FontFace Theme::load_variable_font( const std::string &name, size_t face_index, float scale, int weight, int width, int slant )
+FontFace Theme::load_variable_font(
+	const std::string &name,
+	size_t face_index,
+	float scale,
+	int weight,
+	int width,
+	int slant )
 {
 	return load_font_internal( { name, face_index, weight, width, slant, 0, 0 }, scale );
 }
 
-FontFace Theme::load_emoji_font( const std::string &name, size_t face_index, float scale, int outline, int fill )
+FontFace Theme::load_emoji_font(
+	const std::string &name, size_t face_index, float scale, int outline, int fill )
 {
 	return load_font_internal( { name, face_index, 400, 100, 0, outline, fill }, scale );
 }
@@ -139,17 +148,24 @@ FontFace Theme::load_font_internal( const FontKey &key, float scale )
 	std::filesystem::path path = _font_path;
 	path /= key.name;
 
-	if ( const auto err = FT_New_Face( _library, path.string().c_str(), static_cast<FT_Long>( key.face_index ), &face ); err != 0 )
+	if ( const auto err = FT_New_Face(
+			 _library,
+			 path.string().c_str(),
+			 static_cast<FT_Long>( key.face_index ),
+			 &face );
+		 err != 0 )
 	{
-		throw std::runtime_error( std::format( "Failed to load font {}: {}", path.string(), ft_error_string( err ) ) );
+		throw std::runtime_error( std::format(
+			"Failed to load font {}: {}", path.string(), ft_error_string( err ) ) );
 	}
 
 	apply_variations( face, key );
 
 	const auto ft_size = static_cast<FT_F26Dot6>( scale * FONT_SCALE * 64.F );
-	if ( const auto err = FT_Set_Char_Size( face, ft_size, ft_size, 0, 0 ); err != 0)
+	if ( const auto err = FT_Set_Char_Size( face, ft_size, ft_size, 0, 0 ); err != 0 )
 	{
-		throw std::invalid_argument( std::format( "Failed to set char size {}: {}", path.string(), ft_error_string( err ) ) );
+		throw std::invalid_argument( std::format(
+			"Failed to set char size {}: {}", path.string(), ft_error_string( err ) ) );
 	}
 
 	FontFacePtr ptr( face, FT_Done_Face );
@@ -168,7 +184,8 @@ FontStack Theme::get_stack( const TextStyle &style )
 	auto fit = _factories.find( style.intent() );
 	if ( fit == _factories.end() )
 	{
-		throw std::runtime_error( std::format( "No factory registered for intent: {}", style.intent() ) );
+		throw std::runtime_error(
+			std::format( "No factory registered for intent: {}", style.intent() ) );
 	}
 
 	FontStack stack = fit->second( style, *this );
@@ -191,11 +208,9 @@ MathFonts Theme::get_math( const TextStyle &style )
 	auto sans_stack = get_stack( TextStyle( "math", base_style ).sans() );
 	auto mono_stack = get_stack( TextStyle( "math", base_style ).mono() );
 
-	return {
-		roman_stack.font( 0 ),
-		italic_stack.font( 0 ),
-		bold_stack.font( 0 ),
-		sans_stack.font( 0 ),
-		mono_stack.font( 0 )
-	};
+	return { roman_stack.font( 0 ),
+			 italic_stack.font( 0 ),
+			 bold_stack.font( 0 ),
+			 sans_stack.font( 0 ),
+			 mono_stack.font( 0 ) };
 }

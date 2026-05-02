@@ -210,7 +210,7 @@ FontStack intent_caption( const TextStyle &style, Theme &theme )
 
 Theme create_theme( void )
 {
-	Theme theme;
+	Theme theme( "New Computer Modern" );
 	theme.register_factory( "prose", intent_prose );
 	theme.register_factory( "title", intent_title );
 	theme.register_factory( "label", intent_label );

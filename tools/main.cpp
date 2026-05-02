@@ -10,9 +10,10 @@
 int main( int argc, char *argv[] )
 {
 	int result = 0;
+	auto theme = NewComputerModern::create_theme();
 
 	Stage stage;
-	stage.theme = NewComputerModern::create_theme();
+	stage.theme = Theme::get_by_name( theme.get_name() );
 	stage.background = { 0.1f, 0.1f, 0.2f, 1.0f }; // Dark blue background
 
 	auto movie = my_movie( stage );

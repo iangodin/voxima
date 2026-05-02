@@ -62,8 +62,9 @@ Screenplay math_test( Stage &stage )
 
 int main()
 {
+	Theme newComputerModern = NewComputerModern::create_theme();
 	Stage stage;
-	stage.theme = NewComputerModern::create_theme();
+	stage.theme = Theme::get_by_name( "New Computer Modern" );
 	stage.background = { 0.1f, 0.1f, 0.2f, 1.0f }; // Dark blue background
 
 	auto movie = math_test( stage );

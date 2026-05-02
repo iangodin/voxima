@@ -123,11 +123,12 @@ std::unique_ptr<Glyph> create_glyph( unsigned int glyph_id, const FontFace *font
 
 Group &create_text( Stage &stage, const std::string &text, const TextStyle &style )
 {
-	return create_text( stage.visuals, stage.theme, text, style );
+	return create_text( stage, stage.visuals, text, style );
 }
 
-Group &create_text( Group &group, Theme &theme, const std::string &text, const TextStyle &style )
+Group &create_text( Stage &stage, Group &group, const std::string &text, const TextStyle &style )
 {
+	Theme &theme = *stage.theme;
 	auto &subgroup = group.add( std::make_unique<Group>() );
 
 	FontStack stack = theme.get_stack( style );

@@ -121,7 +121,7 @@ FontStack intent_caption( const TextStyle &style, Theme &theme ) { return create
 
 Theme create_theme( void )
 {
-	Theme theme;
+	Theme theme( "Fira" );
 	theme.register_factory( "prose", intent_prose );
 	theme.register_factory( "code", intent_code );
 	theme.register_factory( "math", intent_math );

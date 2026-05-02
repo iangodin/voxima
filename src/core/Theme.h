@@ -1,9 +1,11 @@
 #pragma once
 
-#include "fonts/TextStyle.h"
-#include "fonts/FontStack.h"
-#include "fonts/FontFace.h"
-#include "fonts/MathFonts.h"
+#include <fonts/TextStyle.h>
+#include <fonts/FontStack.h>
+#include <fonts/FontFace.h>
+#include <fonts/MathFonts.h>
+
+#include <utils/NamedRegistered.h>
 
 #include <ft2build.h>
 #include FT_FREETYPE_H
@@ -43,10 +45,10 @@ struct FontKey
 
 using FontFactory = std::function<FontStack( const TextStyle &, Theme & )>;
 
-class Theme
+class Theme : public NamedRegistered<Theme>
 {
 public:
-	Theme();
+	Theme( std::string name );
 	~Theme();
 
 	Theme( const Theme & ) = delete;
