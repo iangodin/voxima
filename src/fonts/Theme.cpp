@@ -135,7 +135,7 @@ FontFace Theme::load_font_internal( const FontKey &key, float scale )
 	}
 
 	FT_Face face = nullptr;
-	std::filesystem::path path = "fonts";
+	std::filesystem::path path = "assets/fonts";
 	path /= key.name;
 
 	if ( const auto err = FT_New_Face( _library, path.string().c_str(), static_cast<FT_Long>( key.face_index ), &face ); err != 0 )

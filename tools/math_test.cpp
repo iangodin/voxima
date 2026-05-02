@@ -10,6 +10,8 @@
 
 #include "visuals/CreateText.h"
 
+#include "core/Wait.h"
+
 #include <lunasvg/lunasvg.h>
 
 #include <iostream>

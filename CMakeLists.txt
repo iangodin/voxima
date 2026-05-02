@@ -23,50 +23,17 @@ enable_testing()
 add_subdirectory( extern/mfl )
 
 add_library( visuals STATIC
-	src/core/Animation.h
-	src/core/Director.h
-	src/core/Producer.h
-	src/core/Production.h
-	src/core/Scene.h
-	src/core/Screenplay.h
-	src/core/Stage.h
+	src/core/EaseCubic.cpp
 	src/exporters/SVGWriter.cpp
-	src/exporters/SVGWriter.h
 	src/themes/Fira.cpp
-	src/themes/Fira.h
-	src/fonts/FontFace.h
 	src/fonts/FontStack.cpp
-	src/fonts/FontStack.h
-	src/fonts/MathFonts.h
 	src/fonts/MFLFontFace.cpp
-	src/fonts/MFLFontFace.h
 	src/themes/NewComputerModern.cpp
-	src/themes/NewComputerModern.h
 	src/fonts/Theme.cpp
-	src/fonts/Theme.h
-	src/fonts/TextStyle.h
 	src/utils/freetype_error.cpp
 	src/utils/freetype_error.hpp
-	src/utils/Timer.h
-	src/utils/Utf8.h
 	src/visuals/CreateMath.cpp
-	src/visuals/CreateMath.h
 	src/visuals/CreateText.cpp
-	src/visuals/CreateText.h
-	src/visuals/ArrowTip.h
-	src/visuals/Bounds.h
-	src/visuals/Circle.h
-	src/visuals/Ellipse.h
-	src/visuals/Glyph.h
-	src/visuals/Group.h
-	src/visuals/Image.h
-	src/visuals/Line.h
-	src/visuals/Path.h
-	src/visuals/Point.h
-	src/visuals/Rectangle.h
-	src/visuals/RoundRectangle.h
-	src/visuals/Visual.h
-	src/visuals/VisualVisitor.h
 )
 
 target_compile_features( visuals PUBLIC cxx_std_20 )

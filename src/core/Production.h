@@ -7,19 +7,21 @@
 
 class Producer;
 
-struct NextFrame {};
+struct NextFrame
+{
+};
 
 struct ProductionPromise
 {
-	Producer* producer_ptr = nullptr;
-	ProductionPromise* parent_promise = nullptr;
+	Producer *producer_ptr = nullptr;
+	ProductionPromise *parent_promise = nullptr;
 	std::coroutine_handle<> parent_handle = nullptr;
-	std::function<void()> active_child_resume = nullptr;
+	std::function<void(void)> active_child_resume = nullptr;
 };
 
 struct ReturnToParent
 {
-	bool await_ready() noexcept
+	bool await_ready( void ) noexcept
 	{
 		return false;
 	}
@@ -40,12 +42,14 @@ struct ReturnToParent
 		return std::noop_coroutine();
 	}
 
-	void await_resume() noexcept {}
+	void await_resume( void ) noexcept
+	{
+	}
 };
 
 struct CurrentProducer
 {
-	Producer* producer = nullptr;
+	Producer *producer = nullptr;
 
 	bool await_ready() const noexcept
 	{
@@ -67,3 +71,4 @@ struct CurrentProducer
 		return *producer;
 	}
 };
+

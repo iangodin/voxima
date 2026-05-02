@@ -11,24 +11,25 @@
 
 #include "themes/NewComputerModern.h"
 
-#include "core/Animation.h"
+#include "core/EaseCubic.h"
 #include "core/Production.h"
 #include "core/Stage.h"
 #include "core/Scene.h"
 #include "core/Producer.h"
 #include "core/Screenplay.h"
 #include "core/Director.h"
+#include "core/Wait.h"
 
 #include <coroutine>
 
-Director scale_in( Visual &visual, int64_t frames )
+Animation scale_in( Visual &visual, int64_t frames )
 {
-	co_await together(
+	co_await choreograph(
 		ease_in_out_cubic( visual.scale_x, 0.F, 1.F, frames ),
 		ease_in_out_cubic( visual.scale_y, 0.F, 1.F, frames ) );
 }
 
-Director scale_x_in( Visual &visual, int64_t frames )
+Animation scale_x_in( Visual &visual, int64_t frames )
 {
 	co_await ease_in_out_cubic( visual.scale_x, 0.F, 1.F, frames );
 }
@@ -86,7 +87,7 @@ Scene my_diagram( Stage &stage )
 
 	{
 		auto [line, arrow] = create_arrow( stage, { -5.F, 0.F }, { -4.0, 0.F } );
-		co_await together(
+		co_await choreograph(
 			ease_in_out_cubic( line.end.x, line.start.x, line.end.x, 12 ),
 			ease_in_out_cubic( arrow.end.x, arrow.start.x, arrow.end.x, 12 ) );
 	}
@@ -96,7 +97,7 @@ Scene my_diagram( Stage &stage )
 
 	{
 		auto [line, arrow] = create_arrow( stage, { -2.F, 0.F }, { -1.0, 0.F } );
-		co_await together(
+		co_await choreograph(
 			ease_in_out_cubic( line.end.x, line.start.x, line.end.x, 12 ),
 			ease_in_out_cubic( arrow.end.x, arrow.start.x, arrow.end.x, 12 ) );
 	}
@@ -116,7 +117,7 @@ Screenplay my_movie( Stage &stage )
 
 	co_await wait_for( 30 );
 
-	co_await together(
+	co_await choreograph(
 		ease_in_out_cubic( ellipse.rotation, -90.F, 0.F, 60 ),
 		my_diagram( stage ) );
 }
