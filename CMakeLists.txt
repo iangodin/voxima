@@ -27,6 +27,7 @@ add_library( visuals STATIC
 	src/core/EaseCubic.cpp
 	src/core/EaseElastic.cpp
 	src/core/Document.cpp
+	src/core/Producer.cpp
 	src/exporters/SVGWriter.cpp
 	src/exporters/FfmpegRender.cpp
 	src/themes/Fira.cpp
@@ -42,7 +43,7 @@ add_library( visuals STATIC
 target_compile_features( visuals PUBLIC cxx_std_20 )
 target_compile_options( visuals PUBLIC -fcoroutines )
 target_include_directories( visuals PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/src ${CMAKE_CURRENT_SOURCE_DIR}/extern ${CMAKE_CURRENT_SOURCE_DIR} )
-target_link_libraries( visuals PUBLIC lunasvg::lunasvg plutovg::plutovg Freetype::Freetype harfbuzz::harfbuzz mfl )
+target_link_libraries( visuals PUBLIC lunasvg::lunasvg plutovg::plutovg Freetype::Freetype harfbuzz::harfbuzz CLI11::CLI11 mfl )
 
 add_executable( canim tools/main.cpp )
 target_compile_features( canim PUBLIC cxx_std_20 )

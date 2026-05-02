@@ -1,9 +1,9 @@
 
 #pragma once
 
-#include "core/Director.h"
-#include "core/Screenplay.h"
-#include "core/Stage.h"
+#include "Director.h"
+#include "Screenplay.h"
+#include "Stage.h"
 
 #include <cstdint>
 #include <vector>
@@ -35,6 +35,8 @@ public:
 
 		return !_main_narrative.done();
 	}
+
+	bool produce( int argc, char *argv[] );
 
 private:
 	Screenplay _main_narrative;

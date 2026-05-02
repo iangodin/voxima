@@ -3,9 +3,10 @@ from conan import ConanFile
 from conan.tools.cmake import CMakeToolchain, CMakeDeps, cmake_layout
 
 class MyProjectConan(ConanFile):
-  name = "canim"
+  name = "Sonimation"
   version = "0.0"
   settings = "os", "compiler", "build_type", "arch"
+  generators = "CMakeDeps", "CMakeToolchain"
 
   def requirements(self):
     self.requires("catch2/3.13.0")
@@ -18,11 +19,7 @@ class MyProjectConan(ConanFile):
     self.requires("cli11/2.6.2")
     self.requires("ctre/3.10.0")
 
-  def generate(self):
-    deps = CMakeDeps(self)
-    deps.generate()
-    tc = CMakeToolchain(self)
-    tc.generate()
-
   def layout(self):
-    cmake_layout(self)
+    cmake_layout(self, generator="Ninja Multi-Config")
+    self.folders.build = "build"
+    self.folders.generators = "build/generators"
