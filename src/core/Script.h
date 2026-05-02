@@ -137,20 +137,23 @@ struct Value
 private:
 };
 
-class Document
+Value merge(const Value& master, const Value& variant);
+
+class Script
 {
 public:
-	Document() = default;
+	Script() = default;
+	Script(Value&& root);
 
-	Document( const Document & ) = default;
-	Document( Document && ) = default;
+	Script( const Script & ) = default;
+	Script( Script && ) = default;
 
-	~Document() = default;
+	~Script() = default;
 
-	Document &operator=( const Document & ) = default;
-	Document &operator=( Document && ) = default;
+	Script &operator=( const Script & ) = default;
+	Script &operator=( Script && ) = default;
 
-	ParseResult parse( std::string source );
+	ParseResult parse( std::string_view source );
 
 	const Value &root() const
 	{
@@ -167,7 +170,6 @@ public:
 private:
 	struct Impl
 	{
-		std::string source;
 		Value root;
 	};
 

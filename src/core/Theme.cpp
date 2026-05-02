@@ -1,8 +1,9 @@
 
-#include "fonts/Theme.h"
+#include <fonts/MathFonts.h>
 
-#include "fonts/MathFonts.h"
-#include "utils/FreetypeError.hpp"
+#include <core/Theme.h>
+
+#include <utils/FreetypeError.hpp>
 
 #include FT_MULTIPLE_MASTERS_H
 

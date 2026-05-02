@@ -1,15 +1,18 @@
 
-#include "fonts/MFLFontFace.h"
-#include "core/Stage.h"
-#include "fonts/Theme.h"
-#include "visuals/CreateMath.h"
-#include "visuals/CreateText.h"
-#include "visuals/Group.h"
-#include "visuals/Rectangle.h"
-#include "visuals/Glyph.h"
-#include "visuals/Bounds.h"
+#include <core/Stage.h>
+#include <core/Theme.h>
+
+#include <fonts/MFLFontFace.h>
+
+#include <visuals/CreateMath.h>
+#include <visuals/CreateText.h>
+#include <visuals/Group.h>
+#include <visuals/Rectangle.h>
+#include <visuals/Glyph.h>
+#include <visuals/Bounds.h>
 
 #include <mfl/layout.hpp>
+
 #include <iostream>
 
 Group &create_math( Stage &stage, const std::string &formula, const TextStyle &style )

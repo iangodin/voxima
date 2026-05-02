@@ -1,13 +1,13 @@
 
 #pragma once
 
-#include "visuals/Group.h"
-#include "exporters/SVGWriter.h"
-#include "visuals/Color.h"
-#include "fonts/Theme.h"
+#include <visuals/Group.h>
+#include <visuals/Color.h>
 
-#include <string>
-#include <vector>
+#include <core/Theme.h>
+
+#include <exporters/SVGWriter.h>
+
 #include <iostream>
 #include <sstream>
 

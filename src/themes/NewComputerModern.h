@@ -1,6 +1,6 @@
 #pragma once
 
-#include "fonts/Theme.h"
+#include <core/Theme.h>
 
 namespace NewComputerModern
 {

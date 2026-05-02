@@ -1,8 +1,10 @@
-#include "themes/NewComputerModern.h"
 
-#include "fonts/Theme.h"
-#include "fonts/FontStack.h"
-#include "fonts/TextStyle.h"
+#include <themes/NewComputerModern.h>
+
+#include <core/Theme.h>
+
+#include <fonts/FontStack.h>
+#include <fonts/TextStyle.h>
 
 namespace NewComputerModern
 {

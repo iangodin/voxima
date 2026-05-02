@@ -1,8 +1,9 @@
-#include "themes/Fira.h"
+#include <core/Theme.h>
 
-#include "fonts/Theme.h"
-#include "fonts/FontStack.h"
-#include "fonts/TextStyle.h"
+#include <themes/Fira.h>
+
+#include <fonts/FontStack.h>
+#include <fonts/TextStyle.h>
 
 namespace Fira
 {

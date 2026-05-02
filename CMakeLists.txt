@@ -26,15 +26,15 @@ add_subdirectory( extern/mfl )
 add_library( visuals STATIC
 	src/core/EaseCubic.cpp
 	src/core/EaseElastic.cpp
-	src/core/Document.cpp
+	src/core/Script.cpp
 	src/core/Producer.cpp
+	src/core/Theme.cpp
 	src/exporters/SVGWriter.cpp
 	src/exporters/FfmpegRender.cpp
 	src/themes/Fira.cpp
 	src/fonts/FontStack.cpp
 	src/fonts/MFLFontFace.cpp
 	src/themes/NewComputerModern.cpp
-	src/fonts/Theme.cpp
 	src/utils/FreetypeError.cpp
 	src/visuals/CreateMath.cpp
 	src/visuals/CreateText.cpp

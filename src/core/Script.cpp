@@ -1,5 +1,5 @@
 
-#include "Document.h"
+#include "Script.h"
 #include <iostream>
 #include <algorithm>
 #include <charconv>
@@ -701,20 +701,44 @@ private:
 		return std::nullopt;
 	}
 };
-
-ParseResult Document::parse( std::string source )
+ParseResult Script::parse( std::string_view source )
 {
 	_impl.reset();
 
-	std::string_view view = source;
-	Parser parser( view );
+	Parser parser( source );
 	ParseResult result = parser.parse();
 	if ( std::holds_alternative<Value>( result ) )
 	{
-		_impl = std::make_shared<Impl>( std::move( source ), std::get<Value>( result ) );
+		_impl = std::make_shared<Impl>( std::get<Value>( result ) );
 	}
 
 	return result;
+}
+
+Script::Script(Value&& root)
+{
+	_impl = std::make_shared<Impl>( std::move(root) );
+}
+
+Value merge(const Value& master, const Value& variant)
+{
+	if (master.is_dict() && variant.is_dict())
+	{
+		Dict result = master.as_dict();
+		for (const auto& [key, value] : variant.as_dict())
+		{
+			if (result.count(key))
+			{
+				result[key] = merge(result[key], value);
+			}
+			else
+			{
+				result[key] = value;
+			}
+		}
+		return Value{result};
+	}
+	return variant;
 }
 
 } // namespace huml

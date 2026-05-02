@@ -1,17 +1,17 @@
 
 
-#include "utils/Utf8.h"
+#include <utils/Utf8.h>
 
-#include "fonts/FontStack.h"
-#include "fonts/FontFace.h"
-#include "fonts/Theme.h"
-#include "fonts/TextStyle.h"
+#include <fonts/FontStack.h>
+#include <fonts/FontFace.h>
+#include <fonts/TextStyle.h>
 
-#include "core/Stage.h"
+#include <core/Theme.h>
+#include <core/Stage.h>
 
-#include "visuals/Group.h"
-#include "visuals/CreateText.h"
-#include "visuals/Bounds.h"
+#include <visuals/Group.h>
+#include <visuals/CreateText.h>
+#include <visuals/Bounds.h>
 
 #include <ft2build.h>
 #include FT_FREETYPE_H

@@ -1,13 +1,13 @@
 
 #include <catch2/catch_test_macros.hpp>
 
-#include <core/Document.h>
+#include <core/Script.h>
 
 #include <variant>
 
 TEST_CASE( "HUML parser line counting", "[huml]" )
 {
-	huml::Document doc;
+	huml::Script doc;
 
 	SECTION( "Valid simple document" )
 	{

@@ -1,8 +1,9 @@
 
-#include "themes/NewComputerModern.h"
+#include <themes/NewComputerModern.h>
 
-#include "fonts/Theme.h"
-#include "fonts/TextStyle.h"
+#include <core/Theme.h>
+
+#include <fonts/TextStyle.h>
 
 #include <iostream>
 
