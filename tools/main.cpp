@@ -2,13 +2,18 @@
 #include "core/Stage.h"
 #include "core/Screenplay.h"
 #include "core/Producer.h"
+
 #include "utils/Timer.h"
+
 #include "visuals/Group.h"
 #include "visuals/Circle.h"
 #include "visuals/Rectangle.h"
 #include "visuals/RoundRectangle.h"
+
 #include "themes/NewComputerModern.h"
+
 #include "examples/MyMovie.h"
+#include "FfmpegRender.h"
 
 #include <lunasvg/lunasvg.h>
 
@@ -29,6 +34,8 @@ int main()
 	// 2. Hand it to the Producer
 	Producer producer( std::move(movie), stage );
 
+	FfmpegRender renderer( "output.mp4" );
+
 	// 3. Run until 'tick' returns false
 	while ( true )
 	{
@@ -42,12 +49,6 @@ int main()
 		Timer timer2;
 		std::ostringstream svg;
 		stage.save_svg( svg );
-
-		std::ostringstream svgfile;
-		svgfile << "frames/frame_" << std::setfill('0') << std::setw(4) << producer.current_frame() << ".svg";
-		std::ofstream svgoutput( svgfile.str() );
-		svgoutput << svg.str();
-		svgoutput.close();
 		std::cout << "SVG generation: " << timer2.stop() << "ms\n";
 
 		Timer timer3;
@@ -69,10 +70,8 @@ int main()
 		std::cout << "SVG rendering: " << timer4.stop() << "ms\n";
 
 		Timer timer5;
-		std::ostringstream filename;
-		filename << "frames/frame_" << std::setfill('0') << std::setw(4) << producer.current_frame() << ".png";
-		bitmap.writeToPng( filename.str() );
-		std::cout << "PNG writing: " << timer5.stop() << "ms\n";
+		renderer.encode( bitmap );
+		std::cout << "Video encoding: " << timer5.stop() << "ms\n";
 
 		std::cout << "Produced frame " << producer.current_frame() << '\n';
 	}

@@ -16,6 +16,7 @@ class MyProjectConan(ConanFile):
     self.requires("freetype/2.14.1")
     self.requires("harfbuzz/12.3.0")
     self.requires("doctest/2.4.12")
+    self.requires("cli11/2.6.2")
 
   def generate(self):
     deps = CMakeDeps(self)

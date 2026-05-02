@@ -1,5 +1,5 @@
 #include "fonts/MFLFontFace.h"
-#include "utils/freetype_error.hpp"
+#include "utils/FreetypeError.hpp"
 
 #include <harfbuzz/hb-ft.h>
 #include <harfbuzz/hb-ot.h>

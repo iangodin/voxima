@@ -2,7 +2,7 @@
 #include "fonts/Theme.h"
 
 #include "fonts/MathFonts.h"
-#include "utils/freetype_error.hpp"
+#include "utils/FreetypeError.hpp"
 
 #include FT_MULTIPLE_MASTERS_H
 

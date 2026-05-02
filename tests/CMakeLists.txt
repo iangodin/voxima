@@ -1,6 +1,7 @@
 
 add_executable( canim_unit_tests
 	TestTextRanges.cpp
+	TestHuml.cpp
 )
 
 target_link_libraries( canim_unit_tests
