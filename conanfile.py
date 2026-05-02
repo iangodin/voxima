@@ -8,7 +8,6 @@ class MyProjectConan(ConanFile):
   settings = "os", "compiler", "build_type", "arch"
 
   def requirements(self):
-    self.requires("stb/cci.20240531")
     self.requires("catch2/3.13.0")
     self.requires("cpptrace/1.0.4")
     self.requires("lunasvg/3.5.1")
