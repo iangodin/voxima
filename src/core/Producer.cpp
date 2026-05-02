@@ -66,13 +66,16 @@ bool Producer::produce( int argc, char *argv[] )
 	}
 
 	size_t frame = 0;
+	Timer timer_total;
 	while ( true )
 	{
-		Timer timerFrame( "Frame " + std::to_string( frame ) + ": " );
+		Timer timer_frame( "Frame " + std::to_string( frame ) + ": " );
 		{
-			Timer timerTick( "  tick: " );
+			Timer timer_tick( "  tick: " );
 			if ( !tick() )
 			{
+				timer_tick.abort();
+				timer_frame.abort();
 				break;
 			}
 		}
@@ -129,6 +132,7 @@ bool Producer::produce( int argc, char *argv[] )
 
 		++frame;
 	}
+	timer_total.message( "Total render " + std::to_string( frame ) + " frames: ", frame );
 
 	return 0;
 }

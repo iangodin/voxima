@@ -1,7 +1,7 @@
 
 cmake_minimum_required( VERSION 3.31 )
 
-project( canim )
+project( Sonimation )
 
 set( CMAKE_EXPORT_COMPILE_COMMANDS ON )
 
@@ -45,10 +45,10 @@ target_compile_options( visuals PUBLIC -fcoroutines )
 target_include_directories( visuals PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/src ${CMAKE_CURRENT_SOURCE_DIR}/extern ${CMAKE_CURRENT_SOURCE_DIR} )
 target_link_libraries( visuals PUBLIC lunasvg::lunasvg plutovg::plutovg Freetype::Freetype harfbuzz::harfbuzz CLI11::CLI11 mfl )
 
-add_executable( canim tools/main.cpp )
-target_compile_features( canim PUBLIC cxx_std_20 )
-target_compile_options( canim PUBLIC -fcoroutines )
-target_link_libraries( canim PUBLIC visuals )
+add_executable( sonimation tools/main.cpp )
+target_compile_features( sonimation PUBLIC cxx_std_20 )
+target_compile_options( sonimation PUBLIC -fcoroutines )
+target_link_libraries( sonimation PUBLIC visuals )
 
 add_executable( math_test tools/math_test.cpp )
 target_compile_features( math_test PUBLIC cxx_std_20 )

@@ -63,7 +63,7 @@ void FfmpegRender::open_pipe( uint32_t width, uint32_t height )
 	// -f rawvideo tells ffmpeg to expect raw pixel data.
 	// -i - tells ffmpeg to read from stdin (the pipe).
 	// -pix_fmt yuv420p is for maximum compatibility with players.
-	cmd << "ffmpeg -y -f rawvideo -pixel_format bgra -video_size " << width << "x" << height
+	cmd << "ffmpeg -y -hide_banner -loglevel warning -f rawvideo -pixel_format bgra -video_size " << width << "x" << height
 		<< " -framerate " << m_framerate << " -i - -c:v libx264 -pix_fmt yuv420p -crf 18 \"" << m_filename << "\"";
 
 	std::string cmd_str = cmd.str();

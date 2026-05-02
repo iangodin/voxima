@@ -1,11 +1,13 @@
 #pragma once
 
 #include <chrono>
+#include <iostream>
+#include <iomanip>
 
 class Timer
 {
 public:
-	Timer( std::string message ) :
+	explicit Timer( std::string message = {} ) :
 		_message( std::move( message ) ),
 		_start( std::chrono::high_resolution_clock::now() )
 	{
@@ -13,7 +15,28 @@ public:
 
 	~Timer( void )
 	{
-		std::cout << _message << ' ' << stop() << "ms\n";
+		if ( !_message.empty() )
+		{
+			double ms = stop();
+			std::cout << _message << std::fixed << std::setprecision( 3 ) << ms << "ms";
+			if ( _count > 0 )
+			{
+				double per_frame = ms / static_cast<double>( _count );
+				std::cout << ' ' << std::fixed << std::setprecision( 1 ) << 1000.0 / per_frame << "fps";
+			}
+			std::cout << '\n';
+		}
+	}
+
+	void message( std::string message, size_t count = 0 )
+	{
+		_message = std::move( message );
+		_count = count;
+	}
+
+	void abort( void )
+	{
+		_message.clear();
 	}
 
 private:
@@ -26,4 +49,5 @@ private:
 
 	std::string _message;
 	std::chrono::high_resolution_clock::time_point _start;
+	size_t _count = 0;
 };
