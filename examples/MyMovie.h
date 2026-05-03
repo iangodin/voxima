@@ -81,10 +81,8 @@ std::pair<Line &, ArrowTip &> create_arrow( Stage &stage, Point start, Point end
 
 Scene my_diagram( Stage &stage )
 {
-	auto &scene_node = create_node( stage, "場面", -6.F, 0.F, 1.0F, 0.5F );
-
+	auto &scene_node = create_node( stage, "Scene", -6.F, 0.F, 1.0F, 0.5F );
 	co_await scale_in( scene_node, 12 );
-
 	{
 		auto [line, arrow] = create_arrow( stage, { -5.F, 0.F }, { -4.0, 0.F } );
 		co_await choreograph(
@@ -92,9 +90,8 @@ Scene my_diagram( Stage &stage )
 			ease_in_out_cubic( arrow.end.x, arrow.start.x, arrow.end.x, 12 ) );
 	}
 
-	auto &oetf_node = create_node( stage, "😎😱💩👽", -3.F, 0.F, 1.0F, 0.5F );
+	auto &oetf_node = create_node( stage, "OETF", -3.F, 0.F, 1.0F, 0.5F );
 	co_await scale_in( oetf_node, 12 );
-
 	{
 		auto [line, arrow] = create_arrow( stage, { -2.F, 0.F }, { -1.0, 0.F } );
 		co_await choreograph(
@@ -104,19 +101,12 @@ Scene my_diagram( Stage &stage )
 
 	auto &signal_node = create_node( stage, "Signal", 0.F, 0.F, 1.0F, 0.5F );
 	co_await scale_in( signal_node, 12 );
+
+	co_await wait_for( 30 );
 }
 
 Screenplay my_movie( Stage &stage )
 {
-	auto &ellipse = stage.visuals.add( std::make_unique<Ellipse>() );
-	ellipse.position = { 4.0, 0.0 };
-	ellipse.half_width = 2.0;
-	ellipse.half_height = 1.0;
-
-	co_await wait_for( 30 );
-
-	co_await choreograph(
-		ease_in_out_cubic( ellipse.rotation, -90.F, 0.F, 60 ),
-		my_diagram( stage ) );
+	co_await my_diagram( stage );
 }
 

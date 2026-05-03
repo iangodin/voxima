@@ -23,7 +23,25 @@ bool Producer::produce( int argc, char *argv[] )
 	std::optional<std::string> font_path;
 	app.add_option( "--fonts", font_path, "Directory containing fonts" );
 
+	std::optional<std::string> theme_name;
+	app.add_option( "--theme", theme_name, "Theme to use" );
+
 	CLI11_PARSE( app, argc, argv );
+
+	if ( theme_name )
+	{
+		_stage.theme = Theme::get_by_name( *theme_name );
+	}
+
+	if ( _stage.theme == nullptr )
+	{
+		std::cout << "Available themes:\n";
+		for ( const auto &theme: Theme::get_registry() )
+		{
+			std::cout << "  " << theme.first << '\n';
+		}
+		throw std::runtime_error( "missing theme: " + *theme_name );
+	}
 
 	if ( font_path )
 	{
@@ -32,7 +50,7 @@ bool Producer::produce( int argc, char *argv[] )
 
 	std::optional<FfmpegRender> ffmpeg;
 	std::optional<PngRender> pngs;
-	std::tuple<std::string,int,std::string> svgs = {};
+	std::tuple<std::string, int, std::string> svgs = {};
 	bool write_svgs = false;
 
 	for ( const auto &output: outputs )
@@ -52,7 +70,10 @@ bool Producer::produce( int argc, char *argv[] )
 				throw std::runtime_error( "only one output png sequence allowed" );
 			}
 			auto filename = parse_sequence_name( output );
-			pngs = PngRender( std::get<0>( filename ), std::get<2>( filename ), std::get<1>( filename ) );
+			pngs = PngRender(
+				std::get<0>( filename ),
+				std::get<2>( filename ),
+				std::get<1>( filename ) );
 		}
 		else if ( output.ends_with( ".svg" ) )
 		{
@@ -92,7 +113,8 @@ bool Producer::produce( int argc, char *argv[] )
 			{
 				Timer timer_svg_save( "  SVG saving: " );
 				std::stringstream filename;
-				filename << std::get<0>( svgs ) << std::setw( std::get<1>( svgs ) ) << std::setfill( '0' ) << frame << std::get<2>( svgs );
+				filename << std::get<0>( svgs ) << std::setw( std::get<1>( svgs ) )
+						 << std::setfill( '0' ) << frame << std::get<2>( svgs );
 				std::ofstream svg_file( filename.str() );
 				svg_file << svg.str();
 			}
@@ -136,5 +158,4 @@ bool Producer::produce( int argc, char *argv[] )
 
 	return 0;
 }
-
 

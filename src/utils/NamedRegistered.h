@@ -45,6 +45,11 @@ public:
 		return m_name;
 	}
 
+	static std::unordered_map<std::string, T *> &get_registry()
+	{
+		static std::unordered_map<std::string, T *> registry;
+		return registry;
+	}
 private:
 	std::string m_name;
 
@@ -55,9 +60,4 @@ private:
 		get_registry()[m_name] = static_cast<T *>( this );
 	}
 
-	static std::unordered_map<std::string, T *> &get_registry()
-	{
-		static std::unordered_map<std::string, T *> registry;
-		return registry;
-	}
 };

@@ -29,12 +29,17 @@ FontStack create_font_stack( const TextStyle &style, Theme &theme, std::string_v
 	auto properties = style.properties();
 	const float font_size = theme_font_size( properties.scale.value_or( Scale::MEDIUM ) );
 
+	std::string weight = "Regular";
+	if ( properties.weight == Weight::LIGHT ) weight = "Light";
+	if ( properties.weight == Weight::BOLD ) weight = "Bold";
+	if ( properties.weight == Weight::BLACK ) weight = "Heavy";
+
 	FontStack fonts;
 	// Main: FiraGO, Math: NewCM Math, Emoji: Noto Emoji, CJK: Noto Sans CJK, Mono: Fira Mono
-	fonts.push( theme.load_font( std::string(base_name) + ".ttf", 0, font_size ) );
+	fonts.push( theme.load_font( std::string(base_name) + "-" + weight + ".ttf", 0, font_size ) );
 	fonts.push( theme.load_font( "NewCMMath-Regular.otf", 0, font_size ) );
-	fonts.push( theme.load_font( "NotoEmoji.ttf", 0, font_size ) );
-	fonts.push( theme.load_font( "NotoSansCJK.ttc", 0, font_size ) );
+	fonts.push( theme.load_font( "NotoEmoji-Variable.ttf", 0, font_size ) );
+	fonts.push( theme.load_font( "NotoSansCJK-Variable.otc", 0, font_size ) );
 	fonts.push( theme.load_font( "FiraMono-Regular.ttf", 0, font_size ) );
 	return fonts;
 }
@@ -50,7 +55,7 @@ FontStack intent_caption( const TextStyle &style, Theme &theme ) { return create
 
 Theme create_theme( void )
 {
-	Theme theme;
+	Theme theme( "Modern Technical" );
 	theme.register_factory( "prose", intent_prose );
 	theme.register_factory( "code", intent_code );
 	theme.register_factory( "math", intent_math );
@@ -60,5 +65,4 @@ Theme create_theme( void )
 	theme.register_factory( "caption", intent_caption );
 	return theme;
 }
-
 }

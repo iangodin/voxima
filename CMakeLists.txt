@@ -31,10 +31,14 @@ add_library( visuals STATIC
 	src/core/Theme.cpp
 	src/exporters/SVGWriter.cpp
 	src/exporters/FfmpegRender.cpp
-	src/themes/Fira.cpp
 	src/fonts/FontStack.cpp
 	src/fonts/MFLFontFace.cpp
 	src/themes/NewComputerModern.cpp
+	src/themes/Fira.cpp
+	src/themes/AcademicClassic.cpp
+	src/themes/EngineeringBlueprint.cpp
+	src/themes/ModernTechnical.cpp
+	src/themes/PlayfulDiscovery.cpp
 	src/utils/FreetypeError.cpp
 	src/visuals/CreateMath.cpp
 	src/visuals/CreateText.cpp

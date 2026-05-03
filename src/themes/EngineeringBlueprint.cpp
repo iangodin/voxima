@@ -24,33 +24,41 @@ float theme_font_size( Scale scale )
 	return font_size;
 }
 
-FontStack create_font_stack( const TextStyle &style, Theme &theme, std::string_view base_name )
+FontStack create_font_stack( const TextStyle &style, Theme &theme )
 {
 	auto properties = style.properties();
 	const float font_size = theme_font_size( properties.scale.value_or( Scale::MEDIUM ) );
 
+	int weight = 400; // Regular
+	if ( properties.weight == Weight::LIGHT ) weight = 300;
+	if ( properties.weight == Weight::BOLD ) weight = 700;
+	if ( properties.weight == Weight::BLACK ) weight = 900;
+
+	int width = 100; // Normal
+	int slant = (properties.slant == Slant::ITALIC || properties.slant == Slant::OBLIQUE) ? 1 : 0;
+
 	FontStack fonts;
-	// Main: IBM Plex Sans, Math: STIX Two Math, Emoji: Noto Emoji, CJK: IBM Plex Sans CJK, Mono: IBM Plex Mono
-	fonts.push( theme.load_font( std::string(base_name) + ".ttf", 0, font_size ) );
-	fonts.push( theme.load_font( "STIXTwoMath-Regular.otf", 0, font_size ) );
-	fonts.push( theme.load_font( "NotoEmoji.ttf", 0, font_size ) );
-	fonts.push( theme.load_font( "IBMPlexSansCJK.ttc", 0, font_size ) );
+	// Main: IBM Plex Sans, Math: STIX Two Math, Emoji: Noto Emoji, CJK: IBM Plex Sans JP, Mono: IBM Plex Mono
+	fonts.push( theme.load_variable_font( "IBMPlexSans-Variable.ttf", 0, font_size, weight, width, slant ) );
+	fonts.push( theme.load_font( "STIX2Math.otf", 0, font_size ) );
+	fonts.push( theme.load_font( "NotoEmoji-Variable.ttf", 0, font_size ) );
+	fonts.push( theme.load_font( "IBMPlexSansJP-Regular.ttf", 0, font_size ) );
 	fonts.push( theme.load_font( "IBMPlexMono-Regular.ttf", 0, font_size ) );
 	return fonts;
 }
 }
 
-FontStack intent_prose( const TextStyle &style, Theme &theme ) { return create_font_stack( style, theme, "IBMPlexSans-Regular" ); }
-FontStack intent_code( const TextStyle &style, Theme &theme ) { return create_font_stack( style, theme, "IBMPlexMono-Regular" ); }
-FontStack intent_math( const TextStyle &style, Theme &theme ) { return create_font_stack( style, theme, "IBMPlexSans-Regular" ); }
-FontStack intent_title( const TextStyle &style, Theme &theme ) { return create_font_stack( style, theme, "IBMPlexSans-Bold" ); }
-FontStack intent_label( const TextStyle &style, Theme &theme ) { return create_font_stack( style, theme, "IBMPlexSans-Regular" ); }
-FontStack intent_annotation( const TextStyle &style, Theme &theme ) { return create_font_stack( style, theme, "IBMPlexSans-Regular" ); }
-FontStack intent_caption( const TextStyle &style, Theme &theme ) { return create_font_stack( style, theme, "IBMPlexSans-Regular" ); }
+FontStack intent_prose( const TextStyle &style, Theme &theme ) { return create_font_stack( style, theme ); }
+FontStack intent_code( const TextStyle &style, Theme &theme ) { return create_font_stack( style, theme ); }
+FontStack intent_math( const TextStyle &style, Theme &theme ) { return create_font_stack( style, theme ); }
+FontStack intent_title( const TextStyle &style, Theme &theme ) { return create_font_stack( style, theme ); }
+FontStack intent_label( const TextStyle &style, Theme &theme ) { return create_font_stack( style, theme ); }
+FontStack intent_annotation( const TextStyle &style, Theme &theme ) { return create_font_stack( style, theme ); }
+FontStack intent_caption( const TextStyle &style, Theme &theme ) { return create_font_stack( style, theme ); }
 
 Theme create_theme( void )
 {
-	Theme theme;
+	Theme theme( "Engineering Blueprint" );
 	theme.register_factory( "prose", intent_prose );
 	theme.register_factory( "code", intent_code );
 	theme.register_factory( "math", intent_math );

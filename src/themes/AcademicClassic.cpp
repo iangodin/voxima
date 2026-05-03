@@ -33,7 +33,7 @@ FontStack create_font_stack( const TextStyle &style, Theme &theme, std::string_v
 	// Main: New Computer Modern, Math: NewCM Math, Emoji: Symbola, CJK: Source Han Serif, Mono: New Computer Modern Mono
 	fonts.push( theme.load_font( std::string(base_name) + ".otf", 0, font_size ) );
 	fonts.push( theme.load_font( "NewCMMath-Regular.otf", 0, font_size ) );
-	fonts.push( theme.load_font( "Symbola.ttf", 0, font_size ) );
+	fonts.push( theme.load_font( "Symbola-Emoji.ttf", 0, font_size ) );
 	fonts.push( theme.load_font( "SourceHanSerif.ttc", 0, font_size ) );
 	fonts.push( theme.load_font( "NewCMMono10-Regular.otf", 0, font_size ) );
 	return fonts;
@@ -50,7 +50,7 @@ FontStack intent_caption( const TextStyle &style, Theme &theme ) { return create
 
 Theme create_theme( void )
 {
-	Theme theme;
+	Theme theme( "Academic Classic" );
 	theme.register_factory( "prose", intent_prose );
 	theme.register_factory( "code", intent_code );
 	theme.register_factory( "math", intent_math );
