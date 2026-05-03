@@ -26,6 +26,8 @@ add_subdirectory( extern/mfl )
 add_library( visuals STATIC
 	src/core/EaseCubic.cpp
 	src/core/EaseElastic.cpp
+	src/core/EaseBack.cpp
+	src/core/EaseLinear.cpp
 	src/core/Script.cpp
 	src/core/Producer.cpp
 	src/core/Theme.cpp
@@ -49,7 +51,7 @@ target_compile_options( visuals PUBLIC -fcoroutines )
 target_include_directories( visuals PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/src ${CMAKE_CURRENT_SOURCE_DIR}/extern ${CMAKE_CURRENT_SOURCE_DIR} )
 target_link_libraries( visuals PUBLIC lunasvg::lunasvg plutovg::plutovg Freetype::Freetype harfbuzz::harfbuzz CLI11::CLI11 mfl )
 
-add_executable( sonimation tools/main.cpp )
+add_executable( sonimation tools/main.cpp demos/eases/show_animation.cpp )
 target_compile_features( sonimation PUBLIC cxx_std_20 )
 target_compile_options( sonimation PUBLIC -fcoroutines )
 target_link_libraries( sonimation PUBLIC visuals )

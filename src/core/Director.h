@@ -21,7 +21,7 @@ bool advance( Coroutines &...coros )
 }
 
 template <typename ...Coroutines>
-Director choreograph( Coroutines ...coros )
+Director choreograph( Coroutines &&...coros )
 {
 	while ( advance( coros... ) )
 	{

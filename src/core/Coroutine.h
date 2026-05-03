@@ -4,7 +4,7 @@
 #include "Production.h"
 
 #include <coroutine>
-#include <iostream>
+#include <exception>
 
 struct Coroutine
 {
@@ -78,7 +78,6 @@ struct Coroutine
 		return !handle || handle.done();
 	}
 
-	// --- THE AWAITER INTERFACE ---
 	bool await_ready() const noexcept
 	{
 		return !handle || handle.done();

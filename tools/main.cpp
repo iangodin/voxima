@@ -8,7 +8,7 @@
 #include <themes/ModernTechnical.h>
 #include <themes/PlayfulDiscovery.h>
 
-#include "examples/MyMovie.h"
+Screenplay my_screenplay( Stage &stage );
 
 int main( int argc, char *argv[] )
 {
@@ -21,13 +21,14 @@ int main( int argc, char *argv[] )
 
 	Stage stage;
 	stage.theme = Theme::get_by_name( theme1.get_name() );
-	stage.background = { 0.1f, 0.1f, 0.2f, 1.0f }; // Dark blue background
+	stage.background = { 0.05f, 0.05f, 0.1f, 1.0f };
 
-	auto movie = my_movie( stage );
+	auto screenplay = my_screenplay( stage );
 
-	Producer producer( std::move(movie), stage );
+	Producer producer( std::move(screenplay), stage );
 	if ( !producer.produce( argc, argv ) )
 		result = -1;
 
 	return result;
 }
+
