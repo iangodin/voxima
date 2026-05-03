@@ -1,10 +1,8 @@
 
-
 #include "Huml.h"
 
 #include <limits>
 #include <charconv>
-#include <algorithm>
 
 namespace
 {
@@ -76,6 +74,81 @@ bool Value::empty() const
 	}
 }
 
+void print( std::ostream &os, const Null &, const std::string &indent )
+{
+	os << indent << "null";
+}
+
+void print( std::ostream &os, const Missing &, const std::string &indent )
+{
+	os << indent << "missing";
+}
+
+void print( std::ostream &os, bool value, const std::string &indent )
+{
+	if ( value )
+	{
+		os << indent << "true";
+	}
+	else
+	{
+		os << indent << "false";
+	}
+}
+
+void print( std::ostream &os, int64_t value, const std::string &indent )
+{
+	os << indent << value;
+}
+
+void print( std::ostream &os, double value, const std::string &indent )
+{
+	os << indent << value;
+}
+
+void print( std::ostream &os, const std::string &value, const std::string &indent )
+{
+	os << indent << '"' << value << '"';
+}
+
+void print( std::ostream &os, const MultiLine &lines, const std::string &indent )
+{
+	os << "\"\"\"\n";
+	for ( const auto &line: lines )
+	{
+		os << indent << "  " << line << '\n';
+	}
+	os << indent << "\"\"\"\n";
+}
+
+void print( std::ostream &os, const List &list, std::string &indent )
+{
+	std::string child = indent + "  ";
+	os << indent << "[\n";
+	for ( const auto &value: list )
+	{
+		print( os, value, child );
+	}
+	os << indent << "]\n";
+}
+
+void print( std::ostream &os, const Dict &dict, const std::string &indent )
+{
+	std::string child = indent + "  ";
+	os << indent << "{\n";
+	for ( const auto &[key, value]: dict )
+	{
+		os << key << ": ";
+		print( os, value, child );
+	}
+	os << indent << "}\n";
+}
+
+void print( std::ostream &output, const Value &value, const std::string &indent )
+{
+	std::visit( [&]( const auto &v ) { print( output, v, indent ); }, value );
+}
+
 ParseResult Parser::parse()
 {
 	skip_initial( view_ );
@@ -103,6 +176,56 @@ void Parser::advance( std::string_view &view, size_t n )
 	view.remove_prefix( n );
 }
 
+// Validates that the remainder of the current line (up to \n or end) has no
+// trailing spaces and, if it starts with #, that the comment is well-formed.
+// Returns false and sets an error on violation.
+bool Parser::check_end_of_line( std::string_view view )
+{
+	// Find the end of the current logical line.
+	auto eol = view.find( '\n' );
+	std::string_view line = view.substr( 0, eol );
+
+	// Strip a valid inline comment from the right, if present.
+	auto hash = line.find( '#' );
+	if ( hash != std::string_view::npos )
+	{
+		// Preceding the # there must be spaces only (already consumed value).
+		// The # must be followed by exactly one space (then comment text).
+		std::string_view before_hash = line.substr( 0, hash );
+		for ( char c: before_hash )
+		{
+			if ( c != ' ' )
+			{
+				set_error( "Unexpected character before inline comment '#'" );
+				return false;
+			}
+		}
+		std::string_view comment_body = line.substr( hash ); // includes '#'
+		if ( comment_body.size() >= 2 && comment_body[1] != ' ' )
+		{
+			set_error( "Comment marker '#' must be followed by exactly one space" );
+			return false;
+		}
+		// Check for trailing spaces inside the comment body.
+		if ( !comment_body.empty() && comment_body.back() == ' ' )
+		{
+			set_error( "Trailing spaces are not allowed" );
+			return false;
+		}
+		// Trim to before the comment for trailing-space check below.
+		line = before_hash;
+	}
+
+	// No trailing spaces allowed on the remaining line content.
+	if ( !line.empty() && line.back() == ' ' )
+	{
+		set_error( "Trailing spaces are not allowed" );
+		return false;
+	}
+
+	return true;
+}
+
 void Parser::skip_to_next_content( std::string_view &view )
 {
 	while ( !view.empty() )
@@ -113,6 +236,14 @@ void Parser::skip_to_next_content( std::string_view &view )
 
 		if ( i == view.size() )
 		{
+			// Blank line (spaces only) — trailing spaces are not allowed.
+			if ( i > 0 )
+			{
+				set_error( "Trailing spaces are not allowed on blank lines" );
+				// Advance past to avoid an infinite loop; error is already set.
+				advance( view, i );
+				return;
+			}
 			advance( view, i );
 			break;
 		}
@@ -125,6 +256,21 @@ void Parser::skip_to_next_content( std::string_view &view )
 
 		if ( view[i] == '#' )
 		{
+			// The '#' must be followed by a space (or be the only thing on the line).
+			if ( i + 1 < view.size() && view[i + 1] != ' ' && view[i + 1] != '\n' )
+			{
+				set_error( "Comment marker '#' must be followed by exactly one space" );
+				return;
+			}
+			// Check for trailing spaces inside the comment.
+			auto eol = view.find( '\n', i );
+			std::string_view comment_line = view.substr(
+				i, eol == std::string_view::npos ? view.size() - i : eol - i );
+			if ( !comment_line.empty() && comment_line.back() == ' ' )
+			{
+				set_error( "Trailing spaces are not allowed" );
+				return;
+			}
 			consume_line( view );
 			continue;
 		}
@@ -135,9 +281,15 @@ void Parser::skip_to_next_content( std::string_view &view )
 
 void Parser::skip_initial( std::string_view &view )
 {
-	if ( view.starts_with( "%HUML" ) )
+	if ( view.starts_with( "%HUML " ) )
 	{
 		consume_line( view );
+	}
+	else if ( view.starts_with( "%HUML" ) )
+	{
+		// "%HUML" not followed by a space is malformed.
+		set_error( "Malformed version directive: expected '%HUML <version>'" );
+		return;
 	}
 	skip_to_next_content( view );
 }
@@ -158,18 +310,13 @@ void Parser::consume_line( std::string_view &view )
 std::optional<Value> Parser::parse_root( std::string_view &view )
 {
 	if ( view.empty() )
-		return Value{ std::monostate{} };
+		return Value{ Null{} };
 
 	return parse_indented_value( view, 0, true );
 }
 
 std::optional<Value> Parser::parse_scalar_or_inline( std::string_view &view )
 {
-	size_t spaces = 0;
-	while ( spaces < view.size() && view[spaces] == ' ' )
-		spaces++;
-	advance( view, spaces );
-
 	if ( view.empty() )
 	{
 		set_error( "Unexpected end of input" );
@@ -207,7 +354,7 @@ std::optional<Value> Parser::parse_scalar_or_inline( std::string_view &view )
 	if ( view.starts_with( "null" ) )
 	{
 		advance( view, 4 );
-		return Value{ std::monostate{} };
+		return Value{ Null{} };
 	}
 
 	if ( view.starts_with( "nan" ) )
@@ -236,26 +383,34 @@ std::optional<Value> Parser::parse_scalar_or_inline( std::string_view &view )
 
 std::optional<Value> Parser::parse_number( std::string_view &view )
 {
+	// 1. Identify the numeric token boundaries based on HUML delimiters.
 	auto end = view.find_first_of( ", \n]}#" );
-	std::string_view sub = ( end == std::string_view::npos )
-		? view
-		: view.substr( 0, end );
+	std::string_view sub = view.substr( 0, end );
 
+	// 2. Prepare a cleaned string without underscores for parsing.
 	std::string s( sub );
 	std::erase( s, '_' );
 
 	std::string_view sv = s;
-	int64_t sign = 1;
-	if ( sv.starts_with( '+' ) )
+	if ( sv.empty() )
 	{
-		sv.remove_prefix( 1 );
-	}
-	else if ( sv.starts_with( '-' ) )
-	{
-		sv.remove_prefix( 1 );
-		sign = -1;
+		set_error( "Expected numeric value" );
+		return std::nullopt;
 	}
 
+	// 3. Handle explicit signs.
+	int64_t sign = 1;
+	if ( sv.starts_with( '-' ) )
+	{
+		sign = -1;
+		sv.remove_prefix( 1 );
+	}
+	else if ( sv.starts_with( '+' ) )
+	{
+		sv.remove_prefix( 1 );
+	}
+
+	// 4. Determine base for integer parsing.
 	int base = 10;
 	if ( sv.starts_with( "0x" ) )
 	{
@@ -273,43 +428,36 @@ std::optional<Value> Parser::parse_number( std::string_view &view )
 		sv.remove_prefix( 2 );
 	}
 
+	// Advance the master view past the token
 	advance( view, sub.size() );
 
-	if ( base == 10 &&
-		 ( sv.find( '.' ) != std::string_view::npos ||
-		   sv.find( 'e' ) != std::string_view::npos ) )
+	// 5. Attempt Integer Parse
+	int64_t i_result = 0;
+	auto [i_ptr, i_ec] =
+		std::from_chars( sv.data(), sv.data() + sv.size(), i_result, base );
+
+	// Only accept if the entire cleaned string was consumed
+	if ( i_ec == std::errc{} && i_ptr == sv.data() + sv.size() )
 	{
-		try
+		return Value{ sign * i_result };
+	}
+
+	// 6. Attempt Double Parse (only for base 10)
+	if ( base == 10 )
+	{
+		double d_result = 0.0;
+		// Use the full cleaned string 's' to include the sign for from_chars.
+		auto [d_ptr, d_ec] = std::from_chars( s.data(), s.data() + s.size(), d_result );
+
+		if ( d_ec == std::errc{} && d_ptr == s.data() + s.size() )
 		{
-			size_t processed;
-			double val = std::stod( s, &processed );
-			return Value{ val };
-		}
-		catch ( ... )
-		{
-			return Value{ std::string( sub ) };
+			return Value{ d_result };
 		}
 	}
 
-	try
-	{
-		int64_t result = 0;
-		auto [ptr, ec] =
-			std::from_chars( sv.data(), sv.data() + sv.size(), result, base );
-
-		if ( ec == std::errc{} )
-		{
-			return Value{ sign * result };
-		}
-		else
-		{
-			return Value{ std::string( sub ) };
-		}
-	}
-	catch ( ... )
-	{
-		return Value{ std::string( sub ) };
-	}
+	// 7. Fail loudly: if it wasn't a valid number, it must be a quoted string in HUML.
+	set_error( "Invalid numeric format; strings must be double-quoted" );
+	return std::nullopt;
 }
 
 std::optional<List> Parser::parse_multiline_list( std::string_view &view, int indent )
@@ -321,13 +469,20 @@ std::optional<List> Parser::parse_multiline_list( std::string_view &view, int in
 			break;
 
 		advance( view, static_cast<size_t>( indent ) * 2 );
+
 		if ( !view.starts_with( "- " ) )
 		{
-			// This shouldn't happen if is_list_item checked out, but we should be safe
 			break;
 		}
 
 		advance( view, 2 ); // consume "- "
+
+		if ( view.starts_with( ' ' ) )
+		{
+			set_error( "Only a single space is allowed after the '-' indicator" );
+			return std::nullopt;
+		}
+
 		auto val = parse_indented_value( view, indent + 1, true );
 		if ( !val )
 			return std::nullopt;
@@ -353,59 +508,96 @@ std::optional<Dict> Parser::parse_multiline_dict( std::string_view &view, int in
 			return std::nullopt;
 		}
 
-		bool is_vector = false;
 		if ( view.starts_with( "::" ) )
 		{
-			is_vector = true;
 			advance( view, 2 );
-		}
-		else if ( view.starts_with( ":" ) )
-		{
-			advance( view, 1 );
-		}
-		else
-		{
-			set_error( "Expected ':' after key" );
-			return std::nullopt;
-		}
+			size_t indicator_line = line_;
 
-		bool has_inline_content = false;
-		if ( view.starts_with( ' ' ) )
-		{
-			size_t i = 1;
-			while ( i < view.size() && view[i] == ' ' )
-				i++;
-			if ( i < view.size() && view[i] != '\n' && view[i] != '#' )
-				has_inline_content = true;
+			// Must be followed by exactly '\n', optional '# comment', or ' ' + inline content
+			bool has_inline_content = false;
+			if ( view.starts_with( ' ' ) )
+			{
+				if ( view.size() >= 2 && view[1] != '\n' && view[1] != '#' )
+				{
+					if ( view[1] == ' ' )
+					{
+						set_error( "Only a single space is allowed after '::'" );
+						return std::nullopt;
+					}
+					has_inline_content = true;
+					advance( view, 1 );
+				}
+			}
+			else if (
+				!view.empty() && !view.starts_with( '\n' ) && !view.starts_with( '#' ) )
+			{
+				set_error( "Expected newline or ' ' after '::'" );
+				return std::nullopt;
+			}
 
-			if ( has_inline_content )
-				advance( view, 1 );
-		}
-
-		if ( is_vector )
-		{
+			Value val;
 			if ( has_inline_content )
 			{
 				auto v = parse_inline_vector( view );
 				if ( !v )
 					return std::nullopt;
-				dict[std::move( *key )] = std::move( *v );
+				val = std::move( *v );
 			}
 			else
 			{
+				skip_to_next_content( view );
 				auto v = parse_indented_value( view, indent + 1, true );
 				if ( !v )
 					return std::nullopt;
-				dict[std::move( *key )] = std::move( *v );
+				if ( !v->is_list() && !v->is_dict() )
+				{
+					set_error( "Expected vector after '::'", indicator_line );
+					return std::nullopt;
+				}
+				val = std::move( *v );
 			}
+
+			if ( dict.find( *key ) != dict.end() )
+			{
+				set_error( "Duplicate keys are not allowed." );
+				return std::nullopt;
+			}
+			dict[std::move( *key )] = std::move( val );
 		}
 		else
 		{
+			advance( view, 1 ); // consume ':'
+			size_t indicator_line = line_;
+
+			if ( !view.starts_with( ' ' ) )
+			{
+				set_error( "Expected exactly one space after ':'" );
+				return std::nullopt;
+			}
+			if ( view.size() >= 2 && view[1] == ' ' )
+			{
+				set_error( "Only a single space is allowed after ':'" );
+				return std::nullopt;
+			}
+			advance( view, 1 );
+
 			auto v = parse_indented_value( view, indent + 1, true );
 			if ( !v )
 				return std::nullopt;
+			if ( v->is_list() || v->is_dict() )
+			{
+				set_error(
+					"The ':' indicator must be followed by a scalar.", indicator_line );
+				return std::nullopt;
+			}
+			if ( dict.find( *key ) != dict.end() )
+			{
+				set_error( "Duplicate keys are not allowed." );
+				return std::nullopt;
+			}
 			dict[std::move( *key )] = std::move( *v );
 		}
+
 		skip_to_next_content( view );
 	}
 	return dict;
@@ -413,11 +605,6 @@ std::optional<Dict> Parser::parse_multiline_dict( std::string_view &view, int in
 
 std::optional<Value> Parser::parse_inline_vector( std::string_view &view )
 {
-	size_t spaces = 0;
-	while ( spaces < view.size() && view[spaces] == ' ' )
-		spaces++;
-	advance( view, spaces );
-
 	if ( view.starts_with( "[]" ) )
 	{
 		advance( view, 2 );
@@ -429,10 +616,9 @@ std::optional<Value> Parser::parse_inline_vector( std::string_view &view )
 		return Value{ Dict{} };
 	}
 
-	std::string_view temp = view;
-	auto key_test = parse_key( temp );
-	if ( key_test && temp.starts_with( ':' ) )
+	if ( is_key( view ) )
 	{
+		// Inline dict.
 		Dict dict;
 		while ( !view.empty() )
 		{
@@ -442,18 +628,44 @@ std::optional<Value> Parser::parse_inline_vector( std::string_view &view )
 			if ( !view.starts_with( ':' ) )
 				break;
 			advance( view, 1 );
-			if ( view.starts_with( ' ' ) )
-				advance( view, 1 );
+
+			if ( !view.starts_with( ' ' ) )
+			{
+				set_error( "Expected exactly one space after ':' in inline dict" );
+				return std::nullopt;
+			}
+			if ( view.size() >= 2 && view[1] == ' ' )
+			{
+				set_error( "Only a single space is allowed after ':' in inline dict" );
+				return std::nullopt;
+			}
+			advance( view, 1 ); // consume the single space
+
 			auto val = parse_scalar_or_inline( view );
 			if ( !val )
 				return std::nullopt;
+			if ( val->is_list() || val->is_dict() )
+			{
+				set_error( "Inline dict values must be scalars" );
+				return std::nullopt;
+			}
 			dict[std::move( *key )] = std::move( *val );
 
 			if ( view.starts_with( ',' ) )
 			{
 				advance( view, 1 );
-				if ( view.starts_with( ' ' ) )
-					advance( view, 1 );
+				if ( !view.starts_with( ' ' ) )
+				{
+					set_error( "Expected exactly one space after ',' in inline dict" );
+					return std::nullopt;
+				}
+				if ( view.size() >= 2 && view[1] == ' ' )
+				{
+					set_error(
+						"Only a single space is allowed after ',' in inline dict" );
+					return std::nullopt;
+				}
+				advance( view, 1 );
 			}
 			else
 			{
@@ -464,18 +676,35 @@ std::optional<Value> Parser::parse_inline_vector( std::string_view &view )
 	}
 	else
 	{
+		// Inline list.
 		List list;
 		while ( !view.empty() )
 		{
 			auto val = parse_scalar_or_inline( view );
 			if ( !val )
 				return std::nullopt;
+			if ( val->is_list() || val->is_dict() )
+			{
+				set_error( "Inline list items must be scalars" );
+				return std::nullopt;
+			}
 			list.push_back( std::move( *val ) );
+
 			if ( view.starts_with( ',' ) )
 			{
 				advance( view, 1 );
 				if ( view.starts_with( ' ' ) )
-					advance( view, 1 );
+				{
+					set_error( "Expected exactly one space after ',' in inline list" );
+					return std::nullopt;
+				}
+				if ( view.size() >= 2 && view[1] == ' ' )
+				{
+					set_error(
+						"Only a single space is allowed after ',' in inline list" );
+					return std::nullopt;
+				}
+				advance( view, 1 );
 			}
 			else
 			{
@@ -489,6 +718,8 @@ std::optional<Value> Parser::parse_inline_vector( std::string_view &view )
 std::optional<Value> Parser::parse_indented_value(
 	std::string_view &view, int expected_indent, bool allow_multiline_vector )
 {
+	// Consume any leading spaces that were already validated by the caller's
+	// indentation check. Do not silently eat arbitrary leading spaces.
 	size_t spaces = 0;
 	while ( spaces < view.size() && view[spaces] == ' ' )
 		spaces++;
@@ -499,25 +730,32 @@ std::optional<Value> Parser::parse_indented_value(
 
 	skip_to_next_content( view );
 
+	// Handle a bare "::" in value position — only valid in a list item context
+	// (i.e. "- ::"). The allow_multiline_vector flag gates this.
 	if ( allow_multiline_vector && view.starts_with( "::" ) )
 	{
 		advance( view, 2 );
+
 		bool has_inline_content = false;
 		if ( view.starts_with( ' ' ) )
 		{
-			size_t i = 1;
-			while ( i < view.size() && view[i] == ' ' )
-				i++;
-			if ( i < view.size() && view[i] != '\n' && view[i] != '#' )
+			if ( view.size() >= 2 && view[1] != '\n' && view[1] != '#' )
+			{
+				if ( view.size() >= 2 && view[1] == ' ' )
+				{
+					set_error( "Only a single space is allowed after '::'" );
+					return std::nullopt;
+				}
 				has_inline_content = true;
-
-			if ( has_inline_content )
 				advance( view, 1 );
+			}
 		}
 
 		if ( has_inline_content )
 			return parse_inline_vector( view );
 
+		// Multi-line: skip to next content then parse the indented vector body.
+		skip_to_next_content( view );
 		return parse_indented_value( view, expected_indent, true );
 	}
 
@@ -559,7 +797,16 @@ Parser::parse_multiline_string( std::string_view &view, int indent )
 	consume_line( view );
 
 	MultiLine lines;
+	// Content lines are indented one extra level relative to the key's indent,
+	// so the minimum indentation to strip is (indent) * 2 spaces.
+	// (indent here is already expected_indent which equals key_level + 1 for
+	//  scalar keys, but the """ sits at key level so indent == key_level + 1
+	//  means base_spaces == key_level * 2 + 2).
 	size_t base_spaces = static_cast<size_t>( indent ) * 2;
+
+	// The closing """ sits at the key's indentation level, which is (indent - 1)
+	// levels, i.e. (indent - 1) * 2 spaces.
+	size_t closing_spaces = static_cast<size_t>( indent > 0 ? indent - 1 : 0 ) * 2;
 
 	while ( !view.empty() )
 	{
@@ -570,8 +817,8 @@ Parser::parse_multiline_string( std::string_view &view, int indent )
 			temp.remove_prefix( 1 );
 			spaces++;
 		}
-		if ( temp.starts_with( "\"\"\"" ) &&
-			 spaces == static_cast<size_t>( indent - 1 ) * 2 )
+
+		if ( temp.starts_with( "\"\"\"" ) && spaces == closing_spaces )
 		{
 			advance( view, spaces + 3 );
 			break;
@@ -599,14 +846,40 @@ std::optional<std::string> Parser::parse_key( std::string_view &view )
 {
 	if ( view.starts_with( '"' ) )
 		return parse_quoted_string( view );
+
+	// Unquoted key: must start with a letter and contain only a-zA-Z0-9_-.
 	auto eol = view.find( '\n' );
 	auto colon = view.find( ':' );
 	if ( colon == std::string_view::npos ||
 		 ( eol != std::string_view::npos && colon > eol ) )
 		return std::nullopt;
+
 	std::string_view key_view = view.substr( 0, colon );
-	while ( !key_view.empty() && key_view.back() == ' ' )
-		key_view = key_view.substr( 0, key_view.size() - 1 );
+
+	// The first character must be a letter.
+	if ( key_view.empty() )
+		return std::nullopt;
+	if ( !( ( key_view[0] >= 'a' && key_view[0] <= 'z' ) ||
+			( key_view[0] >= 'A' && key_view[0] <= 'Z' ) ) )
+		return std::nullopt;
+
+	// All subsequent characters must be alphanumeric, '_', or '-'.
+	for ( size_t i = 1; i < key_view.size(); ++i )
+	{
+		char c = key_view[i];
+		bool valid = ( c >= 'a' && c <= 'z' ) || ( c >= 'A' && c <= 'Z' ) ||
+			( c >= '0' && c <= '9' ) || c == '_' || c == '-';
+		if ( !valid )
+		{
+			if ( c == ' ' )
+				set_error( "Spaces are not allowed before ':' in key" );
+			else
+				set_error(
+					"Invalid character in unquoted key; use a quoted key for special characters" );
+			return std::nullopt;
+		}
+	}
+
 	std::string key( key_view );
 	advance( view, colon );
 	return key;
@@ -616,17 +889,36 @@ bool Parser::is_key( std::string_view v )
 {
 	if ( v.empty() )
 		return false;
-	size_t i = 0;
-	while ( i < v.size() && v[i] == ' ' )
-		i++;
-	if ( i == v.size() )
+
+	// A quoted key is always valid.
+	if ( v[0] == '"' )
+		return true;
+
+	// An unquoted key must start with a letter.
+	if ( !( ( v[0] >= 'a' && v[0] <= 'z' ) || ( v[0] >= 'A' && v[0] <= 'Z' ) ) )
 		return false;
-	return ( v[i] >= 'a' && v[i] <= 'z' ) || ( v[i] >= 'A' && v[i] <= 'Z' ) ||
-		v[i] == '"';
+
+	// Scan forward to find the colon that terminates the key.
+	size_t i = 1;
+	while ( i < v.size() )
+	{
+		char c = v[i];
+		if ( c == ':' )
+			return true; // reached the key terminator
+		bool valid = ( c >= 'a' && c <= 'z' ) || ( c >= 'A' && c <= 'Z' ) ||
+			( c >= '0' && c <= '9' ) || c == '_' || c == '-';
+		if ( !valid )
+			return false;
+		i++;
+	}
+	return false; // never found a ':'
 }
 
 bool Parser::check_indent( std::string_view view, int level )
 {
+	if ( view.empty() )
+		return false;
+
 	size_t spaces = static_cast<size_t>( level ) * 2;
 	if ( view.size() < spaces )
 		return false;
@@ -669,6 +961,12 @@ std::optional<std::string> Parser::parse_quoted_string( std::string_view &view )
 		{
 			advance( view, 1 );
 			return result;
+		}
+		else if ( view[0] == '\n' )
+		{
+			// Single-line strings cannot span lines.
+			set_error( "Unescaped newline inside quoted string" );
+			return std::nullopt;
 		}
 		else
 		{

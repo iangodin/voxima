@@ -8,11 +8,14 @@
 #include <variant>
 #include <optional>
 #include <cstdint>
+#include <iostream>
 
 namespace huml
 {
 
 struct Value;
+void print( std::ostream &output, const Value &value, const std::string &indent = {} );
+
 using Dict = std::map<std::string, Value>;
 using List = std::vector<Value>;
 using MultiLine = std::vector<std::string>;
@@ -21,7 +24,9 @@ struct Missing
 {
 };
 
-using Null = std::monostate;
+struct Null
+{
+};
 
 struct Value
 	: std::variant<
@@ -138,7 +143,11 @@ struct Value
 	size_t size() const;
 	bool empty() const;
 
-private:
+	friend std::ostream &operator<<( std::ostream &os, const Value &value )
+	{
+		print( os, value );
+		return os;
+	}
 };
 
 Value merge( const Value &master, const Value &variant );
@@ -147,9 +156,25 @@ struct ParseError
 {
 	std::string message;
 	size_t line = 0;
+
+	friend std::ostream &operator<<( std::ostream &os, const ParseError &e )
+	{
+		os << "line " << e.line << ": " << e.message;
+		return os;
+	}
 };
 
 using ParseResult = std::variant<huml::Value, ParseError>;
+
+inline std::ostream &operator<<( std::ostream &os, const ParseResult &result )
+{
+	std::visit( [&]( const auto &v )
+	{
+		os << v << '\n';
+	},
+	result );
+	return os;
+}
 
 class Parser
 {
@@ -168,11 +193,23 @@ private:
 
 	void advance( std::string_view &view, size_t n );
 
+	bool check_end_of_line( std::string_view view );
+
 	void set_error( std::string message )
 	{
+		std::cout << "Setting error to " << message << " at line " << line_ << '\n';
 		if ( !last_error_ )
 		{
 			last_error_ = ParseError{ std::move( message ), line_ };
+		}
+	}
+
+	void set_error( std::string message, size_t line )
+	{
+		std::cout << "Setting error to " << message << " at line " << line << '\n';
+		if ( !last_error_ )
+		{
+			last_error_ = ParseError{ std::move( message ), line };
 		}
 	}
 
@@ -195,9 +232,7 @@ private:
 	std::optional<Value> parse_inline_vector( std::string_view &view );
 
 	std::optional<Value> parse_indented_value(
-		std::string_view &view,
-		int expected_indent,
-		bool allow_multiline_vector );
+		std::string_view &view, int expected_indent, bool allow_multiline_vector );
 
 	std::optional<MultiLine> parse_multiline_string( std::string_view &view, int indent );
 
