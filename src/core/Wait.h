@@ -1,13 +1,13 @@
 
 #pragma once
 
-#include "Director.h"
+#include "Animation.h"
 
-inline Director wait_for( int64_t frames )
+inline Animation wait_for( int64_t frames )
 {
 	while ( frames > 0 )
 	{
-		co_yield {};
+		co_yield NextFrame{};
 		--frames;
 	}
 }

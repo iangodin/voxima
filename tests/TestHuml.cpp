@@ -1,38 +1,43 @@
 
 #include <catch2/catch_test_macros.hpp>
 
-#include <core/Script.h>
+#include <utils/Huml.h>
 
 #include <variant>
 
+using namespace huml;
+
 TEST_CASE( "HUML parser line counting", "[huml]" )
 {
-	huml::Script doc;
 
 	SECTION( "Valid simple document" )
 	{
-		auto result = doc.parse( "key: value\n" );
-		CHECK( std::holds_alternative<huml::Value>( result ) );
+		Parser doc( "key: value\n" );
+		auto result = doc.parse();
+		CHECK( std::holds_alternative<Value>( result ) );
 	}
 
 	SECTION( "Invalid quoted string reports correct line" )
 	{
-		auto result = doc.parse( "key: \"unclosed\n" );
-		REQUIRE( std::holds_alternative<huml::ParseError>( result ) );
-		CHECK( std::get<huml::ParseError>( result ).line == 2 );
+		Parser doc( "key: \"unclosed\n" );
+		auto result = doc.parse();
+		REQUIRE( std::holds_alternative<ParseError>( result ) );
+		CHECK( std::get<ParseError>( result ).line == 2 );
 	}
 
 	SECTION( "Error on later lines" )
 	{
-		auto result = doc.parse( "first: 1\nsecond: 2\nthird: \"unclosed\n" );
-		REQUIRE( std::holds_alternative<huml::ParseError>( result ) );
-		CHECK( std::get<huml::ParseError>( result ).line == 4 );
+		Parser doc( "first: 1\nsecond: 2\nthird: \"unclosed\n" );
+		auto result = doc.parse();
+		REQUIRE( std::holds_alternative<ParseError>( result ) );
+		CHECK( std::get<ParseError>( result ).line == 4 );
 	}
 
 	SECTION( "Invalid escape sequence" )
 	{
-		auto result = doc.parse( "key: \"\\x\"\n" );
-		REQUIRE( std::holds_alternative<huml::ParseError>( result ) );
-		CHECK( std::get<huml::ParseError>( result ).line == 1 );
+		Parser doc( "key: \"\\x\"\n" );
+		auto result = doc.parse();
+		REQUIRE( std::holds_alternative<ParseError>( result ) );
+		CHECK( std::get<ParseError>( result ).line == 1 );
 	}
 }

@@ -41,6 +41,7 @@ FontStack create_font_stack( const TextStyle &style, Theme &theme, std::string_v
 	fonts.push( theme.load_font( "NotoEmoji-Variable.ttf", 0, font_size ) );
 	fonts.push( theme.load_font( "NotoSansCJK-Variable.otc", 0, font_size ) );
 	fonts.push( theme.load_font( "FiraMono-Regular.ttf", 0, font_size ) );
+	fonts.push( theme.load_font( "AND-Regular.otf", 0, font_size ) );
 	return fonts;
 }
 }

@@ -1,6 +1,7 @@
 
 
 #include <core/Stage.h>
+#include <core/Script.h>
 #include <core/Coroutine.h>
 #include <core/Screenplay.h>
 #include <core/Scene.h>
@@ -32,20 +33,40 @@ Scene show_ease( Stage &stage, const std::string &name, Ease &&ease, float y, in
 	co_await wait_for( 30 );
 }
 
-Screenplay my_screenplay( Stage &stage )
+Screenplay my_screenplay( Stage &stage, Script &script )
 {
 	int64_t duration = 60;
+
+	std::string not_found{ "\uFFFD" };
+
+	auto &labels = script.root()["labels"];
+	if ( labels.is_missing() )
+	{
+		throw std::runtime_error( "labels are missing" );
+	}
+
+	std::string label_cubic_in{ labels["ease_cubic_in"].as_string( not_found ) };
+	std::string label_cubic_out{ labels["ease_cubic_out"].as_string( not_found ) };
+	std::string label_cubic_in_out{ labels["ease_cubic_in_out"].as_string( not_found ) };
+	std::string label_elastic_in{ labels["ease_elastic_in"].as_string( not_found ) };
+	std::string label_elastic_out{ labels["ease_elastic_out"].as_string( not_found ) };
+	std::string label_elastic_in_out{ labels["ease_elastic_in_out"].as_string( not_found ) };
+	std::string label_back_in{ labels["ease_back_in"].as_string( not_found ) };
+	std::string label_back_out{ labels["ease_back_out"].as_string( not_found ) };
+	std::string label_back_in_out{ labels["ease_back_in_out"].as_string( not_found ) };
+	std::string label_linear{ labels["ease_linear"].as_string( not_found ) };
+
 	co_await choreograph(
-		show_ease( stage, "Cubic In", ease_cubic_in, 3.F, duration ),
-		show_ease( stage, "Cubic Out", ease_cubic_out, 2.5F, duration ),
-		show_ease( stage, "Cubic In Out", ease_cubic_in_out, 2.0F, duration ),
-		show_ease( stage, "Elastic In", ease_elastic_in, 1.5F, duration ),
-		show_ease( stage, "Elastic Out", ease_elastic_out, 1.0F, duration ),
-		show_ease( stage, "Elastic In Out", ease_elastic_in_out, 0.5F, duration ),
-		show_ease( stage, "Back In", ease_back_in, 0.F, duration ),
-		show_ease( stage, "Back Out", ease_back_out, -0.5F, duration ),
-		show_ease( stage, "Back In Out", ease_back_in_out, -1.0F, duration ),
-		show_ease( stage, "Linear", ease_linear, -1.5F, duration )
+		show_ease( stage, label_cubic_in, ease_cubic_in, 3.F, duration ),
+		show_ease( stage, label_cubic_out, ease_cubic_out, 2.5F, duration ),
+		show_ease( stage, label_cubic_in_out, ease_cubic_in_out, 2.0F, duration ),
+		show_ease( stage, label_elastic_in, ease_elastic_in, 1.5F, duration ),
+		show_ease( stage, label_elastic_out, ease_elastic_out, 1.0F, duration ),
+		show_ease( stage, label_elastic_in_out, ease_elastic_in_out, 0.5F, duration ),
+		show_ease( stage, label_back_in, ease_back_in, 0.F, duration ),
+		show_ease( stage, label_back_out, ease_back_out, -0.5F, duration ),
+		show_ease( stage, label_back_in_out, ease_back_in_out, -1.0F, duration ),
+		show_ease( stage, label_linear, ease_linear, -1.5F, duration )
 	);
 }
 

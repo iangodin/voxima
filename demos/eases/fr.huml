@@ -1,0 +1,17 @@
+meta:
+  lang: fr, fr-FR, fr-CA
+
+voices:
+  narrator: "default"
+
+labels:
+  ease_cubic_in: "Cubique entrée"
+  ease_cubic_out: "Cubique sortie"
+  ease_cubic_in_out: "Cubique entrée-sortie"
+  ease_elastic_in: "Élastique entrée"
+  ease_elastic_out: "Élastique sortie"
+  ease_elastic_in_out: "Élastique entrée-sortie"
+  ease_back_in: "Arrière entrée"
+  ease_back_out: "Arrière sortie"
+  ease_back_in_out: "Arrière entrée-sortie"
+  ease_linear: "Linéaire"

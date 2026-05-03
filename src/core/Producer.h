@@ -4,19 +4,17 @@
 #include "Director.h"
 #include "Screenplay.h"
 #include "Stage.h"
+#include "Script.h"
 
 #include <cstdint>
-#include <vector>
 
 class Producer
 {
 public:
 	// We give the Producer the top-level Screenplay to run
-	Producer( Screenplay &&screenplay, Stage &stage) :
-		_main_narrative(std::move(screenplay)),
-		_stage(stage)
+	explicit Producer( Director director ) :
+		_director{ std::move( director ) }
 	{
-		_main_narrative.handle.promise().producer_ptr = this;
 	}
 
 	int64_t current_frame( void ) const
@@ -24,23 +22,25 @@ public:
 		return _current_frame;
 	}
 
+	bool produce( int argc, char *argv[] );
+
+private:
 	bool tick()
 	{
 		++_current_frame;
 
-		if ( !_main_narrative.done() )
+		if ( !_screenplay.done() )
 		{
-			_main_narrative.resume();
+			_screenplay.resume();
 		}
 
-		return !_main_narrative.done();
+		return !_screenplay.done();
 	}
 
-	bool produce( int argc, char *argv[] );
-
-private:
-	Screenplay _main_narrative;
-	Stage &_stage;
+	Director _director;
+	Screenplay _screenplay;
+	Stage _stage = {};
+	Script _script = {};
 	int64_t _current_frame = -1;
 };
 

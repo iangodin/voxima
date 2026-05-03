@@ -40,7 +40,9 @@ struct Coroutine
         }
 	};
 
-	std::coroutine_handle<promise_type> handle;
+	std::coroutine_handle<promise_type> handle = {};
+
+	Coroutine() = default;
 
 	Coroutine( std::coroutine_handle<promise_type> h ) :
 		handle(h)
@@ -59,6 +61,12 @@ struct Coroutine
 		{
 			handle.destroy();
 		}
+	}
+
+	Coroutine &operator=( Coroutine &&other )
+	{
+		std::swap( handle, other.handle );
+		return *this;
 	}
 
 	void resume( void )

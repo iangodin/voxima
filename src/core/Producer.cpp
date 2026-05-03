@@ -1,6 +1,8 @@
 
 #include "Producer.h"
 
+#include "Script.h"
+
 #include <exporters/FfmpegRender.h>
 #include <exporters/PngRender.h>
 
@@ -10,7 +12,15 @@
 #include <CLI/CLI.hpp>
 
 #include <optional>
-#include <stdexcept>
+
+std::string read_file( std::filesystem::path path )
+{
+	std::size_t size = std::filesystem::file_size( path );
+	std::ifstream file( path, std::ios::binary );
+	std::string buffer( size, '\0' );
+	file.read( buffer.data(), std::streamsize( size ) );
+	return buffer;
+}
 
 bool Producer::produce( int argc, char *argv[] )
 {
@@ -26,7 +36,25 @@ bool Producer::produce( int argc, char *argv[] )
 	std::optional<std::string> theme_name;
 	app.add_option( "--theme", theme_name, "Theme to use" );
 
+	std::optional<std::string> script_path;
+	app.add_option( "--scripts", script_path, "Directory containing scripts" );
+
+	std::optional<std::string> language;
+	app.add_option( "--lang", language, "Language to use" );
+
 	CLI11_PARSE( app, argc, argv );
+
+	if ( language )
+	{
+		std::filesystem::path script_file = script_path.value_or( "." );
+		script_file /= language.value_or( "en" ) + ".huml";
+
+		std::string source = read_file( script_file );
+		if ( !_script.parse( source ) )
+		{
+			throw std::runtime_error( "unable to parse script " + script_file.string() );
+		}
+	}
 
 	if ( theme_name )
 	{
@@ -47,6 +75,9 @@ bool Producer::produce( int argc, char *argv[] )
 	{
 		_stage.theme->set_font_path( *font_path );
 	}
+
+	_screenplay = std::move( _director( _stage, _script ) );
+	_screenplay.handle.promise().producer_ptr = this;
 
 	std::optional<FfmpegRender> ffmpeg;
 	std::optional<PngRender> pngs;

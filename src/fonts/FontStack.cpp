@@ -12,5 +12,5 @@ GlyphEntry FontStack::lookup_codepoint( char32_t codepoint ) const
 			return { font_index, glyph_index };
 		}
 	}
-	throw std::runtime_error( "Codepoint not found in font stack" );
+	throw std::runtime_error( "Codepoint not found in font stack: " + std::to_string( uint32_t( codepoint ) ) );
 }

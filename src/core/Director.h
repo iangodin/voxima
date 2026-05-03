@@ -4,11 +4,15 @@
 #include "Coroutine.h"
 #include "Production.h"
 
+#include <functional>
 #include <coroutine>
 #include <vector>
 #include <memory>
 
-using Director = Coroutine;
+class Stage;
+class Script;
+
+using Director = std::function<Coroutine( Stage &, Script & )>;
 
 template <typename ...Coroutines>
 bool advance( Coroutines &...coros )
@@ -21,7 +25,7 @@ bool advance( Coroutines &...coros )
 }
 
 template <typename ...Coroutines>
-Director choreograph( Coroutines &&...coros )
+Coroutine choreograph( Coroutines &&...coros )
 {
 	while ( advance( coros... ) )
 	{

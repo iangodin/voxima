@@ -42,6 +42,7 @@ add_library( visuals STATIC
 	src/themes/ModernTechnical.cpp
 	src/themes/PlayfulDiscovery.cpp
 	src/utils/FreetypeError.cpp
+	src/utils/Huml.cpp
 	src/visuals/CreateMath.cpp
 	src/visuals/CreateText.cpp
 )
@@ -55,16 +56,6 @@ add_executable( sonimation tools/main.cpp demos/eases/show_animation.cpp )
 target_compile_features( sonimation PUBLIC cxx_std_20 )
 target_compile_options( sonimation PUBLIC -fcoroutines )
 target_link_libraries( sonimation PUBLIC visuals )
-
-add_executable( math_test tools/math_test.cpp )
-target_compile_features( math_test PUBLIC cxx_std_20 )
-target_compile_options( math_test PUBLIC -fcoroutines )
-target_link_libraries( math_test PUBLIC visuals )
-
-add_executable( test_font tools/test_font.cpp )
-target_compile_features( test_font PUBLIC cxx_std_20 )
-target_compile_options( test_font PUBLIC -fcoroutines )
-target_link_libraries( test_font PUBLIC visuals )
 
 add_executable( list_font tools/list_font.cpp )
 target_compile_features( list_font PUBLIC cxx_std_20 )
