@@ -401,7 +401,7 @@ std::optional<Dict> Parser::parse_multiline_dict( std::string_view &view, int in
 		}
 		else
 		{
-			auto v = parse_indented_value( view, indent + 1, false );
+			auto v = parse_indented_value( view, indent + 1, true );
 			if ( !v )
 				return std::nullopt;
 			dict[std::move( *key )] = std::move( *v );
@@ -545,7 +545,7 @@ std::optional<Value> Parser::parse_indented_value(
 			auto d = parse_multiline_dict( view, expected_indent );
 			if ( !d )
 				return std::nullopt;
-			return Value{ std::move( *d ) };
+			return { std::move( *d ) };
 		}
 	}
 
