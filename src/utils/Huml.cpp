@@ -140,7 +140,15 @@ void print( std::ostream &os, const Dict &dict, const std::string &indent )
 	for ( const auto &[key, value]: dict )
 	{
 		os << child << key << ": ";
-		print( os, value, "" );
+		if ( value.is_dict() || value.is_list() )
+		{
+			os << '\n';
+			print( os, value, child + "  " );
+		}
+		else
+		{
+			print( os, value, "" );
+		}
 		os << '\n';
 	}
 	os << indent << "}";
@@ -720,13 +728,6 @@ std::optional<Value> Parser::parse_inline_vector( std::string_view &view )
 std::optional<Value> Parser::parse_indented_value(
 	std::string_view &view, int expected_indent, bool allow_multiline_vector )
 {
-	// Consume any leading spaces that were already validated by the caller's
-	// indentation check. Do not silently eat arbitrary leading spaces.
-	size_t spaces = 0;
-	while ( spaces < view.size() && view[spaces] == ' ' )
-		spaces++;
-	advance( view, spaces );
-
 	if ( view.starts_with( '#' ) )
 		consume_line( view );
 

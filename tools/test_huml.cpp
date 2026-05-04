@@ -5,7 +5,10 @@ int main()
 {
 	try
 	{
-		huml::Parser parser( R"huml(list:: "a", "b", "c")huml" );
+		huml::Parser parser( R"huml(
+meta::
+  lang:: "en", "en-US", "en-GB"
+)huml" );
 
 		auto result = parser.parse();
 		std::cout << result << '\n';

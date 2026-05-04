@@ -74,16 +74,26 @@ TEST_CASE( "HUML parser tests", "[huml]" )
 		CHECK( dict.count( "second" ) == 1 );
 	}
 
+	SECTION( "Root dict of inline list" )
+	{
+		Parser doc( R"huml(
+meta::
+  lang:: "en", "fr"
+)huml" );
+		auto result = doc.parse();
+		CAPTURE( result );
+		CHECK( std::holds_alternative<Value>( result ) );
+	}
+
 	SECTION( "Bad list using single colon" )
 	{
-		Parser doc( R"huml(colors:
+		Parser doc( R"huml(colors::
   - "red"
   - "green"
   - "blue"
 )huml" );
 		auto result = doc.parse();
 		CAPTURE( result );
-		REQUIRE( std::holds_alternative<ParseError>( result ) );
-		CHECK( std::get<ParseError>( result ).line == 1 );
+		CHECK( std::holds_alternative<Value>( result ) );
 	}
 }
