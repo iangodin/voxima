@@ -24,6 +24,16 @@ TEST_CASE( "HUML parser tests", "[huml]" )
 		CHECK( std::holds_alternative<Value>( result ) );
 	}
 
+	SECTION( "Valid simple list" )
+	{
+		std::string_view source = R"huml(list:: "a", "b", "c")huml";
+		CAPTURE( source );
+		Parser doc( source );
+		auto result = doc.parse();
+		CAPTURE( result );
+		CHECK( std::holds_alternative<Value>( result ) );
+	}
+
 	SECTION( "Invalid quoted string reports correct line" )
 	{
 		Parser doc( "key: \"unclosed\n" );
