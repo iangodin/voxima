@@ -1,0 +1,17 @@
+meta::
+  lang:: "ja", "ja-JP"
+
+voices::
+  narrator: "デフォルト"
+
+labels::
+  ease_cubic_in: "3次加速"
+  ease_cubic_out: "3次減速"
+  ease_cubic_in_out: "3次加速・減速"
+  ease_elastic_in: "エラスティック加速"
+  ease_elastic_out: "エラスティック減速"
+  ease_elastic_in_out: "エラスティック加速・減速"
+  ease_back_in: "バック加速"
+  ease_back_out: "バック減速"
+  ease_back_in_out: "バック加速・減速"
+  ease_linear: "線形"

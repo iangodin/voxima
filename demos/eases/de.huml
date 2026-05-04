@@ -1,0 +1,17 @@
+meta::
+  lang:: "de", "de-DE", "de-AT", "de-CH"
+
+voices::
+  narrator: "Standard"
+
+labels::
+  ease_cubic_in: "Kubisch Beschleunigen"
+  ease_cubic_out: "Kubisch Verlangsamen"
+  ease_cubic_in_out: "Kubisch Beschleunigen/Verlangsamen"
+  ease_elastic_in: "Elastisch Beschleunigen"
+  ease_elastic_out: "Elastisch Verlangsamen"
+  ease_elastic_in_out: "Elastisch Beschleunigen/Verlangsamen"
+  ease_back_in: "Rücklauf Beschleunigen"
+  ease_back_out: "Rücklauf Verlangsamen"
+  ease_back_in_out: "Rücklauf Beschleunigen/Verlangsamen"
+  ease_linear: "Linear"
