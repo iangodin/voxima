@@ -1,22 +1,32 @@
 
 #include <utils/Huml.h>
 
-int main()
-{
-	try
-	{
-		huml::Parser parser( R"huml(
-meta::
-  lang:: "en", "en-US", "en-GB"
-)huml" );
+#include <filesystem>
+#include <iostream>
+#include <fstream>
 
-		auto result = parser.parse();
-		std::cout << result << '\n';
-	}
-	catch ( const std::exception &e )
+std::string read_file( std::filesystem::path path )
+{
+	std::size_t size = std::filesystem::file_size( path );
+	std::ifstream file( path, std::ios::binary );
+	std::string buffer( size, '\0' );
+	file.read( buffer.data(), std::streamsize( size ) );
+	return buffer;
+}
+
+int main( int argc, char *argv[] )
+{
+	if ( argc != 2 )
 	{
-		std::cerr << "Error: " << e.what() << std::endl;
+		std::cerr << "Usage: test_huml <huml-file>\n";
 		return 1;
 	}
+
+	std::string source = read_file( argv[1] );
+
+	huml::Parser parser( source );
+	auto result = parser.parse();
+	std::cout << result << '\n';
+
 	return 0;
 }
