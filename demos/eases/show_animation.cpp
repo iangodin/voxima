@@ -39,6 +39,16 @@ Screenplay my_screenplay( Stage &stage, Script &script )
 
 	std::string not_found{ "\uFFFD" };
 
+	if ( !script.root().is_dict() )
+	{
+		throw std::runtime_error( "root is not dict");
+	}
+	std::cout << "Size: " << script.root().size() << '\n';
+	for ( const auto &entry: script.root().as_dict() )
+	{
+		std::cout << "Entry: " << entry.first << '\n';
+	}
+
 	auto &labels = script.root()["labels"];
 	if ( labels.is_missing() )
 	{

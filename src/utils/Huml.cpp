@@ -121,15 +121,16 @@ void print( std::ostream &os, const MultiLine &lines, const std::string &indent 
 	os << indent << "\"\"\"\n";
 }
 
-void print( std::ostream &os, const List &list, std::string &indent )
+void print( std::ostream &os, const List &list, const std::string &indent )
 {
 	std::string child = indent + "  ";
 	os << indent << "[\n";
 	for ( const auto &value: list )
 	{
 		print( os, value, child );
+		os << '\n';
 	}
-	os << indent << "]\n";
+	os << indent << "]";
 }
 
 void print( std::ostream &os, const Dict &dict, const std::string &indent )
@@ -138,10 +139,11 @@ void print( std::ostream &os, const Dict &dict, const std::string &indent )
 	os << indent << "{\n";
 	for ( const auto &[key, value]: dict )
 	{
-		os << key << ": ";
-		print( os, value, child );
+		os << child << key << ": ";
+		print( os, value, "" );
+		os << '\n';
 	}
-	os << indent << "}\n";
+	os << indent << "}";
 }
 
 void print( std::ostream &output, const Value &value, const std::string &indent )
@@ -693,7 +695,7 @@ std::optional<Value> Parser::parse_inline_vector( std::string_view &view )
 			if ( view.starts_with( ',' ) )
 			{
 				advance( view, 1 );
-				if ( view.starts_with( ' ' ) )
+				if ( !view.starts_with( ' ' ) )
 				{
 					set_error( "Expected exactly one space after ',' in inline list" );
 					return std::nullopt;
@@ -890,9 +892,26 @@ bool Parser::is_key( std::string_view v )
 	if ( v.empty() )
 		return false;
 
-	// A quoted key is always valid.
+	// A quoted key is only valid if followed by a colon.
 	if ( v[0] == '"' )
-		return true;
+	{
+		size_t i = 1;
+		while ( i < v.size() )
+		{
+			if ( v[i] == '\\' )
+			{
+				i += 2;
+				continue;
+			}
+			if ( v[i] == '"' )
+			{
+				i++;
+				return i < v.size() && v[i] == ':';
+			}
+			i++;
+		}
+		return false;
+	}
 
 	// An unquoted key must start with a letter.
 	if ( !( ( v[0] >= 'a' && v[0] <= 'z' ) || ( v[0] >= 'A' && v[0] <= 'Z' ) ) )

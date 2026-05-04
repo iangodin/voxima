@@ -3,6 +3,7 @@ cmake_minimum_required( VERSION 3.31 )
 
 project( Sonimation )
 
+set(CMAKE_CXX_SCAN_FOR_MODULES OFF)
 set( CMAKE_EXPORT_COMPILE_COMMANDS ON )
 
 if ( WIN32 )
@@ -60,5 +61,9 @@ target_link_libraries( sonimation PUBLIC visuals )
 add_executable( list_font tools/list_font.cpp )
 target_compile_features( list_font PUBLIC cxx_std_20 )
 target_link_libraries( list_font PUBLIC Freetype::Freetype )
+
+add_executable( test_huml tools/test_huml.cpp )
+target_compile_features( test_huml PUBLIC cxx_std_20 )
+target_link_libraries( test_huml PUBLIC visuals )
 
 add_subdirectory( tests )

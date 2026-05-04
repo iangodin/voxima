@@ -1,10 +1,10 @@
-meta:
+meta::
   lang: fr, fr-FR, fr-CA
 
-voices:
+voices::
   narrator: "default"
 
-labels:
+labels::
   ease_cubic_in: "Cubique entrée"
   ease_cubic_out: "Cubique sortie"
   ease_cubic_in_out: "Cubique entrée-sortie"

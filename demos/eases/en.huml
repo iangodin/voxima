@@ -1,10 +1,10 @@
-meta:
-  lang: en, en-US, en-GB
+meta::
+  lang:: "en", "en-US", "en-GB"
 
-voices:
+voices::
   narrator: "default"
 
-labels:
+labels::
   ease_cubic_in: "Cubic In"
   ease_cubic_out: "Cubic Out"
   ease_cubic_in_out: "Cubic In Out"

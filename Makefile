@@ -11,8 +11,8 @@ debug:
 clean:
 	@cmake -E remove_directory build
 
-test: all
-	@ctest --preset conan-release --build-config Release --output-on-failure
+test: debug
+	@ctest --preset conan-release --build-config Debug --output-on-failure
 
 conan:
 	@conan install . --build=missing -s build_type=Debug

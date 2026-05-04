@@ -197,7 +197,6 @@ private:
 
 	void set_error( std::string message )
 	{
-		std::cout << "Setting error to " << message << " at line " << line_ << '\n';
 		if ( !last_error_ )
 		{
 			last_error_ = ParseError{ std::move( message ), line_ };
@@ -206,7 +205,6 @@ private:
 
 	void set_error( std::string message, size_t line )
 	{
-		std::cout << "Setting error to " << message << " at line " << line << '\n';
 		if ( !last_error_ )
 		{
 			last_error_ = ParseError{ std::move( message ), line };
