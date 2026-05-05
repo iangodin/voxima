@@ -19,4 +19,7 @@ struct TTSResponse {
 	audio @2 :Data;
 	boundaries @3 :List(TTSBoundary);
 	duration @4 :UInt64;
+	sampleRate @5 :UInt32;
+	channels @6 :UInt8;
+	format @7 :Text;
 }

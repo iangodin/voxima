@@ -50,6 +50,9 @@ class TTSResponseData:
     audio_data: Optional[bytes] = None
     boundaries: Optional[list] = None
     duration_ms: Optional[int] = None
+    sample_rate: int = 24000
+    channels: int = 1
+    format: str = "mp3"
 
 
 class EdgeTTSBridge:
@@ -294,6 +297,10 @@ class TTSServer:
             
             if response.duration_ms is not None:
                 res_msg.duration = int(response.duration_ms)
+
+            res_msg.sampleRate = response.sample_rate
+            res_msg.channels = response.channels
+            res_msg.format = response.format
 
             if response.boundaries:
                 boundaries_list = res_msg.init('boundaries', len(response.boundaries))

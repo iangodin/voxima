@@ -64,7 +64,7 @@ struct TTSResponse {
   class Pipeline;
 
   struct _capnpPrivate {
-    CAPNP_DECLARE_STRUCT_HEADER(c10b0cb6550ddb5d, 1, 4)
+    CAPNP_DECLARE_STRUCT_HEADER(c10b0cb6550ddb5d, 2, 5)
     #if !CAPNP_LITE
     static constexpr ::capnp::_::RawBrandedSchema const* brand() { return &schema->defaultBrand; }
     #endif  // !CAPNP_LITE
@@ -301,6 +301,13 @@ public:
 
   inline  ::uint64_t getDuration() const;
 
+  inline  ::uint32_t getSampleRate() const;
+
+  inline  ::uint8_t getChannels() const;
+
+  inline bool hasFormat() const;
+  inline  ::capnp::Text::Reader getFormat() const;
+
 private:
   ::capnp::_::StructReader _reader;
   template <typename, ::capnp::Kind>
@@ -359,6 +366,19 @@ public:
 
   inline  ::uint64_t getDuration();
   inline void setDuration( ::uint64_t value);
+
+  inline  ::uint32_t getSampleRate();
+  inline void setSampleRate( ::uint32_t value);
+
+  inline  ::uint8_t getChannels();
+  inline void setChannels( ::uint8_t value);
+
+  inline bool hasFormat();
+  inline  ::capnp::Text::Builder getFormat();
+  inline void setFormat( ::capnp::Text::Reader value);
+  inline  ::capnp::Text::Builder initFormat(unsigned int size);
+  inline void adoptFormat(::capnp::Orphan< ::capnp::Text>&& value);
+  inline ::capnp::Orphan< ::capnp::Text> disownFormat();
 
 private:
   ::capnp::_::StructBuilder _builder;
@@ -714,6 +734,68 @@ inline  ::uint64_t TTSResponse::Builder::getDuration() {
 inline void TTSResponse::Builder::setDuration( ::uint64_t value) {
   _builder.setDataField< ::uint64_t>(
       ::capnp::bounded<0>() * ::capnp::ELEMENTS, value);
+}
+
+inline  ::uint32_t TTSResponse::Reader::getSampleRate() const {
+  return _reader.getDataField< ::uint32_t>(
+      ::capnp::bounded<2>() * ::capnp::ELEMENTS);
+}
+
+inline  ::uint32_t TTSResponse::Builder::getSampleRate() {
+  return _builder.getDataField< ::uint32_t>(
+      ::capnp::bounded<2>() * ::capnp::ELEMENTS);
+}
+inline void TTSResponse::Builder::setSampleRate( ::uint32_t value) {
+  _builder.setDataField< ::uint32_t>(
+      ::capnp::bounded<2>() * ::capnp::ELEMENTS, value);
+}
+
+inline  ::uint8_t TTSResponse::Reader::getChannels() const {
+  return _reader.getDataField< ::uint8_t>(
+      ::capnp::bounded<12>() * ::capnp::ELEMENTS);
+}
+
+inline  ::uint8_t TTSResponse::Builder::getChannels() {
+  return _builder.getDataField< ::uint8_t>(
+      ::capnp::bounded<12>() * ::capnp::ELEMENTS);
+}
+inline void TTSResponse::Builder::setChannels( ::uint8_t value) {
+  _builder.setDataField< ::uint8_t>(
+      ::capnp::bounded<12>() * ::capnp::ELEMENTS, value);
+}
+
+inline bool TTSResponse::Reader::hasFormat() const {
+  return !_reader.getPointerField(
+      ::capnp::bounded<4>() * ::capnp::POINTERS).isNull();
+}
+inline bool TTSResponse::Builder::hasFormat() {
+  return !_builder.getPointerField(
+      ::capnp::bounded<4>() * ::capnp::POINTERS).isNull();
+}
+inline  ::capnp::Text::Reader TTSResponse::Reader::getFormat() const {
+  return ::capnp::_::PointerHelpers< ::capnp::Text>::get(_reader.getPointerField(
+      ::capnp::bounded<4>() * ::capnp::POINTERS));
+}
+inline  ::capnp::Text::Builder TTSResponse::Builder::getFormat() {
+  return ::capnp::_::PointerHelpers< ::capnp::Text>::get(_builder.getPointerField(
+      ::capnp::bounded<4>() * ::capnp::POINTERS));
+}
+inline void TTSResponse::Builder::setFormat( ::capnp::Text::Reader value) {
+  ::capnp::_::PointerHelpers< ::capnp::Text>::set(_builder.getPointerField(
+      ::capnp::bounded<4>() * ::capnp::POINTERS), value);
+}
+inline  ::capnp::Text::Builder TTSResponse::Builder::initFormat(unsigned int size) {
+  return ::capnp::_::PointerHelpers< ::capnp::Text>::init(_builder.getPointerField(
+      ::capnp::bounded<4>() * ::capnp::POINTERS), size);
+}
+inline void TTSResponse::Builder::adoptFormat(
+    ::capnp::Orphan< ::capnp::Text>&& value) {
+  ::capnp::_::PointerHelpers< ::capnp::Text>::adopt(_builder.getPointerField(
+      ::capnp::bounded<4>() * ::capnp::POINTERS), kj::mv(value));
+}
+inline ::capnp::Orphan< ::capnp::Text> TTSResponse::Builder::disownFormat() {
+  return ::capnp::_::PointerHelpers< ::capnp::Text>::disown(_builder.getPointerField(
+      ::capnp::bounded<4>() * ::capnp::POINTERS));
 }
 
 

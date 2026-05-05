@@ -109,6 +109,9 @@ SynthesisResult TTSClient::synthesize(
         }
 
         result.duration_ms = response.getDuration();
+        result.sample_rate = response.getSampleRate();
+        result.channels = response.getChannels();
+        result.format = response.getFormat().cStr();
 
     } catch (const std::exception& e) {
         result.success = false;

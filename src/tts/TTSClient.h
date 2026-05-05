@@ -29,6 +29,9 @@ struct SynthesisResult {
     std::vector<std::byte> audio_data;
     std::vector<WordBoundary> boundaries;
     uint64_t duration_ms;
+    uint32_t sample_rate;
+    uint8_t channels;
+    std::string format;
 };
 
 class TTSClient {

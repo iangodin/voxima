@@ -23,6 +23,9 @@ int main(int argc, char* argv[]) {
         std::cout << "Status: " << result.status << "\n";
         std::cout << "Message: " << result.message << "\n";
         std::cout << "Audio size: " << result.audio_data.size() << " bytes\n";
+        std::cout << "Sample rate: " << result.sample_rate << " Hz\n";
+        std::cout << "Channels: " << static_cast<int>(result.channels) << "\n";
+        std::cout << "Format: " << result.format << "\n";
         std::cout << "Duration: " << result.duration_ms << " ms\n";
         std::cout << "Boundaries: " << result.boundaries.size() << "\n";
 
