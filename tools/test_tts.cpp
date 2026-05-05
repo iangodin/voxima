@@ -1,5 +1,6 @@
 #include <iostream>
 #include <fstream>
+#include <sndfile.h>
 #include "tts/TTSClient.h"
 
 int main(int argc, char* argv[]) {
@@ -22,20 +23,35 @@ int main(int argc, char* argv[]) {
         std::cout << "✓ Success!\n";
         std::cout << "Status: " << result.status << "\n";
         std::cout << "Message: " << result.message << "\n";
-        std::cout << "Audio size: " << result.audio_data.size() << " bytes\n";
-        std::cout << "Sample rate: " << result.sample_rate << " Hz\n";
-        std::cout << "Channels: " << static_cast<int>(result.channels) << "\n";
-        std::cout << "Format: " << result.format << "\n";
-        std::cout << "Duration: " << result.duration_ms << " ms\n";
-        std::cout << "Boundaries: " << result.boundaries.size() << "\n";
+        
+        if (result.audio) {
+            std::cout << "Audio decoded:\n";
+            std::cout << "  Sample rate: " << result.audio->rate() << " Hz\n";
+            std::cout << "  Channels: " << result.audio->channels() << "\n";
+            std::cout << "  Frames: " << result.audio->frames() << "\n";
+            std::cout << "  Duration: " << (result.audio->frames() * 1000 / result.audio->rate()) << " ms\n";
 
+            SF_INFO sfinfo = {};
+            sfinfo.channels = static_cast<int>(result.audio->channels());
+            sfinfo.samplerate = static_cast<int>(result.audio->rate());
+            sfinfo.format = SF_FORMAT_WAV | SF_FORMAT_PCM_16;
+
+            SNDFILE* sndfile = sf_open("output.wav", SFM_WRITE, &sfinfo);
+            if (sndfile) {
+                sf_writef_float(sndfile, result.audio->data(), static_cast<sf_count_t>(result.audio->frames()));
+                sf_close(sndfile);
+                std::cout << "Audio saved to output.wav (PCM 16-bit WAV)\n";
+            } else {
+                std::cerr << "✗ Error saving WAV file: " << sf_strerror(nullptr) << "\n";
+            }
+        } else {
+            std::cout << "No audio data received.\n";
+        }
+
+        std::cout << "Boundaries: " << result.boundaries.size() << "\n";
         for (const auto& b : result.boundaries) {
             std::cout << "  " << b.offset << "ms: " << b.text << " (" << b.duration << "ms)\n";
         }
-
-        std::ofstream audio_file("output.wav", std::ios::binary);
-        audio_file.write(reinterpret_cast<const char*>(result.audio_data.data()), static_cast<std::streamsize>(result.audio_data.size()));
-        std::cout << "Audio saved to output.wav\n";
     } else {
         std::cerr << "✗ Error: " << result.message << " (Status: " << result.status << ")\n";
         return 1;

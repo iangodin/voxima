@@ -20,7 +20,8 @@
   - [ ] Need a "Recording Studio" that mixes everything and generates the final audio to a WAV file
 
 ## Audio Processing
-  - [ ] Implement basic audio buffer
+  - [x] Implement basic audio buffer
+  - [x] Implement audio resampling
   - [ ] Add WAV file saving
   - [ ] Implement silence generator
   - [ ] Implement simple volume effect
@@ -31,8 +32,9 @@
   - [ ] Need a music player to support playinglooping
 
 ## Text-To-Speech
-  - [ ] Research how to integrate the Sherpa-ONNX library
-  - [ ] Find good Sherpa models to use to generating audio
+  - [x] Create python Edge-TTS bridge server
+  - [x] Add C++ client to generate voice audio
+  - [ ] Decode Edge-TTS audio into float/PCM buffer
   - [ ] Need "Speaker" that can generate audio with a language and voice parameters
 
 ## Rendering

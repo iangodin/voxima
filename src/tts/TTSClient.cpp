@@ -4,6 +4,7 @@
 #include <kj/io.h>
 #include <cstring>
 #include <cstddef>
+#include <sndfile.h>
 
 #if defined(__GNUC__) || defined(__clang__)
 #pragma GCC diagnostic push
@@ -17,6 +18,51 @@
 #endif
 
 namespace tts {
+
+namespace {
+
+struct VirtualFile {
+    const uint8_t* data;
+    sf_count_t size;
+    sf_count_t offset;
+};
+
+sf_count_t get_filelen(void* user_data) {
+    return static_cast<VirtualFile*>(user_data)->size;
+}
+
+sf_count_t seek(sf_count_t offset, int whence, void* user_data) {
+    auto* vf = static_cast<VirtualFile*>(user_data);
+    switch (whence) {
+        case SEEK_SET: vf->offset = offset; break;
+        case SEEK_CUR: vf->offset += offset; break;
+        case SEEK_END: vf->offset = vf->size + offset; break;
+        default: break;
+    }
+    return vf->offset;
+}
+
+sf_count_t read(void* ptr, sf_count_t count, void* user_data) {
+    auto* vf = static_cast<VirtualFile*>(user_data);
+    if (vf->offset + count > vf->size) {
+        count = vf->size - vf->offset;
+    }
+    if (count > 0) {
+        std::memcpy(ptr, vf->data + vf->offset, static_cast<size_t>(count));
+        vf->offset += count;
+    }
+    return count;
+}
+
+sf_count_t write(const void*, sf_count_t, void*) {
+    return 0;
+}
+
+sf_count_t tell(void* user_data) {
+    return static_cast<VirtualFile*>(user_data)->offset;
+}
+
+} // namespace
 
 TTSClient::TTSClient(asio::io_context& io_context, std::string host, uint16_t port)
     : io_context_(io_context), host_(std::move(host)), port_(port) {}
@@ -72,18 +118,6 @@ SynthesisResult TTSClient::synthesize(
         std::vector<uint8_t> respData(respLen);
         asio::read(socket, asio::buffer(respData.data(), respLen));
 
-        // Parse response
-        kj::ArrayPtr<const capnp::word> segments(
-            reinterpret_cast<const capnp::word*>(respData.data()),
-            respLen / sizeof(capnp::word)
-        );
-        // Note: This assumes the data is aligned and multiple of word size.
-        // Cap'n Proto messages are always a multiple of 8 bytes.
-
-        // Actually, FlatArrayMessageReader is easier if it was a flat array.
-        // But writeMessage produces a stream with segment table.
-        // So we should use InputStreamMessageReader.
-
         kj::ArrayInputStream inputStream(kj::arrayPtr(respData.data(), respData.size()));
         capnp::InputStreamMessageReader responseMessage(inputStream);
         TTSResponse::Reader response = responseMessage.getRoot<TTSResponse>();
@@ -93,9 +127,18 @@ SynthesisResult TTSClient::synthesize(
         result.success = (result.status == "success");
 
         if (response.hasAudio()) {
-            auto audio = response.getAudio();
-            result.audio_data.resize(audio.size());
-            std::memcpy(result.audio_data.data(), audio.begin(), audio.size());
+            auto audioData = response.getAudio();
+            VirtualFile vf = { audioData.begin(), static_cast<sf_count_t>(audioData.size()), 0 };
+            SF_VIRTUAL_IO vio = { get_filelen, seek, read, write, tell };
+            SF_INFO sfinfo = {};
+            SNDFILE* sndfile = sf_open_virtual(&vio, SFM_READ, &sfinfo, &vf);
+
+            if (sndfile) {
+                AudioBuffer buffer(static_cast<size_t>(sfinfo.frames), static_cast<size_t>(sfinfo.samplerate), static_cast<size_t>(sfinfo.channels));
+                sf_readf_float(sndfile, buffer.data(), sfinfo.frames);
+                sf_close(sndfile);
+                result.audio = std::move(buffer);
+            }
         }
 
         if (response.hasBoundaries()) {
@@ -107,11 +150,6 @@ SynthesisResult TTSClient::synthesize(
                 });
             }
         }
-
-        result.duration_ms = response.getDuration();
-        result.sample_rate = response.getSampleRate();
-        result.channels = response.getChannels();
-        result.format = response.getFormat().cStr();
 
     } catch (const std::exception& e) {
         result.success = false;

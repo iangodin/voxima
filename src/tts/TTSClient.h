@@ -2,6 +2,7 @@
 
 #include <string>
 #include <vector>
+#include <optional>
 
 #if defined(__GNUC__) || defined(__clang__)
 #pragma GCC diagnostic push
@@ -13,6 +14,7 @@
 #endif
 
 #include "protocol.capnp.h"
+#include "audio/AudioBuffer.h"
 
 namespace tts {
 
@@ -26,12 +28,8 @@ struct SynthesisResult {
     bool success;
     std::string status;
     std::string message;
-    std::vector<std::byte> audio_data;
+    std::optional<AudioBuffer> audio;
     std::vector<WordBoundary> boundaries;
-    uint64_t duration_ms;
-    uint32_t sample_rate;
-    uint8_t channels;
-    std::string format;
 };
 
 class TTSClient {

@@ -16,11 +16,13 @@ find_package( lunasvg 3.5.0 REQUIRED )
 find_package( plutovg 1.3.2 REQUIRED )
 find_package( harfbuzz 12.3.0 REQUIRED )
 find_package( Freetype 2.14.1 REQUIRED )
-find_package( Catch2 REQUIRED )
-find_package( CLI11 REQUIRED )
-find_package( ctre REQUIRED )
-find_package( asio REQUIRED )
-find_package( CapnProto REQUIRED )
+find_package( Catch2 3.13.0 REQUIRED )
+find_package( CLI11 2.6.2 REQUIRED )
+find_package( ctre 3.10.0 REQUIRED )
+find_package( asio 1.36.0 REQUIRED )
+find_package( CapnProto 1.1.0 REQUIRED )
+find_package( SndFile 1.2.2 REQUIRED )
+find_package( soxr 0.1.3 REQUIRED )
 
 enable_testing()
 
@@ -46,6 +48,7 @@ add_library( visuals STATIC
 	src/themes/PlayfulDiscovery.cpp
 	src/tts/protocol.capnp.c++
 	src/tts/TTSClient.cpp
+	src/audio/Resample.cpp
 	src/utils/FreetypeError.cpp
 	src/utils/Huml.cpp
 	src/visuals/CreateMath.cpp
@@ -64,6 +67,8 @@ target_link_libraries( visuals PUBLIC
 	asio::asio
 	CapnProto::capnp
 	CapnProto::kj
+	SndFile::sndfile
+	soxr::soxr
 	mfl )
 
 add_executable( sonimation tools/main.cpp demos/eases/show_animation.cpp )
