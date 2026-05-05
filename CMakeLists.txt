@@ -20,6 +20,7 @@ find_package( Catch2 REQUIRED )
 find_package( CLI11 REQUIRED )
 find_package( ctre REQUIRED )
 find_package( asio REQUIRED )
+find_package( CapnProto REQUIRED )
 
 enable_testing()
 
@@ -43,6 +44,8 @@ add_library( visuals STATIC
 	src/themes/EngineeringBlueprint.cpp
 	src/themes/ModernTechnical.cpp
 	src/themes/PlayfulDiscovery.cpp
+	src/tts/protocol.capnp.c++
+	src/tts/TTSClient.cpp
 	src/utils/FreetypeError.cpp
 	src/utils/Huml.cpp
 	src/visuals/CreateMath.cpp
@@ -51,7 +54,7 @@ add_library( visuals STATIC
 
 target_compile_features( visuals PUBLIC cxx_std_20 )
 target_compile_options( visuals PUBLIC -fcoroutines )
-target_include_directories( visuals PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/src ${CMAKE_CURRENT_SOURCE_DIR}/extern ${CMAKE_CURRENT_SOURCE_DIR} )
+target_include_directories( visuals PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/src ${CMAKE_CURRENT_SOURCE_DIR}/extern ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR} )
 target_link_libraries( visuals PUBLIC
 	lunasvg::lunasvg
 	plutovg::plutovg
@@ -59,6 +62,8 @@ target_link_libraries( visuals PUBLIC
 	harfbuzz::harfbuzz
 	CLI11::CLI11
 	asio::asio
+	CapnProto::capnp
+	CapnProto::kj
 	mfl )
 
 add_executable( sonimation tools/main.cpp demos/eases/show_animation.cpp )
@@ -73,5 +78,9 @@ target_link_libraries( list_font PUBLIC Freetype::Freetype )
 add_executable( test_huml tools/test_huml.cpp )
 target_compile_features( test_huml PUBLIC cxx_std_20 )
 target_link_libraries( test_huml PUBLIC visuals )
+
+add_executable( test_tts tools/test_tts.cpp )
+target_compile_features( test_tts PUBLIC cxx_std_20 )
+target_link_libraries( test_tts PUBLIC visuals )
 
 add_subdirectory( tests )

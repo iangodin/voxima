@@ -19,6 +19,7 @@ class MyProjectConan(ConanFile):
     self.requires("cli11/2.6.2")
     self.requires("ctre/3.10.0")
     self.requires("asio/1.36.0")
+    self.requires("capnproto/1.1.0")
 
   def layout(self):
     cmake_layout(self, generator="Ninja Multi-Config")
