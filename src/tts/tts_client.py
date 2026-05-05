@@ -4,12 +4,27 @@ Edge TTS Bridge Client - Connect to the TTS server and get audio + word boundari
 """
 
 import asyncio
-import base64
-import json
 import struct
+import os
 from dataclasses import dataclass
 from typing import Optional, List
 import socket
+
+try:
+    import capnp
+except ImportError:
+    print("ERROR: pycapnp not installed. Install with: pip install pycapnp")
+    import sys
+    sys.exit(1)
+
+# Load Cap'n Proto schema
+try:
+    SCHEMA_PATH = os.path.join(os.path.dirname(__file__), 'protocol.capnp')
+    protocol = capnp.load(SCHEMA_PATH)
+except Exception as e:
+    print(f"ERROR: Failed to load Cap'n Proto schema from {SCHEMA_PATH}: {e}")
+    import sys
+    sys.exit(1)
 
 
 @dataclass
@@ -35,7 +50,7 @@ class SynthesisResult:
 
 
 class TTSClient:
-    """Client for connecting to Edge TTS Bridge Server"""
+    """Client for connecting to Edge TTS Bridge Server using Cap'n Proto"""
 
     def __init__(self, host: str = '127.0.0.1', port: int = 5555):
         """
@@ -101,18 +116,17 @@ class TTSClient:
                 )
 
         try:
-            # Build request
-            request = {
-                'text': text,
-                'speaker': speaker,
-                'language': language,
-                'rate': rate
-            }
+            # Build Cap'n Proto request
+            request = protocol.TTSRequest.new_message()
+            request.text = text
+            request.speaker = speaker
+            request.language = language
+            request.rate = float(rate)
 
             # Send request
-            request_json = json.dumps(request, ensure_ascii=False).encode('utf-8')
-            length = struct.pack('!I', len(request_json))
-            self.writer.write(length + request_json)
+            request_bytes = request.to_bytes()
+            length = struct.pack('!I', len(request_bytes))
+            self.writer.write(length + request_bytes)
             await self.writer.drain()
 
             # Receive response
@@ -120,27 +134,24 @@ class TTSClient:
             response_length = struct.unpack('!I', length_data)[0]
 
             response_data = await self.reader.readexactly(response_length)
-            response = json.loads(response_data.decode('utf-8'))
+            
+            # Parse Cap'n Proto response
+            with protocol.TTSResponse.from_bytes(response_data) as response:
+                # Parse boundaries
+                boundaries = None
+                if len(response.boundaries) > 0:
+                    boundaries = [
+                        WordBoundary(text=b.text, offset=b.offset, duration=b.duration)
+                        for b in response.boundaries
+                    ]
 
-            # Parse response
-            audio_data = None
-            if 'audio_base64' in response:
-                audio_data = base64.b64decode(response['audio_base64'])
-
-            boundaries = None
-            if 'boundaries' in response:
-                boundaries = [
-                    WordBoundary(text=b['text'], offset=b['offset'], duration=b['duration'])
-                    for b in response['boundaries']
-                ]
-
-            result = SynthesisResult(
-                status=response['status'],
-                message=response['message'],
-                audio_data=audio_data,
-                boundaries=boundaries,
-                duration_ms=response.get('duration_ms')
-            )
+                result = SynthesisResult(
+                    status=response.status,
+                    message=response.message,
+                    audio_data=response.audio,
+                    boundaries=boundaries,
+                    duration_ms=response.duration if response.duration != 0 else None
+                )
 
             # Close connection if not persistent
             if not use_persistent:
@@ -206,7 +217,7 @@ async def example_async():
             print(f"Duration: {result.duration_ms}ms")
             print("\nWord boundaries:")
             for boundary in result.boundaries:
-                print(f"  {boundary.milliseconds:4d}ms: {boundary.text}")
+                print(f"  {boundary.offset:4d}ms: {boundary.text}")
 
             # Save audio to file
             with open('/tmp/output.wav', 'wb') as f:
@@ -241,3 +252,4 @@ if __name__ == '__main__':
         asyncio.run(example_async())
     else:
         example_sync()
+

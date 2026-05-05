@@ -9,6 +9,7 @@ import json
 import logging
 import struct
 import sys
+import os
 from dataclasses import dataclass, asdict
 from typing import Optional
 import socket
@@ -19,6 +20,12 @@ except ImportError:
     print("ERROR: edge_tts not installed. Install with: pip install edge-tts")
     sys.exit(1)
 
+try:
+    import capnp
+except ImportError:
+    print("ERROR: pycapnp not installed. Install with: pip install pycapnp")
+    sys.exit(1)
+
 # Configure logging
 logging.basicConfig(
     level=logging.INFO,
@@ -26,10 +33,18 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
+# Load Cap'n Proto schema
+try:
+    SCHEMA_PATH = os.path.join(os.path.dirname(__file__), 'protocol.capnp')
+    protocol = capnp.load(SCHEMA_PATH)
+except Exception as e:
+    logger.error(f"Failed to load Cap'n Proto schema from {SCHEMA_PATH}: {e}")
+    sys.exit(1)
+
 
 @dataclass
-class TTSResponse:
-    """Structure for TTS response data"""
+class TTSResponseData:
+    """Internal structure for TTS response data"""
     status: str
     message: str
     audio_data: Optional[bytes] = None
@@ -58,7 +73,7 @@ class EdgeTTSBridge:
         speaker: str,
         language: str,
         rate: float = 1.0
-    ) -> TTSResponse:
+    ) -> TTSResponseData:
         """
         Synthesize speech and extract word boundaries
 
@@ -69,11 +84,11 @@ class EdgeTTSBridge:
             rate: Speech rate multiplier (0.5 to 2.0)
 
         Returns:
-            TTSResponse with audio data and word boundaries
+            TTSResponseData with audio data and word boundaries
         """
         try:
             if not text or not text.strip():
-                return TTSResponse(
+                return TTSResponseData(
                     status="error",
                     message="Text cannot be empty"
                 )
@@ -82,7 +97,7 @@ class EdgeTTSBridge:
             if self.voice_list:
                 valid_speakers = [v['ShortName'] for v in self.voice_list]
                 if speaker not in valid_speakers:
-                    return TTSResponse(
+                    return TTSResponseData(
                         status="error",
                         message=f"Speaker '{speaker}' not found. Available speakers: {', '.join(valid_speakers[:5])}..."
                     )
@@ -93,10 +108,12 @@ class EdgeTTSBridge:
 
             # CRITICAL: Set boundary="WordBoundary" to get word-level timestamps
             # Default is "SentenceBoundary" which gives sentence-level boundaries instead
+            # rate is a multiplier (0.5 to 2.0). edge_tts expects offset from 1.0 (e.g. 1.5 -> +50%)
+            rate_offset = rate - 1.0
             communicate = edge_tts.Communicate(
                 text=text,
                 voice=speaker,
-                rate=f"{rate:+.0%}",  # Format as +0% to -50%
+                rate=f"{rate_offset:+.0%}",  # Format as +50% or -50%
                 pitch="+0Hz",
                 boundary="WordBoundary"  # Request word-level boundaries, not sentence-level
             )
@@ -106,20 +123,16 @@ class EdgeTTSBridge:
                     audio_data.extend(chunk['data'])
                 elif chunk['type'] == 'WordBoundary':
                     # edge_tts WordBoundary chunk structure:
-                    # {
-                    #   'type': 'WordBoundary',
-                    #   'offset': <milliseconds>,
-                    #   'duration': <duration_in_ms>,
-                    #   'text': <word_text>
-                    # }
+                    # offset and duration are in 100ns units (ticks)
+                    # Convert to milliseconds
                     boundaries.append({
                         'text': chunk.get('text', ''),
-                        'offset': chunk.get('offset', 0),
-                        'duration': chunk.get('duration', 0)
+                        'offset': chunk.get('offset', 0) // 10000,
+                        'duration': chunk.get('duration', 0) // 10000
                     })
 
             if not audio_data:
-                return TTSResponse(
+                return TTSResponseData(
                     status="error",
                     message="No audio data generated"
                 )
@@ -127,7 +140,7 @@ class EdgeTTSBridge:
             # Estimate duration from last boundary offset
             duration_ms = boundaries[-1]['offset'] + boundaries[-1]['duration'] if boundaries else 0
 
-            return TTSResponse(
+            return TTSResponseData(
                 status="success",
                 message="Synthesis completed",
                 audio_data=bytes(audio_data),
@@ -137,7 +150,7 @@ class EdgeTTSBridge:
 
         except Exception as e:
             logger.error(f"Synthesis error: {e}", exc_info=True)
-            return TTSResponse(
+            return TTSResponseData(
                 status="error",
                 message=f"Synthesis failed: {str(e)}"
             )
@@ -188,15 +201,15 @@ class TTSServer:
 
                 message_length = struct.unpack('!I', length_data)[0]
 
-                # Sanity check for message size (max 1MB)
-                if message_length > 1024 * 1024:
+                # Sanity check for message size (max 10MB for audio/text)
+                if message_length > 10 * 1024 * 1024:
                     logger.warning(f"Message too large: {message_length} bytes")
                     try:
                         await self.send_response(
                             writer,
-                            TTSResponse(
+                            TTSResponseData(
                                 status="error",
-                                message="Message too large (max 1MB)"
+                                message="Message too large (max 10MB)"
                             )
                         )
                     except Exception:
@@ -207,12 +220,14 @@ class TTSServer:
                 message_data = await reader.readexactly(message_length)
 
                 try:
-                    request = json.loads(message_data.decode('utf-8'))
-                    response = await self.process_request(request)
-                except json.JSONDecodeError as e:
-                    response = TTSResponse(
+                    # Parse Cap'n Proto request
+                    with protocol.TTSRequest.from_bytes(message_data) as request:
+                        response = await self.process_request(request)
+                except Exception as e:
+                    logger.error(f"Failed to parse request: {e}")
+                    response = TTSResponseData(
                         status="error",
-                        message=f"Invalid JSON: {str(e)}"
+                        message=f"Invalid Cap'n Proto request: {str(e)}"
                     )
 
                 try:
@@ -235,36 +250,25 @@ class TTSServer:
                 pass
             logger.info(f"Client disconnected: {client_addr}")
 
-    async def process_request(self, request: dict) -> TTSResponse:
+    async def process_request(self, request) -> TTSResponseData:
         """Process a TTS synthesis request"""
         try:
-            # Validate required fields
-            if 'text' not in request:
-                return TTSResponse(status="error", message="Missing 'text' field")
-            if 'speaker' not in request:
-                return TTSResponse(status="error", message="Missing 'speaker' field")
-            if 'language' not in request:
-                return TTSResponse(status="error", message="Missing 'language' field")
-
-            text = request['text']
-            speaker = request['speaker']
-            language = request['language']
-            rate = request.get('rate', 1.0)
+            text = request.text
+            speaker = request.speaker
+            language = request.language
+            rate = request.rate if request.rate != 0 else 1.0
 
             # Validate inputs
-            if not isinstance(text, str) or not text.strip():
-                return TTSResponse(status="error", message="Text must be non-empty string")
-            if not isinstance(speaker, str):
-                return TTSResponse(status="error", message="Speaker must be string")
-            if not isinstance(language, str):
-                return TTSResponse(status="error", message="Language must be string")
-            if not isinstance(rate, (int, float)) or rate < 0.5 or rate > 2.0:
-                return TTSResponse(status="error", message="Rate must be between 0.5 and 2.0")
-
+            if not text or not text.strip():
+                return TTSResponseData(status="error", message="Text must be non-empty string")
+            
             # Truncate text to reasonable length
             if len(text) > 10000:
                 text = text[:10000]
                 logger.warning("Text truncated to 10000 characters")
+
+            if rate < 0.1 or rate > 5.0: # Wider range for safety, edge_tts handles it
+                return TTSResponseData(status="error", message="Rate must be between 0.1 and 5.0")
 
             # Synthesize
             response = await self.bridge.synthesize(text, speaker, language, rate)
@@ -272,44 +276,45 @@ class TTSServer:
 
         except Exception as e:
             logger.error(f"Request processing error: {e}")
-            return TTSResponse(
+            return TTSResponseData(
                 status="error",
                 message=f"Processing error: {str(e)}"
             )
 
-    async def send_response(self, writer, response: TTSResponse):
-        """Send response back to client"""
+    async def send_response(self, writer, response: TTSResponseData):
+        """Send response back to client using Cap'n Proto"""
         try:
-            # Build response object
-            response_obj = {
-                'status': response.status,
-                'message': response.message,
-            }
-
-            if response.boundaries is not None:
-                response_obj['boundaries'] = response.boundaries
-
-            if response.duration_ms is not None:
-                response_obj['duration_ms'] = response.duration_ms
-
-            # Handle audio data
+            # Create Cap'n Proto response
+            res_msg = protocol.TTSResponse.new_message()
+            res_msg.status = response.status
+            res_msg.message = response.message
+            
             if response.audio_data:
-                # Encode audio as base64 for JSON
-                import base64
-                response_obj['audio_base64'] = base64.b64encode(response.audio_data).decode('utf-8')
+                res_msg.audio = response.audio_data
+            
+            if response.duration_ms is not None:
+                res_msg.duration = int(response.duration_ms)
 
-            # Serialize to JSON
-            response_json = json.dumps(response_obj, ensure_ascii=False).encode('utf-8')
+            if response.boundaries:
+                boundaries_list = res_msg.init('boundaries', len(response.boundaries))
+                for i, b in enumerate(response.boundaries):
+                    boundaries_list[i].text = b['text']
+                    boundaries_list[i].offset = int(b['offset'])
+                    boundaries_list[i].duration = int(b['duration'])
+
+            # Serialize to bytes
+            response_bytes = res_msg.to_bytes()
 
             # Send length prefix + data
-            length = struct.pack('!I', len(response_json))
-            writer.write(length + response_json)
+            length = struct.pack('!I', len(response_bytes))
+            writer.write(length + response_bytes)
             await writer.drain()
 
         except (BrokenPipeError, OSError, ConnectionResetError):
             raise
         except Exception as e:
             logger.error(f"Error sending response: {e}")
+
 
 
 async def main():

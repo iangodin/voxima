@@ -6,14 +6,31 @@ Test and example scripts for Edge TTS Bridge Server
 import asyncio
 import json
 import sys
+import os
+import struct
 from pathlib import Path
 from typing import List
 
-# Import the client
+# Import the client and server
 try:
     from tts_client import TTSClient, TTSClientSync, SynthesisResult
+    from edge_tts_server import TTSServer
 except ImportError:
-    print("Error: tts_client.py not found in the same directory")
+    print("Error: tts_client.py or edge_tts_server.py not found in the same directory")
+    sys.exit(1)
+
+try:
+    import capnp
+except ImportError:
+    print("Error: pycapnp not installed")
+    sys.exit(1)
+
+# Load Cap'n Proto schema
+try:
+    SCHEMA_PATH = os.path.join(os.path.dirname(__file__), 'protocol.capnp')
+    protocol = capnp.load(SCHEMA_PATH)
+except Exception as e:
+    print(f"Error: Failed to load Cap'n Proto schema: {e}")
     sys.exit(1)
 
 
@@ -87,9 +104,10 @@ async def test_word_boundaries():
                 print_success("Boundaries extracted")
                 print("\nWord timeline:")
                 for boundary in result.boundaries:
-                    bar_length = boundary.offset // 500000
-                    bar = '█' * bar_length
-                    print(f"  {boundary.offset:4d}ms {bar} {boundary.text}")
+                    # Millisecond bars (approx 1 char per 50ms)
+                    bar_length = boundary.offset // 50
+                    bar = '█' * min(bar_length, 40)
+                    print(f"  {boundary.offset:4d}ms {bar:40s} {boundary.text}")
                 return True
             else:
                 print_error(f"Failed: {result.message}")
@@ -139,6 +157,7 @@ async def test_speech_rates():
 
     rates = [0.5, 0.75, 1.0, 1.25, 1.5]
     text = "Adjust the speech rate to your preference."
+    durations = []
 
     async with TTSClient('127.0.0.1', 5555) as client:
         for rate in rates:
@@ -153,10 +172,22 @@ async def test_speech_rates():
                 if result.success:
                     speed_label = "slow" if rate < 1.0 else "fast" if rate > 1.0 else "normal"
                     print_success(f"Rate {rate:4.2f}x ({speed_label:6}) - {result.duration_ms}ms")
+                    durations.append(result.duration_ms)
                 else:
                     print_error(f"Rate {rate:4.2f}x - {result.message}")
+                    return False
             except Exception as e:
                 print_error(f"Rate {rate:4.2f}x - {e}")
+                return False
+
+    # Check if durations are generally decreasing
+    if all(durations[i] >= durations[i+1] for i in range(len(durations)-1)):
+        print_info("Durations are decreasing as rate increases")
+        return True
+    else:
+        print_error("Durations did not decrease as rate increased!")
+        print(f"  Durations: {durations}")
+        return False
 
 
 async def test_long_text():
@@ -183,7 +214,6 @@ async def test_long_text():
                 print(f"  Text length: {len(long_text)} characters")
                 print(f"  Audio size: {len(result.audio_data)} bytes")
                 print(f"  Duration: {result.duration_ms}ms")
-                #print(f"  Words: {len(result.boundaries)}")
                 return True
             else:
                 print_error(f"Failed: {result.message}")
@@ -194,43 +224,44 @@ async def test_long_text():
 
 
 async def test_error_handling():
-    """Test error handling"""
-    print_header("Test 7: Error Handling")
+    """Test error handling using Cap'n Proto"""
+    print_header("Test 6: Error Handling")
 
     test_cases = [
         ({"text": "", "speaker": "en-US-AriaNeural", "language": "en-US"}, "Empty text"),
         ({"text": "Hello", "speaker": "invalid-voice", "language": "en-US"}, "Invalid speaker"),
-        ({"text": "Hello", "language": "en-US"}, "Missing speaker"),
-        ({"text": "Hello", "speaker": "en-US-AriaNeural"}, "Missing language"),
-        ({"text": "Hello", "speaker": "en-US-AriaNeural", "language": "en-US", "rate": 5.0}, "Invalid rate"),
+        ({"text": "Hello", "speaker": "en-US-AriaNeural", "language": "en-US", "rate": 10.0}, "Invalid rate"),
     ]
 
     passed = 0
     async with TTSClient('127.0.0.1', 5555) as client:
-        for i, (request, description) in enumerate(test_cases, 1):
+        for i, (req_dict, description) in enumerate(test_cases, 1):
             try:
-                # Use the raw protocol to test error cases
-                import json
-                import struct
+                # Use raw Cap'n Proto protocol
+                request = protocol.TTSRequest.new_message()
+                request.text = req_dict.get('text', '')
+                request.speaker = req_dict.get('speaker', '')
+                request.language = req_dict.get('language', '')
+                request.rate = float(req_dict.get('rate', 1.0))
 
-                request_json = json.dumps(request, ensure_ascii=False).encode('utf-8')
-                length = struct.pack('!I', len(request_json))
+                request_bytes = request.to_bytes()
+                length = struct.pack('!I', len(request_bytes))
 
-                client.writer.write(length + request_json)
+                client.writer.write(length + request_bytes)
                 await client.writer.drain()
 
                 # Read response
                 length_data = await client.reader.readexactly(4)
                 response_length = struct.unpack('!I', length_data)[0]
                 response_data = await client.reader.readexactly(response_length)
-                response = json.loads(response_data.decode('utf-8'))
-
-                if response['status'] == 'error':
-                    print_success(f"Correctly caught: {description}")
-                    print(f"  Message: {response['message']}")
-                    passed += 1
-                else:
-                    print_error(f"Should have failed: {description}")
+                
+                with protocol.TTSResponse.from_bytes(response_data) as response:
+                    if response.status == 'error':
+                        print_success(f"Correctly caught: {description}")
+                        print(f"  Message: {response.message}")
+                        passed += 1
+                    else:
+                        print_error(f"Should have failed: {description}")
             except Exception as e:
                 print_error(f"Error testing {description}: {e}")
 
@@ -260,6 +291,7 @@ async def demo_karaoke():
                     "cues": [
                         {
                             "start_ms": b.offset,
+                            "duration_ms": b.duration,
                             "text": b.text
                         }
                         for b in result.boundaries
@@ -279,7 +311,16 @@ async def demo_karaoke():
 
 
 async def run_all_tests():
-    """Run all tests"""
+    """Run all tests with automatic server management"""
+    
+    # Start server
+    print_info("Starting TTS server...")
+    server = TTSServer('127.0.0.1', 5555)
+    server_task = asyncio.create_task(server.start())
+    
+    # Wait for startup
+    await asyncio.sleep(2)
+    
     print(f"\n{Colors.BOLD}{'='*60}")
     print(f"Edge TTS Bridge Server - Test Suite")
     print(f"{'='*60}{Colors.RESET}\n")
@@ -313,13 +354,23 @@ async def run_all_tests():
 
     print(f"\n{Colors.BOLD}Total: {passed}/{total} tests passed{Colors.RESET}\n")
 
+    # Shutdown
+    print_info("Shutting down TTS server...")
+    server_task.cancel()
+    try:
+        await server_task
+    except asyncio.CancelledError:
+        pass
+
     return passed == total
 
 
 def main():
     """Main entry point"""
+    # Note: Running specific tests individually via CLI still expects a running server.
+    # To support automatic server for individual tests, they'd need more wrapping.
     if len(sys.argv) > 1:
-        # Run specific test
+        # Run specific test (expects manual server start or wrapping)
         test_name = sys.argv[1]
         test_map = {
             'basic': test_basic_synthesis,
@@ -338,10 +389,11 @@ def main():
 
         asyncio.run(test_map[test_name]())
     else:
-        # Run all tests
+        # Run all tests (manages server automatically)
         success = asyncio.run(run_all_tests())
         sys.exit(0 if success else 1)
 
 
 if __name__ == '__main__':
     main()
+

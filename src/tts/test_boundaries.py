@@ -50,8 +50,8 @@ async def test_boundaries():
             print("\nWord Boundaries:")
             print("-" * 70)
             for i, boundary in enumerate(result.boundaries, 1):
-                ms = boundary['ms']
-                word = boundary['text']
+                ms = boundary.offset
+                word = boundary.text
                 bar_length = ms // 100
                 bar = '█' * min(bar_length, 50)
                 print(f"  {i:2d}. {ms:5d}ms {bar:50s} {word}")

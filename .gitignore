@@ -3,3 +3,4 @@
 /assets/
 /CMakeUserPresets.json
 /.cache/
+__pycache__
