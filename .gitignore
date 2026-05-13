@@ -1,6 +1,7 @@
 /build/
 /frames/
 /assets/
-/CMakeUserPresets.json
+/.pi/
 /.cache/
+/CMakeUserPresets.json
 __pycache__
