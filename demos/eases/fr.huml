@@ -1,8 +1,9 @@
 meta::
-  lang:: "fr", "fr-FR", "fr-CA"
+  lang: "fr"
+  inherit: null
 
 voices::
-  narrator: "default"
+  narrator: "fr-FR-DeniseNeural"
 
 labels::
   ease_cubic_in: "Cubique entrée"

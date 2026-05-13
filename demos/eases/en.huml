@@ -1,5 +1,6 @@
 meta::
-  lang:: "en", "en-US", "en-GB"
+  lang: "en"
+  inherit: null
 
 voices::
   narrator: "en-US-AriaNeural"
@@ -17,5 +18,5 @@ labels::
   ease_linear: "Linear"
 
 intro: """
-  Those shows various ease animations
+  These show various ease animations
 """

@@ -1,0 +1,6 @@
+meta::
+  lang: "fr-CA"
+  inherit: "fr"
+
+voices::
+  narrator: "fr-CA-SylvieNeural"

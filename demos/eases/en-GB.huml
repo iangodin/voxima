@@ -1,0 +1,6 @@
+meta::
+  lang: "en-GB"
+  inherit: "en"
+
+voices::
+  narrator: "en-GB-LibbyNeural"
