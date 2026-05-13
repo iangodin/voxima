@@ -9,6 +9,7 @@
 #include <exporters/SVGWriter.h>
 
 #include <core/Theme.h>
+#include <core/Camera.h>
 
 #include <tts/asio_wrapper.h>
 
@@ -23,6 +24,7 @@ struct Stage
 	Color background = { 0.F, 0.F, 0.F, 1.F };
 	Group visuals;
 	AudioMixer audio;
+	Camera camera;
 	asio::io_context io_context;
 	std::optional<std::filesystem::path> tts_cache;
 
