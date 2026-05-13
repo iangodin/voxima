@@ -2,6 +2,7 @@
 add_executable( sonimation_unit_tests
 	TestTextRanges.cpp
 	TestHuml.cpp
+	TestIntervalMap.cpp
 )
 
 target_link_libraries( sonimation_unit_tests

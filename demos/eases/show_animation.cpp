@@ -7,14 +7,15 @@
 #include <core/Scene.h>
 #include <core/Director.h>
 #include <core/Wait.h>
-
-#include <visuals/CreateText.h>
-#include <visuals/Circle.h>
-
 #include <core/EaseCubic.h>
 #include <core/EaseElastic.h>
 #include <core/EaseBack.h>
 #include <core/EaseLinear.h>
+
+#include <visuals/CreateText.h>
+#include <visuals/Circle.h>
+
+#include <tts/Narration.h>
 
 template<typename Ease>
 Scene show_ease( Stage &stage, const std::string &name, Ease &&ease, float y, int64_t frames )
@@ -31,6 +32,23 @@ Scene show_ease( Stage &stage, const std::string &name, Ease &&ease, float y, in
 	co_await wait_for( 30 );
 	co_await ease( circle.position.x, x1, x2, frames );
 	co_await wait_for( 30 );
+}
+
+Scene narrate( Stage &stage, Script &script )
+{
+	tts::Narration narration;
+
+	narration.synthesize( stage,
+		script.root()["voices"]["narrator"].as_string(),
+		script.root()["meta"]["lang"][0].as_string(),
+		script.root()["intro"].as_multiline() );
+
+	Microphone mic( stage.audio );
+	while ( !narration.is_done() )
+	{
+		narration.speak( mic );
+		co_await wait_for( 1 );
+	}
 }
 
 Screenplay my_screenplay( Stage &stage, Script &script )
@@ -76,7 +94,8 @@ Screenplay my_screenplay( Stage &stage, Script &script )
 		show_ease( stage, label_back_in, ease_back_in, 0.F, duration ),
 		show_ease( stage, label_back_out, ease_back_out, -0.5F, duration ),
 		show_ease( stage, label_back_in_out, ease_back_in_out, -1.0F, duration ),
-		show_ease( stage, label_linear, ease_linear, -1.5F, duration )
+		show_ease( stage, label_linear, ease_linear, -1.5F, duration ),
+		narrate( stage, script )
 	);
 }
 

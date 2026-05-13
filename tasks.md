@@ -17,15 +17,15 @@
   - [ ] Add morphing between shapes
 
 ## Audio System
-  - [ ] Need a "Recording Studio" that mixes everything and generates the final audio to a WAV file
+  - [x] Need a "Recording Studio" that mixes everything and generates the final audio to a WAV file
 
 ## Audio Processing
   - [x] Implement basic audio buffer
   - [x] Implement audio resampling
-  - [ ] Add WAV file saving
-  - [ ] Implement silence generator
+  - [x] Add WAV file saving
+  - [x] Implement silence generator
   - [ ] Implement simple volume effect
-  - [ ] Implement simple multi channel mixer
+  - [x] Implement simple multi channel mixer
 
 ## Music
   - [ ] Add music file format reading
@@ -34,8 +34,8 @@
 ## Text-To-Speech
   - [x] Create python Edge-TTS bridge server
   - [x] Add C++ client to generate voice audio
-  - [ ] Decode Edge-TTS audio into float/PCM buffer
-  - [ ] Need "Speaker" that can generate audio with a language and voice parameters
+  - [x] Decode Edge-TTS audio into float/PCM buffer
+  - [x] Need "Speaker" that can generate audio with a language and voice parameters
 
 ## Rendering
   - [ ] Add support for motion blur
@@ -43,6 +43,7 @@
   - [ ] Add command line option to select a scene to render
 
 ## Final Muxing
+  - [x] Need to use ffmpeg to mix the audio and video (simple proof of concept)
   - [ ] Need to use ffmpeg to mix the audio tracks, subtitle, and video tracks together
 
 ## Preview

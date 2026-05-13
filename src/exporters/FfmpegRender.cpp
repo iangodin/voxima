@@ -88,3 +88,25 @@ void FfmpegRender::close()
 		m_pipe = nullptr;
 	}
 }
+
+void FfmpegRender::mux( const std::string &video_file, const std::string &audio_file, const std::string &output_file )
+{
+	std::stringstream cmd;
+	// -i video_file: input video
+	// -i audio_file: input audio
+	// -c:v copy: copy video codec (re-encoding not needed)
+	// -c:a aac: encode audio as AAC (highly compatible)
+	// -map 0:v:0: take first video stream from first input
+	// -map 1:a:0: take first audio stream from second input
+	// -shortest: stop when the shortest stream ends (usually narration)
+	// -y: overwrite output
+	cmd << "ffmpeg -y -hide_banner -loglevel warning -i \"" << video_file << "\" -i \"" << audio_file
+		<< "\" -c:v copy -c:a aac -map 0:v:0 -map 1:a:0 -shortest \"" << output_file << "\"";
+
+	std::string cmd_str = cmd.str();
+	int result = std::system( cmd_str.c_str() );
+	if ( result != 0 )
+	{
+		std::cerr << "Error: FFmpeg muxing failed with code " << result << "\n";
+	}
+}

@@ -7,15 +7,30 @@
 #include <core/Theme.h>
 
 #include <exporters/SVGWriter.h>
+#include <audio/AudioMixer.h>
+
+#if defined( __GNUC__ ) || defined( __clang__ )
+#	pragma GCC diagnostic push
+#	pragma GCC diagnostic ignored "-Wnull-dereference"
+#endif
+#include <asio.hpp>
+#if defined( __GNUC__ ) || defined( __clang__ )
+#	pragma GCC diagnostic pop
+#endif
 
 #include <iostream>
 #include <sstream>
+#include <optional>
+#include <filesystem>
 
 struct Stage
 {
 	Theme *theme = nullptr;
 	Color background = { 0.F, 0.F, 0.F, 1.F };
 	Group visuals;
+	AudioMixer audio;
+	asio::io_context io_context;
+	std::optional<std::filesystem::path> tts_cache;
 
 	void save_svg( std::ostream &file ) const
 	{

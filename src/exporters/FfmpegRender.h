@@ -14,6 +14,8 @@ public:
 	void encode( const lunasvg::Bitmap &bitmap );
 	void close();
 
+	static void mux( const std::string &video_file, const std::string &audio_file, const std::string &output_file );
+
 private:
 	std::string m_filename;
 	double m_framerate;

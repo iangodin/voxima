@@ -2,7 +2,7 @@ meta::
   lang:: "en", "en-US", "en-GB"
 
 voices::
-  narrator: "default"
+  narrator: "en-US-AriaNeural"
 
 labels::
   ease_cubic_in: "Cubic In"
@@ -16,3 +16,6 @@ labels::
   ease_back_in_out: "Back In Out"
   ease_linear: "Linear"
 
+intro: """
+  Those shows various ease animations
+"""

@@ -36,6 +36,8 @@ bool Producer::produce( int argc, char *argv[] )
 	std::optional<std::string> theme_name;
 	app.add_option( "--theme", theme_name, "Theme to use" );
 
+	app.add_option( "--tts-cache", _stage.tts_cache, "Directory for TTS cache" );
+
 	std::optional<std::string> script_path;
 	app.add_option( "--scripts", script_path, "Directory containing scripts" );
 
@@ -80,6 +82,8 @@ bool Producer::produce( int argc, char *argv[] )
 	_screenplay.handle.promise().producer_ptr = this;
 
 	std::optional<FfmpegRender> ffmpeg;
+	std::string ffmpeg_filename;
+	std::string audio_filename;
 	std::optional<PngRender> pngs;
 	std::tuple<std::string, int, std::string> svgs = {};
 	bool write_svgs = false;
@@ -92,7 +96,16 @@ bool Producer::produce( int argc, char *argv[] )
 			{
 				throw std::runtime_error( "only one output mp4 allowed" );
 			}
+			ffmpeg_filename = output;
 			ffmpeg = FfmpegRender( output );
+		}
+		else if ( output.ends_with( ".wav" ) )
+		{
+			if ( !_stage.audio.open( output ) )
+			{
+				throw std::runtime_error( "could not open audio output: " + output );
+			}
+			audio_filename = output;
 		}
 		else if ( output.ends_with( ".png" ) )
 		{
@@ -183,9 +196,25 @@ bool Producer::produce( int argc, char *argv[] )
 			}
 		}
 
+		_stage.audio.save_audio();
 		++frame;
 	}
 	timer_total.message( "Total render " + std::to_string( frame ) + " frames: ", frame );
+
+	if ( ffmpeg )
+	{
+		ffmpeg->close();
+	}
+	_stage.audio.close();
+
+	if ( !ffmpeg_filename.empty() && !audio_filename.empty() )
+	{
+		Timer timer_mux( "  FFMPEG muxing: " );
+		std::string temp_video = ffmpeg_filename + ".tmp.mp4";
+		std::filesystem::rename( ffmpeg_filename, temp_video );
+		FfmpegRender::mux( temp_video, audio_filename, ffmpeg_filename );
+		std::filesystem::remove( temp_video );
+	}
 
 	return 0;
 }

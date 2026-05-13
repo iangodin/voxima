@@ -48,7 +48,10 @@ add_library( visuals STATIC
 	src/themes/PlayfulDiscovery.cpp
 	src/tts/protocol.capnp.c++
 	src/tts/TTSClient.cpp
+	src/tts/Narration.cpp
 	src/audio/Resample.cpp
+	src/audio/AudioMixer.cpp
+	src/audio/Microphone.cpp
 	src/utils/FreetypeError.cpp
 	src/utils/Huml.cpp
 	src/visuals/CreateMath.cpp

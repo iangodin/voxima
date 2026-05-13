@@ -1,10 +1,10 @@
 #! /usr/bin/env bash
 set -e
 
-mkdir -p frames
-rm -f frames/*
+mkdir -p render
+rm -f render/*.svg  render/output.wav render/output.mp4
 
 make
-build/Release/sonimation --scripts demos/eases --lang en --theme "Modern Technical" --output frames/output.mp4 --output frames/frame_@@@@.svg
+build/Release/sonimation --scripts demos/eases --lang en --theme "Modern Technical" --tts-cache render/tts-cache --output render/output.wav --output render/output.mp4 --output render/frame_@@@@.svg
 
-#ffmpeg -y -framerate 30 -i frames/frame_%04d.png -c:v libx264 -pix_fmt yuv420p -crf 18 frames/out.mp4
+#ffmpeg -y -framerate 30 -i render/frame_%04d.png -c:v libx264 -pix_fmt yuv420p -crf 18 render/out.mp4

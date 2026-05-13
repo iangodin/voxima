@@ -103,35 +103,11 @@ public:
 		if ( start >= end )
 			throw std::invalid_argument( "start must be less than end" );
 
+		erase( start, end );
+
 		Interval new_interval( start, end, value );
-
 		auto it = std::lower_bound( _intervals.begin(), _intervals.end(), new_interval );
-
-		// Step back if the previous interval overlaps
-		if ( it != _intervals.begin() )
-		{
-			auto prev = std::prev( it );
-			if ( prev->end > start )
-				--it;
-		}
-
-		Key actual_start = start;
-		Key actual_end = end;
-
-		// Consume all intervals that overlap [start, end)
-		while ( it != _intervals.end() && it->start < end )
-		{
-			actual_start = std::min( actual_start, it->start );
-			actual_end = std::max( actual_end, it->end );
-			it = _intervals.erase( it );
-		}
-
-		_intervals.insert(
-			std::lower_bound(
-				_intervals.begin(),
-				_intervals.end(),
-				Interval( actual_start, actual_end, value ) ),
-			Interval( actual_start, actual_end, value ) );
+		_intervals.insert( it, new_interval );
 	}
 
 	// Return the value at key, or std::nullopt if unmapped.
@@ -139,6 +115,10 @@ public:
 	{
 		auto it = std::lower_bound(
 			_intervals.begin(), _intervals.end(), Interval( key, key + 1, Value{} ) );
+
+		if ( it != _intervals.end() && it->contains( key ) )
+			return it->value;
+
 		if ( it != _intervals.begin() )
 		{
 			--it;
