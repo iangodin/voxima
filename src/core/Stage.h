@@ -36,14 +36,18 @@ struct Stage
 		SVGWriter writer( body );
 		visuals.accept( writer );
 
-		file << "<svg width=\"1280\" height=\"720\" "
-		     << "viewBox=\"-8 -4.5 16 9\" "
+		float aspect = static_cast<float>( camera.height ) / static_cast<float>( camera.width );
+		float view_width = 16.f;
+		float view_height = view_width * aspect;
+
+		file << "<svg width=\"" << camera.width << "\" height=\"" << camera.height << "\" "
+		     << "viewBox=\"" << -view_width/2 << " " << -view_height/2 << " " << view_width << " " << view_height << "\" "
 		     << "xmlns=\"http://www.w3.org/2000/svg\">\n";
 
 		writer.write_defs( file );
 
 		// Background
-		file << "  <rect x=\"-8\" y=\"-4.5\" width=\"16\" height=\"9\" "
+		file << "  <rect x=\"" << -view_width/2 << "\" y=\"" << -view_height/2 << "\" width=\"" << view_width << "\" height=\"" << view_height << "\" "
 		     << SVGWriter::color_attributes( background ) << " />\n";
 
 		// Flip the Y-axis for all visuals

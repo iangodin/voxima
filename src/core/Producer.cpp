@@ -28,7 +28,7 @@ bool Producer::produce( int argc, char *argv[] )
 	argv = app.ensure_utf8( argv );
 
 	std::vector<std::string> outputs;
-	app.add_option( "-o,--output", outputs, "Output file (mp4, png, or svg)" );
+	app.add_option( "-o,--output", outputs, "Output file (mp4, wav, png, or svg)" );
 
 	std::optional<std::string> font_path;
 	app.add_option( "--fonts", font_path, "Directory containing fonts" );
@@ -37,6 +37,9 @@ bool Producer::produce( int argc, char *argv[] )
 	app.add_option( "--theme", theme_name, "Theme to use" );
 
 	app.add_option( "--tts-cache", _stage.tts_cache, "Directory for TTS cache" );
+	app.add_option( "--width", _stage.camera.width, "Camera width" );
+	app.add_option( "--height", _stage.camera.height, "Camera height" );
+	app.add_option( "--fps", _stage.camera.frame_rate, "Camera frame rate" );
 
 	std::optional<std::string> script_path;
 	app.add_option( "--scripts", script_path, "Directory containing scripts" );
@@ -97,17 +100,16 @@ bool Producer::produce( int argc, char *argv[] )
 				throw std::runtime_error( "only one output mp4 allowed" );
 			}
 			ffmpeg_filename = output;
-			ffmpeg = FfmpegRender( output );
+			ffmpeg = FfmpegRender( output, static_cast<double>(_stage.camera.frame_rate) );
 		}
 		else if ( output.ends_with( ".wav" ) )
 		{
-			if ( !_stage.audio.open( output ) )
+			if ( !_stage.audio.open( output, 48000 ) )
 			{
 				throw std::runtime_error( "could not open audio output: " + output );
 			}
 			audio_filename = output;
-		}
-		else if ( output.ends_with( ".png" ) )
+		}		else if ( output.ends_with( ".png" ) )
 		{
 			if ( pngs.has_value() )
 			{
