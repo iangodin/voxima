@@ -1,7 +1,11 @@
+
+#include <tts/TTSClient.h>
+#include <tts/protocol.capnp.h>
+
+#include <sndfile.h>
+
 #include <iostream>
 #include <fstream>
-#include <sndfile.h>
-#include "tts/TTSClient.h"
 
 int main( int argc, char *argv[] )
 {

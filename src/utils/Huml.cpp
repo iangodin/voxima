@@ -998,5 +998,5 @@ std::optional<std::string> Parser::parse_quoted_string( std::string_view &view )
 	return std::nullopt;
 }
 
-} // namespace huml
+}
 

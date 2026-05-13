@@ -4,19 +4,13 @@
 #include <visuals/Group.h>
 #include <visuals/Color.h>
 
-#include <core/Theme.h>
-
-#include <exporters/SVGWriter.h>
 #include <audio/AudioMixer.h>
 
-#if defined( __GNUC__ ) || defined( __clang__ )
-#	pragma GCC diagnostic push
-#	pragma GCC diagnostic ignored "-Wnull-dereference"
-#endif
-#include <asio.hpp>
-#if defined( __GNUC__ ) || defined( __clang__ )
-#	pragma GCC diagnostic pop
-#endif
+#include <exporters/SVGWriter.h>
+
+#include <core/Theme.h>
+
+#include <tts/asio_wrapper.h>
 
 #include <iostream>
 #include <sstream>

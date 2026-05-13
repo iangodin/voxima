@@ -243,4 +243,4 @@ private:
 	std::optional<std::string> parse_quoted_string( std::string_view &view );
 };
 
-} // namespace huml
+}

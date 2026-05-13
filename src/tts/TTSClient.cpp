@@ -1,25 +1,21 @@
 #include "TTSClient.h"
+
+#include "protocol.capnp.h"
+#include "asio_wrapper.h"
+
 #include <capnp/message.h>
 #include <capnp/serialize.h>
+
 #include <kj/io.h>
+
+#include <sndfile.h>
+
 #include <cstring>
 #include <cstddef>
-#include <sndfile.h>
 #include <fstream>
 #include <iomanip>
 #include <sstream>
 #include <iostream>
-
-#if defined( __GNUC__ ) || defined( __clang__ )
-#	pragma GCC diagnostic push
-#	pragma GCC diagnostic ignored "-Wnull-dereference"
-#endif
-#include <asio/ip/tcp.hpp>
-#include <asio/write.hpp>
-#include <asio/read.hpp>
-#if defined( __GNUC__ ) || defined( __clang__ )
-#	pragma GCC diagnostic pop
-#endif
 
 namespace tts
 {
@@ -103,7 +99,7 @@ std::string compute_hash(
 	return res.str();
 }
 
-} // namespace
+}
 
 TTSClient::TTSClient(
 	asio::io_context &io_context,
@@ -309,7 +305,9 @@ SynthesisResult TTSClient::synthesize(
 		result.success = false;
 		result.status = "error";
 		result.message = e.what();
-		std::cerr << "TTS Synthesis failed: " << e.what() << " (Is the TTS server running at " << host_ << ":" << port_ << "?)" << std::endl;
+		std::cerr << "TTS Synthesis failed: " << e.what()
+				  << " (Is the TTS server running at " << host_ << ":" << port_ << "?)"
+				  << std::endl;
 	}
 
 	return result;

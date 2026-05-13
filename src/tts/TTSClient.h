@@ -1,22 +1,14 @@
+
 #pragma once
 
+#include "asio_wrapper.h"
+
+#include <audio/AudioBuffer.h>
+
+#include <filesystem>
 #include <string>
 #include <vector>
 #include <optional>
-
-#if defined( __GNUC__ ) || defined( __clang__ )
-#	pragma GCC diagnostic push
-#	pragma GCC diagnostic ignored "-Wnull-dereference"
-#endif
-#include <asio.hpp>
-#if defined( __GNUC__ ) || defined( __clang__ )
-#	pragma GCC diagnostic pop
-#endif
-
-#include "protocol.capnp.h"
-#include "audio/AudioBuffer.h"
-
-#include <filesystem>
 
 namespace tts
 {
