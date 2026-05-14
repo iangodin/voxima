@@ -51,13 +51,10 @@ bool Producer::produce( int argc, char *argv[] )
 
 	if ( language )
 	{
-		std::filesystem::path script_file = script_path.value_or( "." );
-		script_file /= language.value_or( "en" ) + ".huml";
-
-		std::string source = read_file( script_file );
-		if ( !_script.parse( source ) )
+		_script.set_directory( script_path.value_or( "." ) );
+		if ( !_script.load( *language ) )
 		{
-			throw std::runtime_error( "unable to parse script " + script_file.string() );
+			throw std::runtime_error( "unable to load script " + *language );
 		}
 	}
 

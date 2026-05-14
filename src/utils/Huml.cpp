@@ -998,5 +998,29 @@ std::optional<std::string> Parser::parse_quoted_string( std::string_view &view )
 	return std::nullopt;
 }
 
+Value merge( const Value &master, const Value &variant )
+{
+	if ( master.is_dict() && variant.is_dict() )
+	{
+		Dict result = master.as_dict();
+		const Dict &v_dict = variant.as_dict();
+		for ( const auto &[key, val] : v_dict )
+		{
+			auto it = result.find( key );
+			if ( it != result.end() )
+			{
+				it->second = merge( it->second, val );
+			}
+			else
+			{
+				result[key] = val;
+			}
+		}
+		return Value{ std::move( result ) };
+	}
+
+	return variant;
+}
+
 }
 
