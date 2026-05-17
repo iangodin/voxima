@@ -27,6 +27,8 @@ public:
 		return _rate;
 	}
 
+	static bool supported_format( const std::string &filename );
+
 private:
 	SNDFILE *_sndfile = nullptr;
 	std::vector<float> _mixed_buffer;

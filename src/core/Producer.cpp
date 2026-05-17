@@ -3,15 +3,12 @@
 
 #include "Script.h"
 
+#include <CLI/CLI.hpp>
 #include <exporters/FfmpegRender.h>
 #include <exporters/PngRender.h>
-
-#include <utils/Timer.h>
-#include <utils/ParseSequenceName.h>
-
-#include <CLI/CLI.hpp>
-
 #include <optional>
+#include <utils/ParseSequenceName.h>
+#include <utils/Timer.h>
 
 std::string read_file( std::filesystem::path path )
 {
@@ -28,7 +25,10 @@ bool Producer::produce( int argc, char *argv[] )
 	argv = app.ensure_utf8( argv );
 
 	std::vector<std::string> outputs;
-	app.add_option( "-o,--output", outputs, "Output file (mp4, wav, png, or svg)" );
+	app.add_option( "-o,--output", outputs, "Output file (mp4, wav, flac, png, or svg)" );
+
+	std::string vcodec;
+	app.add_option( "--vcodec", vcodec, "Video codec (h264 or h265)" );
 
 	std::optional<std::string> font_path;
 	app.add_option( "--fonts", font_path, "Directory containing fonts" );
@@ -86,8 +86,9 @@ bool Producer::produce( int argc, char *argv[] )
 	_screenplay.handle.promise().producer_ptr = this;
 
 	std::optional<FfmpegRender> ffmpeg;
-	std::string ffmpeg_filename;
+	std::string video_filename;
 	std::string audio_filename;
+	std::string final_filename;
 	std::optional<PngRender> pngs;
 	std::tuple<std::string, int, std::string> svgs = {};
 	bool write_svgs = false;
@@ -96,21 +97,30 @@ bool Producer::produce( int argc, char *argv[] )
 	{
 		if ( output.ends_with( ".mp4" ) )
 		{
+			if ( !final_filename.empty() )
+			{
+				throw std::runtime_error( "only one final mp4 allowed" );
+			}
+			final_filename = output;
+		}
+		else if ( output.ends_with( ".ts" )  )
+		{
 			if ( ffmpeg.has_value() )
 			{
-				throw std::runtime_error( "only one output mp4 allowed" );
+				throw std::runtime_error( "only one output video allowed" );
 			}
-			ffmpeg_filename = output;
-			ffmpeg = FfmpegRender( output, static_cast<double>(_stage.camera.frame_rate) );
+			video_filename = output;
+			ffmpeg = FfmpegRender( output, vcodec, static_cast<double>( _stage.camera.frame_rate ) );
 		}
-		else if ( output.ends_with( ".wav" ) )
+		else if ( AudioMixer::supported_format( output ) )
 		{
 			if ( !_stage.audio.open( output, 48000 ) )
 			{
 				throw std::runtime_error( "could not open audio output: " + output );
 			}
 			audio_filename = output;
-		}		else if ( output.ends_with( ".png" ) )
+		}
+		else if ( output.ends_with( ".png" ) )
 		{
 			if ( pngs.has_value() )
 			{
@@ -118,9 +128,7 @@ bool Producer::produce( int argc, char *argv[] )
 			}
 			auto filename = parse_sequence_name( output );
 			pngs = PngRender(
-				std::get<0>( filename ),
-				std::get<2>( filename ),
-				std::get<1>( filename ) );
+				std::get<0>( filename ), std::get<2>( filename ), std::get<1>( filename ) );
 		}
 		else if ( output.ends_with( ".svg" ) )
 		{
@@ -130,6 +138,10 @@ bool Producer::produce( int argc, char *argv[] )
 			}
 			write_svgs = true;
 			svgs = parse_sequence_name( output );
+		}
+		else
+		{
+			throw std::runtime_error( "unknown output " + output );
 		}
 	}
 
@@ -199,7 +211,10 @@ bool Producer::produce( int argc, char *argv[] )
 			}
 		}
 
-		_stage.audio.save_audio();
+		{
+			Timer timer_svg_gen( "  Audio encoding: " );
+			_stage.audio.save_audio();
+		}
 		++frame;
 	}
 	timer_total.message( "Total render " + std::to_string( frame ) + " frames: ", frame );
@@ -210,15 +225,12 @@ bool Producer::produce( int argc, char *argv[] )
 	}
 	_stage.audio.close();
 
-	if ( !ffmpeg_filename.empty() && !audio_filename.empty() )
+	if ( !video_filename.empty() && !audio_filename.empty() && !final_filename.empty() )
 	{
 		Timer timer_mux( "  FFMPEG muxing: " );
-		std::string temp_video = ffmpeg_filename + ".tmp.mp4";
-		std::filesystem::rename( ffmpeg_filename, temp_video );
-		FfmpegRender::mux( temp_video, audio_filename, ffmpeg_filename );
-		std::filesystem::remove( temp_video );
+		double framerate = static_cast<double>( _stage.camera.frame_rate );
+		FfmpegRender::mux( framerate, video_filename, audio_filename, final_filename );
 	}
 
 	return 0;
 }
-
