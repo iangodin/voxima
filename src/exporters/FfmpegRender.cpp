@@ -80,15 +80,20 @@ void FfmpegRender::open_pipe( uint32_t width, uint32_t height )
 	// output -pix_fmt yuv420p is for maximum compatibility with players.
 	cmd << " -pix_fmt yuv420p";
 
+	// high compression quality
+	cmd << " -preset slow";
+
 	if ( _codec == "h264" || _codec.empty() )
 	{
 		// High quality AVC / H264
+		cmd << " -x264-params log-level=warning:tune=animation:keyint=60";
 		cmd << " -c:v libx264";
 		cmd << " -crf 18";
 	}
 	else if ( _codec == "h265" )
 	{
 		// High quality HEVC / H265
+		cmd << " -x265-params log-level=warning:tune=animation:keyint=60:no-sao=1:no-info=1";
 		cmd << " -c:v libx265";
 		cmd << " -crf 21";
 	}
