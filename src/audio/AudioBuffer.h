@@ -63,6 +63,11 @@ public:
 		_frames = frames;
 	}
 
+	double duration( void ) const
+	{
+		return static_cast<double>( _frames ) / static_cast<double>( _rate );
+	}
+
 private:
 	std::vector<float> _data;
 	size_t _frames = 0;

@@ -1,18 +1,20 @@
 #include "Narration.h"
-#include <core/Stage.h>
-#include <audio/Resample.h>
-#include <cstring>
+
 #include <algorithm>
+#include <audio/Resample.h>
+#include <core/Stage.h>
+#include <cstring>
 
 namespace tts
 {
 
-void Narration::synthesize(
+double Narration::synthesize(
 	Stage &stage,
 	const std::string &speaker,
 	const std::string &language,
 	const std::vector<std::string> &text )
 {
+	double duration = 0.0;
 	TTSClient client( stage.io_context, "127.0.0.1", 5555, stage.tts_cache );
 	_results.clear();
 	for ( const auto &t: text )
@@ -27,12 +29,15 @@ void Narration::synthesize(
 		if ( result.audio.has_value() && result.audio->rate() != stage.audio.rate() )
 		{
 			result.audio = resample( result.audio.value(), stage.audio.rate() );
+			duration += result.audio->duration();
 		}
 
 		_results.push_back( std::move( result ) );
 	}
 	_current_result_index = 0;
 	_offset = 0;
+
+	return duration;
 }
 
 void Narration::speak( Microphone &mic, size_t samples )
