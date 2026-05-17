@@ -38,10 +38,11 @@ Scene narrate( Stage &stage, Script &script )
 {
 	tts::Narration narration;
 
-	narration.synthesize( stage,
-		script.root()["voices"]["narrator"].as_string(),
-		script.root()["meta"]["lang"][0].as_string(),
-		script.root()["intro"].as_multiline() );
+	std::string narrator = script.root()["voices"]["narrator"].as_string();
+	std::string lang = script.root()["meta"]["lang"].as_string();
+	std::vector<std::string> intro = script.root()["intro"].as_multiline();
+
+	narration.synthesize( stage, narrator, lang, intro );
 
 	Microphone mic( stage.audio );
 	while ( !narration.is_done() )
