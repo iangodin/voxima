@@ -15,7 +15,7 @@
 #include <visuals/CreateText.h>
 #include <visuals/Circle.h>
 
-#include <tts/Narration.h>
+#include <core/Narration.h>
 
 template<typename Ease>
 Scene show_ease( Stage &stage, const std::string &name, Ease &&ease, float y, int64_t frames )
@@ -36,18 +36,12 @@ Scene show_ease( Stage &stage, const std::string &name, Ease &&ease, float y, in
 
 Scene narrate( Stage &stage, Script &script )
 {
-	tts::Narration narration;
-
-	std::string lang = "en";
-	std::string narrator = script.fetch( lang, "voices", "narrator" ).as_string();
-	std::vector<std::string> intro = script.fetch( lang, "intro" ).as_multiline();
-
-	narration.synthesize( stage, narrator, lang, intro );
-
-	Microphone mic( stage.audio );
+	Narration narration;
+	narration.setup( "narrator", script, stage.audio );
+	narration.speech( "intro" );
 	while ( !narration.is_done() )
 	{
-		narration.speak( mic );
+		narration.speak();
 		co_await wait_for( 1 );
 	}
 }

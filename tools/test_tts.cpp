@@ -20,7 +20,8 @@ int main( int argc, char *argv[] )
 	std::string language = ( argc > 3 ) ? argv[3] : "en-US";
 
 	asio::io_context io_context;
-	tts::TTSClient client( io_context, "127.0.0.1", 5555, ".cache/tts" );
+	tts::TTSClient client( io_context, "127.0.0.1", 5555 );
+	client.setup( ".cache/tts-cache" );
 
 	std::cout << "Synthesizing: \"" << text << "\" using " << speaker << "...\n";
 	auto result = client.synthesize( text, speaker, language );

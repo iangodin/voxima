@@ -30,13 +30,18 @@ bool Producer::produce( int argc, char *argv[] )
 	std::string vcodec = "h264";
 	app.add_option( "--vcodec", vcodec, "Video codec (h264, h265, vp9 or av1)" );
 
+	std::string acodec = "flac";
+	app.add_option( "--acodec", acodec, "Video codec (wav or flac)" );
+
 	std::optional<std::string> font_path;
 	app.add_option( "--fonts", font_path, "Directory containing fonts" );
 
 	std::optional<std::string> theme_name;
 	app.add_option( "--theme", theme_name, "Theme to use" );
 
-	app.add_option( "--tts-cache", _stage.tts_cache, "Directory for TTS cache" );
+	std::string render_dir = "render";
+	app.add_option( "--render-dir", render_dir, "Directory for render to" );
+
 	app.add_option( "--width", _stage.camera.width, "Camera width" );
 	app.add_option( "--height", _stage.camera.height, "Camera height" );
 	app.add_option( "--fps", _stage.camera.frame_rate, "Camera frame rate" );
@@ -55,10 +60,6 @@ bool Producer::produce( int argc, char *argv[] )
 		if ( !_script.load( *language ) )
 		{
 			throw std::runtime_error( "unable to load script " + *language );
-		}
-		else
-		{
-			std::cout << "Script:\n" << _script << '\n';
 		}
 	}
 
@@ -87,12 +88,19 @@ bool Producer::produce( int argc, char *argv[] )
 		throw std::runtime_error( "unsupported video codec " + vcodec );
 	}
 
-	_screenplay = std::move( _director( _stage, _script ) );
+	if ( !AudioMixer::supported_codec( acodec ) )
+	{
+		throw std::runtime_error( "unsupported audio codec " + acodec );
+	}
+
+	_stage.audio.setup( render_dir, 48000, static_cast<size_t>( _stage.camera.frame_rate ) );
+	_stage.audio.add_language( language.value() );
+
+	_screenplay = _director( _stage, _script );
 	_screenplay.handle.promise().producer_ptr = this;
 
 	std::optional<FfmpegRender> ffmpeg;
 	std::string video_filename;
-	std::string audio_filename;
 	std::string final_filename;
 	std::optional<PngRender> pngs;
 	std::tuple<std::string, int, std::string> svgs = {};
@@ -116,14 +124,6 @@ bool Producer::produce( int argc, char *argv[] )
 			}
 			video_filename = output;
 			ffmpeg = FfmpegRender( output, vcodec, static_cast<double>( _stage.camera.frame_rate ) );
-		}
-		else if ( AudioMixer::supported_format( output ) )
-		{
-			if ( !_stage.audio.open( output, 48000 ) )
-			{
-				throw std::runtime_error( "could not open audio output: " + output );
-			}
-			audio_filename = output;
 		}
 		else if ( output.ends_with( ".png" ) )
 		{
@@ -218,7 +218,7 @@ bool Producer::produce( int argc, char *argv[] )
 
 		{
 			Timer timer_svg_gen( "  Audio encoding: " );
-			_stage.audio.save_audio();
+			_stage.audio.write_audio();
 		}
 		++frame;
 	}
@@ -230,11 +230,11 @@ bool Producer::produce( int argc, char *argv[] )
 	}
 	_stage.audio.close();
 
-	if ( !video_filename.empty() && !audio_filename.empty() && !final_filename.empty() )
+	if ( !video_filename.empty() && !final_filename.empty() )
 	{
 		Timer timer_mux( "  FFMPEG muxing: " );
 		double framerate = static_cast<double>( _stage.camera.frame_rate );
-		FfmpegRender::mux( framerate, video_filename, audio_filename, final_filename );
+		FfmpegRender::mux( framerate, video_filename, "", final_filename );
 	}
 
 	return 0;

@@ -36,6 +36,8 @@ add_library( visuals STATIC
 	src/core/Script.cpp
 	src/core/Producer.cpp
 	src/core/Theme.cpp
+	src/core/Narration.cpp
+	src/core/Narrator.cpp
 	src/exporters/SVGWriter.cpp
 	src/exporters/FfmpegRender.cpp
 	src/fonts/FontStack.cpp
@@ -48,7 +50,7 @@ add_library( visuals STATIC
 	src/themes/PlayfulDiscovery.cpp
 	src/tts/protocol.capnp.c++
 	src/tts/TTSClient.cpp
-	src/tts/Narration.cpp
+	src/audio/DubbingStage.cpp
 	src/audio/Resample.cpp
 	src/audio/AudioMixer.cpp
 	src/audio/Microphone.cpp

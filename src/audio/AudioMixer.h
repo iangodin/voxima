@@ -5,7 +5,7 @@
 
 #include <sndfile.h>
 #include <string>
-#include <vector>
+#include <string_view>
 
 class AudioMixer
 {
@@ -13,24 +13,22 @@ public:
 	AudioMixer();
 	~AudioMixer();
 
-	bool open( const std::string &filename, size_t rate = 48000, size_t default_frame_size = 2000 );
+	bool open( const std::string &filename, size_t rate, size_t block_size );
 
 	void close();
 
 	void add_audio( const AudioBuffer &buffer );
-	void save_audio();
+	void write_audio( void );
 
-	size_t rate() const
+	size_t rate( void ) const
 	{
-		return _rate;
+		return _buffer.rate();
 	}
 
 	static bool supported_format( const std::string &filename );
+	static bool supported_codec( std::string_view codec );
 
 private:
 	SNDFILE *_sndfile = nullptr;
-	std::vector<float> _mixed_buffer;
-	size_t _rate = 48000;
-	size_t _default_frame_size = 2000;
-	size_t _current_frame_size = 0;
+	AudioBuffer _buffer;
 };

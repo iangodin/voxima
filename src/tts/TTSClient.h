@@ -4,11 +4,10 @@
 #include "asio_wrapper.h"
 
 #include <audio/AudioBuffer.h>
-
 #include <filesystem>
+#include <optional>
 #include <string>
 #include <vector>
-#include <optional>
 
 namespace tts
 {
@@ -32,11 +31,9 @@ struct SynthesisResult
 class TTSClient
 {
 public:
-	TTSClient(
-		asio::io_context &io_context,
-		std::string host,
-		uint16_t port,
-		std::optional<std::filesystem::path> cache_dir = std::nullopt );
+	TTSClient( asio::io_context &io_context, std::string host, uint16_t port );
+
+	void setup( const std::filesystem::path &render_dir );
 
 	SynthesisResult synthesize(
 		const std::string &text,
@@ -44,14 +41,11 @@ public:
 		const std::string &language,
 		float rate = 1.0f );
 
-	void setCacheDirectory( const std::filesystem::path &path );
-
 private:
-	asio::io_context &io_context_;
-	std::string host_;
-	uint16_t port_;
-	std::optional<std::filesystem::path> cache_dir_;
+	asio::io_context &_io_context;
+	std::string _host;
+	uint16_t _port;
+	std::filesystem::path _cache_dir;
 };
 
 }
-

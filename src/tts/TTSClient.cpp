@@ -104,18 +104,16 @@ std::string compute_hash(
 TTSClient::TTSClient(
 	asio::io_context &io_context,
 	std::string host,
-	uint16_t port,
-	std::optional<std::filesystem::path> cache_dir ) :
-	io_context_( io_context ),
-	host_( std::move( host ) ),
-	port_( port ),
-	cache_dir_( std::move( cache_dir ) )
+	uint16_t port ) :
+	_io_context( io_context ),
+	_host( std::move( host ) ),
+	_port( port )
 {
 }
 
-void TTSClient::setCacheDirectory( const std::filesystem::path &path )
+void TTSClient::setup( const std::filesystem::path &render_dir )
 {
-	cache_dir_ = path;
+	_cache_dir = render_dir / "tts-cache";
 }
 
 SynthesisResult TTSClient::synthesize(
@@ -128,15 +126,15 @@ SynthesisResult TTSClient::synthesize(
 	result.success = false;
 
 	std::optional<std::filesystem::path> cache_path;
-	if ( cache_dir_ )
+	if ( !_cache_dir.empty() )
 	{
 		try
 		{
-			if ( !std::filesystem::exists( *cache_dir_ ) )
+			if ( !std::filesystem::exists( _cache_dir ) )
 			{
-				std::filesystem::create_directories( *cache_dir_ );
+				std::filesystem::create_directories( _cache_dir );
 			}
-			cache_path = *cache_dir_ /
+			cache_path = _cache_dir /
 				( compute_hash( text, speaker, language, rate ) + ".capnp" );
 
 			if ( std::filesystem::exists( *cache_path ) )
@@ -206,9 +204,9 @@ SynthesisResult TTSClient::synthesize(
 
 	try
 	{
-		asio::ip::tcp::resolver resolver( io_context_ );
-		auto endpoints = resolver.resolve( host_, std::to_string( port_ ) );
-		asio::ip::tcp::socket socket( io_context_ );
+		asio::ip::tcp::resolver resolver( _io_context );
+		auto endpoints = resolver.resolve( _host, std::to_string( _port ) );
+		asio::ip::tcp::socket socket( _io_context );
 		asio::connect( socket, endpoints );
 
 		// Build request
@@ -306,7 +304,7 @@ SynthesisResult TTSClient::synthesize(
 		result.status = "error";
 		result.message = e.what();
 		std::cerr << "TTS Synthesis failed: " << e.what()
-				  << " (Is the TTS server running at " << host_ << ":" << port_ << "?)"
+				  << " (Is the TTS server running at " << _host << ":" << _port << "?)"
 				  << std::endl;
 	}
 

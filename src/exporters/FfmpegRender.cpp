@@ -85,7 +85,8 @@ void FfmpegRender::open_pipe( uint32_t width, uint32_t height )
 		// High quality AVC / H264 for vector graphics
 		cmd << " -c:v libx264";
 		cmd << " -crf 18";
-		cmd << " -x264-params log-level=warning:tune=animation:keyint=60";
+		cmd << " -tune animation";
+		cmd << " -x264-params keyint=60";
 		cmd << " -preset slow";
 	}
 	else if ( _codec == "h265" )

@@ -3,15 +3,24 @@
 
 #include <fstream>
 #include <sstream>
+#include <algorithm>
 
 using namespace huml;
 
-bool Script::load( const std::string &lang )
+bool Script::load( std::string lang )
 {
+	auto it = std::find( _languages.begin(), _languages.end(), lang );
+	if ( it != _languages.end() )
+	{
+		// Already loaded
+		return true;
+	}
+
 	try
 	{
 		Value root = load_recursive( lang );
-		_languages[lang] = root;
+		_native_scripts[lang] = root;
+		_languages.push_back( std::move( lang ) );
 		return true;
 	}
 	catch ( ... )

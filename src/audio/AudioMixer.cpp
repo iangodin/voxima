@@ -12,15 +12,15 @@ AudioMixer::~AudioMixer()
 	close();
 }
 
-bool AudioMixer::open( const std::string &filename, size_t rate, size_t default_frame_size )
+bool AudioMixer::open( const std::string &filename, size_t rate, size_t block_size )
 {
 	close();
-	_rate = rate;
-	_default_frame_size = default_frame_size;
 
 	SF_INFO sfinfo = {};
 	sfinfo.channels = 2;
-	sfinfo.samplerate = static_cast<int>( _rate );
+	sfinfo.samplerate = static_cast<int>( rate );
+
+	_buffer = AudioBuffer( block_size, rate, 2 );
 
 	if ( filename.ends_with( ".wav" ) )
 	{
@@ -76,50 +76,32 @@ void AudioMixer::close()
 
 void AudioMixer::add_audio( const AudioBuffer &buffer )
 {
-	if ( buffer.channels() != 2 )
+	if ( !_buffer.same( buffer ) )
 	{
-		return;
+		throw std::runtime_error( "expected audio buffer to match mixer output" );
 	}
 
-	if ( _mixed_buffer.size() < buffer.samples() )
-	{
-		_mixed_buffer.resize( buffer.samples(), 0.0f );
-	}
-
-	_current_frame_size = std::max( _current_frame_size, buffer.frames() );
-
-	const float *data = buffer.data();
-	for ( size_t i = 0; i < buffer.samples(); ++i )
-	{
-		_mixed_buffer[i] += data[i];
-	}
+	std::transform( buffer.begin(), buffer.end(), _buffer.begin(), _buffer.begin(), std::plus{} );
 }
 
-void AudioMixer::save_audio()
+void AudioMixer::write_audio( void )
 {
 	if ( !_sndfile )
 	{
 		return;
 	}
 
-	size_t frames_to_write = _current_frame_size;
-	if ( frames_to_write == 0 )
-	{
-		frames_to_write = _default_frame_size;
-	}
+	sf_writef_float( _sndfile, _buffer.data(), static_cast<sf_count_t>( _buffer.frames() ) );
 
-	if ( _mixed_buffer.size() < frames_to_write * 2 )
-	{
-		_mixed_buffer.resize( frames_to_write * 2, 0.0f );
-	}
-
-	sf_writef_float( _sndfile, _mixed_buffer.data(), static_cast<sf_count_t>( frames_to_write ) );
-
-	std::fill( _mixed_buffer.begin(), _mixed_buffer.end(), 0.0f );
-	_current_frame_size = 0;
+	std::fill( _buffer.begin(), _buffer.end(), 0.F );
 }
 
 bool AudioMixer::supported_format( const std::string &filename )
 {
 	return filename.ends_with( ".wav" ) || filename.ends_with( ".flac" );
+}
+
+bool AudioMixer::supported_codec( std::string_view codec )
+{
+	return codec == "wav" || codec == "flac";
 }

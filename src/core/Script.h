@@ -1,10 +1,11 @@
 
 #pragma once
 
-#include <filesystem>
-#include <memory>
-#include <string>
 #include <utils/Huml.h>
+
+#include <filesystem>
+#include <string>
+#include <vector>
 
 class Script
 {
@@ -19,13 +20,13 @@ public:
 		return _directory;
 	}
 
-	bool load( const std::string &lang );
+	bool load( std::string lang );
 
 	template<typename ...Keys>
 	const huml::Value &fetch( std::string_view lang, Keys &&...keys ) const
 	{
-		const auto &script = _languages.find( lang );
-		if ( script != _languages.end() )
+		const auto &script = _native_scripts.find( lang );
+		if ( script != _native_scripts.end() )
 		{
 			return script->second.fetch( std::forward<Keys>( keys )... );
 		}
@@ -35,9 +36,14 @@ public:
 		}
 	}
 
+	const auto &languages( void ) const
+	{
+		return _languages;
+	}
+
 	friend std::ostream &operator<<( std::ostream &output, const Script &script )
 	{
-		for ( auto &[name, lang]: script._languages )
+		for ( auto &[name, lang]: script._native_scripts )
 		{
 			output << "Language: " << name << '\n';
 			output << lang << '\n';
@@ -46,9 +52,9 @@ public:
 	}
 
 private:
+	std::vector<std::string> _languages;
 	huml::Value load_recursive( const std::string &lang );
-
-	std::map<std::string,huml::Value, std::less<>> _languages;
+	std::map<std::string,huml::Value, std::less<>> _native_scripts;
 	huml::Value _missing = { huml::Missing{} };
 	std::filesystem::path _directory;
 };

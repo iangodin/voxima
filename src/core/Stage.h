@@ -4,29 +4,23 @@
 #include <visuals/Group.h>
 #include <visuals/Color.h>
 
-#include <audio/AudioMixer.h>
+#include <audio/DubbingStage.h>
 
 #include <exporters/SVGWriter.h>
 
 #include <core/Theme.h>
 #include <core/Camera.h>
 
-#include <tts/asio_wrapper.h>
-
 #include <iostream>
 #include <sstream>
-#include <optional>
-#include <filesystem>
 
 struct Stage
 {
 	Theme *theme = nullptr;
 	Color background = { 0.F, 0.F, 0.F, 1.F };
 	Group visuals;
-	AudioMixer audio;
+	DubbingStage audio;
 	Camera camera;
-	asio::io_context io_context;
-	std::optional<std::filesystem::path> tts_cache;
 
 	void save_svg( std::ostream &file ) const
 	{
