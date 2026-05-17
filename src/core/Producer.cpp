@@ -56,6 +56,10 @@ bool Producer::produce( int argc, char *argv[] )
 		{
 			throw std::runtime_error( "unable to load script " + *language );
 		}
+		else
+		{
+			std::cout << "Script:\n" << _script << '\n';
+		}
 	}
 
 	if ( theme_name )

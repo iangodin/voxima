@@ -1,6 +1,6 @@
+
 #include "Script.h"
 
-#include <string_view>
 #include <fstream>
 #include <sstream>
 
@@ -29,6 +29,7 @@ Value Script::load_recursive( const std::string &lang )
 	{
 		throw std::runtime_error( "unable to open file " + path.string() );
 	}
+
 	std::stringstream ss;
 	ss << is.rdbuf();
 	std::string source = ss.str();

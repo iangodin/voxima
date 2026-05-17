@@ -16,3 +16,7 @@ labels::
   ease_back_out: "Arrière sortie"
   ease_back_in_out: "Arrière entrée-sortie"
   ease_linear: "Linéaire"
+
+intro: """
+  Ceux-ci montrent diverses animations de lissage.
+"""

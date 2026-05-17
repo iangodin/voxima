@@ -4,3 +4,7 @@ meta::
 
 voices::
   narrator: "fr-CA-SylvieNeural"
+
+intro: """
+  Ceux-ci montrent diverses animations d'atténuation.
+"""
