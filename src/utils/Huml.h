@@ -16,7 +16,7 @@ namespace huml
 struct Value;
 void print( std::ostream &output, const Value &value, const std::string &indent = {} );
 
-using Dict = std::map<std::string, Value>;
+using Dict = std::map<std::string, Value, std::less<>>;
 using List = std::vector<Value>;
 using MultiLine = std::vector<std::string>;
 
@@ -137,8 +137,22 @@ struct Value
 	}
 
 	// Dictionary access sugar
-	const Value &operator[]( const std::string &key ) const;
+	const Value &operator[]( std::string_view key ) const;
 	const Value &operator[]( size_t i ) const;
+
+	template<typename ...Args>
+	const Value &fetch( Args &&...multikey ) const
+	{
+		std::reference_wrapper current( *this );
+		auto fetch_next = [&]( auto key )
+		{
+			current = current.get().operator[]( key );
+		};
+
+		( fetch_next( std::forward<Args>( multikey ) ), ... );
+
+		return current.get();
+	}
 
 	size_t size() const;
 	bool empty() const;

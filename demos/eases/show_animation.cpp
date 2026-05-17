@@ -38,9 +38,9 @@ Scene narrate( Stage &stage, Script &script )
 {
 	tts::Narration narration;
 
-	std::string narrator = script.root()["voices"]["narrator"].as_string();
-	std::string lang = script.root()["meta"]["lang"].as_string();
-	std::vector<std::string> intro = script.root()["intro"].as_multiline();
+	std::string lang = "en";
+	std::string narrator = script.fetch( lang, "voices", "narrator" ).as_string();
+	std::vector<std::string> intro = script.fetch( lang, "intro" ).as_multiline();
 
 	narration.synthesize( stage, narrator, lang, intro );
 
@@ -58,32 +58,17 @@ Screenplay my_screenplay( Stage &stage, Script &script )
 
 	std::string not_found{ "\uFFFD" };
 
-	if ( !script.root().is_dict() )
-	{
-		throw std::runtime_error( "root is not dict");
-	}
-	std::cout << "Size: " << script.root().size() << '\n';
-	for ( const auto &entry: script.root().as_dict() )
-	{
-		std::cout << "Entry: " << entry.first << '\n';
-	}
-
-	auto &labels = script.root()["labels"];
-	if ( labels.is_missing() )
-	{
-		throw std::runtime_error( "labels are missing" );
-	}
-
-	std::string label_cubic_in{ labels["ease_cubic_in"].as_string( not_found ) };
-	std::string label_cubic_out{ labels["ease_cubic_out"].as_string( not_found ) };
-	std::string label_cubic_in_out{ labels["ease_cubic_in_out"].as_string( not_found ) };
-	std::string label_elastic_in{ labels["ease_elastic_in"].as_string( not_found ) };
-	std::string label_elastic_out{ labels["ease_elastic_out"].as_string( not_found ) };
-	std::string label_elastic_in_out{ labels["ease_elastic_in_out"].as_string( not_found ) };
-	std::string label_back_in{ labels["ease_back_in"].as_string( not_found ) };
-	std::string label_back_out{ labels["ease_back_out"].as_string( not_found ) };
-	std::string label_back_in_out{ labels["ease_back_in_out"].as_string( not_found ) };
-	std::string label_linear{ labels["ease_linear"].as_string( not_found ) };
+	const std::string lang = "en";
+	std::string label_cubic_in{ script.fetch( lang, "labels", "ease_cubic_in" ).as_string( not_found ) };
+	std::string label_cubic_out{ script.fetch( lang, "labels", "ease_cubic_out" ).as_string( not_found ) };
+	std::string label_cubic_in_out{ script.fetch( lang, "labels", "ease_cubic_in_out" ).as_string( not_found ) };
+	std::string label_elastic_in{ script.fetch( lang, "labels", "ease_elastic_in" ).as_string( not_found ) };
+	std::string label_elastic_out{ script.fetch( lang, "labels", "ease_elastic_out" ).as_string( not_found ) };
+	std::string label_elastic_in_out{ script.fetch( lang, "labels", "ease_elastic_in_out" ).as_string( not_found ) };
+	std::string label_back_in{ script.fetch( lang, "labels", "ease_back_in" ).as_string( not_found ) };
+	std::string label_back_out{ script.fetch( lang, "labels", "ease_back_out" ).as_string( not_found ) };
+	std::string label_back_in_out{ script.fetch( lang, "labels", "ease_back_in_out" ).as_string( not_found ) };
+	std::string label_linear{ script.fetch( lang, "labels", "ease_linear" ).as_string( not_found ) };
 
 	co_await choreograph(
 		show_ease( stage, label_cubic_in, ease_cubic_in, 3.F, duration ),

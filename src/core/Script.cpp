@@ -8,11 +8,10 @@ using namespace huml;
 
 bool Script::load( const std::string &lang )
 {
-	_impl.reset();
 	try
 	{
 		Value root = load_recursive( lang );
-		_impl = std::make_shared<Impl>( std::move( root ) );
+		_languages[lang] = root;
 		return true;
 	}
 	catch ( ... )
@@ -54,7 +53,3 @@ Value Script::load_recursive( const std::string &lang )
 	return current;
 }
 
-Script::Script( Value &&root )
-{
-	_impl = std::make_shared<Impl>( std::move( root ) );
-}

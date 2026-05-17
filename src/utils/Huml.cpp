@@ -13,7 +13,7 @@ namespace huml
 {
 
 // Dictionary access sugar
-const Value &Value::operator[]( const std::string &key ) const
+const Value &Value::operator[]( std::string_view key ) const
 {
 	if ( is_dict() )
 	{

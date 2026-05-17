@@ -9,17 +9,6 @@
 class Script
 {
 public:
-	Script() = default;
-	Script( huml::Value &&root );
-
-	Script( const Script & ) = default;
-	Script( Script && ) = default;
-
-	~Script() = default;
-
-	Script &operator=( const Script & ) = default;
-	Script &operator=( Script && ) = default;
-
 	void set_directory( std::filesystem::path directory )
 	{
 		_directory = std::move( directory );
@@ -32,11 +21,13 @@ public:
 
 	bool load( const std::string &lang );
 
-	const huml::Value &root() const
+	template<typename ...Keys>
+	const huml::Value &fetch( std::string_view lang, Keys &&...keys ) const
 	{
-		if ( _impl )
+		const auto &script = _languages.find( lang );
+		if ( script != _languages.end() )
 		{
-			return _impl->root;
+			return script->second.fetch( std::forward<Keys>( keys )... );
 		}
 		else
 		{
@@ -46,27 +37,18 @@ public:
 
 	friend std::ostream &operator<<( std::ostream &output, const Script &script )
 	{
-		if ( script._impl )
+		for ( auto &[name, lang]: script._languages )
 		{
-			output << script._impl->root;
+			output << "Language: " << name << '\n';
+			output << lang << '\n';
 		}
-		else
-		{
-			output << "null";
-		}
-
 		return output;
 	}
 
 private:
-	struct Impl
-	{
-		huml::Value root;
-	};
-
 	huml::Value load_recursive( const std::string &lang );
 
-	std::shared_ptr<Impl> _impl = nullptr;
+	std::map<std::string,huml::Value, std::less<>> _languages;
 	huml::Value _missing = { huml::Missing{} };
 	std::filesystem::path _directory;
 };

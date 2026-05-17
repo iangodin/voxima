@@ -6,7 +6,7 @@ rm -f render/frame.*  render/output.*
 
 make
 build/Release/sonimation --width 1920 --height 1080 \
-	--scripts demos/eases --lang fr-FR --theme "Modern Technical" \
+	--scripts demos/eases --lang en --theme "Modern Technical" \
 	--tts-cache render/tts-cache \
 	--vcodec h264 \
 	--output render/output.flac \
