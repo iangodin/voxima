@@ -24,7 +24,6 @@ NamespaceIndentation: Inner
 InsertNewlineAtEOF: true
 BinPackParameters: false
 BinPackArguments: false
-AllowAllParametersOfDeclarationOnNextLine: true
 ContinuationIndentWidth: 4
 AlignAfterOpenBracket: AlwaysBreak
 
