@@ -15,17 +15,18 @@ SpaceAfterTemplateKeyword: false
 AllowShortBlocksOnASingleLine: Never
 AllowShortFunctionsOnASingleLine: None
 AllowShortIfStatementsOnASingleLine: Never
-AllowShortLambdasOnASingleLine: All
+AllowShortLambdasOnASingleLine: Empty
 FixNamespaceComments: false
 PackConstructorInitializers: NextLineOnly
 ConstructorInitializerIndentWidth: 4
 SpaceBeforeRangeBasedForLoopColon: false
 NamespaceIndentation: Inner
 InsertNewlineAtEOF: true
-AlignAfterOpenBracket: DontAlign
 BinPackParameters: false
+BinPackArguments: false
 AllowAllParametersOfDeclarationOnNextLine: true
 ContinuationIndentWidth: 4
+AlignAfterOpenBracket: AlwaysBreak
 
 SortIncludes: CaseSensitive
 IncludeBlocks: Regroup
