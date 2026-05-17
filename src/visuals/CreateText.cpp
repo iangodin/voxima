@@ -175,9 +175,7 @@ Group &create_text( Stage &stage, Group &group, const std::string &text, const T
 
 		const float font_size = font_face.scale;
 		const float glyph_scale = font_size / ( static_cast<float>(upem) );
-		std::cout << "FONT " << range.font_index << " upem: " << upem << " scale: " << glyph_scale << '\n';
 
-		std::cout << "Shapes for font " << range.font_index << " " << glyph_count << '\n';
 		for ( unsigned int i = 0; i < glyph_count; ++i )
 		{
 			hb_codepoint_t glyph_id = glyph_info[i].codepoint;
