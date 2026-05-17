@@ -80,22 +80,40 @@ void FfmpegRender::open_pipe( uint32_t width, uint32_t height )
 	// output -pix_fmt yuv420p is for maximum compatibility with players.
 	cmd << " -pix_fmt yuv420p";
 
-	// high compression quality
-	cmd << " -preset slow";
-
-	if ( _codec == "h264" || _codec.empty() )
+	if ( _codec == "h264" )
 	{
-		// High quality AVC / H264
-		cmd << " -x264-params log-level=warning:tune=animation:keyint=60";
+		// High quality AVC / H264 for vector graphics
 		cmd << " -c:v libx264";
 		cmd << " -crf 18";
+		cmd << " -x264-params log-level=warning:tune=animation:keyint=60";
+		cmd << " -preset slow";
 	}
 	else if ( _codec == "h265" )
 	{
-		// High quality HEVC / H265
-		cmd << " -x265-params log-level=warning:tune=animation:keyint=60:no-sao=1:no-info=1";
+		// High quality HEVC / H265 for vector graphics
 		cmd << " -c:v libx265";
 		cmd << " -crf 21";
+		cmd << " -x265-params log-level=warning:tune=animation:keyint=60:no-sao=1:no-info=1";
+		cmd << " -preset slow";
+	}
+	else if ( _codec == "vp9" )
+	{
+		// High quality VP9 for vector graphics
+		cmd << " -c:v libvpx-vp9";
+		cmd << " -crf 25";
+		cmd << " -b:v 0 -deadline good -cpu-used 2 -g 60 -row-mt 1";
+	}
+	else if ( _codec == "av1" )
+	{
+		// High quality AV1 for vector graphics
+		cmd << " -c:v libsvtav1";
+		cmd << " -crf 24";
+		cmd << " -preset 4 -g 60 ";
+		cmd << " -svtav1-params tune=0:tile-columns=1:scm=1";
+	}
+	else
+	{
+		throw std::runtime_error( "unsupported video codec " + _codec );
 	}
 
 	cmd << ' ' << '"' << _filename << '"';
@@ -152,4 +170,20 @@ void FfmpegRender::mux( double framerate,
 	{
 		std::cerr << "Error: FFmpeg muxing failed with code " << result << "\n";
 	}
+}
+
+bool FfmpegRender::supported_codec( const std::string &codec )
+{
+	return
+		codec == "h264" ||
+		codec == "h265" ||
+		codec == "vp9" ||
+		codec == "av1";
+}
+
+bool FfmpegRender::supported_format( const std::string &filename )
+{
+	return
+		filename.ends_with( ".mp4" ) ||
+		filename.ends_with( ".mkv" );
 }

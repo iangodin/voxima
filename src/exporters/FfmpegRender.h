@@ -16,6 +16,9 @@ public:
 
 	static void mux( double framerate, const std::string &video_file, const std::string &audio_file, const std::string &output_file );
 
+	static bool supported_codec( const std::string &codec );
+	static bool supported_format( const std::string &filename );
+
 private:
 	std::string _filename;
 	std::string _codec;

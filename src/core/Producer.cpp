@@ -27,8 +27,8 @@ bool Producer::produce( int argc, char *argv[] )
 	std::vector<std::string> outputs;
 	app.add_option( "-o,--output", outputs, "Output file (mp4, wav, flac, png, or svg)" );
 
-	std::string vcodec;
-	app.add_option( "--vcodec", vcodec, "Video codec (h264 or h265)" );
+	std::string vcodec = "h264";
+	app.add_option( "--vcodec", vcodec, "Video codec (h264, h265, vp9 or av1)" );
 
 	std::optional<std::string> font_path;
 	app.add_option( "--fonts", font_path, "Directory containing fonts" );
@@ -82,6 +82,11 @@ bool Producer::produce( int argc, char *argv[] )
 		_stage.theme->set_font_path( *font_path );
 	}
 
+	if ( !FfmpegRender::supported_codec( vcodec ) )
+	{
+		throw std::runtime_error( "unsupported video codec " + vcodec );
+	}
+
 	_screenplay = std::move( _director( _stage, _script ) );
 	_screenplay.handle.promise().producer_ptr = this;
 
@@ -103,7 +108,7 @@ bool Producer::produce( int argc, char *argv[] )
 			}
 			final_filename = output;
 		}
-		else if ( output.ends_with( ".ts" )  )
+		else if ( FfmpegRender::supported_format( output ) )
 		{
 			if ( ffmpeg.has_value() )
 			{
