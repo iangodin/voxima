@@ -41,12 +41,25 @@ public:
 		return _lines;
 	}
 
+	void set_color( size_t start, size_t end, const Color &color );
+
+	void set_intent( size_t start, size_t end, std::string_view intent );
+
+	void set_weight( size_t start, size_t end, Weight weight );
+
+	void set_slant( size_t start, size_t end, Slant slant );
+
+	void set_scale( size_t start, size_t end, Scale scale );
+
+	void set_width( size_t start, size_t end, Width width );
+
+	void set_typeclass( size_t start, size_t end, TypeClass typeclass );
+
 private:
 	void split_lines();
 
 	std::string _utf8;
-	IntervalMap<size_t,TextStyle> _font;
-	IntervalMap<size_t,Color> _color;
+	IntervalMap<size_t,TextStyle> _style;
 	std::vector<std::string_view> _lines;
 };
 
