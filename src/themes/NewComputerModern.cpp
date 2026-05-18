@@ -4,7 +4,7 @@
 #include <core/Theme.h>
 
 #include <fonts/FontStack.h>
-#include <fonts/TextStyle.h>
+#include <fonts/FontStyle.h>
 
 namespace NewComputerModern
 {
@@ -25,7 +25,7 @@ float theme_font_size( Scale scale )
 	return font_size;
 }
 
-std::string get_font_filename( const TextProperties &props, std::string_view base_name )
+std::string get_font_filename( const FontProperties &props, std::string_view base_name )
 {
 	bool is_bold = props.weight == Weight::BOLD || props.weight == Weight::BLACK;
 	bool is_italic = props.slant == Slant::ITALIC || props.slant == Slant::OBLIQUE;
@@ -75,7 +75,7 @@ std::string get_font_filename( const TextProperties &props, std::string_view bas
 	return family + "-Regular.otf";
 }
 
-std::size_t get_cjk_face_index( const TextProperties &props )
+std::size_t get_cjk_face_index( const FontProperties &props )
 {
 	switch ( props.weight.value_or( Weight::REGULAR ) )
 	{
@@ -87,7 +87,7 @@ std::size_t get_cjk_face_index( const TextProperties &props )
 	}
 }
 
-std::string get_devanagari_filename( const TextProperties &props )
+std::string get_devanagari_filename( const FontProperties &props )
 {
 	bool is_bold = props.weight == Weight::BOLD || props.weight == Weight::BLACK;
 	bool is_light = props.weight == Weight::LIGHT;
@@ -103,7 +103,7 @@ std::string get_devanagari_filename( const TextProperties &props )
 }
 }
 
-FontStack intent_prose( const TextStyle &style, Theme &theme )
+FontStack intent_prose( const FontStyle &style, Theme &theme )
 {
 	auto properties = style.properties();
 
@@ -118,7 +118,7 @@ FontStack intent_prose( const TextStyle &style, Theme &theme )
 	return fonts;
 }
 
-FontStack intent_code( const TextStyle &style, Theme &theme )
+FontStack intent_code( const FontStyle &style, Theme &theme )
 {
 	auto properties = style.properties();
 
@@ -133,7 +133,7 @@ FontStack intent_code( const TextStyle &style, Theme &theme )
 	return fonts;
 }
 
-FontStack intent_title( const TextStyle &style, Theme &theme )
+FontStack intent_title( const FontStyle &style, Theme &theme )
 {
 	auto properties = style.properties();
 
@@ -148,7 +148,7 @@ FontStack intent_title( const TextStyle &style, Theme &theme )
 	return fonts;
 }
 
-FontStack intent_annotation( const TextStyle &style, Theme &theme )
+FontStack intent_annotation( const FontStyle &style, Theme &theme )
 {
 	auto properties = style.properties();
 
@@ -163,7 +163,7 @@ FontStack intent_annotation( const TextStyle &style, Theme &theme )
 	return fonts;
 }
 
-FontStack intent_label( const TextStyle &style, Theme &theme )
+FontStack intent_label( const FontStyle &style, Theme &theme )
 {
 	auto properties = style.properties();
 
@@ -178,7 +178,7 @@ FontStack intent_label( const TextStyle &style, Theme &theme )
 	return fonts;
 }
 
-FontStack intent_math( const TextStyle &style, Theme &theme )
+FontStack intent_math( const FontStyle &style, Theme &theme )
 {
 	auto properties = style.properties();
 
@@ -193,7 +193,7 @@ FontStack intent_math( const TextStyle &style, Theme &theme )
 	return fonts;
 }
 
-FontStack intent_caption( const TextStyle &style, Theme &theme )
+FontStack intent_caption( const FontStyle &style, Theme &theme )
 {
 	auto properties = style.properties();
 

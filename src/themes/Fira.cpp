@@ -3,7 +3,7 @@
 #include <themes/Fira.h>
 
 #include <fonts/FontStack.h>
-#include <fonts/TextStyle.h>
+#include <fonts/FontStyle.h>
 
 namespace Fira
 {
@@ -24,7 +24,7 @@ float theme_font_size( Scale scale )
 	return font_size;
 }
 
-std::string get_fira_filename( const TextProperties &props, std::string_view base_name )
+std::string get_fira_filename( const FontProperties &props, std::string_view base_name )
 {
 	std::string family{ base_name };
 
@@ -70,7 +70,7 @@ std::string get_fira_filename( const TextProperties &props, std::string_view bas
 	return filename;
 }
 
-std::size_t get_cjk_face_index( const TextProperties &props )
+std::size_t get_cjk_face_index( const FontProperties &props )
 {
 	switch ( props.weight.value_or( Weight::REGULAR ) )
 	{
@@ -82,7 +82,7 @@ std::size_t get_cjk_face_index( const TextProperties &props )
 	}
 }
 
-std::string get_devanagari_filename( const TextProperties &props )
+std::string get_devanagari_filename( const FontProperties &props )
 {
 	bool is_bold = props.weight == Weight::BOLD || props.weight == Weight::BLACK;
 	bool is_light = props.weight == Weight::LIGHT;
@@ -97,7 +97,7 @@ std::string get_devanagari_filename( const TextProperties &props )
 	return family + "-Regular.otf";
 }
 
-FontStack create_font_stack( const TextStyle &style, Theme &theme, std::string_view base_name )
+FontStack create_font_stack( const FontStyle &style, Theme &theme, std::string_view base_name )
 {
 	auto properties = style.properties();
 	const float font_size = theme_font_size( properties.scale.value_or( Scale::MEDIUM ) );
@@ -111,13 +111,13 @@ FontStack create_font_stack( const TextStyle &style, Theme &theme, std::string_v
 }
 }
 
-FontStack intent_prose( const TextStyle &style, Theme &theme ) { return create_font_stack( style, theme, "FiraSans" ); }
-FontStack intent_code( const TextStyle &style, Theme &theme ) { return create_font_stack( style, theme, "FiraCode" ); }
-FontStack intent_math( const TextStyle &style, Theme &theme ) { return create_font_stack( style, theme, "FiraMath" ); }
-FontStack intent_title( const TextStyle &style, Theme &theme ) { return create_font_stack( style, theme, "FiraSans" ); }
-FontStack intent_label( const TextStyle &style, Theme &theme ) { return create_font_stack( style, theme, "FiraGO" ); }
-FontStack intent_annotation( const TextStyle &style, Theme &theme ) { return create_font_stack( style, theme, "FiraSans" ); }
-FontStack intent_caption( const TextStyle &style, Theme &theme ) { return create_font_stack( style, theme, "FiraSansCondensed" ); }
+FontStack intent_prose( const FontStyle &style, Theme &theme ) { return create_font_stack( style, theme, "FiraSans" ); }
+FontStack intent_code( const FontStyle &style, Theme &theme ) { return create_font_stack( style, theme, "FiraCode" ); }
+FontStack intent_math( const FontStyle &style, Theme &theme ) { return create_font_stack( style, theme, "FiraMath" ); }
+FontStack intent_title( const FontStyle &style, Theme &theme ) { return create_font_stack( style, theme, "FiraSans" ); }
+FontStack intent_label( const FontStyle &style, Theme &theme ) { return create_font_stack( style, theme, "FiraGO" ); }
+FontStack intent_annotation( const FontStyle &style, Theme &theme ) { return create_font_stack( style, theme, "FiraSans" ); }
+FontStack intent_caption( const FontStyle &style, Theme &theme ) { return create_font_stack( style, theme, "FiraSansCondensed" ); }
 
 Theme create_theme( void )
 {

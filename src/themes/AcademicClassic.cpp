@@ -3,7 +3,7 @@
 #include <themes/AcademicClassic.h>
 
 #include <fonts/FontStack.h>
-#include <fonts/TextStyle.h>
+#include <fonts/FontStyle.h>
 
 namespace AcademicClassic
 {
@@ -24,7 +24,7 @@ float theme_font_size( Scale scale )
 	return font_size;
 }
 
-FontStack create_font_stack( const TextStyle &style, Theme &theme, std::string_view base_name )
+FontStack create_font_stack( const FontStyle &style, Theme &theme, std::string_view base_name )
 {
 	auto properties = style.properties();
 	const float font_size = theme_font_size( properties.scale.value_or( Scale::MEDIUM ) );
@@ -41,13 +41,13 @@ FontStack create_font_stack( const TextStyle &style, Theme &theme, std::string_v
 }
 }
 
-FontStack intent_prose( const TextStyle &style, Theme &theme ) { return create_font_stack( style, theme, "NewCM10-Regular" ); }
-FontStack intent_code( const TextStyle &style, Theme &theme ) { return create_font_stack( style, theme, "NewCMMono10-Regular" ); }
-FontStack intent_math( const TextStyle &style, Theme &theme ) { return create_font_stack( style, theme, "NewCM10-Regular" ); }
-FontStack intent_title( const TextStyle &style, Theme &theme ) { return create_font_stack( style, theme, "NewCM10-Bold" ); }
-FontStack intent_label( const TextStyle &style, Theme &theme ) { return create_font_stack( style, theme, "NewCM10-Regular" ); }
-FontStack intent_annotation( const TextStyle &style, Theme &theme ) { return create_font_stack( style, theme, "NewCM10-Regular" ); }
-FontStack intent_caption( const TextStyle &style, Theme &theme ) { return create_font_stack( style, theme, "NewCM10-Regular" ); }
+FontStack intent_prose( const FontStyle &style, Theme &theme ) { return create_font_stack( style, theme, "NewCM10-Regular" ); }
+FontStack intent_code( const FontStyle &style, Theme &theme ) { return create_font_stack( style, theme, "NewCMMono10-Regular" ); }
+FontStack intent_math( const FontStyle &style, Theme &theme ) { return create_font_stack( style, theme, "NewCM10-Regular" ); }
+FontStack intent_title( const FontStyle &style, Theme &theme ) { return create_font_stack( style, theme, "NewCM10-Bold" ); }
+FontStack intent_label( const FontStyle &style, Theme &theme ) { return create_font_stack( style, theme, "NewCM10-Regular" ); }
+FontStack intent_annotation( const FontStyle &style, Theme &theme ) { return create_font_stack( style, theme, "NewCM10-Regular" ); }
+FontStack intent_caption( const FontStyle &style, Theme &theme ) { return create_font_stack( style, theme, "NewCM10-Regular" ); }
 
 Theme create_theme( void )
 {

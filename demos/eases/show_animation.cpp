@@ -26,7 +26,7 @@ Scene show_ease( Stage &stage, const std::string &name, Ease &&ease, float y, in
 	circle.radius = 0.1F;
 	circle.position = { x1, y };
 
-	auto &label = create_text( stage, name, TextStyle{ Intent::LABEL } );
+	auto &label = create_text( stage, name, FontStyle{ Intent::LABEL } );
 	label.position = { -6.F, y };
 
 	co_await wait_for( 30 );

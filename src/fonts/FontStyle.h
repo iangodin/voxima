@@ -57,7 +57,7 @@ namespace Intent
 	constexpr std::string_view CAPTION = "caption";
 }
 
-struct TextProperties
+struct FontProperties
 {
 	std::optional<TypeClass> typeclass;
 	std::optional<Weight> weight;
@@ -66,15 +66,15 @@ struct TextProperties
 	std::optional<Scale> scale;
 };
 
-class TextStyle
+class FontStyle
 {
 public:
-	explicit TextStyle( std::string_view intent ) :
+	explicit FontStyle( std::string_view intent ) :
 		_intent( intent )
 	{
 	}
 
-	TextStyle( std::string_view intent, TextProperties properties ) :
+	FontStyle( std::string_view intent, FontProperties properties ) :
 		_intent( intent ),
 		_typeclass( properties.typeclass ),
 		_weight( properties.weight ),
@@ -89,133 +89,133 @@ public:
 		return _intent;
 	}
 
-	TextStyle &sans( void )
+	FontStyle &sans( void )
 	{
 		_typeclass = TypeClass::SANS;
 		return *this;
 	}
 
-	TextStyle &serif( void )
+	FontStyle &serif( void )
 	{
 		_typeclass = TypeClass::SERIF;
 		return *this;
 	}
 
-	TextStyle &mono( void )
+	FontStyle &mono( void )
 	{
 		_typeclass = TypeClass::MONO;
 		return *this;
 	}
 
-	TextStyle &slab( void )
+	FontStyle &slab( void )
 	{
 		_typeclass = TypeClass::SLAB;
 		return *this;
 	}
 
-	TextStyle &script( void )
+	FontStyle &script( void )
 	{
 		_typeclass = TypeClass::SCRIPT;
 		return *this;
 	}
 
-	TextStyle &light( void )
+	FontStyle &light( void )
 	{
 		_weight = Weight::LIGHT;
 		return *this;
 	}
 
-	TextStyle &regular( void )
+	FontStyle &regular( void )
 	{
 		_weight = Weight::REGULAR;
 		return *this;
 	}
 
-	TextStyle &bold( void )
+	FontStyle &bold( void )
 	{
 		_weight = Weight::BOLD;
 		return *this;
 	}
 
-	TextStyle &black( void )
+	FontStyle &black( void )
 	{
 		_weight = Weight::BLACK;
 		return *this;
 	}
 
-	TextStyle &upright( void )
+	FontStyle &upright( void )
 	{
 		_slant = Slant::UPRIGHT;
 		return *this;
 	}
 
-	TextStyle &italic( void )
+	FontStyle &italic( void )
 	{
 		_slant = Slant::ITALIC;
 		return *this;
 	}
 
-	TextStyle &oblique( void )
+	FontStyle &oblique( void )
 	{
 		_slant = Slant::OBLIQUE;
 		return *this;
 	}
 
-	TextStyle &tiny( void )
+	FontStyle &tiny( void )
 	{
 		_scale = Scale::TINY;
 		return *this;
 	}
 
-	TextStyle &small( void )
+	FontStyle &small( void )
 	{
 		_scale = Scale::SMALL;
 		return *this;
 	}
 
-	TextStyle &medium( void )
+	FontStyle &medium( void )
 	{
 		_scale = Scale::MEDIUM;
 		return *this;
 	}
 
-	TextStyle &large( void )
+	FontStyle &large( void )
 	{
 		_scale = Scale::LARGE;
 		return *this;
 	}
 
-	TextStyle &huge( void )
+	FontStyle &huge( void )
 	{
 		_scale = Scale::HUGE;
 		return *this;
 	}
 
-	TextStyle &compressed( void )
+	FontStyle &compressed( void )
 	{
 		_width = Width::COMPRESSED;
 		return *this;
 	}
 
-	TextStyle &condensed( void )
+	FontStyle &condensed( void )
 	{
 		_width = Width::CONDENSED;
 		return *this;
 	}
 
-	TextStyle &standard( void )
+	FontStyle &standard( void )
 	{
 		_width = Width::STANDARD;
 		return *this;
 	}
 
-	TextStyle &expanded( void )
+	FontStyle &expanded( void )
 	{
 		_width = Width::EXPANDED;
 		return *this;
 	}
 
-	bool operator<( const TextStyle &other ) const
+	bool operator<( const FontStyle &other ) const
 	{
 		if ( _intent != other._intent ) return _intent < other._intent;
 		if ( _typeclass != other._typeclass ) return _typeclass < other._typeclass;
@@ -225,7 +225,7 @@ public:
 		return _scale < other._scale;
 	}
 
-	TextProperties properties( void ) const
+	FontProperties properties( void ) const
 	{
 		return {
 			.typeclass = _typeclass,
@@ -244,4 +244,3 @@ private:
 	std::optional<Width> _width;
 	std::optional<Scale> _scale;
 };
-

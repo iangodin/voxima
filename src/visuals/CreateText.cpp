@@ -1,34 +1,35 @@
 
+#include <visuals/Bounds.h>
+#include <visuals/CreateText.h>
+#include <visuals/Group.h>
+
+#include <fonts/FontFace.h>
+#include <fonts/FontStack.h>
+#include <fonts/FontStyle.h>
+
+#include <core/Stage.h>
+#include <core/Theme.h>
 
 #include <utils/Utf8.h>
-
-#include <fonts/FontStack.h>
-#include <fonts/FontFace.h>
-#include <fonts/TextStyle.h>
-
-#include <core/Theme.h>
-#include <core/Stage.h>
-
-#include <visuals/Group.h>
-#include <visuals/CreateText.h>
-#include <visuals/Bounds.h>
 
 #include <ft2build.h>
 #include FT_FREETYPE_H
 #include FT_OUTLINE_H
 
-#include <hb.h>
 #include <hb-ft.h>
+#include <hb.h>
 
-#include <vector>
-#include <string_view>
-#include <algorithm>
 #include <optional>
+#include <string_view>
+#include <vector>
 
 std::vector<TextRange> create_ranges( std::string_view str, const FontStack &font )
 {
 	std::vector<TextRange> ranges;
-	if ( str.empty() ) return ranges;
+	if ( str.empty() )
+	{
+		return ranges;
+	}
 
 	std::string_view remaining = str;
 	std::optional<size_t> current_face;
@@ -65,10 +66,11 @@ void center_group( Group &group )
 	BoundingBoxVisitor visitor;
 	group.accept( visitor );
 
-	Point center = { ( visitor.bounds.min.x + visitor.bounds.max.x ) / 2.0f,
-					 ( visitor.bounds.min.y + visitor.bounds.max.y ) / 2.0f };
+	Point center = {
+		( visitor.bounds.min.x + visitor.bounds.max.x ) / 2.0f,
+		( visitor.bounds.min.y + visitor.bounds.max.y ) / 2.0f };
 
-	for ( auto &v : group )
+	for ( auto &v: group )
 	{
 		v->position.x -= center.x / v->scale_x;
 		v->position.y -= center.y / v->scale_y;
@@ -89,44 +91,56 @@ std::unique_ptr<Glyph> create_glyph( unsigned int glyph_id, const FontFace *font
 		return glyph;
 	}
 
-	FT_Outline_Funcs funcs =
-	{
-		[](const FT_Vector* to, void* user) -> int
+	FT_Outline_Funcs funcs = {
+		[]( const FT_Vector *to, void *user ) -> int
 		{
-			auto* g = static_cast<Glyph*>(user);
-			g->commands.push_back({ PathCommand::MoveTo, { static_cast<float>(to->x), static_cast<float>(to->y) } });
+			auto *g = static_cast<Glyph *>( user );
+			g->commands.push_back(
+				{ PathCommand::MoveTo,
+		          { static_cast<float>( to->x ), static_cast<float>( to->y ) } } );
 			return 0;
 		},
-		[](const FT_Vector* to, void* user) -> int
+		[]( const FT_Vector *to, void *user ) -> int
 		{
-			auto* g = static_cast<Glyph*>(user);
-			g->commands.push_back({ PathCommand::LineTo, { static_cast<float>(to->x), static_cast<float>(to->y) } });
+			auto *g = static_cast<Glyph *>( user );
+			g->commands.push_back(
+				{ PathCommand::LineTo,
+		          { static_cast<float>( to->x ), static_cast<float>( to->y ) } } );
 			return 0;
 		},
-		[](const FT_Vector* control, const FT_Vector* to, void* user) -> int
+		[]( const FT_Vector *control, const FT_Vector *to, void *user ) -> int
 		{
-			auto* g = static_cast<Glyph*>(user);
-			g->commands.push_back({ PathCommand::QuadTo, { static_cast<float>(to->x), static_cast<float>(to->y) }, { static_cast<float>(control->x), static_cast<float>(control->y) } });
+			auto *g = static_cast<Glyph *>( user );
+			g->commands.push_back(
+				{ PathCommand::QuadTo,
+		          { static_cast<float>( to->x ), static_cast<float>( to->y ) },
+		          { static_cast<float>( control->x ), static_cast<float>( control->y ) } } );
 			return 0;
 		},
-		[](const FT_Vector* control1, const FT_Vector* control2, const FT_Vector* to, void* user) -> int
+		[]( const FT_Vector *control1, const FT_Vector *control2, const FT_Vector *to, void *user )
+			-> int
 		{
-			auto* g = static_cast<Glyph*>(user);
-			g->commands.push_back({ PathCommand::CubicTo, { static_cast<float>(to->x), static_cast<float>(to->y) }, { static_cast<float>(control1->x), static_cast<float>(control1->y) }, { static_cast<float>(control2->x), static_cast<float>(control2->y) } });
+			auto *g = static_cast<Glyph *>( user );
+			g->commands.push_back(
+				{ PathCommand::CubicTo,
+		          { static_cast<float>( to->x ), static_cast<float>( to->y ) },
+		          { static_cast<float>( control1->x ), static_cast<float>( control1->y ) },
+		          { static_cast<float>( control2->x ), static_cast<float>( control2->y ) } } );
 			return 0;
-		}, 0, 0
-	};
+		},
+		0,
+		0 };
 
 	FT_Outline_Decompose( &face->glyph->outline, &funcs, glyph.get() );
 	return glyph;
 }
 
-Group &create_text( Stage &stage, const std::string &text, const TextStyle &style )
+Group &create_text( Stage &stage, const std::string &text, const FontStyle &style )
 {
 	return create_text( stage, stage.visuals, text, style );
 }
 
-Group &create_text( Stage &stage, Group &group, const std::string &text, const TextStyle &style )
+Group &create_text( Stage &stage, Group &group, const std::string &text, const FontStyle &style )
 {
 	Theme &theme = *stage.theme;
 	auto &subgroup = group.add( std::make_unique<Group>() );
@@ -140,7 +154,7 @@ Group &create_text( Stage &stage, Group &group, const std::string &text, const T
 		{
 			const int upem = font.face->units_per_EM;
 			auto *hb_font = hb_ft_font_create( font.face.get(), nullptr );
-			hb_font_set_scale( hb_font, upem, upem);
+			hb_font_set_scale( hb_font, upem, upem );
 			return hb_font;
 		};
 		for ( size_t i = 0; i < stack.size(); ++i )
@@ -174,7 +188,7 @@ Group &create_text( Stage &stage, Group &group, const std::string &text, const T
 		hb_glyph_position_t *glyph_pos = hb_buffer_get_glyph_positions( buffer, &glyph_count );
 
 		const float font_size = font_face.scale;
-		const float glyph_scale = font_size / ( static_cast<float>(upem) );
+		const float glyph_scale = font_size / ( static_cast<float>( upem ) );
 
 		for ( unsigned int i = 0; i < glyph_count; ++i )
 		{
@@ -183,14 +197,14 @@ Group &create_text( Stage &stage, Group &group, const std::string &text, const T
 
 			auto glyph = create_glyph( glyph_id, &font_face );
 			glyph->position = Point{
-				current_x + static_cast<float>(pos.x_offset),
-				current_y + static_cast<float>(pos.y_offset) };
+				current_x + static_cast<float>( pos.x_offset ),
+				current_y + static_cast<float>( pos.y_offset ) };
 
 			*glyph *= glyph_scale;
 			subgroup.add( std::move( glyph ) );
 
-			current_x += static_cast<float>(pos.x_advance);
-			current_y += static_cast<float>(pos.y_advance);
+			current_x += static_cast<float>( pos.x_advance );
+			current_y += static_cast<float>( pos.y_advance );
 		}
 	}
 
@@ -205,4 +219,3 @@ Group &create_text( Stage &stage, Group &group, const std::string &text, const T
 
 	return subgroup;
 }
-

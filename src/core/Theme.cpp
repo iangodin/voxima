@@ -173,7 +173,7 @@ FontFace Theme::load_font_internal( const FontKey &key, float scale )
 	return { ptr, scale };
 }
 
-FontStack Theme::get_stack( const TextStyle &style )
+FontStack Theme::get_stack( const FontStyle &style )
 {
 	auto it = _cache.find( style );
 	if ( it != _cache.end() )
@@ -193,7 +193,7 @@ FontStack Theme::get_stack( const TextStyle &style )
 	return stack;
 }
 
-MathFonts Theme::get_math( const TextStyle &style )
+MathFonts Theme::get_math( const FontStyle &style )
 {
 	if ( style.intent() != "math" )
 	{
@@ -202,11 +202,11 @@ MathFonts Theme::get_math( const TextStyle &style )
 
 	auto base_style = style.properties();
 
-	auto roman_stack = get_stack( TextStyle( "math", base_style ) );
-	auto italic_stack = get_stack( TextStyle( "math", base_style ).italic() );
-	auto bold_stack = get_stack( TextStyle( "math", base_style ).bold() );
-	auto sans_stack = get_stack( TextStyle( "math", base_style ).sans() );
-	auto mono_stack = get_stack( TextStyle( "math", base_style ).mono() );
+	auto roman_stack = get_stack( FontStyle( "math", base_style ) );
+	auto italic_stack = get_stack( FontStyle( "math", base_style ).italic() );
+	auto bold_stack = get_stack( FontStyle( "math", base_style ).bold() );
+	auto sans_stack = get_stack( FontStyle( "math", base_style ).sans() );
+	auto mono_stack = get_stack( FontStyle( "math", base_style ).mono() );
 
 	return { roman_stack.font( 0 ),
 			 italic_stack.font( 0 ),

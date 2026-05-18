@@ -3,7 +3,7 @@
 
 #include <core/Theme.h>
 
-#include <fonts/TextStyle.h>
+#include <fonts/FontStyle.h>
 
 #include <iostream>
 
@@ -12,7 +12,7 @@ int main()
 	try
 	{
 		Theme theme = NewComputerModern::create_theme();
-		TextStyle style( "prose" );
+		FontStyle style( "prose" );
 		style.large().serif();
 
 		FontStack stack = theme.get_stack( style );

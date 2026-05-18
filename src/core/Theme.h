@@ -1,6 +1,6 @@
 #pragma once
 
-#include <fonts/TextStyle.h>
+#include <fonts/FontStyle.h>
 #include <fonts/FontStack.h>
 #include <fonts/FontFace.h>
 #include <fonts/MathFonts.h>
@@ -43,7 +43,7 @@ struct FontKey
 	}
 };
 
-using FontFactory = std::function<FontStack( const TextStyle &, Theme & )>;
+using FontFactory = std::function<FontStack( const FontStyle &, Theme & )>;
 
 class Theme : public NamedRegistered<Theme>
 {
@@ -75,8 +75,8 @@ public:
 		_factories[intent] = std::move( factory );
 	}
 
-	FontStack get_stack( const TextStyle &style );
-	MathFonts get_math( const TextStyle &style );
+	FontStack get_stack( const FontStyle &style );
+	MathFonts get_math( const FontStyle &style );
 
 	void set_font_path( std::string_view path )
 	{
@@ -90,7 +90,7 @@ private:
 
 	FT_Library _library = nullptr;
 	std::map<FontKey, FontFacePtr> _faces;
-	std::map<TextStyle, FontStack> _cache;
+	std::map<FontStyle, FontStack> _cache;
 	std::map<std::string, FontFactory> _factories;
 
 	std::filesystem::path _font_path = "assets/fonts";

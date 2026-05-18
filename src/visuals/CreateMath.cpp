@@ -15,12 +15,12 @@
 
 #include <iostream>
 
-Group &create_math( Stage &stage, const std::string &formula, const TextStyle &style )
+Group &create_math( Stage &stage, const std::string &formula, const FontStyle &style )
 {
 	return create_math( stage, stage.visuals, formula, style );
 }
 
-Group &create_math( Stage &stage, Group &group, const std::string &formula, const TextStyle &style )
+Group &create_math( Stage &stage, Group &group, const std::string &formula, const FontStyle &style )
 {
 	Theme &theme = *stage.theme;
 	auto &subgroup = group.add( std::make_unique<Group>() );

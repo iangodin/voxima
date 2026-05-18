@@ -21,8 +21,8 @@
 
 Screenplay math_test( Stage &stage )
 {
-	auto large = TextStyle( "prose" ).huge();
-	auto math_style = TextStyle( "math" ).huge();
+	auto large = FontStyle( "prose" ).huge();
+	auto math_style = FontStyle( "math" ).huge();
 
 	create_text( stage,
 		"Math Layout Test 😀", large );

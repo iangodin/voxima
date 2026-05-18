@@ -10,7 +10,7 @@
 SCENARIO( "Text splitting" )
 {
 	Theme theme = NewComputerModern::create_theme();
-	FontStack font = theme.get_stack( TextStyle{ "prose" } );
+	FontStack font = theme.get_stack( FontStyle{ "prose" } );
 
 	GIVEN( "a string with fallback characters" )
 	{
