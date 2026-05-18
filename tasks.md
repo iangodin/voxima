@@ -2,10 +2,10 @@
 # Sonimation Task List
 
 ## Text Rendering
+  - [ ] Create StyledText class to support styling text
   - [ ] Pass current text language all the way to Harfbuzz to help shape/layout gylphs
   - [ ] Modify MFL library to return a tree of glyphs instead of linear sequence
   - [ ] Integrate handling for BiDi text rendering
-  - [ ] Add caching system for text
   - [ ] Add "highlighting" of missing glyphs (0xFFFD)
 
 ## Visuals
@@ -17,13 +17,15 @@
   - [ ] Add morphing between shapes
 
 ## Audio System
-  - [x] Need a "Recording Studio" that mixes everything and generates the final audio to a WAV file
+  - [x] Need a AudioMixer that mixes everything and generates the final audio to a WAV file
+  - [x] Need a DubbingStage that handles several narrators/mixers for multiple audio tracks
 
 ## Audio Processing
   - [x] Implement basic audio buffer
   - [x] Implement audio resampling
   - [x] Add WAV file saving
-  - [x] Implement silence generator
+  - [x] Add FLAC file saving
+  - [ ] Implement silence generator
   - [ ] Implement simple volume effect
   - [x] Implement simple multi channel mixer
 
@@ -37,6 +39,14 @@
   - [x] Decode Edge-TTS audio into float/PCM buffer
   - [x] Need "Speaker" that can generate audio with a language and voice parameters
 
+##  Subtitles
+  - [ ] Generate SRT subtitles files
+  - [ ] Generate WebVTT subtitles files
+  - [ ] Mux subtitles into final stream
+
+## Language Support
+  - [ ] Handle BCP-47 / ISO 639 conversion
+
 ## Rendering
   - [ ] Add support for motion blur
   - [ ] Add registry of "Scenes"
@@ -44,7 +54,8 @@
 
 ## Final Muxing
   - [x] Need to use ffmpeg to mix the audio and video (simple proof of concept)
-  - [ ] Need to use ffmpeg to mix the audio tracks, subtitle, and video tracks together
+  - [x] Need to use ffmpeg to mix the multiple audio tracks
+  - [ ] Need to use ffmpeg to mix the multiple subtitle tracks
 
 ## Preview
   - [ ] Use SDL to present video/audio as it renders
