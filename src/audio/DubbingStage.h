@@ -17,7 +17,7 @@ class DubbingStage
 {
 public:
 	// Setup basic rendering parameters
-	void setup( const std::filesystem::path &render_dir, size_t audio_rate, size_t video_rate );
+	void setup( const std::filesystem::path &render_dir, std::string_view codec, size_t audio_rate, size_t video_rate );
 
 	// Add a language track
 	void add_language( std::string_view lang );
@@ -25,6 +25,8 @@ public:
 	void add_audio( const AudioBuffer &buffer );
 
 	Microphone &mic( std::string_view lang );
+
+	const std::string &output( std::string_view lang );
 
 	// Save current audio buffer (corresponding to one video frame)
 	void write_audio();
@@ -54,5 +56,7 @@ private:
 	tts::TTSClient _tts{ io_context, "127.0.0.1", 5555 };
 	std::map<std::string, AudioMixer, std::less<>> _mixers;
 	std::map<std::string, Microphone, std::less<>> _mics;
+	std::map<std::string, std::string, std::less<>> _outputs;
+	std::string _codec;
 };
 

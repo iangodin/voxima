@@ -39,6 +39,7 @@ add_library( visuals STATIC
 	src/core/Narration.cpp
 	src/core/Narrator.cpp
 	src/exporters/SVGWriter.cpp
+	src/exporters/FfmpegMux.cpp
 	src/exporters/FfmpegRender.cpp
 	src/fonts/FontStack.cpp
 	src/fonts/MFLFontFace.cpp

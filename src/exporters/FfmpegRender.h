@@ -8,7 +8,7 @@
 class FfmpegRender
 {
 public:
-	FfmpegRender( std::string output_filename, std::string codec, double framerate = 30.0 );
+	FfmpegRender( std::string output_filename, std::string codec, double framerate );
 	~FfmpegRender();
 
 	void encode( const lunasvg::Bitmap &bitmap );

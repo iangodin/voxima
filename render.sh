@@ -2,14 +2,17 @@
 set -e
 
 mkdir -p render
-rm -f render/frame.*  render/output.*
+rm -f render/*.wav render/*.flac render/*.png render/*.svg render/*.mp4 render/*.mkv render/*.webm
 
 make
 build/Release/sonimation --width 1920 --height 1080 \
-	--scripts demos/eases --lang en --theme "Modern Technical" \
+	--script-dir demos/eases \
+	--font-dir assets/fonts \
 	--render-dir render \
+	--theme "Modern Technical" \
+	--container mkv \
 	--vcodec h264 \
-	--output render/output.mkv \
-	--output render/output.mp4
-
-#	--output render/frame.@@@@.svg \
+	--acodec opus \
+	--lang en
+	--lang fr \
+#

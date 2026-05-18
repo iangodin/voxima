@@ -96,11 +96,6 @@ void AudioMixer::write_audio( void )
 	std::fill( _buffer.begin(), _buffer.end(), 0.F );
 }
 
-bool AudioMixer::supported_format( const std::string &filename )
-{
-	return filename.ends_with( ".wav" ) || filename.ends_with( ".flac" );
-}
-
 bool AudioMixer::supported_codec( std::string_view codec )
 {
 	return codec == "wav" || codec == "flac";

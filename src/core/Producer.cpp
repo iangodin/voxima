@@ -5,6 +5,7 @@
 
 #include <CLI/CLI.hpp>
 #include <exporters/FfmpegRender.h>
+#include <exporters/FfmpegMux.h>
 #include <exporters/PngRender.h>
 #include <optional>
 #include <utils/ParseSequenceName.h>
@@ -19,47 +20,167 @@ std::string read_file( std::filesystem::path path )
 	return buffer;
 }
 
+void setup_codecs( std::string_view container, std::string &vcodec, std::string &acodec )
+{
+	if ( container == "mp4" )
+	{
+		if ( vcodec.empty() )
+		{
+			vcodec = "h264";
+		}
+		if ( acodec.empty() )
+		{
+			acodec = "aac";
+		}
+
+		if ( vcodec == "h264" || vcodec == "h265" || vcodec == "vp9" || vcodec == "av1" )
+		{
+			// allowed
+		}
+		else
+		{
+			throw std::runtime_error( "unknown video codec " + std::string( vcodec ) );
+		}
+
+		if ( acodec == "aac" || acodec == "opus" )
+		{
+			// allowed
+		}
+		else if ( acodec == "wav" || acodec == "flac" || acodec == "vorbis" )
+		{
+			throw std::runtime_error( std::string( acodec ) + " is not supported in mp4 container" );
+		}
+		else
+		{
+			throw std::runtime_error( "unknown audio codec " + std::string( acodec ) );
+		}
+	}
+	else if ( container == "mkv" )
+	{
+		if ( vcodec.empty() )
+		{
+			vcodec = "h264";
+		}
+		if ( acodec.empty() )
+		{
+			acodec = "aac";
+		}
+
+		if ( vcodec == "h264" || vcodec == "h265" || vcodec == "vp9" || vcodec == "av1" )
+		{
+			// allowed
+		}
+		else
+		{
+			throw std::runtime_error( "unknown video codec " + std::string( vcodec ) );
+		}
+
+		if ( acodec == "aac" || acodec == "opus" || acodec == "wav" || acodec == "flac" || acodec == "vorbis" )
+		{
+			// allowed
+		}
+		else
+		{
+			throw std::runtime_error( "unknown audio codec " + std::string( acodec ) );
+		}
+	}
+	else if ( container == "webm" )
+	{
+		if ( vcodec.empty() )
+		{
+			vcodec = "av1";
+		}
+		if ( acodec.empty() )
+		{
+			acodec = "opus";
+		}
+
+		if ( vcodec == "vp9" || vcodec == "av1" )
+		{
+			// allowed
+		}
+		else if ( vcodec == "h264" || vcodec == "h265" )
+		{
+			throw std::runtime_error( std::string( vcodec ) + " is not supported in webm container" );
+		}
+		else
+		{
+			throw std::runtime_error( "unknown video codec " + std::string( vcodec ) );
+		}
+
+		if ( acodec == "vorbis" || acodec == "opus" )
+		{
+			// allowed
+		}
+		else if ( acodec == "wav" || acodec == "flac" || acodec == "aac" )
+		{
+			throw std::runtime_error( std::string( acodec ) + " is not supported in mp4 container" );
+		}
+		else
+		{
+			throw std::runtime_error( "unknown audio codec " + std::string( acodec ) );
+		}
+	}
+	else
+	{
+		throw std::runtime_error( "unknown container " + std::string( container ) );
+	}
+}
+
 bool Producer::produce( int argc, char *argv[] )
 {
 	CLI::App app{ "Sonimation" };
 	argv = app.ensure_utf8( argv );
 
-	std::vector<std::string> outputs;
-	app.add_option( "-o,--output", outputs, "Output file (mp4, wav, flac, png, or svg)" );
+	std::string container = "mkv";
+	app.add_option( "-c,--container", container, "Container (mp4, mkv, webm)" );
 
-	std::string vcodec = "h264";
-	app.add_option( "--vcodec", vcodec, "Video codec (h264, h265, vp9 or av1)" );
+	std::string vcodec;
+	app.add_option( "-v,--vcodec", vcodec, "Video codec (h264, h265, vp9 or av1)" );
 
-	std::string acodec = "flac";
-	app.add_option( "--acodec", acodec, "Video codec (wav or flac)" );
+	std::string acodec;
+	app.add_option( "-a,--acodec", acodec, "Video codec (flac, wav, aac, opus)" );
 
 	std::optional<std::string> font_path;
-	app.add_option( "--fonts", font_path, "Directory containing fonts" );
-
-	std::optional<std::string> theme_name;
-	app.add_option( "--theme", theme_name, "Theme to use" );
+	app.add_option( "--font-dir", font_path, "Directory containing fonts" );
 
 	std::string render_dir = "render";
 	app.add_option( "--render-dir", render_dir, "Directory for render to" );
+
+	std::string script_path;
+	app.add_option( "--script-dir", script_path, "Directory containing scripts" );
+
+	std::optional<std::string> theme_name;
+	app.add_option( "--theme", theme_name, "Theme to use" );
 
 	app.add_option( "--width", _stage.camera.width, "Camera width" );
 	app.add_option( "--height", _stage.camera.height, "Camera height" );
 	app.add_option( "--fps", _stage.camera.frame_rate, "Camera frame rate" );
 
-	std::optional<std::string> script_path;
-	app.add_option( "--scripts", script_path, "Directory containing scripts" );
-
-	std::optional<std::string> language;
-	app.add_option( "--lang", language, "Language to use" );
+	std::vector<std::string> languages;
+	app.add_option( "--lang", languages, "Language to use (first one is master, multiple allowed)" );
 
 	CLI11_PARSE( app, argc, argv );
 
-	if ( language )
+	setup_codecs( container, vcodec, acodec );
+
+	std::cout << "Encoding " << vcodec << "+" << acodec << " into " << container << '\n';
+
+	if ( script_path.empty() )
 	{
-		_script.set_directory( script_path.value_or( "." ) );
-		if ( !_script.load( *language ) )
+		throw std::runtime_error( "script path is required" );
+	}
+	_script.set_directory( script_path );
+
+	if ( languages.empty() )
+	{
+		throw std::runtime_error( "at least one language is required" );
+	}
+	for ( auto &lang: languages )
+	{
+		if ( !_script.load( lang ) )
 		{
-			throw std::runtime_error( "unable to load script " + *language );
+			throw std::runtime_error( "unable to load script for " + lang );
 		}
 	}
 
@@ -83,72 +204,51 @@ bool Producer::produce( int argc, char *argv[] )
 		_stage.theme->set_font_path( *font_path );
 	}
 
-	if ( !FfmpegRender::supported_codec( vcodec ) )
-	{
-		throw std::runtime_error( "unsupported video codec " + vcodec );
-	}
-
+	/*
 	if ( !AudioMixer::supported_codec( acodec ) )
 	{
 		throw std::runtime_error( "unsupported audio codec " + acodec );
 	}
+	*/
 
-	_stage.audio.setup( render_dir, 48000, static_cast<size_t>( _stage.camera.frame_rate ) );
-	_stage.audio.add_language( language.value() );
+	_stage.audio.setup( render_dir, "flac", 48000, static_cast<size_t>( _stage.camera.frame_rate ) );
+	for ( auto &lang: languages )
+	{
+		_stage.audio.add_language( lang );
+	}
 
 	_screenplay = _director( _stage, _script );
 	_screenplay.handle.promise().producer_ptr = this;
 
 	std::optional<FfmpegRender> ffmpeg;
-	std::string video_filename;
-	std::string final_filename;
 	std::optional<PngRender> pngs;
 	std::tuple<std::string, int, std::string> svgs = {};
 	bool write_svgs = false;
 
-	for ( const auto &output: outputs )
+	const std::string video_filename = render_dir + "/video.mkv";
+	ffmpeg = FfmpegRender( video_filename, vcodec, static_cast<double>( _stage.camera.frame_rate ) );
+
+	const std::string final_filename = render_dir + "/final." + container;
+	/*
 	{
-		if ( output.ends_with( ".mp4" ) )
+		if ( pngs.has_value() )
 		{
-			if ( !final_filename.empty() )
-			{
-				throw std::runtime_error( "only one final mp4 allowed" );
-			}
-			final_filename = output;
+			throw std::runtime_error( "only one output png sequence allowed" );
 		}
-		else if ( FfmpegRender::supported_format( output ) )
-		{
-			if ( ffmpeg.has_value() )
-			{
-				throw std::runtime_error( "only one output video allowed" );
-			}
-			video_filename = output;
-			ffmpeg = FfmpegRender( output, vcodec, static_cast<double>( _stage.camera.frame_rate ) );
-		}
-		else if ( output.ends_with( ".png" ) )
-		{
-			if ( pngs.has_value() )
-			{
-				throw std::runtime_error( "only one output png sequence allowed" );
-			}
-			auto filename = parse_sequence_name( output );
-			pngs = PngRender(
-				std::get<0>( filename ), std::get<2>( filename ), std::get<1>( filename ) );
-		}
-		else if ( output.ends_with( ".svg" ) )
-		{
-			if ( write_svgs )
-			{
-				throw std::runtime_error( "only one output svg sequence allowed" );
-			}
-			write_svgs = true;
-			svgs = parse_sequence_name( output );
-		}
-		else
-		{
-			throw std::runtime_error( "unknown output " + output );
-		}
+		auto filename = parse_sequence_name( output );
+		pngs = PngRender(
+			std::get<0>( filename ), std::get<2>( filename ), std::get<1>( filename ) );
 	}
+	else if ( output.ends_with( ".svg" ) )
+	{
+		if ( write_svgs )
+		{
+			throw std::runtime_error( "only one output svg sequence allowed" );
+		}
+		write_svgs = true;
+		svgs = parse_sequence_name( output );
+	}
+	*/
 
 	size_t frame = 0;
 	Timer timer_total;
@@ -233,8 +333,13 @@ bool Producer::produce( int argc, char *argv[] )
 	if ( !video_filename.empty() && !final_filename.empty() )
 	{
 		Timer timer_mux( "  FFMPEG muxing: " );
-		double framerate = static_cast<double>( _stage.camera.frame_rate );
-		FfmpegRender::mux( framerate, video_filename, "", final_filename );
+		FfmpegMux mux( final_filename, acodec );
+		mux.add_video_track( video_filename );
+		for ( auto &lang: languages )
+		{
+			mux.add_audio_track( _stage.audio.output( lang ), lang, {} );
+		}
+		mux.mux();
 	}
 
 	return 0;

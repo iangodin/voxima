@@ -2,7 +2,7 @@
 #include "DubbingStage.h"
 
 void DubbingStage::setup(
-	const std::filesystem::path &render_dir, size_t audio_rate, size_t video_rate )
+	const std::filesystem::path &render_dir, std::string_view codec, size_t audio_rate, size_t video_rate )
 {
 	if ( audio_rate % video_rate != 0 )
 	{
@@ -14,6 +14,7 @@ void DubbingStage::setup(
 	_render_dir = render_dir;
 	_audio_rate = audio_rate;
 	_block_size = audio_rate / video_rate;
+	_codec = codec;
 
 	_tts.setup( _render_dir );
 }
@@ -21,10 +22,11 @@ void DubbingStage::setup(
 void DubbingStage::add_language( std::string_view lang )
 {
 	AudioMixer &mixer = _mixers[std::string( lang )];
-	auto audio_file = _render_dir / ( "output." + std::string( lang ) + ".flac" );
+	auto audio_file = _render_dir / ( "audio." + std::string( lang ) + "." + _codec );
 	mixer.open( audio_file, _audio_rate, _block_size );
 
 	_mics[std::string( lang )] = Microphone( mixer );
+	_outputs[std::string( lang )] = audio_file;
 }
 
 void DubbingStage::add_audio( const AudioBuffer &buffer )
@@ -44,6 +46,17 @@ Microphone &DubbingStage::mic( std::string_view lang )
 	}
 
 	return m->second;
+}
+
+const std::string &DubbingStage::output( std::string_view lang )
+{
+	auto o = _outputs.find( lang );
+	if ( o == _outputs.end() )
+	{
+		throw std::runtime_error( "unable to find audio outpout for language " + std::string( lang ) );
+	}
+
+	return o->second;
 }
 
 void DubbingStage::write_audio( void )
