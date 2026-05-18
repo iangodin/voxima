@@ -311,55 +311,69 @@ SCENARIO( "IntervalMap apply operations" )
 	}
 }
 
-SCENARIO( "IntervalMap erase_if operations" )
+SCENARIO( "IntervalMap fill_gaps operations" )
 {
-	GIVEN( "An IntervalMap with data" )
+	GIVEN( "An IntervalMap with some gaps" )
 	{
-		IntervalMap<int, int> map;
-		map.insert( 10, 20, 100 );
-		map.insert( 20, 30, 200 );
-		map.insert( 30, 40, 100 );
+		IntervalMap<int, std::string> map;
+		map.insert( 10, 20, "A" );
+		map.insert( 30, 40, "B" );
 
-		WHEN( "Erasing with a predicate that matches some intervals by value" )
+		WHEN( "Filling gaps in a range that includes existing intervals" )
 		{
-			map.erase_if( 0, 100, []( const auto &iv ) { return iv.value == 200; } );
-			THEN( "Matching intervals are removed, others remain" )
+			map.fill_gaps( 5, 45, "X" );
+			THEN( "Gaps are filled with X, existing intervals remain" )
 			{
-				CHECK( map.size() == 2 );
-				CHECK( map.find( 15 ) == 100 );
-				CHECK( !map.find( 25 ).has_value() );
-				CHECK( map.find( 35 ) == 100 );
+				CHECK( map.find( 7 ) == "X" );
+				CHECK( map.find( 15 ) == "A" );
+				CHECK( map.find( 25 ) == "X" );
+				CHECK( map.find( 35 ) == "B" );
+				CHECK( map.find( 42 ) == "X" );
+				
+				// Check exact boundaries to ensure merging
+				CHECK( map.size() == 5 ); // [5,10)X, [10,20)A, [20,30)X, [30,40)B, [40,45)X
 			}
 		}
 
-		WHEN( "Erasing with a predicate that matches by duration" )
+		WHEN( "Filling gaps when there are no gaps" )
 		{
 			map.clear();
-			map.insert( 10, 15, 1 ); // duration 5
-			map.insert( 20, 30, 1 ); // duration 10
-			map.erase_if( 0, 100, []( const auto &iv ) { return ( iv.end - iv.start ) > 7; } );
-			THEN( "Only the long interval is removed" )
+			map.insert( 10, 30, "A" );
+			map.fill_gaps( 15, 25, "X" );
+			THEN( "Nothing changes" )
 			{
 				CHECK( map.size() == 1 );
-				CHECK( map.find( 12 ) == 1 );
-				CHECK( !map.find( 25 ).has_value() );
+				CHECK( map.find( 20 ) == "A" );
 			}
 		}
 
-		WHEN( "Erasing a sub-range with a predicate" )
+		WHEN( "Filling gaps in an empty map" )
 		{
-			// [10, 20) -> 100. Erase [12, 18) if value is 100.
-			// Result: [10, 12) -> 100, [18, 20) -> 100.
 			map.clear();
-			map.insert( 10, 20, 100 );
-			map.erase_if( 12, 18, []( const auto &iv ) { return iv.value == 100; } );
-			THEN( "The interval is split and the middle part is removed" )
+			map.fill_gaps( 10, 20, "X" );
+			THEN( "It behaves like insert" )
 			{
-				CHECK( map.size() == 2 );
-				CHECK( map.find( 11 ) == 100 );
-				CHECK( !map.find( 15 ).has_value() );
-				CHECK( map.find( 19 ) == 100 );
+				CHECK( map.size() == 1 );
+				CHECK( map.find( 15 ) == "X" );
+			}
+		}
+
+		WHEN( "Filling gaps that result in merges" )
+		{
+			map.clear();
+			map.insert( 10, 20, "X" );
+			map.insert( 30, 40, "X" );
+			// Map: [10,20)X, [30,40)X. Gap is [20,30).
+			map.fill_gaps( 15, 35, "X" );
+			THEN( "The new intervals merge with neighbors" )
+			{
+				CHECK( map.size() == 1 );
+				auto span = map.span();
+				CHECK( span->first == 10 );
+				CHECK( span->second == 40 );
+				CHECK( map.find( 25 ) == "X" );
 			}
 		}
 	}
 }
+

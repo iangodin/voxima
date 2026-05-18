@@ -267,6 +267,51 @@ public:
 		coalesce();
 	}
 
+	// Fill any unmapped regions (gaps) within [start, end) with the provided value.
+	// Existing intervals are NOT overwritten.
+	// Adjacent intervals with the same value are merged.
+	void fill_gaps( Key start, Key end, const Value &value )
+	{
+		if ( start >= end )
+		{
+			return;
+		}
+
+		Key current = start;
+		std::vector<std::pair<Key, Key>> gaps;
+
+		auto it = std::lower_bound(
+			_intervals.begin(),
+			_intervals.end(),
+			current,
+			[]( const Interval &iv, Key k )
+			{
+				return iv.end <= k;
+			} );
+
+		while ( current < end )
+		{
+			if ( it == _intervals.end() || it->start >= end )
+			{
+				gaps.emplace_back( current, end );
+				break;
+			}
+
+			if ( it->start > current )
+			{
+				gaps.emplace_back( current, it->start );
+			}
+
+			current = it->end;
+			++it;
+		}
+
+		for ( const auto &gap: gaps )
+		{
+			insert( gap.first, gap.second, value );
+		}
+	}
+
 	void clear()
 	{
 		_intervals.clear();
