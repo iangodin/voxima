@@ -124,6 +124,34 @@ SCENARIO( "IntervalMap overlap behavior" )
 				CHECK( map.find( 19 ) == "A" );
 			}
 		}
+
+		WHEN( "Inserting adjacent intervals with the same value" )
+		{
+			map.clear();
+			map.insert( 10, 20, "A" );
+			map.insert( 20, 30, "A" );
+			THEN( "They should be merged" )
+			{
+				CHECK( map.size() == 1 );
+				auto span = map.span();
+				CHECK( span->first == 10 );
+				CHECK( span->second == 30 );
+			}
+		}
+
+		WHEN( "Inserting an overlapping interval with the same value" )
+		{
+			map.clear();
+			map.insert( 10, 20, "A" );
+			map.insert( 15, 25, "A" );
+			THEN( "They should be merged" )
+			{
+				CHECK( map.size() == 1 );
+				auto span = map.span();
+				CHECK( span->first == 10 );
+				CHECK( span->second == 25 );
+			}
+		}
 	}
 }
 
@@ -198,5 +226,140 @@ SCENARIO( "IntervalMap edge cases" )
 		map.insert( 10, 20, 1 );
 		map.clear();
 		CHECK( map.empty() );
+	}
+}
+
+SCENARIO( "IntervalMap apply operations" )
+{
+	GIVEN( "An IntervalMap with data" )
+	{
+		IntervalMap<int, int> map;
+		map.insert( 10, 20, 100 );
+		map.insert( 30, 40, 300 );
+
+		WHEN( "Applying a transform to a range covering one interval" )
+		{
+			map.apply( 10, 20, []( int &v ) { v += 50; } );
+			THEN( "The interval is updated" )
+			{
+				CHECK( map.size() == 2 );
+				CHECK( map.find( 15 ) == 150 );
+				CHECK( map.find( 35 ) == 300 );
+			}
+		}
+
+		WHEN( "Applying a transform to a sub-range (causing splits)" )
+		{
+			// [10, 20) -> 100. Apply to [12, 18) func += 1.
+			// Result: [10, 12) -> 100, [12, 18) -> 101, [18, 20) -> 100.
+			map.apply( 12, 18, []( int &v ) { v += 1; } );
+			THEN( "The interval is split and partially updated" )
+			{
+				CHECK( map.size() == 4 ); // 3 for the first interval + 1 for the second
+				CHECK( map.find( 11 ) == 100 );
+				CHECK( map.find( 15 ) == 101 );
+				CHECK( map.find( 19 ) == 100 );
+				CHECK( map.find( 35 ) == 300 );
+			}
+		}
+
+		WHEN( "Applying a transform that results in values matching neighbors" )
+		{
+			// [10, 20) -> 100, [30, 40) -> 300.
+			// Insert [20, 30) -> 150.
+			// Map: [10, 30) -> 100, 150; [30, 40) -> 300.
+			map.insert( 20, 30, 150 );
+			// Now apply to [20, 30) func v = 100.
+			// Should merge with [10, 20).
+			map.apply( 20, 30, []( int &v ) { v = 100; } );
+			THEN( "The intervals are merged" )
+			{
+				CHECK( map.size() == 2 ); // [10, 30) -> 100, [30, 40) -> 300
+				CHECK( map.find( 15 ) == 100 );
+				CHECK( map.find( 25 ) == 100 );
+			}
+		}
+
+		WHEN( "Applying a transform using the 3-argument signature (start, end, value)" )
+		{
+			map.clear();
+			map.insert( 10, 20, 100 );
+			// Use boundaries to calculate new value: v = start + end
+			map.apply( 10, 20, []( int s, int e, int &v ) { v = s + e; } );
+			THEN( "The value is updated using interval boundaries" )
+			{
+				CHECK( map.find( 15 ) == 30 ); // 10 + 20
+			}
+		}
+
+		WHEN( "Applying a transform across gaps" )
+		{
+			// [10, 20) -> 100, [30, 40) -> 300.
+			// Apply to [15, 35) func += 1.
+			// [10, 15) -> 100, [15, 20) -> 101, (gap 20-30), [30, 35) -> 301, [35, 40) -> 300.
+			map.apply( 15, 35, []( int &v ) { v += 1; } );
+			THEN( "Only existing intervals are transformed, gaps remain gaps" )
+			{
+				CHECK( map.size() == 4 );
+				CHECK( map.find( 12 ) == 100 );
+				CHECK( map.find( 17 ) == 101 );
+				CHECK( !map.find( 25 ).has_value() );
+				CHECK( map.find( 32 ) == 301 );
+				CHECK( map.find( 37 ) == 300 );
+			}
+		}
+	}
+}
+
+SCENARIO( "IntervalMap erase_if operations" )
+{
+	GIVEN( "An IntervalMap with data" )
+	{
+		IntervalMap<int, int> map;
+		map.insert( 10, 20, 100 );
+		map.insert( 20, 30, 200 );
+		map.insert( 30, 40, 100 );
+
+		WHEN( "Erasing with a predicate that matches some intervals by value" )
+		{
+			map.erase_if( 0, 100, []( const auto &iv ) { return iv.value == 200; } );
+			THEN( "Matching intervals are removed, others remain" )
+			{
+				CHECK( map.size() == 2 );
+				CHECK( map.find( 15 ) == 100 );
+				CHECK( !map.find( 25 ).has_value() );
+				CHECK( map.find( 35 ) == 100 );
+			}
+		}
+
+		WHEN( "Erasing with a predicate that matches by duration" )
+		{
+			map.clear();
+			map.insert( 10, 15, 1 ); // duration 5
+			map.insert( 20, 30, 1 ); // duration 10
+			map.erase_if( 0, 100, []( const auto &iv ) { return ( iv.end - iv.start ) > 7; } );
+			THEN( "Only the long interval is removed" )
+			{
+				CHECK( map.size() == 1 );
+				CHECK( map.find( 12 ) == 1 );
+				CHECK( !map.find( 25 ).has_value() );
+			}
+		}
+
+		WHEN( "Erasing a sub-range with a predicate" )
+		{
+			// [10, 20) -> 100. Erase [12, 18) if value is 100.
+			// Result: [10, 12) -> 100, [18, 20) -> 100.
+			map.clear();
+			map.insert( 10, 20, 100 );
+			map.erase_if( 12, 18, []( const auto &iv ) { return iv.value == 100; } );
+			THEN( "The interval is split and the middle part is removed" )
+			{
+				CHECK( map.size() == 2 );
+				CHECK( map.find( 11 ) == 100 );
+				CHECK( !map.find( 15 ).has_value() );
+				CHECK( map.find( 19 ) == 100 );
+			}
+		}
 	}
 }
