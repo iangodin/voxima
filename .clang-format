@@ -28,7 +28,7 @@ ContinuationIndentWidth: 4
 AlignAfterOpenBracket: AlwaysBreak
 
 SortIncludes: CaseSensitive
-IncludeBlocks: Regroup
+IncludeBlocks: Preserve
 
 IncludeCategories:
   # Local quoted includes (within same library)
