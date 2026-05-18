@@ -12,7 +12,9 @@ Multi-lingual subtitles are generated along with the narration.
 
 ## Building
 
-On initial build (when build folder doesn't yet exist):
+Do NOT try to use cmake directly.  Build and test only through make.
+
+On initial build (i.e. when build folder doesn't yet exist):
 ```
 make config
 ```
@@ -21,6 +23,11 @@ After that, simply use:
 
 ```
 make
+```
+
+Cleaning - this command will wipe the build directory, and will require "make config".
+```
+make clean
 ```
 
 ## Running tests
