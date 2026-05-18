@@ -59,6 +59,7 @@ add_library( visuals STATIC
 	src/utils/Huml.cpp
 	src/visuals/CreateMath.cpp
 	src/visuals/CreateText.cpp
+	src/visuals/StyledText.cpp
 )
 
 target_compile_features( visuals PUBLIC cxx_std_20 )

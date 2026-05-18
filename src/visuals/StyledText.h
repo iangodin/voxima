@@ -8,6 +8,16 @@
 class StyledText
 {
 public:
+	StyledText() = default;
+
+	StyledText( const StyledText & ) = default;
+	StyledText( StyledText && ) = default;
+
+	~StyledText() = default;
+
+	StyledText &operator=( const StyledText & ) = default;
+	StyledText &operator=( StyledText && ) = default;
+
 	StyledText( std::string text ) :
 		_utf8( std::move( text ) )
 	{
@@ -25,6 +35,11 @@ public:
 	}
 
 	std::optional<size_t> index( size_t line, size_t column );
+
+	const std::vector<std::string_view> &lines( void ) const
+	{
+		return _lines;
+	}
 
 private:
 	void split_lines();
