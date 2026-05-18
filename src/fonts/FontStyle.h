@@ -69,6 +69,11 @@ struct FontProperties
 class FontStyle
 {
 public:
+	FontStyle() = default;
+
+	FontStyle( const FontStyle & ) = default;
+	FontStyle( FontStyle && ) = default;
+
 	explicit FontStyle( std::string_view intent ) :
 		_intent( intent )
 	{
@@ -83,6 +88,11 @@ public:
 		_scale( properties.scale )
 	{
 	}
+
+	~FontStyle() = default;
+
+	FontStyle &operator=( const FontStyle & ) = default;
+	FontStyle &operator=( FontStyle && ) = default;
 
 	const std::string &intent( void ) const
 	{
@@ -215,6 +225,58 @@ public:
 		return *this;
 	}
 
+	FontStyle &set_intent( std::string_view intent )
+	{
+		_intent = std::string( intent );
+		return *this;
+	}
+
+	FontStyle &set_typeclass( TypeClass typeclass )
+	{
+		_typeclass = typeclass;
+		return *this;
+	}
+
+	FontStyle &set_weight( Weight weight )
+	{
+		_weight = weight;
+		return *this;
+	}
+
+	FontStyle &set_slant( Slant slant )
+	{
+		_slant = slant;
+		return *this;
+	}
+
+	FontStyle &set_scale( Scale scale )
+	{
+		_scale = scale;
+		return *this;
+	}
+
+	FontStyle &set_width( Width width )
+	{
+		_width = width;
+		return *this;
+	}
+
+	bool operator==( const FontStyle &other ) const
+	{
+		return
+			_intent == other._intent &&
+			_typeclass == other._typeclass &&
+			_weight == other._weight &&
+			_slant == other._slant &&
+			_width == other._width &&
+			_scale == other._scale;
+	}
+
+	bool operator!=( const FontStyle &other ) const
+	{
+		return !operator==( other );
+	}
+
 	bool operator<( const FontStyle &other ) const
 	{
 		if ( _intent != other._intent ) return _intent < other._intent;
@@ -236,11 +298,12 @@ public:
 		};
 	}
 
-private:
-	std::string _intent;
+public:
+	std::string _intent{ Intent::PROSE };
 	std::optional<TypeClass> _typeclass;
 	std::optional<Weight> _weight;
 	std::optional<Slant> _slant;
 	std::optional<Width> _width;
 	std::optional<Scale> _scale;
 };
+
