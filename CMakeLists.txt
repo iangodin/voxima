@@ -23,6 +23,7 @@ find_package( asio 1.36.0 REQUIRED SYSTEM )
 find_package( CapnProto 1.1.0 REQUIRED SYSTEM )
 find_package( SndFile 1.2.2 REQUIRED SYSTEM )
 find_package( soxr 0.1.3 REQUIRED SYSTEM )
+find_package( fribidi 1.0.13 REQUIRED SYSTEM )
 
 enable_testing()
 
