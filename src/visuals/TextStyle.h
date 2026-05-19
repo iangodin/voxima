@@ -1,4 +1,6 @@
 
+#pragma once
+
 #include "Color.h"
 
 #include <fonts/FontStyle.h>

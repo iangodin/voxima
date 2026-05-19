@@ -34,6 +34,11 @@ public:
 		_visuals.clear();
 	}
 
+	size_t size( void ) const
+	{
+		return _visuals.size();
+	}
+
 	auto begin( void ) const
 	{
 		return _visuals.begin();

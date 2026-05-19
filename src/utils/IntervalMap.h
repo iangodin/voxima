@@ -312,6 +312,58 @@ public:
 		}
 	}
 
+	// Iterate through intervals in [start, end).
+	// Gaps are filled with default_value.
+	// The function signature should be void(Key start, Key end, const Value&).
+	template<typename F>
+	void for_each( Key start, Key end, const Value &default_value, F &&func ) const
+	{
+		if ( start >= end )
+		{
+			return;
+		}
+
+		Key current = start;
+
+		auto it = std::lower_bound(
+			_intervals.begin(),
+			_intervals.end(),
+			current,
+			[]( const Interval &iv, Key k )
+			{
+				return iv.end <= k;
+			} );
+
+		while ( current < end )
+		{
+			if ( it == _intervals.end() || it->start >= end )
+			{
+				// No more intervals or next interval starts after range end
+				func( current, end, default_value );
+				break;
+			}
+
+			if ( it->start > current )
+			{
+				// Gap before current interval
+				func( current, it->start, default_value );
+				current = it->start;
+			}
+
+			// Intersection of interval and [start, end)
+			Key run_start = std::max( current, it->start );
+			Key run_end = std::min( end, it->end );
+
+			func( run_start, run_end, it->value );
+
+			current = run_end;
+			if ( current >= it->end )
+			{
+				++it;
+			}
+		}
+	}
+
 	void clear()
 	{
 		_intervals.clear();

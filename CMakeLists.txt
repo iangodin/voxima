@@ -59,6 +59,7 @@ add_library( visuals STATIC
 	src/utils/Huml.cpp
 	src/visuals/CreateMath.cpp
 	src/visuals/CreateText.cpp
+	src/visuals/CreateStyledText.cpp
 	src/visuals/StyledText.cpp
 )
 

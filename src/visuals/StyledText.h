@@ -1,4 +1,6 @@
 
+#pragma once
+
 #include "TextStyle.h"
 
 #include <utils/IntervalMap.h>
@@ -54,6 +56,16 @@ public:
 	void set_width( size_t start, size_t end, Width width );
 
 	void set_typeclass( size_t start, size_t end, TypeClass typeclass );
+
+	const std::string &text( void ) const
+	{
+		return _utf8;
+	}
+
+	const IntervalMap<size_t, TextStyle> &styles( void ) const
+	{
+		return _style;
+	}
 
 private:
 	void split_lines();
