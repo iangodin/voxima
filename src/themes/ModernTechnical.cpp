@@ -35,9 +35,8 @@ FontStack create_font_stack( const FontStyle &style, Theme &theme, std::string_v
 	if ( properties.weight == Weight::BLACK ) weight = "Heavy";
 
 	FontStack fonts;
-	// Main: FiraGO, Math: NewCM Math, Emoji: Noto Emoji, CJK: Noto Sans CJK, Mono: Fira Mono
+	// Main: FiraGO, Emoji: Noto Emoji, CJK: Noto Sans CJK, Mono: Fira Mono
 	fonts.push( theme.load_font( std::string(base_name) + "-" + weight + ".ttf", 0, font_size ) );
-	fonts.push( theme.load_font( "NewCMMath-Regular.otf", 0, font_size ) );
 	fonts.push( theme.load_font( "NotoEmoji-Variable.ttf", 0, font_size ) );
 	fonts.push( theme.load_font( "NotoSansCJK-Variable.otc", 0, font_size ) );
 	fonts.push( theme.load_font( "FiraMono-Regular.ttf", 0, font_size ) );
@@ -46,9 +45,30 @@ FontStack create_font_stack( const FontStyle &style, Theme &theme, std::string_v
 }
 }
 
-FontStack intent_prose( const FontStyle &style, Theme &theme ) { return create_font_stack( style, theme, "FiraGO" ); }
-FontStack intent_code( const FontStyle &style, Theme &theme ) { return create_font_stack( style, theme, "FiraMono" ); }
-FontStack intent_math( const FontStyle &style, Theme &theme ) { return create_font_stack( style, theme, "FiraGO" ); }
+FontStack intent_prose( const FontStyle &style, Theme &theme )
+{
+	return create_font_stack( style, theme, "FiraGO" );
+}
+
+FontStack intent_code( const FontStyle &style, Theme &theme )
+{
+	return create_font_stack( style, theme, "FiraMono" );
+}
+
+FontStack intent_math( const FontStyle &style, Theme &theme )
+{
+	auto properties = style.properties();
+	const float font_size = theme_font_size( properties.scale.value_or( Scale::MEDIUM ) );
+
+	FontStack fonts;
+	fonts.push( theme.load_font( "FiraMath-Regular.otf", 0, font_size ) );
+	fonts.push( theme.load_font( "NotoEmoji-Variable.ttf", 0, font_size ) );
+	fonts.push( theme.load_font( "NotoSansCJK-Variable.otc", 0, font_size ) );
+	fonts.push( theme.load_font( "FiraMono-Regular.ttf", 0, font_size ) );
+	fonts.push( theme.load_font( "AND-Regular.otf", 0, font_size ) );
+	return fonts;
+}
+
 FontStack intent_title( const FontStyle &style, Theme &theme ) { return create_font_stack( style, theme, "FiraGO" ); }
 FontStack intent_label( const FontStyle &style, Theme &theme ) { return create_font_stack( style, theme, "FiraGO" ); }
 FontStack intent_annotation( const FontStyle &style, Theme &theme ) { return create_font_stack( style, theme, "FiraGO" ); }
