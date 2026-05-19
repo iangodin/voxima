@@ -1,6 +1,7 @@
-
 #include <visuals/Bounds.h>
 #include <visuals/CreateText.h>
+#include <visuals/CreateStyledText.h>
+#include <visuals/StyledText.h>
 #include <visuals/Group.h>
 
 #include <fonts/FontFace.h>
@@ -142,80 +143,7 @@ Group &create_text( Stage &stage, const std::string &text, const FontStyle &styl
 
 Group &create_text( Stage &stage, Group &group, const std::string &text, const FontStyle &style )
 {
-	Theme &theme = *stage.theme;
-	auto &subgroup = group.add( std::make_unique<Group>() );
-
-	FontStack stack = theme.get_stack( style );
-
-	std::vector<hb_font_t *> hb_fonts;
-	{
-		hb_fonts.resize( stack.size(), nullptr );
-		auto make_hb_font = []( const FontFace &font ) -> hb_font_t *
-		{
-			const int upem = font.face->units_per_EM;
-			auto *hb_font = hb_ft_font_create( font.face.get(), nullptr );
-			hb_font_set_scale( hb_font, upem, upem );
-			return hb_font;
-		};
-		for ( size_t i = 0; i < stack.size(); ++i )
-		{
-			hb_fonts[i] = make_hb_font( stack.font( i ) );
-		}
-	}
-
-	auto ranges = create_ranges( text, stack );
-
-	float current_x = 0.0f;
-	float current_y = 0.0f;
-
-	hb_buffer_t *buffer = hb_buffer_create();
-	for ( auto &range: ranges )
-	{
-		hb_buffer_clear_contents( buffer );
-		int size = static_cast<int>( text.size() );
-		unsigned int start = static_cast<unsigned int>( range.start );
-		int length = static_cast<int>( range.length );
-		hb_buffer_add_utf8( buffer, text.c_str(), size, start, length );
-		hb_buffer_guess_segment_properties( buffer );
-
-		hb_shape( hb_fonts.at( range.font_index ), buffer, NULL, 0 );
-
-		const auto &font_face = stack.font( range.font_index );
-		const int upem = font_face.face->units_per_EM;
-
-		unsigned int glyph_count;
-		hb_glyph_info_t *glyph_info = hb_buffer_get_glyph_infos( buffer, &glyph_count );
-		hb_glyph_position_t *glyph_pos = hb_buffer_get_glyph_positions( buffer, &glyph_count );
-
-		const float font_size = font_face.scale;
-		const float glyph_scale = font_size / ( static_cast<float>( upem ) );
-
-		for ( unsigned int i = 0; i < glyph_count; ++i )
-		{
-			hb_codepoint_t glyph_id = glyph_info[i].codepoint;
-			hb_glyph_position_t pos = glyph_pos[i];
-
-			auto glyph = create_glyph( glyph_id, &font_face );
-			glyph->position = Point{
-				current_x + static_cast<float>( pos.x_offset ),
-				current_y + static_cast<float>( pos.y_offset ) };
-
-			*glyph *= glyph_scale;
-			subgroup.add( std::move( glyph ) );
-
-			current_x += static_cast<float>( pos.x_advance );
-			current_y += static_cast<float>( pos.y_advance );
-		}
-	}
-
-	hb_buffer_destroy( buffer );
-
-	for ( auto hb_font: hb_fonts )
-	{
-		hb_font_destroy( hb_font );
-	}
-
-	center_group( subgroup );
-
-	return subgroup;
+	StyledText st( text );
+	st.set_font_style( 0, st.size(), style );
+	return create_styled_text( stage, group, st );
 }

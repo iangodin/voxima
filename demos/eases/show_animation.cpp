@@ -21,13 +21,13 @@
 
 void show_title( Stage &stage )
 {
-	StyledText text( "Hello\nWorld" );
+	StyledText text( "Hello\nالعالم" );
 	text.set_font_style( 0, text.size(), FontStyle{ Intent::TITLE } );
 	text.set_color( 0, 5, Color{ 1.0f, 0.0f, 0.0f, 1.0f } );
 	text.set_weight( 2, 4, Weight::BLACK );
 
 	auto &label = create_styled_text( stage, text );
-	label.position = { 3.F, 0.F };
+	label.position = { 0.F, 3.F };
 }
 
 template<typename Ease>

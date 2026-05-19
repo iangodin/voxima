@@ -100,6 +100,13 @@ Group &create_styled_text( Stage &stage, Group &group, const StyledText &text )
 						static_cast<int>( range.length ) );
 					hb_buffer_guess_segment_properties( buffer );
 
+					if ( style.bidi_level )
+					{
+						hb_buffer_set_direction(
+							buffer,
+							( *style.bidi_level % 2 == 0 ) ? HB_DIRECTION_LTR : HB_DIRECTION_RTL );
+					}
+
 					const auto &font_face = stack.font( range.font_index );
 					hb_shape( font_cache.get( font_face ), buffer, nullptr, 0 );
 

@@ -64,6 +64,10 @@ public:
 
 	void set_typeclass( size_t start, size_t end, TypeClass typeclass );
 
+	void set_bidi_level( size_t start, size_t end, size_t level );
+
+	void analyze_bidi( void );
+
 	const std::string &text( void ) const
 	{
 		return _utf8;

@@ -1,7 +1,10 @@
-
 #include "StyledText.h"
+#include <utils/Utf8.h>
+
+#include <fribidi.h>
 
 #include <functional>
+#include <vector>
 
 namespace
 {
@@ -57,6 +60,39 @@ void StyledText::split_lines( void )
 			line_index++;
 		}
 	}
+	analyze_bidi();
+}
+
+void StyledText::analyze_bidi( void )
+{
+	if ( _utf8.empty() )
+	{
+		return;
+	}
+
+	std::vector<FriBidiChar> fribidi_text;
+	std::vector<size_t> utf8_to_utf32;
+	std::string_view remaining = _utf8;
+	while ( !remaining.empty() )
+	{
+		size_t pos = _utf8.size() - remaining.size();
+		utf8_to_utf32.push_back( pos );
+		fribidi_text.push_back( static_cast<FriBidiChar>( decode_utf8( remaining ) ) );
+	}
+	utf8_to_utf32.push_back( _utf8.size() );
+
+	FriBidiParType base_dir = FRIBIDI_PAR_ON;
+	std::vector<FriBidiLevel> levels( fribidi_text.size() );
+	[[maybe_unused]] auto result = fribidi_get_par_embedding_levels(
+		fribidi_text.data(),
+		static_cast<FriBidiStrIndex>( fribidi_text.size() ),
+		&base_dir,
+		levels.data() );
+
+	for ( size_t i = 0; i < levels.size(); ++i )
+	{
+		set_bidi_level( utf8_to_utf32[i], utf8_to_utf32[i + 1], static_cast<size_t>( levels[i] ) );
+	}
 }
 
 void StyledText::set_color( size_t start, size_t end, const Color &color )
@@ -99,3 +135,7 @@ void StyledText::set_typeclass( size_t start, size_t end, TypeClass typeclass )
 	apply_to_style( _style, start, end, [&]( TextStyle &sty ) { sty.font_style.set_typeclass( typeclass ); } );
 }
 
+void StyledText::set_bidi_level( size_t start, size_t end, size_t level )
+{
+	apply_to_style( _style, start, end, [&]( TextStyle &sty ) { sty.bidi_level = level; } );
+}

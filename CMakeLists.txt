@@ -78,6 +78,7 @@ target_link_libraries( visuals PUBLIC
 	CapnProto::kj
 	SndFile::sndfile
 	soxr::soxr
+	fribidi::fribidi
 	mfl )
 
 add_executable( sonimation tools/main.cpp demos/eases/show_animation.cpp )
