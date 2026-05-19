@@ -1,6 +1,6 @@
 #include <core/Theme.h>
-
 #include <themes/AcademicClassic.h>
+#include <themes/ThemeUtils.h>
 
 #include <fonts/FontStack.h>
 #include <fonts/FontStyle.h>
@@ -10,45 +10,65 @@ namespace AcademicClassic
 
 namespace
 {
-float theme_font_size( Scale scale )
-{
-	float font_size = 0.3F;
-	switch ( scale )
+	FontStack create_font_stack( const FontStyle &style, Theme &theme, std::string_view base_name )
 	{
-		case Scale::TINY: font_size = 0.1F; break;
-		case Scale::SMALL: font_size = 0.25F; break;
-		case Scale::MEDIUM: font_size = 0.3F; break;
-		case Scale::LARGE: font_size = 0.75F; break;
-		case Scale::HUGE: font_size = 1.5F; break;
+		auto properties = style.properties();
+		const float font_size =
+			ThemeUtils::get_theme_font_size( properties.scale.value_or( Scale::MEDIUM ) );
+
+		FontStack fonts;
+		fonts.append( theme.load_font(
+			ThemeUtils::get_newcm_filename( properties, base_name ), 0, font_size ) );
+		fonts.append(
+			theme.load_font( ThemeUtils::get_amiri_filename( properties ), 0, font_size ) );
+		fonts.append( theme.load_font( "Symbola-Emoji.ttf", 0, font_size ) );
+		fonts.append( theme.load_font( "SourceHanSerif.ttc", 0, font_size ) );
+		fonts.append( theme.load_font( "NewCMMono10-Regular.otf", 0, font_size ) );
+		fonts.append( theme.load_font( "AND-Regular.otf", 0, font_size ) );
+		return fonts;
 	}
-	return font_size;
 }
 
-FontStack create_font_stack( const FontStyle &style, Theme &theme, std::string_view base_name )
+FontStack intent_prose( const FontStyle &style, Theme &theme )
+{
+	return create_font_stack( style, theme, "NewCM10-Regular" );
+}
+
+FontStack intent_code( const FontStyle &style, Theme &theme )
+{
+	return create_font_stack( style, theme, "NewCMMono10-Regular" );
+}
+
+FontStack intent_math( const FontStyle &style, Theme &theme )
 {
 	auto properties = style.properties();
-	const float font_size = theme_font_size( properties.scale.value_or( Scale::MEDIUM ) );
+	const float font_size =
+		ThemeUtils::get_theme_font_size( properties.scale.value_or( Scale::MEDIUM ) );
 
-	FontStack fonts;
-	// Main: New Computer Modern, Math: NewCM Math, Arabic: Amiri, Emoji: Symbola, CJK: Source Han Serif, Mono: New Computer Modern Mono
-	fonts.push( theme.load_font( std::string(base_name) + ".otf", 0, font_size ) );
-	fonts.push( theme.load_font( "NewCMMath-Regular.otf", 0, font_size ) );
-	fonts.push( theme.load_font( "Amiri-Regular.ttf", 0, font_size ) );
-	fonts.push( theme.load_font( "Symbola-Emoji.ttf", 0, font_size ) );
-	fonts.push( theme.load_font( "SourceHanSerif.ttc", 0, font_size ) );
-	fonts.push( theme.load_font( "NewCMMono10-Regular.otf", 0, font_size ) );
-	fonts.push( theme.load_font( "AND-Regular.otf", 0, font_size ) );
+	FontStack fonts = create_font_stack( style, theme, "NewCMMath-Regular" );
+	fonts.prepend( theme.load_font( "NewCMMath-Regular.otf", 0, font_size ) );
 	return fonts;
 }
+
+FontStack intent_title( const FontStyle &style, Theme &theme )
+{
+	return create_font_stack( style, theme, "NewCM10-Bold" );
 }
 
-FontStack intent_prose( const FontStyle &style, Theme &theme ) { return create_font_stack( style, theme, "NewCM10-Regular" ); }
-FontStack intent_code( const FontStyle &style, Theme &theme ) { return create_font_stack( style, theme, "NewCMMono10-Regular" ); }
-FontStack intent_math( const FontStyle &style, Theme &theme ) { return create_font_stack( style, theme, "NewCMMath-Regular" ); }
-FontStack intent_title( const FontStyle &style, Theme &theme ) { return create_font_stack( style, theme, "NewCM10-Bold" ); }
-FontStack intent_label( const FontStyle &style, Theme &theme ) { return create_font_stack( style, theme, "NewCM10-Regular" ); }
-FontStack intent_annotation( const FontStyle &style, Theme &theme ) { return create_font_stack( style, theme, "NewCM10-Regular" ); }
-FontStack intent_caption( const FontStyle &style, Theme &theme ) { return create_font_stack( style, theme, "NewCM10-Regular" ); }
+FontStack intent_label( const FontStyle &style, Theme &theme )
+{
+	return create_font_stack( style, theme, "NewCM10-Regular" );
+}
+
+FontStack intent_annotation( const FontStyle &style, Theme &theme )
+{
+	return create_font_stack( style, theme, "NewCM10-Regular" );
+}
+
+FontStack intent_caption( const FontStyle &style, Theme &theme )
+{
+	return create_font_stack( style, theme, "NewCM10-Regular" );
+}
 
 Theme create_theme( void )
 {

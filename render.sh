@@ -10,7 +10,7 @@ build/Release/sonimation --width 1920 --height 1080 \
 	--script-dir demos/eases \
 	--font-dir assets/fonts \
 	--render-dir render \
-	--theme "Modern Technical" \
+	--theme "Playful Discovery" \
 	--container mkv \
 	--vcodec h264 \
 	--acodec opus \

@@ -49,6 +49,7 @@ add_library( visuals STATIC
 	src/themes/EngineeringBlueprint.cpp
 	src/themes/ModernTechnical.cpp
 	src/themes/PlayfulDiscovery.cpp
+	src/themes/ThemeUtils.cpp
 	src/tts/protocol.capnp.c++
 	src/tts/TTSClient.cpp
 	src/audio/DubbingStage.cpp

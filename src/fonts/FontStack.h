@@ -9,14 +9,14 @@ class FontStack
 public:
 	GlyphEntry lookup_codepoint( char32_t codepoint ) const;
 
-	void push( FontFace entry )
+	void prepend( FontFace face )
 	{
-		_stack.push_back( std::move( entry ) );
+		_stack.insert( _stack.begin(), std::move( face ) );
 	}
 
-	void push( FontFacePtr face, float scale )
+	void append( FontFace face )
 	{
-		_stack.push_back( { std::move( face ), scale } );
+		_stack.push_back( std::move( face ) );
 	}
 
 	const FontFace &font( size_t i ) const
