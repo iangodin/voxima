@@ -11,8 +11,6 @@ build/Release/sonimation --width 1920 --height 1080 \
 	--font-dir assets/fonts \
 	--render-dir render \
 	--theme "Modern Technical" \
-	--save-svg \
-	--save-png \
 	--container mkv \
 	--vcodec h264 \
 	--acodec opus \

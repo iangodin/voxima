@@ -6,6 +6,7 @@
 #include <themes/EngineeringBlueprint.h>
 #include <themes/ModernTechnical.h>
 #include <themes/PlayfulDiscovery.h>
+#include <themes/NewComputerModern.h>
 
 Screenplay my_screenplay( Stage &stage, Script &script );
 
@@ -16,6 +17,7 @@ int main( int argc, char *argv[] )
 	auto theme2 = EngineeringBlueprint::create_theme();
 	auto theme3 = ModernTechnical::create_theme();
 	auto theme4 = PlayfulDiscovery::create_theme();
+	auto theme5 = NewComputerModern::create_theme();
 
 	int result = 0;
 

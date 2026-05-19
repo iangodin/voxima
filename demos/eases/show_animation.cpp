@@ -12,6 +12,7 @@
 #include <core/EaseBack.h>
 #include <core/EaseLinear.h>
 
+#include <visuals/CreateMath.h>
 #include <visuals/StyledText.h>
 #include <visuals/CreateText.h>
 #include <visuals/CreateStyledText.h>
@@ -28,6 +29,12 @@ void show_title( Stage &stage )
 
 	auto &label = create_styled_text( stage, text );
 	label.position = { 0.F, 3.F };
+}
+
+void show_math( Stage &stage )
+{
+	auto &math = create_math( stage, "\\int_{0}^{\\infty} e^{-x^2} dx = \\frac{\\sqrt{\\pi}}{2}", FontStyle{ Intent::MATH } );
+	math.position = { 0.F, -3.F };
 }
 
 template<typename Ease>
@@ -78,6 +85,7 @@ Screenplay my_screenplay( Stage &stage, Script &script )
 	std::string label_linear{ script.fetch( lang, "labels", "ease_linear" ).as_string( not_found ) };
 
 	show_title( stage );
+	show_math( stage );
 
 	co_await choreograph(
 		show_ease( stage, label_cubic_in, ease_cubic_in, 3.F, duration ),
