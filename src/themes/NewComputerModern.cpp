@@ -112,6 +112,7 @@ FontStack intent_prose( const FontStyle &style, Theme &theme )
 	FontStack fonts;
 	fonts.push( theme.load_font( get_font_filename( properties, "NewCM" ), 0, font_size ) );
 	fonts.push( theme.load_font( get_devanagari_filename( properties ), 0, font_size ) );
+	fonts.push( theme.load_font( "Amiri-Regular.ttf", 0, font_size ) );
 	fonts.push( theme.load_font( "SourceHanSerif.ttc", get_cjk_face_index( properties ), font_size ) );
 	fonts.push( theme.load_font( "Symbola-Emoji.ttf", 0, font_size ) );
 	fonts.push( theme.load_font( "AND-Regular.otf", 0, font_size ) );
@@ -127,6 +128,7 @@ FontStack intent_code( const FontStyle &style, Theme &theme )
 	FontStack fonts;
 	fonts.push( theme.load_font( get_font_filename( properties, "NewCMMono" ), 0, font_size ) );
 	fonts.push( theme.load_font( get_devanagari_filename( properties ), 0, font_size ) );
+	fonts.push( theme.load_font( "Amiri-Regular.ttf", 0, font_size ) );
 	fonts.push( theme.load_font( "SourceHanSerif.ttc", get_cjk_face_index( properties ), font_size ) );
 	fonts.push( theme.load_font( "Symbola-Emoji.ttf", 0, font_size ) );
 	fonts.push( theme.load_font( "AND-Regular.otf", 0, font_size ) );
@@ -142,6 +144,7 @@ FontStack intent_title( const FontStyle &style, Theme &theme )
 	FontStack fonts;
 	fonts.push( theme.load_font( get_font_filename( properties, "NewCMUncial" ), 0, font_size ) );
 	fonts.push( theme.load_font( get_devanagari_filename( properties ), 0, font_size ) );
+	fonts.push( theme.load_font( "Amiri-Regular.ttf", 0, font_size ) );
 	fonts.push( theme.load_font( "SourceHanSerif.ttc", get_cjk_face_index( properties ), font_size ) );
 	fonts.push( theme.load_font( "Symbola-Emoji.ttf", 0, font_size ) );
 	fonts.push( theme.load_font( "AND-Regular.otf", 0, font_size ) );
@@ -157,6 +160,7 @@ FontStack intent_annotation( const FontStyle &style, Theme &theme )
 	FontStack fonts;
 	fonts.push( theme.load_font( get_font_filename( properties, "NewCM" ), 0, font_size ) );
 	fonts.push( theme.load_font( get_devanagari_filename( properties ), 0, font_size ) );
+	fonts.push( theme.load_font( "Amiri-Regular.ttf", 0, font_size ) );
 	fonts.push( theme.load_font( "SourceHanSerif.ttc", get_cjk_face_index( properties ), font_size ) );
 	fonts.push( theme.load_font( "Symbola-Emoji.ttf", 0, font_size ) );
 	fonts.push( theme.load_font( "AND-Regular.otf", 0, font_size ) );
@@ -172,6 +176,7 @@ FontStack intent_label( const FontStyle &style, Theme &theme )
 	FontStack fonts;
 	fonts.push( theme.load_font( get_font_filename( properties, "NewCMSans" ), 0, font_size ) );
 	fonts.push( theme.load_font( get_devanagari_filename( properties ), 0, font_size ) );
+	fonts.push( theme.load_font( "Amiri-Regular.ttf", 0, font_size ) );
 	fonts.push( theme.load_font( "SourceHanSerif.ttc", get_cjk_face_index( properties ), font_size ) );
 	fonts.push( theme.load_font( "Symbola-Emoji.ttf", 0, font_size ) );
 	fonts.push( theme.load_font( "AND-Regular.otf", 0, font_size ) );
@@ -187,6 +192,7 @@ FontStack intent_math( const FontStyle &style, Theme &theme )
 	FontStack fonts;
 	fonts.push( theme.load_font( get_font_filename( properties, "NewCMMath" ), 0, font_size ) );
 	fonts.push( theme.load_font( get_devanagari_filename( properties ), 0, font_size ) );
+	fonts.push( theme.load_font( "Amiri-Regular.ttf", 0, font_size ) );
 	fonts.push( theme.load_font( "SourceHanSerif.ttc", get_cjk_face_index( properties ), font_size ) );
 	fonts.push( theme.load_font( "Symbola-Emoji.ttf", 0, font_size ) );
 	fonts.push( theme.load_font( "AND-Regular.otf", 0, font_size ) );
@@ -202,6 +208,7 @@ FontStack intent_caption( const FontStyle &style, Theme &theme )
 	FontStack fonts;
 	fonts.push( theme.load_font( get_font_filename( properties, "NewCM" ), 0, font_size ) );
 	fonts.push( theme.load_font( get_devanagari_filename( properties ), 0, font_size ) );
+	fonts.push( theme.load_font( "Amiri-Regular.ttf", 0, font_size ) );
 	fonts.push( theme.load_font( "SourceHanSerif.ttc", get_cjk_face_index( properties ), font_size ) );
 	fonts.push( theme.load_font( "Symbola-Emoji.ttf", 0, font_size ) );
 	fonts.push( theme.load_font( "AND-Regular.otf", 0, font_size ) );

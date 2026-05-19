@@ -45,7 +45,6 @@ add_library( visuals STATIC
 	src/fonts/FontStack.cpp
 	src/fonts/MFLFontFace.cpp
 	src/themes/NewComputerModern.cpp
-	src/themes/Fira.cpp
 	src/themes/AcademicClassic.cpp
 	src/themes/EngineeringBlueprint.cpp
 	src/themes/ModernTechnical.cpp

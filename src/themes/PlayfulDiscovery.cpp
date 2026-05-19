@@ -38,9 +38,10 @@ FontStack create_font_stack( const FontStyle &style, Theme &theme )
 	int slant = (properties.slant == Slant::ITALIC || properties.slant == Slant::OBLIQUE) ? 1 : 0;
 
 	FontStack fonts;
-	// Main: Comfortaa (Variable), Math: GFS Neohellenic Math, Emoji: Noto Emoji, CJK: Kosugi Maru, Mono: Courier (Fallback)
-	fonts.push( theme.load_variable_font( "Comfortaa-Variable.ttf", 0, font_size, weight, width, slant ) );
+	// Math: GFS Neohellenic Math, Main: Comfortaa (Variable), Arabic: Tajawal, Emoji: Noto Emoji, CJK: Kosugi Maru, Mono: Courier (Fallback)
 	fonts.push( theme.load_font( "GFSNeohellenicMath.otf", 0, font_size ) );
+	fonts.push( theme.load_variable_font( "Comfortaa-Variable.ttf", 0, font_size, weight, width, slant ) );
+	fonts.push( theme.load_font( "Tajawal-Regular.ttf", 0, font_size ) );
 	fonts.push( theme.load_font( "NotoEmoji-Variable.ttf", 0, font_size ) );
 	fonts.push( theme.load_font( "KosugiMaru-Regular.ttf", 0, font_size ) );
 	fonts.push( theme.load_font( "DejaVuSansMono.ttf", 0, font_size ) );

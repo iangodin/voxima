@@ -38,9 +38,10 @@ FontStack create_font_stack( const FontStyle &style, Theme &theme )
 	int slant = (properties.slant == Slant::ITALIC || properties.slant == Slant::OBLIQUE) ? 1 : 0;
 
 	FontStack fonts;
-	// Main: IBM Plex Sans, Math: STIX Two Math, Emoji: Noto Emoji, CJK: IBM Plex Sans JP, Mono: IBM Plex Mono
+	// Main: IBM Plex Sans, Math: STIX Two Math, Arabic: IBM Plex Sans Arabic, Emoji: Noto Emoji, CJK: IBM Plex Sans JP, Mono: IBM Plex Mono
 	fonts.push( theme.load_variable_font( "IBMPlexSans-Variable.ttf", 0, font_size, weight, width, slant ) );
 	fonts.push( theme.load_font( "STIX2Math.otf", 0, font_size ) );
+	fonts.push( theme.load_font( "IBMPlexSansArabic-Regular.ttf", 0, font_size ) );
 	fonts.push( theme.load_font( "NotoEmoji-Variable.ttf", 0, font_size ) );
 	fonts.push( theme.load_font( "IBMPlexSansJP-Regular.ttf", 0, font_size ) );
 	fonts.push( theme.load_font( "IBMPlexMono-Regular.ttf", 0, font_size ) );
@@ -50,7 +51,23 @@ FontStack create_font_stack( const FontStyle &style, Theme &theme )
 
 FontStack intent_prose( const FontStyle &style, Theme &theme ) { return create_font_stack( style, theme ); }
 FontStack intent_code( const FontStyle &style, Theme &theme ) { return create_font_stack( style, theme ); }
-FontStack intent_math( const FontStyle &style, Theme &theme ) { return create_font_stack( style, theme ); }
+
+FontStack intent_math( const FontStyle &style, Theme &theme )
+{
+	auto properties = style.properties();
+	const float font_size = theme_font_size( properties.scale.value_or( Scale::MEDIUM ) );
+
+	FontStack fonts;
+	// Math: STIX Two Math, Main: IBM Plex Sans, Arabic: IBM Plex Sans Arabic, Emoji: Noto Emoji, CJK: IBM Plex Sans JP, Mono: IBM Plex Mono
+	fonts.push( theme.load_font( "STIX2Math.otf", 0, font_size ) );
+	fonts.push( theme.load_variable_font( "IBMPlexSans-Variable.ttf", 0, font_size, 400, 100, 0 ) );
+	fonts.push( theme.load_font( "IBMPlexSansArabic-Regular.ttf", 0, font_size ) );
+	fonts.push( theme.load_font( "NotoEmoji-Variable.ttf", 0, font_size ) );
+	fonts.push( theme.load_font( "IBMPlexSansJP-Regular.ttf", 0, font_size ) );
+	fonts.push( theme.load_font( "IBMPlexMono-Regular.ttf", 0, font_size ) );
+	return fonts;
+}
+
 FontStack intent_title( const FontStyle &style, Theme &theme ) { return create_font_stack( style, theme ); }
 FontStack intent_label( const FontStyle &style, Theme &theme ) { return create_font_stack( style, theme ); }
 FontStack intent_annotation( const FontStyle &style, Theme &theme ) { return create_font_stack( style, theme ); }

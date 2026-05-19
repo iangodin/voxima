@@ -30,9 +30,10 @@ FontStack create_font_stack( const FontStyle &style, Theme &theme, std::string_v
 	const float font_size = theme_font_size( properties.scale.value_or( Scale::MEDIUM ) );
 
 	FontStack fonts;
-	// Main: New Computer Modern, Math: NewCM Math, Emoji: Symbola, CJK: Source Han Serif, Mono: New Computer Modern Mono
+	// Main: New Computer Modern, Math: NewCM Math, Arabic: Amiri, Emoji: Symbola, CJK: Source Han Serif, Mono: New Computer Modern Mono
 	fonts.push( theme.load_font( std::string(base_name) + ".otf", 0, font_size ) );
 	fonts.push( theme.load_font( "NewCMMath-Regular.otf", 0, font_size ) );
+	fonts.push( theme.load_font( "Amiri-Regular.ttf", 0, font_size ) );
 	fonts.push( theme.load_font( "Symbola-Emoji.ttf", 0, font_size ) );
 	fonts.push( theme.load_font( "SourceHanSerif.ttc", 0, font_size ) );
 	fonts.push( theme.load_font( "NewCMMono10-Regular.otf", 0, font_size ) );
