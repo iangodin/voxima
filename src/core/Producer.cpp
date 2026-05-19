@@ -210,11 +210,6 @@ bool Producer::produce( int argc, char *argv[] )
 		_stage.theme->set_font_path( *font_path );
 	}
 
-	if ( !AudioMixer::supported_codec( acodec ) )
-	{
-		throw std::runtime_error( "unsupported audio codec " + acodec );
-	}
-
 	_stage.audio.setup( render_dir, "flac", 48000, static_cast<size_t>( _stage.camera.frame_rate ) );
 	for ( auto &lang: languages )
 	{
