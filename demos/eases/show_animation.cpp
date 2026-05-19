@@ -12,10 +12,23 @@
 #include <core/EaseBack.h>
 #include <core/EaseLinear.h>
 
+#include <visuals/StyledText.h>
 #include <visuals/CreateText.h>
+#include <visuals/CreateStyledText.h>
 #include <visuals/Circle.h>
 
 #include <core/Narration.h>
+
+void show_title( Stage &stage )
+{
+	StyledText text( "Hello\nWorld" );
+	text.set_font_style( 0, text.size(), FontStyle{ Intent::TITLE } );
+	text.set_color( 0, 5, Color{ 1.0f, 0.0f, 0.0f, 1.0f } );
+	text.set_weight( 2, 4, Weight::BLACK );
+
+	auto &label = create_styled_text( stage, text );
+	label.position = { 3.F, 0.F };
+}
 
 template<typename Ease>
 Scene show_ease( Stage &stage, const std::string &name, Ease &&ease, float y, int64_t frames )
@@ -63,6 +76,8 @@ Screenplay my_screenplay( Stage &stage, Script &script )
 	std::string label_back_out{ script.fetch( lang, "labels", "ease_back_out" ).as_string( not_found ) };
 	std::string label_back_in_out{ script.fetch( lang, "labels", "ease_back_in_out" ).as_string( not_found ) };
 	std::string label_linear{ script.fetch( lang, "labels", "ease_linear" ).as_string( not_found ) };
+
+	show_title( stage );
 
 	co_await choreograph(
 		show_ease( stage, label_cubic_in, ease_cubic_in, 3.F, duration ),

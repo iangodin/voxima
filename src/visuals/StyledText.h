@@ -31,6 +31,11 @@ public:
 		return _lines.size();
 	}
 
+	size_t size( void ) const
+	{
+		return _utf8.size();
+	}
+
 	std::string_view line( size_t index )
 	{
 		return _lines.at( index );
@@ -44,6 +49,8 @@ public:
 	}
 
 	void set_color( size_t start, size_t end, const Color &color );
+
+	void set_font_style( size_t start, size_t end, const FontStyle &style );
 
 	void set_intent( size_t start, size_t end, std::string_view intent );
 

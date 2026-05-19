@@ -63,7 +63,7 @@ Group &create_styled_text( Stage &stage, Group &group, const StyledText &text )
 	hb_buffer_t *buffer = hb_buffer_create();
 
 	float current_y = 0.0f;
-	const float line_height = Theme::FONT_SCALE;
+	const float line_height = 0.5f;
 
 	const std::string &full_text = text.text();
 	TextStyle default_style;

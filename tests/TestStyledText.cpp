@@ -181,3 +181,46 @@ SCENARIO( "StyledText lines access" )
 		}
 	}
 }
+
+SCENARIO( "StyledText style application" )
+{
+	GIVEN( "a styled text" )
+	{
+		StyledText text( "Hello World" );
+
+		WHEN( "setting font style" )
+		{
+			FontStyle style;
+			style.bold().italic().set_intent( "title" );
+			text.set_font_style( 0, 5, style );
+
+			THEN( "styles should be correctly applied" )
+			{
+				auto styles = text.styles().intervals();
+				REQUIRE( styles.size() == 1 );
+				CHECK( styles[0].start == 0 );
+				CHECK( styles[0].end == 5 );
+				CHECK( styles[0].value.font_style == style );
+			}
+		}
+
+		WHEN( "setting color" )
+		{
+			Color red = { 1.0f, 0.0f, 0.0f, 1.0f };
+			text.set_color( 6, 11, red );
+
+			THEN( "color should be correctly applied" )
+			{
+				auto styles = text.styles().intervals();
+				// IntervalMap might have gaps or previous styles
+				// In this case, since it's the only style, it should be at index 0 (if sorted and started at 0)
+				// but wait, Hello World is 11 chars. set_color(6, 11) is the second half.
+				REQUIRE( styles.size() == 1 );
+				CHECK( styles[0].start == 6 );
+				CHECK( styles[0].end == 11 );
+				REQUIRE( styles[0].value.color.has_value() );
+				CHECK( styles[0].value.color.value() == red );
+			}
+		}
+	}
+}

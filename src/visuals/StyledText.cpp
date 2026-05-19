@@ -54,6 +54,17 @@ void StyledText::set_color( size_t start, size_t end, const Color &color )
 	} );
 }
 
+void StyledText::set_font_style( size_t start, size_t end, const FontStyle &style )
+{
+	TextStyle tstyle = {};
+	tstyle.font_style = style;
+	_style.fill_gaps( start, end, tstyle );
+	_style.apply( start, end, [&]( TextStyle &sty )
+	{
+		sty.font_style = style;
+	} );
+}
+
 void StyledText::set_intent( size_t start, size_t end, std::string_view intent )
 {
 	TextStyle style = {};
