@@ -147,6 +147,12 @@ bool Producer::produce( int argc, char *argv[] )
 	std::string render_dir = "render";
 	app.add_option( "--render-dir", render_dir, "Directory for render to" );
 
+	bool save_svg = false;
+	app.add_flag( "--save-svg", save_svg, "Save SVG sequence" );
+
+	bool save_png = false;
+	app.add_flag( "--save-png", save_png, "Save PNG sequence" );
+
 	std::string script_path;
 	app.add_option( "--script-dir", script_path, "Directory containing scripts" );
 
@@ -168,7 +174,7 @@ bool Producer::produce( int argc, char *argv[] )
 
 	if ( script_path.empty() )
 	{
-		throw std::runtime_error( "script path is required" );
+		throw std::runtime_error( "script_path is required" );
 	}
 	_script.set_directory( script_path );
 
@@ -204,12 +210,10 @@ bool Producer::produce( int argc, char *argv[] )
 		_stage.theme->set_font_path( *font_path );
 	}
 
-	/*
 	if ( !AudioMixer::supported_codec( acodec ) )
 	{
 		throw std::runtime_error( "unsupported audio codec " + acodec );
 	}
-	*/
 
 	_stage.audio.setup( render_dir, "flac", 48000, static_cast<size_t>( _stage.camera.frame_rate ) );
 	for ( auto &lang: languages )
@@ -229,26 +233,17 @@ bool Producer::produce( int argc, char *argv[] )
 	ffmpeg = FfmpegRender( video_filename, vcodec, static_cast<double>( _stage.camera.frame_rate ) );
 
 	const std::string final_filename = render_dir + "/final." + container;
-	/*
+
+	if ( save_png )
 	{
-		if ( pngs.has_value() )
-		{
-			throw std::runtime_error( "only one output png sequence allowed" );
-		}
-		auto filename = parse_sequence_name( output );
-		pngs = PngRender(
-			std::get<0>( filename ), std::get<2>( filename ), std::get<1>( filename ) );
+		pngs = PngRender( render_dir + "/frame.", ".png", 8 );
 	}
-	else if ( output.ends_with( ".svg" ) )
+
+	if ( save_svg )
 	{
-		if ( write_svgs )
-		{
-			throw std::runtime_error( "only one output svg sequence allowed" );
-		}
 		write_svgs = true;
-		svgs = parse_sequence_name( output );
+		svgs = { render_dir + "/frame.", 8, ".svg" };
 	}
-	*/
 
 	size_t frame = 0;
 	Timer timer_total;
@@ -310,14 +305,14 @@ bool Producer::produce( int argc, char *argv[] )
 
 				if ( pngs )
 				{
-					Timer timer_pngs( "  PNG comression: " );
+					Timer timer_pngs( "  PNG compression: " );
 					pngs->encode( bitmap );
 				}
 			}
 		}
 
 		{
-			Timer timer_svg_gen( "  Audio encoding: " );
+			Timer timer_audio_enc( "  Audio encoding: " );
 			_stage.audio.write_audio();
 		}
 		++frame;
