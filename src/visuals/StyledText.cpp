@@ -1,6 +1,17 @@
 
 #include "StyledText.h"
 
+#include <functional>
+
+namespace
+{
+	void apply_to_style( IntervalMap<size_t, TextStyle> &map, size_t start, size_t end, std::function<void( TextStyle & )> &&func )
+	{
+		map.fill_gaps( start, end, TextStyle{} );
+		map.apply( start, end, std::move( func ) );
+	}
+}
+
 std::optional<size_t> StyledText::index( size_t line, size_t column )
 {
 	if ( line < _lines.size() )
@@ -17,6 +28,7 @@ std::optional<size_t> StyledText::index( size_t line, size_t column )
 
 void StyledText::split_lines( void )
 {
+	_lines.clear();
 	// Split the UTF-8 text into lines based on newline characters
 	// Lines are stored as string_views pointing into _utf8
 
@@ -45,89 +57,41 @@ void StyledText::split_lines( void )
 
 void StyledText::set_color( size_t start, size_t end, const Color &color )
 {
-	TextStyle style = {};
-	style.color = color;
-	_style.fill_gaps( start, end, style );
-	_style.apply( start, end, [&]( TextStyle &sty )
-	{
-		sty.color = color;
-	} );
+	apply_to_style( _style, start, end, [&]( TextStyle &sty ) { sty.color = color; } );
 }
 
 void StyledText::set_font_style( size_t start, size_t end, const FontStyle &style )
 {
-	TextStyle tstyle = {};
-	tstyle.font_style = style;
-	_style.fill_gaps( start, end, tstyle );
-	_style.apply( start, end, [&]( TextStyle &sty )
-	{
-		sty.font_style = style;
-	} );
+	apply_to_style( _style, start, end, [&]( TextStyle &sty ) { sty.font_style = style; } );
 }
 
 void StyledText::set_intent( size_t start, size_t end, std::string_view intent )
 {
-	TextStyle style = {};
-	style.font_style._intent = std::string( intent );
-	_style.fill_gaps( start, end, style );
-	_style.apply( start, end, [&]( TextStyle &sty )
-	{
-		sty.font_style._intent = intent;
-	} );
+	apply_to_style( _style, start, end, [&]( TextStyle &sty ) { sty.font_style.set_intent( intent ); } );
 }
 
 void StyledText::set_weight( size_t start, size_t end, Weight weight )
 {
-	TextStyle style = {};
-	style.font_style._weight = weight;
-	_style.fill_gaps( start, end, style );
-	_style.apply( start, end, [&]( TextStyle &sty )
-	{
-		sty.font_style._weight = weight;
-	} );
+	apply_to_style( _style, start, end, [&]( TextStyle &sty ) { sty.font_style.set_weight( weight ); } );
 }
 
 void StyledText::set_slant( size_t start, size_t end, Slant slant )
 {
-	TextStyle style = {};
-	style.font_style._slant = slant;
-	_style.fill_gaps( start, end, style );
-	_style.apply( start, end, [&]( TextStyle &sty )
-	{
-		sty.font_style._slant = slant;
-	} );
+	apply_to_style( _style, start, end, [&]( TextStyle &sty ) { sty.font_style.set_slant( slant ); } );
 }
 
 void StyledText::set_scale( size_t start, size_t end, Scale scale )
 {
-	TextStyle style = {};
-	style.font_style._scale = scale;
-	_style.fill_gaps( start, end, style );
-	_style.apply( start, end, [&]( TextStyle &sty )
-	{
-		sty.font_style._scale = scale;
-	} );
+	apply_to_style( _style, start, end, [&]( TextStyle &sty ) { sty.font_style.set_scale( scale ); } );
 }
 
 void StyledText::set_width( size_t start, size_t end, Width width )
 {
-	TextStyle style = {};
-	style.font_style._width = width;
-	_style.fill_gaps( start, end, style );
-	_style.apply( start, end, [&]( TextStyle &sty )
-	{
-		sty.font_style._width = width;
-	} );
+	apply_to_style( _style, start, end, [&]( TextStyle &sty ) { sty.font_style.set_width( width ); } );
 }
 
 void StyledText::set_typeclass( size_t start, size_t end, TypeClass typeclass )
 {
-	TextStyle style = {};
-	style.font_style._typeclass = typeclass;
-	_style.fill_gaps( start, end, style );
-	_style.apply( start, end, [&]( TextStyle &sty )
-	{
-		sty.font_style._typeclass = typeclass;
-	} );
+	apply_to_style( _style, start, end, [&]( TextStyle &sty ) { sty.font_style.set_typeclass( typeclass ); } );
 }
 
