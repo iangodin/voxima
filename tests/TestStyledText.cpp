@@ -197,14 +197,21 @@ SCENARIO( "StyledText style application" )
 			THEN( "styles should be correctly applied" )
 			{
 				auto styles = text.styles().intervals();
-				REQUIRE( styles.size() == 1 );
+				// "Hello World" (11 chars) has line=0.
+				// set_font_style(0, 5) splits it into [0, 5) and [5, 11).
+				REQUIRE( styles.size() == 2 );
 				CHECK( styles[0].start == 0 );
 				CHECK( styles[0].end == 5 );
 				CHECK( styles[0].value.font_style == style );
+				CHECK( styles[0].value.line == 0 );
+
+				CHECK( styles[1].start == 5 );
+				CHECK( styles[1].end == 11 );
+				CHECK( styles[1].value.line == 0 );
 			}
 		}
 
-		WHEN( "setting color" )
+		WHEN( "checking color" )
 		{
 			Color red = { 1.0f, 0.0f, 0.0f, 1.0f };
 			text.set_color( 6, 11, red );
@@ -215,11 +222,33 @@ SCENARIO( "StyledText style application" )
 				// IntervalMap might have gaps or previous styles
 				// In this case, since it's the only style, it should be at index 0 (if sorted and started at 0)
 				// but wait, Hello World is 11 chars. set_color(6, 11) is the second half.
-				REQUIRE( styles.size() == 1 );
-				CHECK( styles[0].start == 6 );
-				CHECK( styles[0].end == 11 );
-				REQUIRE( styles[0].value.color.has_value() );
-				CHECK( styles[0].value.color.value() == red );
+				// Wait, now we have line indices, so we might have more intervals.
+				
+				// Find interval at index 6
+				auto style = text.styles().find( 6 );
+				REQUIRE( style.has_value() );
+				REQUIRE( style->color.has_value() );
+				CHECK( style->color.value() == red );
+			}
+		}
+
+		WHEN( "checking line indices" )
+		{
+			StyledText multiline( "abc\ndef" );
+			
+			THEN( "line indices should be set" )
+			{
+				auto style0 = multiline.styles().find( 0 ); // 'a'
+				REQUIRE( style0.has_value() );
+				CHECK( style0->line == 0 );
+
+				auto style_nl = multiline.styles().find( 3 ); // '\n'
+				REQUIRE( style_nl.has_value() );
+				CHECK( style_nl->line == 0 );
+
+				auto style1 = multiline.styles().find( 4 ); // 'd'
+				REQUIRE( style1.has_value() );
+				CHECK( style1->line == 1 );
 			}
 		}
 	}

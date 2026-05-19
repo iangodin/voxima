@@ -33,6 +33,7 @@ void StyledText::split_lines( void )
 	// Lines are stored as string_views pointing into _utf8
 
 	size_t pos = 0;
+	size_t line_index = 0;
 	while ( pos < _utf8.size() )
 	{
 		// Find the next newline character
@@ -42,15 +43,18 @@ void StyledText::split_lines( void )
 		{
 			// No more newline, add the rest of the text as one final line
 			_lines.push_back( std::string_view( _utf8.data() + pos, _utf8.size() - pos ) );
+			apply_to_style( _style, pos, _utf8.size(), [&]( TextStyle &sty ) { sty.line = line_index; } );
 			break;
 		}
 		else
 		{
 			// Add text before newline as a line
 			_lines.push_back( std::string_view( _utf8.data() + pos, newline_pos - pos ) );
+			apply_to_style( _style, pos, newline_pos + 1, [&]( TextStyle &sty ) { sty.line = line_index; } );
 
 			// Move to after the newline
 			pos = newline_pos + 1;
+			line_index++;
 		}
 	}
 }
