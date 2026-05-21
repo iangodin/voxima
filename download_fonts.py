@@ -4,8 +4,8 @@ output_dir = "assets/fonts"
 
 font_renames = {
   "IBM Plex Serif Var-Italic.ttf": "IBMPlexSerif-Italic-Variable.ttf",
-  "IBM Plex Serif Var-Roman.ttf": "IBMPlexSerif-Roman-Variable.ttf",
-  "IBM Plex Sans Var-Roman.ttf": "IBMPlexSans-Roman-Variable.ttf",
+  "IBM Plex Serif Var-Roman.ttf": "IBMPlexSerif-Variable.ttf",
+  "IBM Plex Sans Var-Roman.ttf": "IBMPlexSans-Variable.ttf",
   "IBM Plex Sans Var-Italic.ttf": "IBMPlexSans-Italic-Variable.ttf",
   "Comfortaa%5Bwght%5D.ttf": "Comfortaa-Variable.ttf",
   "NotoSerifCJK-VF.ttf.ttc": "NotoSerifCJK-Variable.ttc",
