@@ -95,6 +95,10 @@ add_executable( list_font tools/list_font.cpp )
 target_compile_features( list_font PUBLIC cxx_std_20 )
 target_link_libraries( list_font PUBLIC Freetype::Freetype )
 
+add_executable( font_math_names tools/font_math_names.cpp )
+target_compile_features( font_math_names PUBLIC cxx_std_20 )
+target_link_libraries( font_math_names PUBLIC Freetype::Freetype )
+
 add_executable( test_huml tools/test_huml.cpp )
 target_compile_features( test_huml PUBLIC cxx_std_20 )
 target_link_libraries( test_huml PUBLIC visuals )
