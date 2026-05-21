@@ -1,22 +1,22 @@
 
 
-#include <core/Stage.h>
-#include <core/Script.h>
 #include <core/Coroutine.h>
-#include <core/Screenplay.h>
-#include <core/Scene.h>
 #include <core/Director.h>
-#include <core/Wait.h>
+#include <core/EaseBack.h>
 #include <core/EaseCubic.h>
 #include <core/EaseElastic.h>
-#include <core/EaseBack.h>
 #include <core/EaseLinear.h>
+#include <core/Scene.h>
+#include <core/Screenplay.h>
+#include <core/Script.h>
+#include <core/Stage.h>
+#include <core/Wait.h>
 
-#include <visuals/CreateMath.h>
-#include <visuals/StyledText.h>
-#include <visuals/CreateText.h>
-#include <visuals/CreateStyledText.h>
 #include <visuals/Circle.h>
+#include <visuals/CreateMath.h>
+#include <visuals/CreateStyledText.h>
+#include <visuals/CreateText.h>
+#include <visuals/StyledText.h>
 
 #include <core/Narration.h>
 
@@ -33,7 +33,10 @@ void show_title( Stage &stage )
 
 void show_math( Stage &stage )
 {
-	auto &math = create_math( stage, "\\int_{0}^{\\infty} e^{-x^2} dx = \\frac{\\sqrt{\\pi}}{2}", FontStyle{ Intent::MATH } );
+	auto &math = create_math(
+		stage,
+		"\\int_{0}^{\\infty} e^{-x^2} dx = \\frac{\\sqrt{\\pi}}{2}",
+		FontStyle{ Intent::MATH } );
 	math.position = { 0.F, -3.F };
 }
 
@@ -73,16 +76,26 @@ Screenplay my_screenplay( Stage &stage, Script &script )
 	std::string not_found{ "\uFFFD" };
 
 	const std::string lang = "en";
-	std::string label_cubic_in{ script.fetch( lang, "labels", "ease_cubic_in" ).as_string( not_found ) };
-	std::string label_cubic_out{ script.fetch( lang, "labels", "ease_cubic_out" ).as_string( not_found ) };
-	std::string label_cubic_in_out{ script.fetch( lang, "labels", "ease_cubic_in_out" ).as_string( not_found ) };
-	std::string label_elastic_in{ script.fetch( lang, "labels", "ease_elastic_in" ).as_string( not_found ) };
-	std::string label_elastic_out{ script.fetch( lang, "labels", "ease_elastic_out" ).as_string( not_found ) };
-	std::string label_elastic_in_out{ script.fetch( lang, "labels", "ease_elastic_in_out" ).as_string( not_found ) };
-	std::string label_back_in{ script.fetch( lang, "labels", "ease_back_in" ).as_string( not_found ) };
-	std::string label_back_out{ script.fetch( lang, "labels", "ease_back_out" ).as_string( not_found ) };
-	std::string label_back_in_out{ script.fetch( lang, "labels", "ease_back_in_out" ).as_string( not_found ) };
-	std::string label_linear{ script.fetch( lang, "labels", "ease_linear" ).as_string( not_found ) };
+	std::string label_cubic_in{
+		script.fetch( lang, "labels", "ease_cubic_in" ).as_string( not_found ) };
+	std::string label_cubic_out{
+		script.fetch( lang, "labels", "ease_cubic_out" ).as_string( not_found ) };
+	std::string label_cubic_in_out{
+		script.fetch( lang, "labels", "ease_cubic_in_out" ).as_string( not_found ) };
+	std::string label_elastic_in{
+		script.fetch( lang, "labels", "ease_elastic_in" ).as_string( not_found ) };
+	std::string label_elastic_out{
+		script.fetch( lang, "labels", "ease_elastic_out" ).as_string( not_found ) };
+	std::string label_elastic_in_out{
+		script.fetch( lang, "labels", "ease_elastic_in_out" ).as_string( not_found ) };
+	std::string label_back_in{
+		script.fetch( lang, "labels", "ease_back_in" ).as_string( not_found ) };
+	std::string label_back_out{
+		script.fetch( lang, "labels", "ease_back_out" ).as_string( not_found ) };
+	std::string label_back_in_out{
+		script.fetch( lang, "labels", "ease_back_in_out" ).as_string( not_found ) };
+	std::string label_linear{
+		script.fetch( lang, "labels", "ease_linear" ).as_string( not_found ) };
 
 	show_title( stage );
 	show_math( stage );
@@ -98,7 +111,5 @@ Screenplay my_screenplay( Stage &stage, Script &script )
 		show_ease( stage, label_back_out, ease_back_out, -0.5F, duration ),
 		show_ease( stage, label_back_in_out, ease_back_in_out, -1.0F, duration ),
 		show_ease( stage, label_linear, ease_linear, -1.5F, duration ),
-		narrate( stage, script )
-	);
+		narrate( stage, script ) );
 }
-
