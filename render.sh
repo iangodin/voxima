@@ -16,4 +16,4 @@ build/Release/sonimation --width 1920 --height 1080 \
 	--acodec opus \
 	--lang en \
 	--lang fr \
-#
+	"$@"
