@@ -31,43 +31,37 @@ namespace
 
 FontStack intent_prose( const FontStyle &style, Theme &theme )
 {
-	return create_font_stack( style, theme, "NewCM10-Regular" );
+	return create_font_stack( style, theme, "NewCM" );
 }
 
 FontStack intent_code( const FontStyle &style, Theme &theme )
 {
-	return create_font_stack( style, theme, "NewCMMono10-Regular" );
+	return create_font_stack( style, theme, "NewCMMono" );
 }
 
 FontStack intent_math( const FontStyle &style, Theme &theme )
 {
-	auto properties = style.properties();
-	const float font_size =
-		ThemeUtils::get_theme_font_size( properties.scale.value_or( Scale::MEDIUM ) );
-
-	FontStack fonts = create_font_stack( style, theme, "NewCMMath-Regular" );
-	fonts.prepend( theme.load_font( "NewCMMath-Regular.otf", 0, font_size ) );
-	return fonts;
+	return create_font_stack( style, theme, "NewCMMath" );
 }
 
 FontStack intent_title( const FontStyle &style, Theme &theme )
 {
-	return create_font_stack( style, theme, "NewCM10-Bold" );
+	return create_font_stack( style, theme, "NewCM" );
 }
 
 FontStack intent_label( const FontStyle &style, Theme &theme )
 {
-	return create_font_stack( style, theme, "NewCM10-Regular" );
+	return create_font_stack( style, theme, "NewCM" );
 }
 
 FontStack intent_annotation( const FontStyle &style, Theme &theme )
 {
-	return create_font_stack( style, theme, "NewCM10-Regular" );
+	return create_font_stack( style, theme, "NewCM" );
 }
 
 FontStack intent_caption( const FontStyle &style, Theme &theme )
 {
-	return create_font_stack( style, theme, "NewCM10-Regular" );
+	return create_font_stack( style, theme, "NewCM" );
 }
 
 Theme create_theme( void )

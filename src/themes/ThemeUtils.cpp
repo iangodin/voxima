@@ -194,21 +194,26 @@ std::string get_newcm_filename( const FontProperties &props, std::string_view ba
 
 	if ( family.starts_with( "NewCM08" ) || family.starts_with( "NewCM10" ) )
 	{
-		if ( is_bold && is_italic )
+		bool has_bold = family.starts_with( "NewCM10" );
+		if ( has_bold && is_bold && is_italic )
 		{
 			return family + "-BoldItalic.otf";
 		}
-		if ( is_bold )
+		if ( has_bold && is_bold )
 		{
 			return family + "-Bold.otf";
 		}
-		if ( is_italic )
+		if ( is_light && is_italic )
 		{
-			return family + "-Italic.otf";
+			return family + "-BookItalic.otf";
 		}
 		if ( is_light )
 		{
 			return family + "-Book.otf";
+		}
+		if ( is_italic )
+		{
+			return family + "-Italic.otf";
 		}
 		return family + "-Regular.otf";
 	}
@@ -222,33 +227,42 @@ std::string get_newcm_filename( const FontProperties &props, std::string_view ba
 		{
 			return "NewCMMono10-Bold.otf";
 		}
-		if ( is_italic )
+		if ( is_light && is_italic )
 		{
-			return "NewCMMono10-Italic.otf";
+			return "NewCMMono10-BookItalic.otf";
 		}
 		if ( is_light )
 		{
 			return "NewCMMono10-Book.otf";
 		}
+		if ( is_italic )
+		{
+			return "NewCMMono10-Italic.otf";
+		}
 		return "NewCMMono10-Regular.otf";
 	}
 	if ( family.starts_with( "NewCMSans" ) )
 	{
-		if ( is_bold && is_italic )
+		bool has_bold = family.starts_with( "NewCMSans10" );
+		if ( has_bold && is_bold && is_italic )
 		{
 			return family + "-BoldOblique.otf";
 		}
-		if ( is_bold )
+		if ( has_bold && is_bold )
 		{
 			return family + "-Bold.otf";
 		}
-		if ( is_italic )
+		if ( is_light && is_italic )
 		{
-			return family + "-Oblique.otf";
+			return family + "-BookOblique.otf";
 		}
 		if ( is_light )
 		{
 			return family + "-Book.otf";
+		}
+		if ( is_italic )
+		{
+			return family + "-Oblique.otf";
 		}
 		return family + "-Regular.otf";
 	}
@@ -276,12 +290,15 @@ std::string get_newcm_filename( const FontProperties &props, std::string_view ba
 		}
 		return "NewCMMath-Regular.otf";
 	}
+	if ( family == "NewCMSansMath" )
+	{
+		return "NewCMSansMath-Regular.otf";
+	}
 	return family + "-Regular.otf";
 }
 
 std::string get_devanagari_filename( const FontProperties &props )
 {
-	bool is_bold = props.weight == Weight::BOLD || props.weight == Weight::BLACK;
 	bool is_light = props.weight == Weight::LIGHT;
 
 	Scale scale = props.scale.value_or( Scale::MEDIUM );
@@ -289,10 +306,6 @@ std::string get_devanagari_filename( const FontProperties &props )
 
 	std::string family = is_small ? "NewCM08Devanagari" : "NewCM10Devanagari";
 
-	if ( is_bold )
-	{
-		return family + "-Bold.otf";
-	}
 	if ( is_light )
 	{
 		return family + "-Book.otf";
