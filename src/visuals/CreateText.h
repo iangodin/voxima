@@ -1,19 +1,20 @@
 
 #pragma once
 
-#include "visuals/Group.h"
-#include "core/Stage.h"
+#include <visuals/Group.h>
 
-#include "fonts/FontStyle.h"
-#include "fonts/FontStack.h"
+#include <fonts/FontStyle.h>
+#include <fonts/FontStack.h>
 
 #include <string>
 #include <vector>
 #include <string_view>
 #include <memory>
 
-class Glyph;
-class FontFace;
+class Group;
+struct Stage;
+struct Glyph;
+struct FontFace;
 
 struct TextRange
 {

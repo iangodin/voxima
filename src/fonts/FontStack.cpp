@@ -1,5 +1,6 @@
 #include "fonts/FontStack.h"
 #include <stdexcept>
+#include <string>
 
 GlyphEntry FontStack::lookup_codepoint( char32_t codepoint ) const
 {

@@ -122,7 +122,7 @@ void FfmpegRender::open_pipe( uint32_t width, uint32_t height )
 	std::string cmd_str = cmd.str();
 
 #ifdef _WIN32
-	m_pipe = _popen( cmd_str.c_str(), "wb" );
+	_pipe = _popen( cmd_str.c_str(), "wb" );
 #else
 	_pipe = popen( cmd_str.c_str(), "w" );
 #endif

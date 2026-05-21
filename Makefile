@@ -12,12 +12,12 @@ clean:
 	@cmake -E remove_directory build
 
 test: debug
-	@ctest --preset conan-release --build-config Debug --output-on-failure
+	@ctest --preset conan-default --build-config Debug --output-on-failure
 
 conan:
 	@conan install . --build=missing -s build_type=Debug
 	@conan install . --build=missing -s build_type=Release
 
 config: conan
-	@cmake --preset conan-release -G "Ninja Multi-Config"
+	@cmake --preset conan-default -G "Ninja Multi-Config"
 

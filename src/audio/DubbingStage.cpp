@@ -23,10 +23,10 @@ void DubbingStage::add_language( std::string_view lang )
 {
 	AudioMixer &mixer = _mixers[std::string( lang )];
 	auto audio_file = _render_dir / ( "audio." + std::string( lang ) + "." + _codec );
-	mixer.open( audio_file, _audio_rate, _block_size );
+	mixer.open( audio_file.string(), _audio_rate, _block_size );
 
 	_mics[std::string( lang )] = Microphone( mixer );
-	_outputs[std::string( lang )] = audio_file;
+	_outputs[std::string( lang )] = audio_file.string();
 }
 
 void DubbingStage::add_audio( const AudioBuffer &buffer )

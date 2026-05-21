@@ -288,7 +288,7 @@ bool Producer::produce( int argc, char *argv[] )
 					if ( bitmap.isNull() )
 					{
 						std::cerr << "ERROR: could not render to bitmap\n";
-						return -1;
+						return false;
 					}
 				}
 

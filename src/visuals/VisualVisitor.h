@@ -1,6 +1,15 @@
 
 #pragma once
 
+#ifdef _WIN32
+#ifndef WIN32_LEAN_AND_MEAN
+#define WIN32_LEAN_AND_MEAN
+#endif
+#ifndef NOGDI
+#define NOGDI
+#endif
+#endif
+
 struct Circle;
 struct Rectangle;
 struct RoundRectangle;
@@ -10,7 +19,7 @@ struct Line;
 struct ArrowTip;
 struct Text;
 struct Image;
-struct Group;
+class Group;
 struct Glyph;
 
 struct VisualVisitor

@@ -7,7 +7,7 @@
 #include <memory>
 
 class Group;
-class Stage;
+struct Stage;
 class StyledText;
 
 Group &create_styled_text( Stage &stage, const StyledText &text );

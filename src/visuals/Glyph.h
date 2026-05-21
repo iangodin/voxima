@@ -7,7 +7,7 @@
 
 #include <cstdint>
 
-class FontFace;
+struct FontFace;
 
 struct Glyph : public Visual
 {

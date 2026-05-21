@@ -6,7 +6,7 @@ class MyProjectConan(ConanFile):
   name = "Sonimation"
   version = "0.0"
   settings = "os", "compiler", "build_type", "arch"
-  generators = "CMakeDeps", "CMakeToolchain"
+  generators = "CMakeDeps"
 
   def requirements(self):
     self.requires("catch2/3.13.0")
@@ -23,8 +23,16 @@ class MyProjectConan(ConanFile):
     self.requires("libsndfile/1.2.2")
     self.requires("soxr/0.1.3")
     self.requires("fribidi/1.0.13")
+    self.requires("expat/2.6.2")
+    self.requires("cairo/1.18.4")
+    self.requires("pixman/0.43.4")
+    self.requires("fontconfig/2.17.1")
 
   def layout(self):
     cmake_layout(self, generator="Ninja Multi-Config")
-    self.folders.build = "build"
-    self.folders.generators = "build/generators"
+
+  def generate(self):
+    tc = CMakeToolchain(self)
+    tc.generator = "Ninja Multi-Config"
+    tc.generate()
+

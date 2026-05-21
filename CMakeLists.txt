@@ -7,6 +7,7 @@ set(CMAKE_CXX_SCAN_FOR_MODULES OFF)
 set( CMAKE_EXPORT_COMPILE_COMMANDS ON )
 
 if ( WIN32 )
+	add_compile_definitions( WIN32_LEAN_AND_MEAN NOGDI _WIN32_WINNT=0x0601 )
 	add_compile_options( /utf-8 /EHsc /W4 )
 else()
 	add_compile_options( -Werror -Wall -Wextra -Wno-missing-field-initializers )
@@ -27,7 +28,7 @@ find_package( fribidi 1.0.13 REQUIRED SYSTEM )
 
 enable_testing()
 
-add_subdirectory( extern/mfl )
+add_subdirectory( extern/mfl EXCLUDE_FROM_ALL )
 
 add_library( visuals STATIC
 	src/core/EaseCubic.cpp
@@ -65,7 +66,9 @@ add_library( visuals STATIC
 )
 
 target_compile_features( visuals PUBLIC cxx_std_20 )
-target_compile_options( visuals PUBLIC -fcoroutines )
+if ( NOT MSVC )
+	target_compile_options( visuals PUBLIC -fcoroutines )
+endif()
 target_include_directories( visuals PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/src ${CMAKE_CURRENT_SOURCE_DIR}/extern ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR} )
 target_link_libraries( visuals PUBLIC
 	lunasvg::lunasvg
@@ -83,7 +86,9 @@ target_link_libraries( visuals PUBLIC
 
 add_executable( sonimation tools/main.cpp demos/eases/show_animation.cpp )
 target_compile_features( sonimation PUBLIC cxx_std_20 )
-target_compile_options( sonimation PUBLIC -fcoroutines )
+if ( NOT MSVC )
+	target_compile_options( sonimation PUBLIC -fcoroutines )
+endif()
 target_link_libraries( sonimation PUBLIC visuals )
 
 add_executable( list_font tools/list_font.cpp )

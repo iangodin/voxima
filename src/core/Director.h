@@ -9,7 +9,7 @@
 #include <vector>
 #include <memory>
 
-class Stage;
+struct Stage;
 class Script;
 
 using Director = std::function<Coroutine( Stage &, Script & )>;
