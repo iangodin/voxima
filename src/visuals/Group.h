@@ -1,16 +1,19 @@
 #pragma once
 
-#include "visuals/Visual.h"
-#include "visuals/VisualVisitor.h"
+#include "Visual.h"
+#include "VisualVisitor.h"
 
-#include <vector>
 #include <memory>
+#include <vector>
 
 class Group : public Visual
 {
 public:
 	Group() = default;
 	Group( const Group & ) = delete;
+
+	virutal ~Group() = default;
+
 	Group &operator=( const Group & ) = delete;
 
 	template<typename Shape>
@@ -64,6 +67,6 @@ public:
 		return *this;
 	}
 
-private:
+protected:
 	std::vector<std::unique_ptr<Visual>> _visuals;
 };
