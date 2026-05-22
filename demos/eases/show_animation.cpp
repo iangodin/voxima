@@ -23,7 +23,7 @@
 void show_title( Stage &stage )
 {
 	StyledText text( "Hello\nالعالم" );
-	text.set_font_style( 0, text.size(), FontStyle{ Intent::TITLE } );
+	text.set_font_style( 0, text.size(), FontStyle{ Intent::TITLE }.large() );
 	text.set_color( 0, 5, Color{ 1.0f, 0.0f, 0.0f, 1.0f } );
 	text.set_weight( 2, 4, Weight::BLACK );
 
