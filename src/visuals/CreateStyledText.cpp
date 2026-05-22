@@ -125,6 +125,15 @@ Group &create_styled_text( Stage &stage, Group &group, const StyledText &text )
 						hb_glyph_position_t pos = glyph_pos[i];
 
 						auto glyph = create_glyph( glyph_id, &font_face );
+
+						hb_glyph_extents_t extents;
+						if ( hb_font_get_glyph_extents( font_cache.get( font_face ), glyph_id, &extents ) )
+						{
+							glyph->bearingX = static_cast<float>( extents.x_bearing );
+							glyph->bearingY = static_cast<float>( extents.y_bearing );
+						}
+						glyph->advanceX = static_cast<float>( pos.x_advance );
+
 						glyph->position = Point{
 							current_x / glyph_scale + static_cast<float>( pos.x_offset ),
 							current_y / glyph_scale + static_cast<float>( pos.y_offset ) };

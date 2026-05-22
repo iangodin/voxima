@@ -133,6 +133,11 @@ std::unique_ptr<Glyph> create_glyph( unsigned int glyph_id, const FontFace *font
 		0 };
 
 	FT_Outline_Decompose( &face->glyph->outline, &funcs, glyph.get() );
+
+	glyph->bearingX = static_cast<float>( face->glyph->metrics.horiBearingX );
+	glyph->bearingY = static_cast<float>( face->glyph->metrics.horiBearingY );
+	glyph->advanceX = static_cast<float>( face->glyph->metrics.horiAdvance );
+
 	return glyph;
 }
 

@@ -27,6 +27,9 @@ struct Glyph : public Visual
 	Glyph &operator*=( float scale ) override
 	{
 		position *= scale;
+		bearingX *= scale;
+		bearingY *= scale;
+		advanceX *= scale;
 		for ( auto &cmd : commands )
 		{
 			cmd.to *= scale;
