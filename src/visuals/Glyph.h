@@ -18,6 +18,7 @@ struct Glyph : public Visual
 	float bearingX = 0.F;
 	float bearingY = 0.F;
 	float advanceX = 0.F;
+	float advanceY = 0.F;
 
 	void accept( VisualVisitor &visitor ) const override
 	{
@@ -30,6 +31,7 @@ struct Glyph : public Visual
 		bearingX *= scale;
 		bearingY *= scale;
 		advanceX *= scale;
+		advanceY *= scale;
 		for ( auto &cmd : commands )
 		{
 			cmd.to *= scale;

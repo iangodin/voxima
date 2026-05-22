@@ -133,6 +133,29 @@ Group &create_styled_text( Stage &stage, Group &group, const StyledText &text )
 							glyph->bearingY = static_cast<float>( extents.y_bearing );
 						}
 						glyph->advanceX = static_cast<float>( pos.x_advance );
+						glyph->advanceY = static_cast<float>( pos.y_advance );
+
+						// Debug shapes (Font Units)
+						const float s = 50.0f;
+						// 1) Diamond at origin
+						glyph->commands.push_back( { PathCommand::MoveTo, { 0, -s } } );
+						glyph->commands.push_back( { PathCommand::LineTo, { s, 0 } } );
+						glyph->commands.push_back( { PathCommand::LineTo, { 0, s } } );
+						glyph->commands.push_back( { PathCommand::LineTo, { -s, 0 } } );
+						glyph->commands.push_back( { PathCommand::LineTo, { 0, -s } } );
+
+						// 2) Triangle at bearing
+						glyph->commands.push_back( { PathCommand::MoveTo, { glyph->bearingX, glyph->bearingY - s } } );
+						glyph->commands.push_back( { PathCommand::LineTo, { glyph->bearingX + s, glyph->bearingY + s } } );
+						glyph->commands.push_back( { PathCommand::LineTo, { glyph->bearingX - s, glyph->bearingY + s } } );
+						glyph->commands.push_back( { PathCommand::LineTo, { glyph->bearingX, glyph->bearingY - s } } );
+
+						// 3) Square at advance
+						glyph->commands.push_back( { PathCommand::MoveTo, { glyph->advanceX - s, glyph->advanceY - s } } );
+						glyph->commands.push_back( { PathCommand::LineTo, { glyph->advanceX + s, glyph->advanceY - s } } );
+						glyph->commands.push_back( { PathCommand::LineTo, { glyph->advanceX + s, glyph->advanceY + s } } );
+						glyph->commands.push_back( { PathCommand::LineTo, { glyph->advanceX - s, glyph->advanceY + s } } );
+						glyph->commands.push_back( { PathCommand::LineTo, { glyph->advanceX - s, glyph->advanceY - s } } );
 
 						glyph->position = Point{
 							current_x / glyph_scale + static_cast<float>( pos.x_offset ),

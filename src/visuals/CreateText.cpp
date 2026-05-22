@@ -137,6 +137,7 @@ std::unique_ptr<Glyph> create_glyph( unsigned int glyph_id, const FontFace *font
 	glyph->bearingX = static_cast<float>( face->glyph->metrics.horiBearingX );
 	glyph->bearingY = static_cast<float>( face->glyph->metrics.horiBearingY );
 	glyph->advanceX = static_cast<float>( face->glyph->metrics.horiAdvance );
+	glyph->advanceY = static_cast<float>( face->glyph->metrics.vertAdvance );
 
 	return glyph;
 }
