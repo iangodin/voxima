@@ -44,8 +44,6 @@ void show_math( Stage &stage )
 	const float font_size = math_fonts.roman().scale;
 	const float glyph_scale = font_size / upem;
 
-	const float target_height_upem = target_height_canvas / glyph_scale;
-
 	// 3. Common large operators
 	std::vector<char32_t> ops = {
 		U'∫', // Integral
@@ -60,11 +58,12 @@ void show_math( Stage &stage )
 
 	for ( char32_t op: ops )
 	{
-		auto glyph = create_math_large_op( math_font, op, target_height_upem );
-		*glyph *= glyph_scale;
-		glyph->position = { x, -3.2F };
-		glyph->color = Color{ 0.2f, 0.6f, 1.0f, 1.0f };
-		stage.visuals.add( std::move( glyph ) );
+		float h = ( op == U']' ) ? 8.0f : target_height_canvas;
+		std::unique_ptr<Visual> visual = create_math_large_op( math_font, op, h / glyph_scale );
+		*visual *= glyph_scale;
+		visual->position = { x, 0.0f };
+		visual->color = Color{ 0.2f, 0.6f, 1.0f, 1.0f };
+		stage.visuals.add( std::move( visual ) );
 		x += spacing;
 	}
 }
@@ -98,7 +97,7 @@ Scene narrate( Stage &stage, Script &script )
 
 Screenplay my_screenplay( Stage &stage, Script &script )
 {
-	int64_t duration = 20;
+	int64_t duration = 24;
 
 	std::string not_found{ "\uFFFD" };
 
@@ -124,9 +123,10 @@ Screenplay my_screenplay( Stage &stage, Script &script )
 	std::string label_linear{
 		script.fetch( lang, "labels", "ease_linear" ).as_string( not_found ) };
 
-	show_title( stage );
+	//show_title( stage );
 	show_math( stage );
 
+	/*
 	co_await choreograph(
 		show_ease( stage, label_cubic_in, ease_cubic_in, 3.F, duration ),
 		show_ease( stage, label_cubic_out, ease_cubic_out, 2.5F, duration ),
@@ -139,4 +139,6 @@ Screenplay my_screenplay( Stage &stage, Script &script )
 		show_ease( stage, label_back_in_out, ease_back_in_out, -1.0F, duration ),
 		show_ease( stage, label_linear, ease_linear, -1.5F, duration ),
 		narrate( stage, script ) );
+	*/
+	co_await wait_for( duration );
 }

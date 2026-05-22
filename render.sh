@@ -6,11 +6,12 @@ rm -f render/*.wav render/*.flac render/*.png render/*.svg render/*.mp4 render/*
 rm -f render/frame*.svg render/frame*.png
 
 make
-build/Release/sonimation --width 1920 --height 1080 \
+build/Release/sonimation --width 1280 --height 720 \
 	--script-dir demos/eases \
 	--font-dir assets/fonts \
 	--render-dir render \
-	--theme "Playful Discovery" \
+	--save-png \
+	--theme "Academic Classic" \
 	--container mkv \
 	--vcodec h264 \
 	--acodec opus \

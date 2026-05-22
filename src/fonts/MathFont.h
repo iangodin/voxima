@@ -13,6 +13,21 @@ struct MathVariant
 	float advance;
 };
 
+struct MathGlyphPart
+{
+	uint32_t glyph_index;
+	bool is_extender;
+	float start_connector_length;
+	float end_connector_length;
+	float full_advance;
+};
+
+struct MathAssemblyRecipe
+{
+	std::vector<MathGlyphPart> parts;
+	float italic_correction;
+};
+
 class MathFont
 {
 public:
@@ -29,6 +44,9 @@ public:
 
 	[[nodiscard]] uint32_t get_glyph_index( char32_t codepoint ) const;
 	[[nodiscard]] uint32_t get_large_variant( char32_t codepoint, float target_height ) const;
+	[[nodiscard]] MathAssemblyRecipe get_vertical_assembly( char32_t codepoint ) const;
+	[[nodiscard]] float min_connector_overlap() const;
+
 	void get_glyph_metrics( uint32_t index, float &height, float &depth ) const;
 
 	const FontFace &face() const { return _face; }
