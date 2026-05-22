@@ -2,75 +2,84 @@
 #include <harfbuzz/hb.h>
 #include <harfbuzz/hb-ot.h>
 #include <harfbuzz/hb-ft.h>
-#include <memory>
-
-namespace
-{
-struct HbFontDeleter
-{
-	void operator()( hb_font_t *font ) const
-	{
-		hb_font_destroy( font );
-	}
-};
-
-using HbFontPtr = std::unique_ptr<hb_font_t, HbFontDeleter>;
-
-HbFontPtr create_hb_font( const FontFace &face )
-{
-	const int upem = face.face->units_per_EM;
-	auto *hb_font = hb_ft_font_create( face.face.get(), nullptr );
-	hb_font_set_scale( hb_font, upem, upem );
-	return HbFontPtr( hb_font );
-}
-}
 
 MathFont::MathFont( const FontFace &face )
     : _face( face )
 {
+	const int upem = _face.face->units_per_EM;
+	_hb_font = hb_ft_font_create( _face.face.get(), nullptr );
+	hb_font_set_scale( _hb_font, upem, upem );
+}
+
+MathFont::~MathFont()
+{
+	if ( _hb_font )
+	{
+		hb_font_destroy( _hb_font );
+	}
 }
 
 float MathFont::axis_height() const
 {
-	auto hb_font = create_hb_font( _face );
-	return static_cast<float>( hb_ot_math_get_constant( hb_font.get(), HB_OT_MATH_CONSTANT_AXIS_HEIGHT ) );
+	return static_cast<float>( hb_ot_math_get_constant( _hb_font, HB_OT_MATH_CONSTANT_AXIS_HEIGHT ) );
 }
 
 float MathFont::italic_correction( uint32_t glyph_index ) const
 {
-	auto hb_font = create_hb_font( _face );
-	return static_cast<float>( hb_ot_math_get_glyph_italics_correction( hb_font.get(), glyph_index ) );
+	return static_cast<float>( hb_ot_math_get_glyph_italics_correction( _hb_font, glyph_index ) );
 }
 
 float MathFont::top_accent_attachment( uint32_t glyph_index ) const
 {
-	auto hb_font = create_hb_font( _face );
-	return static_cast<float>( hb_ot_math_get_glyph_top_accent_attachment( hb_font.get(), glyph_index ) );
+	return static_cast<float>( hb_ot_math_get_glyph_top_accent_attachment( _hb_font, glyph_index ) );
 }
 
-std::vector<MathVariant> MathFont::get_vertical_variants( char32_t codepoint ) const
+uint32_t MathFont::get_glyph_index( char32_t codepoint ) const
 {
-	auto hb_font = create_hb_font( _face );
-	hb_codepoint_t base_index = 0;
-	hb_font_get_glyph( hb_font.get(), codepoint, 0, &base_index );
+	hb_codepoint_t index = 0;
+	hb_font_get_glyph( _hb_font, codepoint, 0, &index );
+	return index;
+}
+
+uint32_t MathFont::get_large_variant( char32_t codepoint, float target_height ) const
+{
+	hb_codepoint_t base_index = get_glyph_index( codepoint );
 
 	unsigned int count = hb_ot_math_get_glyph_variants(
-	    hb_font.get(), base_index, HB_DIRECTION_TTB, 0, nullptr, nullptr );
+	    _hb_font, base_index, HB_DIRECTION_TTB, 0, nullptr, nullptr );
 
 	if ( count == 0 )
 	{
-		return {};
+		return base_index;
 	}
 
 	std::vector<hb_ot_math_glyph_variant_t> hb_variants( count );
 	hb_ot_math_get_glyph_variants(
-	    hb_font.get(), base_index, HB_DIRECTION_TTB, 0, &count, hb_variants.data() );
+	    _hb_font, base_index, HB_DIRECTION_TTB, 0, &count, hb_variants.data() );
 
-	std::vector<MathVariant> variants;
-	variants.reserve( count );
+	uint32_t selected = hb_variants.back().glyph; // Default to largest
 	for ( const auto &v: hb_variants )
 	{
-		variants.push_back( { v.glyph, static_cast<float>( v.advance ) } );
+		if ( static_cast<float>( v.advance ) >= target_height )
+		{
+			selected = v.glyph;
+			break;
+		}
 	}
-	return variants;
+	return selected;
+}
+
+void MathFont::get_glyph_metrics( uint32_t index, float &height, float &depth ) const
+{
+	FT_Face ft_face = _face.face.get();
+	if ( FT_Load_Glyph( ft_face, index, FT_LOAD_NO_SCALE ) == 0 )
+	{
+		height = static_cast<float>( ft_face->glyph->metrics.horiBearingY );
+		depth = static_cast<float>( ft_face->glyph->metrics.height - ft_face->glyph->metrics.horiBearingY );
+	}
+	else
+	{
+		height = 0.0f;
+		depth = 0.0f;
+	}
 }

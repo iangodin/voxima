@@ -6,29 +6,7 @@
 
 std::unique_ptr<MathGlyph> create_math_large_op( const MathFont &font, char32_t op, float target_height )
 {
-	auto variants = font.get_vertical_variants( op );
-
-	uint32_t selected_glyph_index = 0;
-
-	if ( variants.empty() )
-	{
-		// Fallback to base glyph
-		std::unique_ptr<hb_font_t, void ( * )( hb_font_t * )> hb_font(
-			hb_ft_font_create( font.face().face.get(), nullptr ), hb_font_destroy );
-		hb_font_get_glyph( hb_font.get(), op, 0, &selected_glyph_index );
-	}
-	else
-	{
-		selected_glyph_index = variants.back().glyph_index; // Default to largest
-		for ( const auto &v: variants )
-		{
-			if ( v.advance >= target_height )
-			{
-				selected_glyph_index = v.glyph_index;
-				break;
-			}
-		}
-	}
+	uint32_t selected_glyph_index = font.get_large_variant( op, target_height );
 
 	auto base_glyph = create_glyph( selected_glyph_index, &font.face() );
 	auto math_glyph = std::make_unique<MathGlyph>();
@@ -46,24 +24,15 @@ std::unique_ptr<MathGlyph> create_math_large_op( const MathFont &font, char32_t 
 	math_glyph->italicCorrection = font.italic_correction( selected_glyph_index );
 	math_glyph->topAccentAttachment = font.top_accent_attachment( selected_glyph_index );
 
-	// Center vertically on the math axis
-	// The height of the glyph in the vertical variants is the "advance"
+	// Precise Vertical Centering on the Math Axis
 	float height = 0.0f;
-	if ( !variants.empty() )
-	{
-		for ( const auto &v: variants )
-		{
-			if ( v.glyph_index == selected_glyph_index )
-			{
-				height = v.advance;
-				break;
-			}
-		}
-	}
+	float depth = 0.0f;
+	font.get_glyph_metrics( selected_glyph_index, height, depth );
 
-	// If no height found from variants, we'd ideally use the bounding box.
-	// For now, align its center to the axis_height.
-	math_glyph->position.y = font.axis_height() - ( height / 2.0f );
+	// We want the midpoint of the bounding box [height, -depth] to be at axis_height.
+	// The midpoint relative to the glyph origin is (height - depth) / 2.
+	float midpoint = ( height - depth ) / 2.0f;
+	math_glyph->position.y = font.axis_height() - midpoint;
 
 	return math_glyph;
 }
