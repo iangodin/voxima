@@ -52,9 +52,7 @@ Scene show_ease( Stage &stage, const std::string &name, Ease &&ease, float y, in
 	auto &label = create_text( stage, name, FontStyle{ Intent::LABEL } );
 	label.position = { -6.F, y };
 
-	co_await wait_for( 30 );
 	co_await ease( circle.position.x, x1, x2, frames );
-	co_await wait_for( 30 );
 }
 
 Scene narrate( Stage &stage, Script &script )
@@ -71,7 +69,7 @@ Scene narrate( Stage &stage, Script &script )
 
 Screenplay my_screenplay( Stage &stage, Script &script )
 {
-	int64_t duration = 60;
+	int64_t duration = 20;
 
 	std::string not_found{ "\uFFFD" };
 
