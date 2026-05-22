@@ -12,7 +12,7 @@ public:
 	Group() = default;
 	Group( const Group & ) = delete;
 
-	virutal ~Group() = default;
+	virtual ~Group() = default;
 
 	Group &operator=( const Group & ) = delete;
 

@@ -1,6 +1,7 @@
 #include <visuals/CreateStyledText.h>
 #include <visuals/CreateText.h>
 #include <visuals/Group.h>
+#include <visuals/TextLine.h>
 #include <visuals/Glyph.h>
 #include <visuals/Bounds.h>
 
@@ -73,6 +74,9 @@ Group &create_styled_text( Stage &stage, Group &group, const StyledText &text )
 		float current_x = 0.0f;
 		size_t line_start = static_cast<size_t>( line_view.data() - full_text.data() );
 		size_t line_end = line_start + line_view.size();
+
+		auto &line_group = subgroup.add( std::make_unique<TextLine>() );
+		line_group.set_horizontal_baseline( current_y );
 
 		text.styles().for_each(
 			line_start,
@@ -169,7 +173,7 @@ Group &create_styled_text( Stage &stage, Group &group, const StyledText &text )
 						}
 
 						*glyph *= glyph_scale;
-						subgroup.add( std::move( glyph ) );
+						line_group.add( std::move( glyph ) );
 
 						current_x += static_cast<float>( pos.x_advance ) * glyph_scale;
 						current_y += static_cast<float>( pos.y_advance ) * glyph_scale;
