@@ -44,6 +44,7 @@ add_library( visuals STATIC
 	src/exporters/FfmpegMux.cpp
 	src/exporters/FfmpegRender.cpp
 	src/fonts/FontStack.cpp
+	src/fonts/MathFont.cpp
 	src/fonts/MFLFontFace.cpp
 	src/themes/NewComputerModern.cpp
 	src/themes/AcademicClassic.cpp
@@ -60,6 +61,7 @@ add_library( visuals STATIC
 	src/utils/FreetypeError.cpp
 	src/utils/Huml.cpp
 	src/visuals/CreateMath.cpp
+	src/visuals/CreateMathLargeOperation.cpp
 	src/visuals/CreateText.cpp
 	src/visuals/CreateStyledText.cpp
 	src/visuals/StyledText.cpp

@@ -17,6 +17,8 @@
 #include <visuals/CreateStyledText.h>
 #include <visuals/CreateText.h>
 #include <visuals/StyledText.h>
+#include <visuals/CreateMathLargeOperation.h>
+#include <fonts/MathFont.h>
 
 #include <core/Narration.h>
 
@@ -33,11 +35,39 @@ void show_title( Stage &stage )
 
 void show_math( Stage &stage )
 {
-	auto &math = create_math(
-		stage,
-		"\\int_{0}^{\\infty} e^{-x^2} dx = \\frac{\\sqrt{\\pi}}{2}",
-		FontStyle{ Intent::MATH } );
-	math.position = { 0.F, -3.F };
+	// 1. Get the math font from the current theme
+	MathFonts math_fonts = stage.theme->get_math( FontStyle{ Intent::MATH } );
+	MathFont math_font( math_fonts.roman() );
+
+	// 2. Determine scaling factors
+	const float target_height_canvas = 3.5f;
+	const float upem = static_cast<float>( math_fonts.roman().face->units_per_EM );
+	const float font_size = math_fonts.roman().scale;
+	const float glyph_scale = font_size / upem;
+
+	const float target_height_upem = target_height_canvas / glyph_scale;
+
+	// 3. Common large operators
+	std::vector<char32_t> ops = {
+		U'∫', // Integral
+		U'∑', // Summation
+		U'∏', // Product
+		U'[', // Left Square Bracket
+		U']'  // Right Square Bracket
+	};
+
+	float x = -6.0f;
+	const float spacing = 3.0f;
+
+	for ( char32_t op: ops )
+	{
+		auto glyph = create_math_large_op( math_font, op, target_height_upem );
+		*glyph *= glyph_scale;
+		glyph->position = { x, -3.2F };
+		glyph->color = Color{ 0.2f, 0.6f, 1.0f, 1.0f };
+		stage.visuals.add( std::move( glyph ) );
+		x += spacing;
+	}
 }
 
 template<typename Ease>
