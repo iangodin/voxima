@@ -246,10 +246,10 @@ bool Producer::produce( int argc, char *argv[] )
 	{
 		Timer timer_frame( "Frame " + std::to_string( frame ) + ": " );
 		{
-			Timer timer_tick( "  tick: " );
+			//Timer timer_tick( "  tick: " );
 			if ( !tick() )
 			{
-				timer_tick.abort();
+				//timer_tick.abort();
 				timer_frame.abort();
 				break;
 			}
@@ -257,7 +257,7 @@ bool Producer::produce( int argc, char *argv[] )
 
 		std::ostringstream svg;
 		{
-			Timer timer_svg_gen( "  SVG generation: " );
+			//Timer timer_svg_gen( "  SVG generation: " );
 			_stage.save_svg( svg );
 		}
 
@@ -265,7 +265,7 @@ bool Producer::produce( int argc, char *argv[] )
 		{
 			if ( write_svgs )
 			{
-				Timer timer_svg_save( "  SVG saving: " );
+				//Timer timer_svg_save( "  SVG saving: " );
 				std::stringstream filename;
 				filename << std::get<0>( svgs ) << std::setw( std::get<1>( svgs ) )
 						 << std::setfill( '0' ) << frame << std::get<2>( svgs );
@@ -283,7 +283,7 @@ bool Producer::produce( int argc, char *argv[] )
 
 				lunasvg::Bitmap bitmap;
 				{
-					Timer timer_render( "  SVG rendering: " );
+					//Timer timer_render( "  SVG rendering: " );
 					bitmap = doc->renderToBitmap();
 					if ( bitmap.isNull() )
 					{
@@ -294,20 +294,20 @@ bool Producer::produce( int argc, char *argv[] )
 
 				if ( ffmpeg )
 				{
-					Timer timer_ffmpeg( "  FFMPEG encoding: " );
+					//Timer timer_ffmpeg( "  FFMPEG encoding: " );
 					ffmpeg->encode( bitmap );
 				}
 
 				if ( pngs )
 				{
-					Timer timer_pngs( "  PNG compression: " );
+					//Timer timer_pngs( "  PNG compression: " );
 					pngs->encode( bitmap );
 				}
 			}
 		}
 
 		{
-			Timer timer_audio_enc( "  Audio encoding: " );
+			//Timer timer_audio_enc( "  Audio encoding: " );
 			_stage.audio.write_audio();
 		}
 		++frame;
