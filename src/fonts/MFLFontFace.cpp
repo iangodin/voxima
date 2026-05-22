@@ -82,8 +82,6 @@ mfl::math_constants MFLFontFace::constants() const
 		return font_units_to_dist( hb_ot_math_get_constant( hb_font.get(), c ) );
 	};
 
-	// The standard values for non-display style fraction shifts are huge so we divide them
-	// by four here to get a more typical non-display style tex aesthetic
 	const auto default_fraction_params = mfl::fraction_constants{
 		get_constant( HB_OT_MATH_CONSTANT_FRACTION_NUMERATOR_SHIFT_UP ),
 		get_constant( HB_OT_MATH_CONSTANT_FRACTION_DENOMINATOR_SHIFT_DOWN ),
@@ -145,43 +143,26 @@ mfl::math_glyph_info MFLFontFace::glyph_info( const size_t glyph_index ) const
 {
 	std::unique_ptr<hb_font_t, decltype( &hb_font_destroy )> hb_font(
 		hb_ft_font_create( ft_face_, nullptr ), hb_font_destroy );
-	FT_Load_Char( ft_face_, static_cast<FT_ULong>( glyph_index ), FT_LOAD_DEFAULT );
-	const auto &metrics = ft_face_->glyph->metrics;
 
 	const auto glyph_codepoint = static_cast<hb_codepoint_t>( glyph_index );
 	const auto italic_correction =
 		hb_ot_math_get_glyph_italics_correction( hb_font.get(), glyph_codepoint );
-
-	// TODO - for the StixFonts, the horizontal advance seems to include the italic correction. This
-	// is generally exactly what we want and expect (positioning a tall non-slanted character after
-	// a slanted character should take that italic correction into account). We can clearly see that
-	// the italic correction is already in the horizontal advance on tall slanted symbols like
-	// integrals, but if we subtract the italic correction
-	// from the width on all symbols then superscripts are drawn too close to the top right corner
-	// of italic base symbols. So we only subtract the italic correction for tall slanted symbols.
-	// This appears to means that when taking, say, an italic X, the italic correction is already in
-	// the width and then when positioning a superscript on that X the italic correction is applied
-	// again, but this prevents superscripts from overlapping with italic symbols in the nucleus.
-	const auto integral_indices = std::array{ 1699, 1705, 1711, 1717, 1723, 1729 };
-	const auto integral_fix =
-		( std::ranges::find( integral_indices, glyph_index ) != integral_indices.end() )
-			? -italic_correction
-			: 0;
 
 	hb_glyph_extents_t extents;
 	hb_font_get_glyph_extents_for_origin(
 		hb_font.get(),
 		glyph_codepoint,
 		HB_DIRECTION_LTR,
-		&extents ); // TODO what does the boolean return tell us?
+		&extents );
+
+	FT_Load_Glyph( ft_face_, static_cast<FT_UInt>( glyph_index ), FT_LOAD_DEFAULT );
+	const auto &metrics = ft_face_->glyph->metrics;
 
 	const auto height = metrics.horiBearingY;
-	const auto depth =
-		metrics.height -
-		height; // metrics height is total glyph height - our height is height from the baseline
+	const auto depth = metrics.height - height;
 	return {
 		glyph_index,
-		font_units_to_dist( static_cast<int>( metrics.horiAdvance + integral_fix ) ),
+		font_units_to_dist( static_cast<int>( metrics.horiAdvance ) ),
 		font_units_to_dist( static_cast<int>( height ) ),
 		font_units_to_dist( static_cast<int>( depth ) ),
 		font_units_to_dist( italic_correction ),
