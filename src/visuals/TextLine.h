@@ -1,22 +1,31 @@
-
-#pragam once
+#pragma once
 
 #include "Group.h"
 
 class TextLine : public Group
 {
 public:
-	void set_baseline( float baseline )
+	void set_horizontal_baseline( float baseline )
 	{
-		mBaseline = baseline;
+		mHorizontalBaseline = baseline;
 	}
 
-	[[discard]] float get_baseline() const
+	[[nodiscard]] float get_horizontal_baseline() const
 	{
-		return mBaseline;
+		return mHorizontalBaseline;
+	}
+
+	void set_vertical_axis( float axis )
+	{
+		mVerticalAxis = axis;
+	}
+
+	[[nodiscard]] float get_vertical_axis() const
+	{
+		return mVerticalAxis;
 	}
 
 private:
-	float mBaseline;
+	float mHorizontalBaseline = 0.0f;
+	float mVerticalAxis = 0.0f;
 };
-
