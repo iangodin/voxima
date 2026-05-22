@@ -1,4 +1,0 @@
-[submodule "mfl"]
-	path = extern/mfl
-	url = https://github.com/cpp-niel/mfl.git
-	branch = master

@@ -28,8 +28,6 @@ find_package( fribidi 1.0.13 REQUIRED SYSTEM )
 
 enable_testing()
 
-add_subdirectory( extern/mfl EXCLUDE_FROM_ALL )
-
 add_library( visuals STATIC
 	src/core/EaseCubic.cpp
 	src/core/EaseElastic.cpp
@@ -45,7 +43,6 @@ add_library( visuals STATIC
 	src/exporters/FfmpegRender.cpp
 	src/fonts/FontStack.cpp
 	src/fonts/MathFont.cpp
-	src/fonts/MFLFontFace.cpp
 	src/themes/NewComputerModern.cpp
 	src/themes/AcademicClassic.cpp
 	src/themes/EngineeringBlueprint.cpp
@@ -60,7 +57,6 @@ add_library( visuals STATIC
 	src/audio/Microphone.cpp
 	src/utils/FreetypeError.cpp
 	src/utils/Huml.cpp
-	src/visuals/CreateMath.cpp
 	src/visuals/CreateMathLargeOperation.cpp
 	src/visuals/CreateText.cpp
 	src/visuals/CreateStyledText.cpp
@@ -84,7 +80,7 @@ target_link_libraries( visuals PUBLIC
 	SndFile::sndfile
 	soxr::soxr
 	fribidi::fribidi
-	mfl )
+)
 
 add_executable( sonimation tools/main.cpp demos/eases/show_animation.cpp )
 target_compile_features( sonimation PUBLIC cxx_std_20 )

@@ -13,7 +13,6 @@
 #include <core/Wait.h>
 
 #include <visuals/Circle.h>
-#include <visuals/CreateMath.h>
 #include <visuals/CreateStyledText.h>
 #include <visuals/CreateText.h>
 #include <visuals/StyledText.h>
