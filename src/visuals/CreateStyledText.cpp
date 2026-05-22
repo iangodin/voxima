@@ -135,6 +135,7 @@ Group &create_styled_text( Stage &stage, Group &group, const StyledText &text )
 						glyph->advanceX = static_cast<float>( pos.x_advance );
 						glyph->advanceY = static_cast<float>( pos.y_advance );
 
+#ifdef DEBUG_GLYPH_METRICS
 						// Debug shapes (Font Units)
 						const float s = 50.0f;
 						// 1) Diamond at origin
@@ -156,6 +157,7 @@ Group &create_styled_text( Stage &stage, Group &group, const StyledText &text )
 						glyph->commands.push_back( { PathCommand::LineTo, { glyph->advanceX + s, glyph->advanceY + s } } );
 						glyph->commands.push_back( { PathCommand::LineTo, { glyph->advanceX - s, glyph->advanceY + s } } );
 						glyph->commands.push_back( { PathCommand::LineTo, { glyph->advanceX - s, glyph->advanceY - s } } );
+#endif
 
 						glyph->position = Point{
 							current_x / glyph_scale + static_cast<float>( pos.x_offset ),
