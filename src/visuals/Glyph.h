@@ -15,6 +15,10 @@ struct Glyph : public Visual
 	uint32_t index = 0;
 	std::vector<PathCommand> commands;
 
+	float bearingX = 0.F;
+	float bearingY = 0.F;
+	float advanceX = 0.F;
+
 	void accept( VisualVisitor &visitor ) const override
 	{
 		visitor.visit( *this );
