@@ -46,11 +46,11 @@ void show_math( Stage &stage )
 
 	// 3. Common large operators
 	std::vector<char32_t> ops = {
-		U'∫', // Integral
-		U'∑', // Summation
-		U'∏', // Product
-		U'[', // Left Square Bracket
-		U']'  // Right Square Bracket
+		U'∫'  // Integral
+//		U'∑', // Summation
+//		U'∏', // Product
+//		U'[', // Left Square Bracket
+//		U']'  // Right Square Bracket
 	};
 
 	float x = -6.0f;

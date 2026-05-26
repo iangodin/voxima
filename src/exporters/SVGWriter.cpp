@@ -1,6 +1,91 @@
 #include "exporters/SVGWriter.h"
+#include "visuals/MathAssembly.h"
+#include "visuals/Polyline.h"
+#include <clipper2/clipper.h>
 #include <cmath>
 #include <sstream>
+
+namespace
+{
+class PolylineCollector : public VisualVisitor
+{
+public:
+	std::vector<Polyline> polylines;
+	Point offset = { 0, 0 };
+
+	void add_commands( const std::vector<PathCommand> &commands, Point p, float sx, float sy )
+	{
+		Polyline *current = nullptr;
+		for ( const auto &cmd: commands )
+		{
+			std::visit(
+				[&]( auto &&arg )
+				{
+					using T = std::decay_t<decltype( arg )>;
+					if constexpr ( std::is_same_v<T, MoveTo> )
+					{
+						polylines.emplace_back();
+						current = &polylines.back();
+						current->addPoint( { ( p.x() + arg.to.x() ) * sx, ( p.y() + arg.to.y() ) * sy } );
+					}
+					else if constexpr ( std::is_same_v<T, LineTo> )
+					{
+						if ( current )
+							current->addPoint( { ( p.x() + arg.to.x() ) * sx, ( p.y() + arg.to.y() ) * sy } );
+					}
+					else if constexpr ( std::is_same_v<T, QuadTo> )
+					{
+						if ( current )
+						{
+							Point p0 = current->back();
+							Point p1 = { ( p.x() + arg.ctrl1.x() ) * sx, ( p.y() + arg.ctrl1.y() ) * sy };
+							Point p2 = { ( p.x() + arg.to.x() ) * sx, ( p.y() + arg.to.y() ) * sy };
+							current->addQuadratic( p0, p1, p2 );
+						}
+					}
+					else if constexpr ( std::is_same_v<T, CubicTo> )
+					{
+						if ( current )
+						{
+							Point p0 = current->back();
+							Point p1 = { ( p.x() + arg.ctrl1.x() ) * sx, ( p.y() + arg.ctrl1.y() ) * sy };
+							Point p2 = { ( p.x() + arg.ctrl2.x() ) * sx, ( p.y() + arg.ctrl2.y() ) * sy };
+							Point p3 = { ( p.x() + arg.to.x() ) * sx, ( p.y() + arg.to.y() ) * sy };
+							current->addCubic( p0, p1, p2, p3 );
+						}
+					}
+					else if constexpr ( std::is_same_v<T, Close> )
+					{
+						if ( current )
+						{
+							current->close();
+							current = nullptr;
+						}
+					}
+				},
+				cmd );
+		}
+	}
+
+	void visit( const Glyph &glyph ) override { add_commands( glyph.commands, offset + glyph.position, glyph.scale_x, glyph.scale_y ); }
+	void visit( const Path &path ) override { add_commands( path.commands, offset + path.position, path.scale_x, path.scale_y ); }
+	void visit( const Group &group ) override
+	{
+		Point old_offset = offset;
+		offset = offset + group.position;
+		for ( const auto &v: group ) v->accept( *this );
+		offset = old_offset;
+	}
+
+	void visit( const Circle & ) override {}
+	void visit( const Rectangle & ) override {}
+	void visit( const RoundRectangle & ) override {}
+	void visit( const Ellipse & ) override {}
+	void visit( const Line & ) override {}
+	void visit( const ArrowTip & ) override {}
+	void visit( const Image & ) override {}
+};
+}
 
 SVGWriter::SVGWriter( std::ostream &out, int indent_level )
     : _out( out ), _indent( indent_level )
@@ -13,11 +98,11 @@ void SVGWriter::write_defs( std::ostream &out )
 	if ( _glyphs.empty() ) return;
 
 	out << "  <defs>\n";
-	for ( const auto &[key, commands] : _glyphs )
+	for ( const auto &[key, commands]: _glyphs )
 	{
 		out << "    <path id=\"glyph_" << key.first << "_" << key.second << "\" d=\"";
 		emit_path_data( commands, out );
-		out << " Z\" />\n";
+		out << "\" />\n";
 	}
 	out << "  </defs>\n";
 }
@@ -123,7 +208,7 @@ void SVGWriter::visit( const Path &path )
 
 		_out << indent() << "<path d=\"";
 		emit_path_data( path.commands, _out );
-		_out << " Z\" " << color_attributes( final_color ) << " "
+		_out << "\" " << color_attributes( final_color ) << " "
 		     << stroke_attributes( path.stroke_thickness, final_stroke_color ) << " />\n";
 
 		close_g();
@@ -157,8 +242,8 @@ void SVGWriter::visit( const Line &line )
 	{
 		Color final_stroke_color = _current_stroke_color * line.stroke_color;
 
-		_out << indent() << "<line x1=\"" << line.start.x << "\" y1=\"" << line.start.y
-		     << "\" x2=\"" << line.end.x << "\" y2=\"" << line.end.y << "\" "
+		_out << indent() << "<line x1=\"" << line.start.x() << "\" y1=\"" << line.start.y()
+		     << "\" x2=\"" << line.end.x() << "\" y2=\"" << line.end.y() << "\" "
 		     << stroke_attributes( line.stroke_thickness, final_stroke_color ) << " />\n";
 
 		close_g();
@@ -172,8 +257,8 @@ void SVGWriter::visit( const ArrowTip &arrow )
 		Color final_color = _current_color * arrow.color;
 		Color final_stroke_color = _current_stroke_color * arrow.stroke_color;
 
-		float dx = arrow.end.x - arrow.start.x;
-		float dy = arrow.end.y - arrow.start.y;
+		float dx = arrow.end.x() - arrow.start.x();
+		float dy = arrow.end.y() - arrow.start.y();
 		float len = std::sqrt( dx * dx + dy * dy );
 
 		if ( len > 0.0001f )
@@ -186,12 +271,12 @@ void SVGWriter::visit( const ArrowTip &arrow )
 			float py = dx;
 
 			// Tip is at 'end', two other corners are offset by size
-			float p1x = arrow.end.x;
-			float p1y = arrow.end.y;
-			float p2x = arrow.end.x - dx * arrow.size * 2.0f + px * arrow.size;
-			float p2y = arrow.end.y - dy * arrow.size * 2.0f + py * arrow.size;
-			float p3x = arrow.end.x - dx * arrow.size * 2.0f - px * arrow.size;
-			float p3y = arrow.end.y - dy * arrow.size * 2.0f - py * arrow.size;
+			float p1x = arrow.end.x();
+			float p1y = arrow.end.y();
+			float p2x = arrow.end.x() - dx * arrow.size * 2.0f + px * arrow.size;
+			float p2y = arrow.end.y() - dy * arrow.size * 2.0f + py * arrow.size;
+			float p3x = arrow.end.x() - dx * arrow.size * 2.0f - px * arrow.size;
+			float p3y = arrow.end.y() - dy * arrow.size * 2.0f - py * arrow.size;
 
 			_out << indent() << "<path d=\"M " << p1x << "," << p1y
 			     << " L " << p2x << "," << p2y
@@ -225,6 +310,43 @@ void SVGWriter::visit( const Image &image )
 
 void SVGWriter::visit( const Group &group )
 {
+	if ( dynamic_cast<const MathAssembly *>( &group ) )
+	{
+		PolylineCollector collector;
+		for ( const auto &v: group ) v->accept( collector );
+
+		Clipper2Lib::PathsD subject;
+		for ( const auto &poly: collector.polylines )
+		{
+			Clipper2Lib::PathD path;
+			for ( const auto &p: poly ) path.push_back( { (double)p.x(), (double)p.y() } );
+			subject.push_back( path );
+		}
+
+		Clipper2Lib::PathsD unioned = Clipper2Lib::Union( subject, Clipper2Lib::FillRule::NonZero );
+
+		if ( open_g( group, false ) )
+		{
+			Color final_color = _current_color * group.color;
+			Color final_stroke_color = _current_stroke_color * group.stroke_color;
+
+			_out << indent() << "<path d=\"";
+			for ( size_t i = 0; i < unioned.size(); ++i )
+			{
+				if ( i > 0 ) _out << " ";
+				const auto &path = unioned[i];
+				if ( path.empty() ) continue;
+				_out << "M " << path[0].x << "," << path[0].y;
+				for ( size_t j = 1; j < path.size(); ++j ) _out << " L " << path[j].x << "," << path[j].y;
+				_out << " Z";
+			}
+			_out << "\" " << color_attributes( final_color ) << " "
+			     << stroke_attributes( group.stroke_thickness, final_stroke_color ) << " />\n";
+			close_g();
+		}
+		return;
+	}
+
 	Color old_color = _current_color;
 	Color old_stroke_color = _current_stroke_color;
 
@@ -232,7 +354,7 @@ void SVGWriter::visit( const Group &group )
 	_current_stroke_color = _current_stroke_color * group.stroke_color;
 
 	open_g( group, true );
-	for ( const auto &v : group )
+	for ( const auto &v: group )
 	{
 		v->accept( *this );
 	}
@@ -274,39 +396,40 @@ void SVGWriter::emit_path_data( const std::vector<PathCommand> &commands, std::o
 		const auto &cmd = commands[i];
 		if ( i > 0 ) out << " ";
 
-		switch ( cmd.type )
-		{
-			case PathCommand::MoveTo:
-				out << "M " << cmd.to.x << "," << cmd.to.y;
-				break;
-			case PathCommand::LineTo:
-				out << "L " << cmd.to.x << "," << cmd.to.y;
-				break;
-			case PathCommand::QuadTo:
-				out << "Q " << cmd.ctrl1.x << "," << cmd.ctrl1.y
-				     << " " << cmd.to.x << "," << cmd.to.y;
-				break;
-			case PathCommand::CubicTo:
-				out << "C " << cmd.ctrl1.x << "," << cmd.ctrl1.y
-				     << " " << cmd.ctrl2.x << "," << cmd.ctrl2.y
-				     << " " << cmd.to.x << "," << cmd.to.y;
-				break;
-		}
+		std::visit(
+			[&]( auto &&arg )
+			{
+				using T = std::decay_t<decltype( arg )>;
+				if constexpr ( std::is_same_v<T, MoveTo> )
+					out << "M " << arg.to.x() << "," << arg.to.y();
+				else if constexpr ( std::is_same_v<T, LineTo> )
+					out << "L " << arg.to.x() << "," << arg.to.y();
+				else if constexpr ( std::is_same_v<T, QuadTo> )
+					out << "Q " << arg.ctrl1.x() << "," << arg.ctrl1.y()
+					    << " " << arg.to.x() << "," << arg.to.y();
+				else if constexpr ( std::is_same_v<T, CubicTo> )
+					out << "C " << arg.ctrl1.x() << "," << arg.ctrl1.y()
+					    << " " << arg.ctrl2.x() << "," << arg.ctrl2.y()
+					    << " " << arg.to.x() << "," << arg.to.y();
+				else if constexpr ( std::is_same_v<T, Close> )
+					out << "Z";
+			},
+			cmd );
 	}
 }
 
 std::string SVGWriter::indent() const
 {
-	return std::string( static_cast<std::size_t>(_indent), ' ' );
+	return std::string( static_cast<std::size_t>( _indent ), ' ' );
 }
 
 bool SVGWriter::open_g( const Visual &v, bool force_g )
 {
 	std::vector<std::string> parts;
-	if ( v.position.x != 0.F || v.position.y != 0.F )
+	if ( v.position.x() != 0.F || v.position.y() != 0.F )
 	{
 		std::ostringstream oss;
-		oss << "translate(" << v.position.x << "," << v.position.y << ")";
+		oss << "translate(" << v.position.x() << "," << v.position.y() << ")";
 		parts.push_back( oss.str() );
 	}
 

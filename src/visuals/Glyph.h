@@ -34,9 +34,13 @@ struct Glyph : public Visual
 		advanceY *= scale;
 		for ( auto &cmd : commands )
 		{
-			cmd.to *= scale;
-			cmd.ctrl1 *= scale;
-			cmd.ctrl2 *= scale;
+			std::visit( [scale](auto&& arg) {
+				using T = std::decay_t<decltype(arg)>;
+				if constexpr (std::is_same_v<T, MoveTo>) arg.to *= scale;
+				else if constexpr (std::is_same_v<T, LineTo>) arg.to *= scale;
+				else if constexpr (std::is_same_v<T, QuadTo>) { arg.to *= scale; arg.ctrl1 *= scale; }
+				else if constexpr (std::is_same_v<T, CubicTo>) { arg.to *= scale; arg.ctrl1 *= scale; arg.ctrl2 *= scale; }
+			}, cmd);
 		}
 		return *this;
 	}

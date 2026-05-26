@@ -5,14 +5,15 @@
 #include "visuals/VisualVisitor.h"
 #include "visuals/Point.h"
 #include <vector>
+#include <variant>
 
-struct PathCommand
-{
-	enum Type { MoveTo, LineTo, QuadTo, CubicTo } type;
-	Point to;
-	Point ctrl1;
-	Point ctrl2;
-};
+struct MoveTo { Point to; };
+struct LineTo { Point to; };
+struct QuadTo { Point to; Point ctrl1; };
+struct CubicTo { Point to; Point ctrl1; Point ctrl2; };
+struct Close { };
+
+using PathCommand = std::variant<MoveTo, LineTo, QuadTo, CubicTo, Close>;
 
 struct Path : public Visual
 {
@@ -27,12 +28,15 @@ struct Path : public Visual
 	{
 		for ( auto &command: commands )
 		{
-			command.to *= scale;
-			command.ctrl1 *= scale;
-			command.ctrl2 *= scale;
+			std::visit( [scale](auto&& arg) {
+				using T = std::decay_t<decltype(arg)>;
+				if constexpr (std::is_same_v<T, MoveTo>) arg.to *= scale;
+				else if constexpr (std::is_same_v<T, LineTo>) arg.to *= scale;
+				else if constexpr (std::is_same_v<T, QuadTo>) { arg.to *= scale; arg.ctrl1 *= scale; }
+				else if constexpr (std::is_same_v<T, CubicTo>) { arg.to *= scale; arg.ctrl1 *= scale; arg.ctrl2 *= scale; }
+			}, command);
 		}
 		position *= scale;
 		return *this;
 	}
 };
-

@@ -68,13 +68,12 @@ void center_group( Group &group )
 	group.accept( visitor );
 
 	Point center = {
-		( visitor.bounds.min.x + visitor.bounds.max.x ) / 2.0f,
-		( visitor.bounds.min.y + visitor.bounds.max.y ) / 2.0f };
+		( visitor.bounds.min.x() + visitor.bounds.max.x() ) / 2.0f,
+		( visitor.bounds.min.y() + visitor.bounds.max.y() ) / 2.0f };
 
 	for ( auto &v: group )
 	{
-		v->position.x -= center.x / v->scale_x;
-		v->position.y -= center.y / v->scale_y;
+		v->position = v->position.movedBy( -center.x() / v->scale_x, -center.y() / v->scale_y );
 	}
 	group.position = { 0.0f, 0.0f };
 }
@@ -97,25 +96,22 @@ std::unique_ptr<Glyph> create_glyph( unsigned int glyph_id, const FontFace *font
 		{
 			auto *g = static_cast<Glyph *>( user );
 			g->commands.push_back(
-				{ PathCommand::MoveTo,
-		          { static_cast<float>( to->x ), static_cast<float>( to->y ) } } );
+				MoveTo { { static_cast<float>( to->x ), static_cast<float>( to->y ) } } );
 			return 0;
 		},
 		[]( const FT_Vector *to, void *user ) -> int
 		{
 			auto *g = static_cast<Glyph *>( user );
 			g->commands.push_back(
-				{ PathCommand::LineTo,
-		          { static_cast<float>( to->x ), static_cast<float>( to->y ) } } );
+				LineTo { { static_cast<float>( to->x ), static_cast<float>( to->y ) } } );
 			return 0;
 		},
 		[]( const FT_Vector *control, const FT_Vector *to, void *user ) -> int
 		{
 			auto *g = static_cast<Glyph *>( user );
 			g->commands.push_back(
-				{ PathCommand::QuadTo,
-		          { static_cast<float>( to->x ), static_cast<float>( to->y ) },
-		          { static_cast<float>( control->x ), static_cast<float>( control->y ) } } );
+				QuadTo { { static_cast<float>( to->x ), static_cast<float>( to->y ) },
+		                 { static_cast<float>( control->x ), static_cast<float>( control->y ) } } );
 			return 0;
 		},
 		[]( const FT_Vector *control1, const FT_Vector *control2, const FT_Vector *to, void *user )
@@ -123,16 +119,16 @@ std::unique_ptr<Glyph> create_glyph( unsigned int glyph_id, const FontFace *font
 		{
 			auto *g = static_cast<Glyph *>( user );
 			g->commands.push_back(
-				{ PathCommand::CubicTo,
-		          { static_cast<float>( to->x ), static_cast<float>( to->y ) },
-		          { static_cast<float>( control1->x ), static_cast<float>( control1->y ) },
-		          { static_cast<float>( control2->x ), static_cast<float>( control2->y ) } } );
+				CubicTo { { static_cast<float>( to->x ), static_cast<float>( to->y ) },
+		                  { static_cast<float>( control1->x ), static_cast<float>( control1->y ) },
+		                  { static_cast<float>( control2->x ), static_cast<float>( control2->y ) } } );
 			return 0;
 		},
 		0,
 		0 };
 
 	FT_Outline_Decompose( &face->glyph->outline, &funcs, glyph.get() );
+	glyph->commands.push_back( Close {} );
 
 	glyph->bearingX = static_cast<float>( face->glyph->metrics.horiBearingX );
 	glyph->bearingY = static_cast<float>( face->glyph->metrics.horiBearingY );

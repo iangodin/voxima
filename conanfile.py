@@ -27,12 +27,13 @@ class MyProjectConan(ConanFile):
     self.requires("cairo/1.18.4")
     self.requires("pixman/0.43.4")
     self.requires("fontconfig/2.17.1")
+    self.requires("clipper2/2.0.1")
 
   def layout(self):
     cmake_layout(self, generator="Ninja Multi-Config")
 
   def generate(self):
     tc = CMakeToolchain(self)
-    tc.generator = "Ninja Multi-Config"
+    tc.generator = "Ninja"
     tc.generate()
 

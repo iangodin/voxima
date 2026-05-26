@@ -11,6 +11,7 @@ build/Release/sonimation --width 1280 --height 720 \
 	--font-dir assets/fonts \
 	--render-dir render \
 	--save-png \
+	--save-svg \
 	--theme "Academic Classic" \
 	--container mkv \
 	--vcodec h264 \
