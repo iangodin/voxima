@@ -35,7 +35,7 @@ void show_title( Stage &stage )
 void show_math( Stage &stage )
 {
 	// 1. Get the math font from the current theme
-	MathFonts math_fonts = stage.theme->get_math( FontStyle{ Intent::MATH } );
+	MathFonts math_fonts = stage.theme->get_math( FontStyle{ Intent::MATH }.large() );
 	MathFont math_font( math_fonts.roman() );
 
 	// 2. Determine scaling factors
@@ -46,11 +46,11 @@ void show_math( Stage &stage )
 
 	// 3. Common large operators
 	std::vector<char32_t> ops = {
-		U'∫'  // Integral
-//		U'∑', // Summation
-//		U'∏', // Product
-//		U'[', // Left Square Bracket
-//		U']'  // Right Square Bracket
+		U'∫', // Integral
+		U'∑', // Summation
+		U'∏', // Product
+		U'[', // Left Square Bracket
+		U']'  // Right Square Bracket
 	};
 
 	float x = -6.0f;
@@ -80,7 +80,13 @@ Scene show_ease( Stage &stage, const std::string &name, Ease &&ease, float y, in
 	auto &label = create_text( stage, name, FontStyle{ Intent::LABEL } );
 	label.position = { -6.F, y };
 
-	co_await ease( circle.position.x, x1, x2, frames );
+	auto anim = ease( x1, x2, frames );
+	while ( anim.next() )
+	{
+		circle.position = { anim.value(), circle.position.y() };
+		co_await next_frame();
+	}
+
 }
 
 Scene narrate( Stage &stage, Script &script )
@@ -123,10 +129,9 @@ Screenplay my_screenplay( Stage &stage, Script &script )
 	std::string label_linear{
 		script.fetch( lang, "labels", "ease_linear" ).as_string( not_found ) };
 
-	//show_title( stage );
+	show_title( stage );
 	show_math( stage );
 
-	/*
 	co_await choreograph(
 		show_ease( stage, label_cubic_in, ease_cubic_in, 3.F, duration ),
 		show_ease( stage, label_cubic_out, ease_cubic_out, 2.5F, duration ),
@@ -139,6 +144,5 @@ Screenplay my_screenplay( Stage &stage, Script &script )
 		show_ease( stage, label_back_in_out, ease_back_in_out, -1.0F, duration ),
 		show_ease( stage, label_linear, ease_linear, -1.5F, duration ),
 		narrate( stage, script ) );
-	*/
-	co_await wait_for( duration );
+	//co_await wait_for( duration );
 }

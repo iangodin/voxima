@@ -1,7 +1,14 @@
+
+//#define CLIPPER_UNION_GLYPHS
+
 #include "exporters/SVGWriter.h"
 #include "visuals/MathAssembly.h"
 #include "visuals/Polyline.h"
+
+#ifdef CLIPPER_UNION_GLYPHS
 #include <clipper2/clipper.h>
+#endif
+
 #include <cmath>
 #include <sstream>
 
@@ -76,6 +83,7 @@ public:
 		for ( const auto &v: group ) v->accept( *this );
 		offset = old_offset;
 	}
+	void visit( const MathAssembly &assembly ) override { visit( static_cast<const Group &>( assembly ) ); }
 
 	void visit( const Circle & ) override {}
 	void visit( const Rectangle & ) override {}
@@ -310,43 +318,6 @@ void SVGWriter::visit( const Image &image )
 
 void SVGWriter::visit( const Group &group )
 {
-	if ( dynamic_cast<const MathAssembly *>( &group ) )
-	{
-		PolylineCollector collector;
-		for ( const auto &v: group ) v->accept( collector );
-
-		Clipper2Lib::PathsD subject;
-		for ( const auto &poly: collector.polylines )
-		{
-			Clipper2Lib::PathD path;
-			for ( const auto &p: poly ) path.push_back( { (double)p.x(), (double)p.y() } );
-			subject.push_back( path );
-		}
-
-		Clipper2Lib::PathsD unioned = Clipper2Lib::Union( subject, Clipper2Lib::FillRule::NonZero );
-
-		if ( open_g( group, false ) )
-		{
-			Color final_color = _current_color * group.color;
-			Color final_stroke_color = _current_stroke_color * group.stroke_color;
-
-			_out << indent() << "<path d=\"";
-			for ( size_t i = 0; i < unioned.size(); ++i )
-			{
-				if ( i > 0 ) _out << " ";
-				const auto &path = unioned[i];
-				if ( path.empty() ) continue;
-				_out << "M " << path[0].x << "," << path[0].y;
-				for ( size_t j = 1; j < path.size(); ++j ) _out << " L " << path[j].x << "," << path[j].y;
-				_out << " Z";
-			}
-			_out << "\" " << color_attributes( final_color ) << " "
-			     << stroke_attributes( group.stroke_thickness, final_stroke_color ) << " />\n";
-			close_g();
-		}
-		return;
-	}
-
 	Color old_color = _current_color;
 	Color old_stroke_color = _current_stroke_color;
 
@@ -362,6 +333,60 @@ void SVGWriter::visit( const Group &group )
 
 	_current_color = old_color;
 	_current_stroke_color = old_stroke_color;
+}
+
+void SVGWriter::visit( const MathAssembly &assembly )
+{
+#ifdef CLIPPER_UNION_GLYPHS
+	PolylineCollector collector;
+	for ( const auto &v: assembly ) v->accept( collector );
+
+	Clipper2Lib::PathsD subject;
+	for ( const auto &poly: collector.polylines )
+	{
+		Clipper2Lib::PathD path;
+		for ( const auto &p: poly ) path.push_back( { (double)p.x(), (double)p.y() } );
+		subject.push_back( path );
+	}
+
+	Clipper2Lib::PathsD unioned = Clipper2Lib::Union( subject, Clipper2Lib::FillRule::NonZero );
+
+	if ( open_g( assembly, false ) )
+	{
+		Color final_color = _current_color * assembly.color;
+		Color final_stroke_color = _current_stroke_color * assembly.stroke_color;
+
+		_out << indent() << "<path d=\"";
+		for ( size_t i = 0; i < unioned.size(); ++i )
+		{
+			if ( i > 0 ) _out << " ";
+			const auto &path = unioned[i];
+			if ( path.empty() ) continue;
+			_out << "M " << path[0].x << "," << path[0].y;
+			for ( size_t j = 1; j < path.size(); ++j ) _out << " L " << path[j].x << "," << path[j].y;
+			_out << " Z";
+		}
+		_out << "\" " << color_attributes( final_color ) << " "
+		     << stroke_attributes( assembly.stroke_thickness, final_stroke_color ) << " />\n";
+		close_g();
+	}
+#else
+	Color old_color = _current_color;
+	Color old_stroke_color = _current_stroke_color;
+
+	_current_color = _current_color * assembly.color;
+	_current_stroke_color = _current_stroke_color * assembly.stroke_color;
+
+	open_g( assembly, true );
+	for ( const auto &v : assembly )
+	{
+		v->accept( *this );
+	}
+	close_g();
+
+	_current_color = old_color;
+	_current_stroke_color = old_stroke_color;
+#endif
 }
 
 std::string SVGWriter::color_attributes( const Color &c )

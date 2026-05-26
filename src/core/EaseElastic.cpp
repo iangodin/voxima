@@ -6,14 +6,8 @@
 
 constexpr float pi = 3.14159265358979323846f;
 
-Animation EaseElasticIn::operator()( float &value, float start, float end, int64_t total_frames ) const
+Animation EaseElasticIn::operator()( float start, float end, int64_t total_frames ) const
 {
-	if ( total_frames <= 0 )
-	{
-		value = end;
-		co_return;
-	}
-
 	const float s = amplitude < 1.F ?  period / 4.F : period / ( 2.F * pi ) * std::asin( 1.F / amplitude );
 
 	for ( int64_t frame = 0; frame < total_frames; ++frame )
@@ -34,21 +28,12 @@ Animation EaseElasticIn::operator()( float &value, float start, float end, int64
 			ease_t = -amplitude * std::pow( 2.0f, 10.0f * t - 10.0f ) * std::sin( ( t * 10.0f - 10.f - s ) * ( 2.0f * pi ) / period );
 		}
 
-		value = start + ( end - start ) * ease_t;
-
-		co_yield {};
+		co_yield start + ( end - start ) * ease_t;
 	}
-	value = end;
 }
 
-Animation EaseElasticOut::operator()( float &value, float start, float end, int64_t total_frames ) const
+Animation EaseElasticOut::operator()( float start, float end, int64_t total_frames ) const
 {
-	if ( total_frames <= 0 )
-	{
-		value = end;
-		co_return;
-	}
-
 	const float s = amplitude < 1.F ?  period / 4.F : period / ( 2.F * pi ) * std::asin( 1.F / amplitude );
 
 	for ( int64_t frame = 0; frame < total_frames; ++frame )
@@ -69,21 +54,12 @@ Animation EaseElasticOut::operator()( float &value, float start, float end, int6
 			ease_t = amplitude * std::pow( 2.0f, -10.0f * t ) * std::sin( ( t * 10.0f - s ) * ( 2.0f * pi ) / period ) + 1.0f;
 		}
 
-		value = start + ( end - start ) * ease_t;
-
-		co_yield {};
+		co_yield start + ( end - start ) * ease_t;
 	}
-	value = end;
 }
 
-Animation EaseElasticInOut::operator()( float &value, float start, float end, int64_t total_frames ) const
+Animation EaseElasticInOut::operator()( float start, float end, int64_t total_frames ) const
 {
-	if ( total_frames <= 0 )
-	{
-		value = end;
-		co_return;
-	}
-
 	const float s = amplitude < 1.F ?  period / 4.F : period / ( 2.F * pi ) * std::asin( 1.F / amplitude );
 
 	for ( int64_t frame = 0; frame < total_frames; ++frame )
@@ -108,10 +84,7 @@ Animation EaseElasticInOut::operator()( float &value, float start, float end, in
 			ease_t = ( amplitude * std::pow( 2.0f, -20.0f * t + 10.0f ) * std::sin( ( 20.0f * t - 10.f - s ) * ( 2.0f * pi ) / period ) ) / 2.0f + 1.0f;
 		}
 
-		value = start + ( end - start ) * ease_t;
-
-		co_yield {};
+		co_yield start + ( end - start ) * ease_t;
 	}
-	value = end;
 }
 

@@ -1,7 +1,7 @@
 
 #pragma once
 
-#include "Coroutine.h"
+#include "Generator.h"
 
-using Animation = Coroutine;
+using Animation = Generator<float>;
 

@@ -10,7 +10,7 @@ struct EaseElasticIn
 	float amplitude = 0.25F;
 	float period = 0.3F;
 
-	Animation operator()( float &value, float start, float end, int64_t total_frames ) const;
+	Animation operator()( float start, float end, int64_t total_frames ) const;
 };
 
 struct EaseElasticOut
@@ -18,7 +18,7 @@ struct EaseElasticOut
     float amplitude = 0.25F;
     float period = 0.3F;
 
-	Animation operator()( float &value, float start, float end, int64_t total_frames ) const;
+	Animation operator()( float start, float end, int64_t total_frames ) const;
 };
 
 struct EaseElasticInOut
@@ -26,7 +26,7 @@ struct EaseElasticInOut
     float amplitude = 0.25F;
     float period = 0.3F;
 
-	Animation operator()( float &value, float start, float end, int64_t total_frames ) const;
+	Animation operator()( float start, float end, int64_t total_frames ) const;
 };
 
 inline constexpr EaseElasticIn ease_elastic_in{};

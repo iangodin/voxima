@@ -1,9 +1,9 @@
 
 #pragma once
 
-#include "Animation.h"
+#include "Coroutine.h"
 
-inline Animation wait_for( int64_t frames )
+inline Coroutine wait_for( int64_t frames )
 {
 	while ( frames > 0 )
 	{
@@ -12,3 +12,7 @@ inline Animation wait_for( int64_t frames )
 	}
 }
 
+inline Coroutine next_frame()
+{
+	co_yield NextFrame{};
+}

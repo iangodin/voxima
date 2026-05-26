@@ -12,6 +12,7 @@
 #include "visuals/Path.h"
 #include "visuals/Group.h"
 #include "visuals/Image.h"
+#include "visuals/MathAssembly.h"
 
 #include <algorithm>
 #include <limits>
@@ -137,6 +138,11 @@ public:
 		{
 			visual->accept( *this );
 		}
+	}
+
+	void visit( const MathAssembly &assembly ) override
+	{
+		visit( static_cast<const Group &>( assembly ) );
 	}
 
 	void visit( const Image &image ) override

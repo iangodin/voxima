@@ -36,6 +36,7 @@ public:
 	void visit( const ArrowTip &arrow ) override;
 	void visit( const Image &image ) override;
 	void visit( const Group &group ) override;
+	void visit( const MathAssembly &assembly ) override;
 
 	static std::string color_attributes( const Color &c );
 	static std::string stroke_attributes( float thickness, const Color &c );

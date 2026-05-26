@@ -7,6 +7,7 @@
 #include "Path.h"
 #include "Glyph.h"
 #include "Group.h"
+#include "MathAssembly.h"
 #include <functional>
 
 class CallbackVisitor : public VisualVisitor
@@ -33,6 +34,7 @@ public:
 			v->accept( *this );
 		}
 	}
+	void visit( const MathAssembly &assembly ) override { visit( static_cast<const Group &>( assembly ) ); }
 
 private:
 	std::function<void( Visual & )> _callback;

@@ -21,6 +21,7 @@ struct Text;
 struct Image;
 class Group;
 struct Glyph;
+class MathAssembly;
 
 struct VisualVisitor
 {
@@ -35,4 +36,5 @@ struct VisualVisitor
 	virtual void visit( const Image &image ) = 0;
 	virtual void visit( const Group &group ) = 0;
 	virtual void visit( const Glyph &glyph ) = 0;
+	virtual void visit( const MathAssembly &assembly ) = 0;
 };
