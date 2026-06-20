@@ -22,7 +22,7 @@ namespace
 			ThemeUtils::get_fira_filename( properties, base_name ), 0, font_size ) );
 		fonts.append(
 			theme.load_variable_font( "NotoEmoji-Variable.ttf", 0, font_size, 400, 100, 0 ) );
-		fonts.append( theme.load_font( "NotoSansCJK-Variable.otc", 0, font_size ) );
+		fonts.append( theme.load_font( "NotoSansCJK-Variable.ttc", 0, font_size ) );
 		fonts.append( theme.load_font(
 			ThemeUtils::get_fira_filename( properties, "FiraMono" ), 0, font_size ) );
 		fonts.append( theme.load_font( "AND-Regular.otf", 0, font_size ) );
@@ -49,7 +49,7 @@ FontStack intent_math( const FontStyle &style, Theme &theme )
 	FontStack fonts;
 	fonts.append( theme.load_font( "FiraMath-Regular.otf", 0, font_size ) );
 	fonts.append( theme.load_variable_font( "NotoEmoji-Variable.ttf", 0, font_size, 400, 100, 0 ) );
-	fonts.append( theme.load_font( "NotoSansCJK-Variable.otc", 0, font_size ) );
+	fonts.append( theme.load_font( "NotoSansCJK-Variable.ttc", 0, font_size ) );
 	fonts.append(
 		theme.load_font( ThemeUtils::get_fira_filename( properties, "FiraMono" ), 0, font_size ) );
 	fonts.append( theme.load_font( "AND-Regular.otf", 0, font_size ) );
