@@ -9,8 +9,8 @@ font_renames = {
   "IBM Plex Sans Var-Italic.ttf": "IBMPlexSans-Italic-Variable.ttf",
   "Comfortaa%5Bwght%5D.ttf": "Comfortaa-Variable.ttf",
   "NotoSerifCJK-VF.ttf.ttc": "NotoSerifCJK-Variable.ttc",
-  "NotoSansMonoCJK-VF.ttf.ttc": "NonotoSansMonoCJK-Variable.ttc",
-  "NotoSansCJK-VF.ttf.ttc": "NonotoSansCJK-Variable.ttc",
+  "NotoSansMonoCJK-VF.ttf.ttc": "NotoSansMonoCJK-Variable.ttc",
+  "NotoSansCJK-VF.ttf.ttc": "NotoSansCJK-Variable.ttc",
   "NotoEmoji%5Bwght%5D.ttf": "NotoEmoji-Variable.ttf",
   "Quicksand%5Bwght%5D.ttf": "Quicksand-Variable.ttf",
 }

@@ -63,6 +63,7 @@ add_library( visuals STATIC
 	src/visuals/CreateStyledText.cpp
 	src/visuals/StyledText.cpp
 	src/visuals/Polyline.cpp
+	src/visuals/Radical.cpp
 )
 
 target_compile_features( visuals PUBLIC cxx_std_20 )
