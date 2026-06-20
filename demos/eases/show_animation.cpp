@@ -17,6 +17,7 @@
 #include <visuals/CreateText.h>
 #include <visuals/StyledText.h>
 #include <visuals/CreateMathLargeOperation.h>
+#include <visuals/Radical.h>
 #include <fonts/MathFont.h>
 
 #include <core/Narration.h>
@@ -46,11 +47,11 @@ void show_math( Stage &stage )
 
 	// 3. Common large operators
 	std::vector<char32_t> ops = {
-		U'∫', // Integral
-		U'∑', // Summation
-		U'∏', // Product
-		U'[', // Left Square Bracket
-		U']'  // Right Square Bracket
+//		U'∫', // Integral
+//		U'∑', // Summation
+		U'√' // Square Root
+//		U'[', // Left Square Bracket
+//		U']'  // Right Square Bracket
 	};
 
 	float x = -6.0f;
@@ -59,11 +60,23 @@ void show_math( Stage &stage )
 	for ( char32_t op: ops )
 	{
 		float h = ( op == U']' ) ? 8.0f : target_height_canvas;
-		std::unique_ptr<Visual> visual = create_math_large_op( math_font, op, h / glyph_scale );
-		*visual *= glyph_scale;
-		visual->position = { x, 0.0f };
-		visual->color = Color{ 0.2f, 0.6f, 1.0f, 1.0f };
-		stage.visuals.add( std::move( visual ) );
+        if (op == U'√')
+        {
+            auto inner = std::make_unique<Circle>();
+            inner->radius = 1.0f; // Increase radius to be visible
+            auto radical = std::make_unique<Radical>(math_font, glyph_scale, std::move(inner));
+            // *radical *= glyph_scale; // Removed unnecessary scaling
+            radical->position = { x, 0.0f };
+            stage.visuals.add(std::move(radical));
+        }
+        else
+        {
+            std::unique_ptr<Visual> visual = create_math_large_op( math_font, op, h / glyph_scale );
+            *visual *= glyph_scale;
+            visual->position = { x, 0.0f };
+            visual->color = Color{ 0.2f, 0.6f, 1.0f, 1.0f };
+            stage.visuals.add( std::move( visual ) );
+        }
 		x += spacing;
 	}
 }
@@ -129,9 +142,10 @@ Screenplay my_screenplay( Stage &stage, Script &script )
 	std::string label_linear{
 		script.fetch( lang, "labels", "ease_linear" ).as_string( not_found ) };
 
-	show_title( stage );
+	//show_title( stage );
 	show_math( stage );
 
+	/*
 	co_await choreograph(
 		show_ease( stage, label_cubic_in, ease_cubic_in, 3.F, duration ),
 		show_ease( stage, label_cubic_out, ease_cubic_out, 2.5F, duration ),
@@ -144,5 +158,6 @@ Screenplay my_screenplay( Stage &stage, Script &script )
 		show_ease( stage, label_back_in_out, ease_back_in_out, -1.0F, duration ),
 		show_ease( stage, label_linear, ease_linear, -1.5F, duration ),
 		narrate( stage, script ) );
-	//co_await wait_for( duration );
+	*/
+	co_await wait_for( duration );
 }
