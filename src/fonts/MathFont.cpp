@@ -34,6 +34,16 @@ float MathFont::top_accent_attachment( uint32_t glyph_index ) const
 	return static_cast<float>( hb_ot_math_get_glyph_top_accent_attachment( _hb_font, glyph_index ) );
 }
 
+float MathFont::radical_rule_thickness() const
+{
+	return static_cast<float>( hb_ot_math_get_constant( _hb_font, HB_OT_MATH_CONSTANT_RADICAL_RULE_THICKNESS ) );
+}
+
+float MathFont::radical_vertical_gap() const
+{
+	return static_cast<float>( hb_ot_math_get_constant( _hb_font, HB_OT_MATH_CONSTANT_RADICAL_VERTICAL_GAP ) );
+}
+
 uint32_t MathFont::get_glyph_index( char32_t codepoint ) const
 {
 	hb_codepoint_t index = 0;

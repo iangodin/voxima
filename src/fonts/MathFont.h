@@ -41,6 +41,8 @@ public:
 	[[nodiscard]] float axis_height() const;
 	[[nodiscard]] float italic_correction( uint32_t glyph_index ) const;
 	[[nodiscard]] float top_accent_attachment( uint32_t glyph_index ) const;
+	[[nodiscard]] float radical_rule_thickness() const;
+	[[nodiscard]] float radical_vertical_gap() const;
 
 	[[nodiscard]] uint32_t get_glyph_index( char32_t codepoint ) const;
 	[[nodiscard]] uint32_t get_large_variant( char32_t codepoint, float target_height ) const;
