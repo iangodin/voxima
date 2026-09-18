@@ -64,7 +64,7 @@ void show_math( Stage &stage )
         if (op == U'√')
         {
             auto radical = std::make_unique<Radical>(
-                math_font, glyph_scale, make_text( *stage.theme, "3.141592", FontStyle{ Intent::MATH } ) );
+                math_font, glyph_scale, make_text( *stage.theme, "3.141592", FontStyle{ Intent::MATH }.large() ) );
             radical->position = { x, 0.0f };
             stage.visuals.add(std::move(radical));
         }
