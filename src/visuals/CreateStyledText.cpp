@@ -9,7 +9,6 @@
 #include <fonts/FontStack.h>
 #include <fonts/FontStyle.h>
 
-#include <core/Stage.h>
 #include <core/Theme.h>
 
 #include <hb-ft.h>
@@ -50,19 +49,15 @@ struct HbFontCache
 
 }
 
-Group &create_styled_text( Stage &stage, const StyledText &text )
+std::unique_ptr<Group> make_styled_text( Theme &theme, const StyledText &text )
 {
-	return create_styled_text( stage, stage.visuals, text );
-}
-
-Group &create_styled_text( Stage &stage, Group &group, const StyledText &text )
-{
-	Theme &theme = *stage.theme;
-	auto &subgroup = group.add( std::make_unique<Group>() );
+	auto root = std::make_unique<Group>();
 
 	HbFontCache font_cache;
 	hb_buffer_t *buffer = hb_buffer_create();
 
+	// The first line's baseline is at y = 0 and the origin is at the start of the line;
+	// further lines go below. Callers position (or center) the result as they see fit.
 	float current_y = 0.0f;
 	const float line_height = 0.5f;
 
@@ -75,8 +70,8 @@ Group &create_styled_text( Stage &stage, Group &group, const StyledText &text )
 		size_t line_start = static_cast<size_t>( line_view.data() - full_text.data() );
 		size_t line_end = line_start + line_view.size();
 
-		auto &line_group = subgroup.add( std::make_unique<TextLine>() );
-		line_group.set_horizontal_baseline( current_y );
+		auto &line_group = root->add( std::make_unique<TextLine>() );
+		line_group.baseline = current_y;
 
 		text.styles().for_each(
 			line_start,
@@ -185,7 +180,6 @@ Group &create_styled_text( Stage &stage, Group &group, const StyledText &text )
 	}
 
 	hb_buffer_destroy( buffer );
-	center_group( subgroup );
 
-	return subgroup;
+	return root;
 }

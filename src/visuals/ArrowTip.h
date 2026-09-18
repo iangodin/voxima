@@ -22,6 +22,8 @@ struct ArrowTip : public Visual
 		end *= scale;
 		size *= scale;
 		position *= scale;
+		baseline *= scale;
+		math_axis *= scale;
 		return *this;
 	}
 };

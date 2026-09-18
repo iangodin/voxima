@@ -24,8 +24,8 @@ Screenplay math_test( Stage &stage )
 	auto large = FontStyle( "prose" ).huge();
 	auto math_style = FontStyle( "math" ).huge();
 
-	create_text( stage,
-		"Math Layout Test 😀", large );
+	auto &label = stage.visuals.add( make_text( *stage.theme, "Math Layout Test 😀", large ) );
+	center_group( label );
 	co_await wait_for( 1 );
 	stage.visuals.clear();
 

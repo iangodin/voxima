@@ -172,6 +172,8 @@ std::unique_ptr<MathAssembly> create_assembly(
 		visual->position = visual->position.movedBy( 0, final_offset );
 	}
 
+	assembly->math_axis = font.axis_height();
+
 	return assembly;
 }
 }
@@ -218,6 +220,7 @@ std::unique_ptr<Visual> create_math_large_op(
 	// The midpoint relative to the glyph origin is (height - depth) / 2.
 	float midpoint = ( height - depth ) / 2.0f;
 	math_glyph->position = math_glyph->position.withY( font.axis_height() - midpoint );
+	math_glyph->math_axis = font.axis_height();
 
 	return math_glyph;
 }

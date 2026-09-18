@@ -28,6 +28,8 @@ struct Glyph : public Visual
 	Glyph &operator*=( float scale ) override
 	{
 		position *= scale;
+		baseline *= scale;
+		math_axis *= scale;
 		bearingX *= scale;
 		bearingY *= scale;
 		advanceX *= scale;

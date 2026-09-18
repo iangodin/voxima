@@ -64,6 +64,8 @@ public:
 			*visual *= scale;
 		}
 		position *= scale;
+		baseline *= scale;
+		math_axis *= scale;
 		return *this;
 	}
 

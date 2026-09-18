@@ -8,7 +8,6 @@
 #include <fonts/FontStack.h>
 #include <fonts/FontStyle.h>
 
-#include <core/Stage.h>
 #include <core/Theme.h>
 
 #include <utils/Utf8.h>
@@ -138,14 +137,9 @@ std::unique_ptr<Glyph> create_glyph( unsigned int glyph_id, const FontFace *font
 	return glyph;
 }
 
-Group &create_text( Stage &stage, const std::string &text, const FontStyle &style )
-{
-	return create_text( stage, stage.visuals, text, style );
-}
-
-Group &create_text( Stage &stage, Group &group, const std::string &text, const FontStyle &style )
+std::unique_ptr<Group> make_text( Theme &theme, const std::string &text, const FontStyle &style )
 {
 	StyledText st( text );
 	st.set_font_style( 0, st.size(), style );
-	return create_styled_text( stage, group, st );
+	return make_styled_text( theme, st );
 }

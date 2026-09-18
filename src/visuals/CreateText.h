@@ -12,7 +12,7 @@
 #include <memory>
 
 class Group;
-struct Stage;
+struct Theme;
 struct Glyph;
 struct FontFace;
 
@@ -28,5 +28,5 @@ std::vector<TextRange> create_ranges( std::string_view str, const FontStack &fon
 void center_group( Group &group );
 std::unique_ptr<Glyph> create_glyph( unsigned int glyph_id, const FontFace *font_face );
 
-Group &create_text( Stage &stage, const std::string &text, const FontStyle &style );
-Group &create_text( Stage &stage, Group &group, const std::string &text, const FontStyle &style );
+/// Lay out plain text in the given style, baseline at y = 0 (not centered).
+std::unique_ptr<Group> make_text( Theme &theme, const std::string &text, const FontStyle &style );

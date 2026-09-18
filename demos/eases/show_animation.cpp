@@ -29,7 +29,8 @@ void show_title( Stage &stage )
 	text.set_color( 0, 5, Color{ 1.0f, 0.0f, 0.0f, 1.0f } );
 	text.set_weight( 2, 4, Weight::BLACK );
 
-	auto &label = create_styled_text( stage, text );
+	auto &label = stage.visuals.add( make_styled_text( *stage.theme, text ) );
+	center_group( label );
 	label.position = { 0.F, 3.F };
 }
 
@@ -62,10 +63,8 @@ void show_math( Stage &stage )
 		float h = ( op == U']' ) ? 8.0f : target_height_canvas;
         if (op == U'√')
         {
-            auto inner = std::make_unique<Circle>();
-            inner->radius = 1.0f; // Increase radius to be visible
-            auto radical = std::make_unique<Radical>(math_font, glyph_scale, std::move(inner));
-            // *radical *= glyph_scale; // Removed unnecessary scaling
+            auto radical = std::make_unique<Radical>(
+                math_font, glyph_scale, make_text( *stage.theme, "3.141592", FontStyle{ Intent::MATH } ) );
             radical->position = { x, 0.0f };
             stage.visuals.add(std::move(radical));
         }
@@ -90,7 +89,7 @@ Scene show_ease( Stage &stage, const std::string &name, Ease &&ease, float y, in
 	circle.radius = 0.1F;
 	circle.position = { x1, y };
 
-	auto &label = create_text( stage, name, FontStyle{ Intent::LABEL } );
+	auto &label = stage.visuals.add( make_text( *stage.theme, name, FontStyle{ Intent::LABEL } ) );
 	label.position = { -6.F, y };
 
 	auto anim = ease( x1, x2, frames );

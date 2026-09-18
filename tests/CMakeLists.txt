@@ -5,6 +5,7 @@ add_executable( sonimation_unit_tests
 	TestIntervalMap.cpp
 	TestStyledText.cpp
 	TestCreateStyledText.cpp
+	TestRadical.cpp
 )
 
 target_link_libraries( sonimation_unit_tests

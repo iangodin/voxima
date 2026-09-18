@@ -10,10 +10,4 @@ class Radical : public Group
 {
 public:
     Radical(const MathFont &font, float glyph_scale, std::unique_ptr<Visual> &&content);
-
-    Radical &operator*=(float scale) override;
-
-private:
-    Visual* _radical_sign = nullptr;
-    Visual* _overline = nullptr;
 };

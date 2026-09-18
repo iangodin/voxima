@@ -19,6 +19,8 @@ struct Line : public Visual
 		start *= scale;
 		end *= scale;
 		position *= scale;
+		baseline *= scale;
+		math_axis *= scale;
 		return *this;
 	}
 };

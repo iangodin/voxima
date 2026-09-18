@@ -37,6 +37,8 @@ struct Path : public Visual
 			}, command);
 		}
 		position *= scale;
+		baseline *= scale;
+		math_axis *= scale;
 		return *this;
 	}
 };

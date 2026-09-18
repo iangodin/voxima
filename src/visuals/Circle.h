@@ -17,6 +17,8 @@ struct Circle : public Visual
 	{
 		radius *= scale;
 		position *= scale;
+		baseline *= scale;
+		math_axis *= scale;
 		return *this;
 	}
 };

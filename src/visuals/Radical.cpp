@@ -12,7 +12,9 @@ Radical::Radical( const MathFont &font, float glyph_scale, std::unique_ptr<Visua
 	content->accept( bounder );
 	float y_max = bounder.bounds.max.y();
 	float y_min = bounder.bounds.min.y();
-	float content_width = bounder.bounds.max.x() - bounder.bounds.min.x();
+	float x_min = bounder.bounds.min.x();
+	float x_max = bounder.bounds.max.x();
+	float content_width = x_max - x_min;
 
 	// 2. Calculate target height (in canvas units)
 	float rule_thickness = font.radical_rule_thickness() * glyph_scale;
@@ -27,36 +29,27 @@ Radical::Radical( const MathFont &font, float glyph_scale, std::unique_ptr<Visua
 	radical_sign->accept( bounder );
 	float radical_width = bounder.bounds.max.x() - bounder.bounds.min.x();
 
-	// Add content
+	// Align the top of the radical sign with the top of the overline
+	float sign_y_max = bounder.bounds.max.y();
+	radical_sign->position = { radical_sign->position.x(), radical_sign->position.y() + ( y_top - sign_y_max ) };
+
+	// Add content, aligning its left edge with the right edge of the radical sign
 	auto &content_ref = add( std::move( content ) );
-	content_ref.position = { radical_width, 0.F };
+	content_ref.position = { radical_width - x_min, 0.F };
 
 	// Draw procedural overline
-	auto overline = std::make_unique<Rectangle>();
-	_overline = &add( std::move( overline ) );
-	_overline->color = { 1.F, 1.F, 1.F, 1.F };
-	static_cast<Rectangle *>( _overline )->half_width = content_width / 2.F;
-	static_cast<Rectangle *>( _overline )->half_height = rule_thickness / 2.F;
+	auto &overline = add( std::make_unique<Rectangle>() );
+	overline.color = { 1.F, 1.F, 1.F, 1.F };
+	overline.half_width = content_width / 2.F;
+	overline.half_height = rule_thickness / 2.F;
 	float overline_center_x = radical_width + ( content_width / 2.F );
-	_overline->position = { overline_center_x, y_top - rule_thickness / 2.F };
+	overline.position = { overline_center_x, y_top - rule_thickness / 2.F };
 
-	_radical_sign = &add( std::move( radical_sign ) );
-	_radical_sign->position = { 0.F, 0.F };
-}
+	add( std::move( radical_sign ) );
 
-Radical &Radical::operator*=( float scale )
-{
-	position *= scale;
-	if ( _radical_sign )
-	{
-		*_radical_sign *= scale;
-	}
-	if ( _overline )
-	{
-		_overline->position = { _overline->position.x() * scale, _overline->position.y() * scale };
-		auto *rect = static_cast<Rectangle *>( _overline );
-		rect->half_width *= scale;
-		rect->half_height *= scale;
-	}
-	return *this;
+	// The radicand sits on the incoming baseline (content wasn't shifted
+	// vertically), so `baseline` stays at its default of 0; only the math
+	// axis needs to be recorded, for centering a radical against neighboring
+	// operators/relations.
+	math_axis = font.axis_height() * glyph_scale;
 }

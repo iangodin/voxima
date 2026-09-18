@@ -28,6 +28,8 @@ struct RoundRectangle : public Visual
 		top_right_radius *= scale;
 		bottom_left_radius *= scale;
 		bottom_right_radius *= scale;
+		baseline *= scale;
+		math_axis *= scale;
 		return *this;
 	}
 };

@@ -1,14 +1,12 @@
 #pragma once
 
 #include "visuals/Group.h"
-#include "core/Stage.h"
 #include "visuals/StyledText.h"
 
 #include <memory>
 
-class Group;
-struct Stage;
-class StyledText;
+struct Theme;
 
-Group &create_styled_text( Stage &stage, const StyledText &text );
-Group &create_styled_text( Stage &stage, Group &group, const StyledText &text );
+/// Lay out styled text as a group of TextLines. The origin is the start of the first
+/// line's baseline (baseline at y = 0); the result is not centered.
+std::unique_ptr<Group> make_styled_text( Theme &theme, const StyledText &text );
