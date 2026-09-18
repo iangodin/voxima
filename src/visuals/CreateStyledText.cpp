@@ -133,6 +133,11 @@ std::unique_ptr<Group> make_styled_text( Theme &theme, const StyledText &text )
 						}
 						glyph->advanceX = static_cast<float>( pos.x_advance );
 						glyph->advanceY = static_cast<float>( pos.y_advance );
+						if ( glyph->extent )
+						{
+							// Shaped advance (includes kerning) replaces the nominal one
+							glyph->extent->max = { glyph->advanceX, glyph->extent->max.y() };
+						}
 
 #ifdef DEBUG_GLYPH_METRICS
 						// Debug shapes (Font Units)

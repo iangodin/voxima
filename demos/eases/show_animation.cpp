@@ -17,8 +17,11 @@
 #include <visuals/CreateText.h>
 #include <visuals/StyledText.h>
 #include <visuals/CreateMathLargeOperation.h>
+#include <visuals/Fraction.h>
 #include <visuals/Radical.h>
+#include <visuals/Scripts.h>
 #include <fonts/MathFont.h>
+#include <fonts/MathStyle.h>
 
 #include <core/Narration.h>
 
@@ -58,13 +61,21 @@ void show_math( Stage &stage )
 	float x = -6.0f;
 	const float spacing = 3.0f;
 
+	auto style = FontStyle{ Intent::MATH }.large();
+	auto fraction = std::make_unique<Fraction>(
+		math_font,
+		glyph_scale,
+		make_text( *stage.theme, "22", style ),
+		make_text( *stage.theme, "7", style ) );
+
 	for ( char32_t op: ops )
 	{
 		float h = ( op == U']' ) ? 8.0f : target_height_canvas;
         if (op == U'√')
         {
-            auto radical = std::make_unique<Radical>(
-                math_font, glyph_scale, make_text( *stage.theme, "3.141592", FontStyle{ Intent::MATH }.large() ) );
+            auto radical = std::make_unique<Radical>( math_font, glyph_scale,
+				make_text( *stage.theme, "137", script_style( style, math_font, ScriptLevel::SCRIPT_SCRIPT ) ),
+				std::move( fraction ) );
             radical->position = { x, 0.0f };
             stage.visuals.add(std::move(radical));
         }
@@ -78,6 +89,17 @@ void show_math( Stage &stage )
         }
 		x += spacing;
 	}
+
+	// x with a superscript and a subscript
+	auto script = script_style( style, math_font, ScriptLevel::SCRIPT );
+	auto scripts = std::make_unique<Scripts>(
+		math_font,
+		glyph_scale,
+		make_text( *stage.theme, "x", style ),
+		make_text( *stage.theme, "2", script ),
+		make_text( *stage.theme, "i", script ) );
+	scripts->position = { 1.0f, 0.0f };
+	stage.visuals.add( std::move( scripts ) );
 }
 
 template<typename Ease>

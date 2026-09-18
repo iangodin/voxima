@@ -44,6 +44,101 @@ float MathFont::radical_vertical_gap() const
 	return static_cast<float>( hb_ot_math_get_constant( _hb_font, HB_OT_MATH_CONSTANT_RADICAL_VERTICAL_GAP ) );
 }
 
+float MathFont::superscript_shift() const
+{
+	return static_cast<float>( hb_ot_math_get_constant( _hb_font, HB_OT_MATH_CONSTANT_SUPERSCRIPT_SHIFT_UP ) );
+}
+
+float MathFont::subscript_shift() const
+{
+	return static_cast<float>( hb_ot_math_get_constant( _hb_font, HB_OT_MATH_CONSTANT_SUBSCRIPT_SHIFT_DOWN ) );
+}
+
+float MathFont::subscript_top_max() const
+{
+	return static_cast<float>( hb_ot_math_get_constant( _hb_font, HB_OT_MATH_CONSTANT_SUBSCRIPT_TOP_MAX ) );
+}
+
+float MathFont::subscript_baseline_drop_min() const
+{
+	return static_cast<float>( hb_ot_math_get_constant( _hb_font, HB_OT_MATH_CONSTANT_SUBSCRIPT_BASELINE_DROP_MIN ) );
+}
+
+float MathFont::superscript_bottom_min() const
+{
+	return static_cast<float>( hb_ot_math_get_constant( _hb_font, HB_OT_MATH_CONSTANT_SUPERSCRIPT_BOTTOM_MIN ) );
+}
+
+float MathFont::superscript_baseline_drop_max() const
+{
+	return static_cast<float>( hb_ot_math_get_constant( _hb_font, HB_OT_MATH_CONSTANT_SUPERSCRIPT_BASELINE_DROP_MAX ) );
+}
+
+float MathFont::sub_superscript_gap_min() const
+{
+	return static_cast<float>( hb_ot_math_get_constant( _hb_font, HB_OT_MATH_CONSTANT_SUB_SUPERSCRIPT_GAP_MIN ) );
+}
+
+float MathFont::superscript_bottom_max_with_subscript() const
+{
+	return static_cast<float>( hb_ot_math_get_constant( _hb_font, HB_OT_MATH_CONSTANT_SUPERSCRIPT_BOTTOM_MAX_WITH_SUBSCRIPT ) );
+}
+
+float MathFont::space_after_script() const
+{
+	return static_cast<float>( hb_ot_math_get_constant( _hb_font, HB_OT_MATH_CONSTANT_SPACE_AFTER_SCRIPT ) );
+}
+
+float MathFont::script_percent_scale_down() const
+{
+	return static_cast<float>( hb_ot_math_get_constant( _hb_font, HB_OT_MATH_CONSTANT_SCRIPT_PERCENT_SCALE_DOWN ) );
+}
+
+float MathFont::script_script_percent_scale_down() const
+{
+	return static_cast<float>( hb_ot_math_get_constant( _hb_font, HB_OT_MATH_CONSTANT_SCRIPT_SCRIPT_PERCENT_SCALE_DOWN ) );
+}
+
+float MathFont::radical_kern_before_degree() const
+{
+	return static_cast<float>( hb_ot_math_get_constant( _hb_font, HB_OT_MATH_CONSTANT_RADICAL_KERN_BEFORE_DEGREE ) );
+}
+
+float MathFont::radical_kern_after_degree() const
+{
+	return static_cast<float>( hb_ot_math_get_constant( _hb_font, HB_OT_MATH_CONSTANT_RADICAL_KERN_AFTER_DEGREE ) );
+}
+
+float MathFont::radical_degree_bottom_raise_percent() const
+{
+	return static_cast<float>( hb_ot_math_get_constant( _hb_font, HB_OT_MATH_CONSTANT_RADICAL_DEGREE_BOTTOM_RAISE_PERCENT ) );
+}
+
+float MathFont::fraction_rule_thickness() const
+{
+	return static_cast<float>( hb_ot_math_get_constant( _hb_font, HB_OT_MATH_CONSTANT_FRACTION_RULE_THICKNESS ) );
+}
+
+float MathFont::fraction_numerator_shift_up() const
+{
+	return static_cast<float>( hb_ot_math_get_constant( _hb_font, HB_OT_MATH_CONSTANT_FRACTION_NUMERATOR_SHIFT_UP ) );
+}
+
+float MathFont::fraction_numerator_gap_min() const
+{
+	return static_cast<float>( hb_ot_math_get_constant( _hb_font, HB_OT_MATH_CONSTANT_FRACTION_NUMERATOR_GAP_MIN ) );
+}
+
+float MathFont::fraction_denominator_shift_down() const
+{
+	return static_cast<float>( hb_ot_math_get_constant( _hb_font, HB_OT_MATH_CONSTANT_FRACTION_DENOMINATOR_SHIFT_DOWN ) );
+}
+
+float MathFont::fraction_denominator_gap_min() const
+{
+	return static_cast<float>( hb_ot_math_get_constant( _hb_font, HB_OT_MATH_CONSTANT_FRACTION_DENOMINATOR_GAP_MIN ) );
+}
+
 uint32_t MathFont::get_glyph_index( char32_t codepoint ) const
 {
 	hb_codepoint_t index = 0;

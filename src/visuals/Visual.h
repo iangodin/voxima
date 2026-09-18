@@ -3,6 +3,9 @@
 
 #include "visuals/Point.h"
 #include "visuals/Color.h"
+#include "visuals/AABB.h"
+
+#include <optional>
 
 struct VisualVisitor;
 
@@ -29,9 +32,29 @@ struct Visual
 	float baseline = 0.F;
 	float math_axis = 0.F;
 
+	// Layout extent ("box") in the same local frame as the drawn geometry, before
+	// `position`. When set it overrides the drawn (ink) bounds for layout purposes, so
+	// a visual can occupy more or less room than it paints: a glyph spans its advance
+	// width, a fraction includes its side padding. See layout_extent().
+	std::optional<AABB> extent;
+
 	virtual ~Visual() = default;
 	virtual void accept( VisualVisitor &visitor ) const = 0;
 
 	virtual Visual &operator*=( float scale ) = 0;
+
+protected:
+	// Scales the fields common to every visual. Each operator*= calls this and then
+	// scales its own geometry.
+	void scale_common( float scale )
+	{
+		position *= scale;
+		baseline *= scale;
+		math_axis *= scale;
+		if ( extent )
+		{
+			*extent *= scale;
+		}
+	}
 };
 

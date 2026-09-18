@@ -22,6 +22,11 @@ float get_theme_font_size( Scale scale )
 	}
 }
 
+float get_theme_font_size( const FontProperties &props )
+{
+	return get_theme_font_size( props.scale.value_or( Scale::MEDIUM ) ) * props.size_factor.value_or( 1.F );
+}
+
 FontParams get_font_params( const FontProperties &props )
 {
 	int weight = 400; // Regular

@@ -13,7 +13,7 @@ namespace
 	FontStack create_font_stack( const FontStyle &style, Theme &theme )
 	{
 		auto properties = style.properties();
-		const float font_size = ThemeUtils::get_theme_font_size( properties.scale.value_or( Scale::MEDIUM ) );
+		const float font_size = ThemeUtils::get_theme_font_size( properties );
 		auto params = ThemeUtils::get_font_params( properties );
 
 		FontStack fonts;
@@ -40,7 +40,7 @@ FontStack intent_code( const FontStyle &style, Theme &theme )
 FontStack intent_math( const FontStyle &style, Theme &theme )
 {
 	auto properties = style.properties();
-	const float font_size = ThemeUtils::get_theme_font_size( properties.scale.value_or( Scale::MEDIUM ) );
+	const float font_size = ThemeUtils::get_theme_font_size( properties );
 
 	FontStack fonts = create_font_stack( style, theme );
 	fonts.prepend( theme.load_font( "GFSNeohellenicMath.otf", 0, font_size ) );

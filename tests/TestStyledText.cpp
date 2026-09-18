@@ -253,3 +253,70 @@ SCENARIO( "StyledText style application" )
 		}
 	}
 }
+
+namespace
+{
+std::vector<size_t> bidi_levels( const StyledText &text )
+{
+	std::vector<size_t> levels;
+	text.styles().for_each(
+		0,
+		text.size(),
+		TextStyle{},
+		[&]( size_t start, size_t end, const TextStyle &style )
+		{
+			for ( size_t i = start; i < end; ++i )
+			{
+				levels.push_back( style.bidi_level.value_or( 99 ) );
+			}
+		} );
+	return levels;
+}
+}
+
+SCENARIO( "StyledText bidi analysis" )
+{
+	GIVEN( "a string of digits and punctuation" )
+	{
+		StyledText text( "3.141592" );
+
+		THEN( "every character is left-to-right (level 0) in a single run" )
+		{
+			auto levels = bidi_levels( text );
+			REQUIRE( levels.size() == text.size() );
+			for ( auto level: levels )
+			{
+				CHECK( level == 0 );
+			}
+			CHECK( text.styles().size() == 1 );
+		}
+	}
+
+	GIVEN( "Latin text" )
+	{
+		StyledText text( "Hello World" );
+
+		THEN( "every character is level 0" )
+		{
+			for ( auto level: bidi_levels( text ) )
+			{
+				CHECK( level == 0 );
+			}
+		}
+	}
+
+	GIVEN( "Arabic text" )
+	{
+		StyledText text( "مرحبا" );
+
+		THEN( "every character is right-to-left (level 1)" )
+		{
+			auto levels = bidi_levels( text );
+			REQUIRE_FALSE( levels.empty() );
+			for ( auto level: levels )
+			{
+				CHECK( level == 1 );
+			}
+		}
+	}
+}

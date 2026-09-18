@@ -149,6 +149,7 @@ std::unique_ptr<MathAssembly> create_assembly(
 		math_glyph->bearingY = glyph->bearingY;
 		math_glyph->advanceX = glyph->advanceX;
 		math_glyph->advanceY = glyph->advanceY;
+		math_glyph->extent = glyph->extent;
 
 		math_glyph->position = math_glyph->position.withY( current_y + ( part.full_advance - math_glyph->bearingY ) );
 		assembly->add( std::move( math_glyph ) );
@@ -207,6 +208,7 @@ std::unique_ptr<Visual> create_math_large_op(
 	math_glyph->bearingY = base_glyph->bearingY;
 	math_glyph->advanceX = base_glyph->advanceX;
 	math_glyph->advanceY = base_glyph->advanceY;
+	math_glyph->extent = base_glyph->extent;
 
 	math_glyph->italicCorrection = font.italic_correction( selected_glyph_index );
 	math_glyph->topAccentAttachment = font.top_accent_attachment( selected_glyph_index );

@@ -13,7 +13,7 @@ namespace
 	FontStack create_font_stack( const FontStyle &style, Theme &theme, std::string_view base_name )
 	{
 		auto properties = style.properties();
-		const float font_size = ThemeUtils::get_theme_font_size( properties.scale.value_or( Scale::MEDIUM ) );
+		const float font_size = ThemeUtils::get_theme_font_size( properties );
 
 		FontStack fonts;
 		fonts.append( theme.load_font( ThemeUtils::get_newcm_filename( properties, base_name ), 0, font_size ) );
@@ -57,7 +57,7 @@ FontStack intent_label( const FontStyle &style, Theme &theme )
 FontStack intent_math( const FontStyle &style, Theme &theme )
 {
 	auto properties = style.properties();
-	const float font_size = ThemeUtils::get_theme_font_size( properties.scale.value_or( Scale::MEDIUM ) );
+	const float font_size = ThemeUtils::get_theme_font_size( properties );
 
 	FontStack fonts = create_font_stack( style, theme, "NewCMMath" );
 	fonts.prepend( theme.load_font( ThemeUtils::get_newcm_filename( properties, "NewCMMath" ), 0, font_size ) );

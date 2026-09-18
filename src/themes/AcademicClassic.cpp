@@ -14,7 +14,7 @@ namespace
 	{
 		auto properties = style.properties();
 		const float font_size =
-			ThemeUtils::get_theme_font_size( properties.scale.value_or( Scale::MEDIUM ) );
+			ThemeUtils::get_theme_font_size( properties );
 
 		FontStack fonts;
 		fonts.append( theme.load_font(

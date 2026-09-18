@@ -36,9 +36,7 @@ struct Path : public Visual
 				else if constexpr (std::is_same_v<T, CubicTo>) { arg.to *= scale; arg.ctrl1 *= scale; arg.ctrl2 *= scale; }
 			}, command);
 		}
-		position *= scale;
-		baseline *= scale;
-		math_axis *= scale;
+		scale_common( scale );
 		return *this;
 	}
 };

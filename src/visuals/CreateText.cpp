@@ -134,6 +134,14 @@ std::unique_ptr<Glyph> create_glyph( unsigned int glyph_id, const FontFace *font
 	glyph->advanceX = static_cast<float>( face->glyph->metrics.horiAdvance );
 	glyph->advanceY = static_cast<float>( face->glyph->metrics.vertAdvance );
 
+	// Layout box: the advance width, and the glyph's own height and depth
+	const float height = static_cast<float>( face->glyph->metrics.horiBearingY );
+	const float depth = static_cast<float>( face->glyph->metrics.height - face->glyph->metrics.horiBearingY );
+	AABB box;
+	box.add( { 0.F, -depth } );
+	box.add( { glyph->advanceX, height } );
+	glyph->extent = box;
+
 	return glyph;
 }
 

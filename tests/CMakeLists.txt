@@ -6,6 +6,10 @@ add_executable( sonimation_unit_tests
 	TestStyledText.cpp
 	TestCreateStyledText.cpp
 	TestRadical.cpp
+	TestFraction.cpp
+	TestLayout.cpp
+	TestMathStyle.cpp
+	TestScripts.cpp
 )
 
 target_link_libraries( sonimation_unit_tests

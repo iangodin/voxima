@@ -1,5 +1,6 @@
 #pragma once
 
+#include "visuals/AABB.h"
 #include "visuals/Point.h"
 #include "visuals/VisualVisitor.h"
 #include "visuals/Circle.h"
@@ -17,18 +18,6 @@
 #include <algorithm>
 #include <limits>
 #include <variant>
-
-struct AABB
-{
-	Point min = { std::numeric_limits<float>::max(), std::numeric_limits<float>::max() };
-	Point max = { std::numeric_limits<float>::lowest(), std::numeric_limits<float>::lowest() };
-
-	void add( Point p )
-	{
-		min = { std::min( min.x(), p.x() ), std::min( min.y(), p.y() ) };
-		max = { std::max( max.x(), p.x() ), std::max( max.y(), p.y() ) };
-	}
-};
 
 class BoundingBoxVisitor : public VisualVisitor
 {

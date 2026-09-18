@@ -11,6 +11,7 @@ namespace ThemeUtils
 {
 
 float get_theme_font_size( Scale scale );
+float get_theme_font_size( const FontProperties &props );
 
 struct FontParams
 {

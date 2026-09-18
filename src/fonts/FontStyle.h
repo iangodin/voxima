@@ -64,6 +64,8 @@ struct FontProperties
 	std::optional<Slant> slant;
 	std::optional<Width> width;
 	std::optional<Scale> scale;
+	// Multiplier applied on top of `scale`, for sizes the Scale steps don't cover
+	std::optional<float> size_factor;
 };
 
 class FontStyle
@@ -85,7 +87,8 @@ public:
 		_weight( properties.weight ),
 		_slant( properties.slant ),
 		_width( properties.width ),
-		_scale( properties.scale )
+		_scale( properties.scale ),
+		_size_factor( properties.size_factor )
 	{
 	}
 
@@ -249,6 +252,13 @@ public:
 		return *this;
 	}
 
+	// Multiply the size by `factor` (compounds with earlier calls)
+	FontStyle &scaled( float factor )
+	{
+		_size_factor = _size_factor.value_or( 1.F ) * factor;
+		return *this;
+	}
+
 	FontStyle &set_scale( Scale scale )
 	{
 		_scale = scale;
@@ -269,7 +279,8 @@ public:
 			_weight == other._weight &&
 			_slant == other._slant &&
 			_width == other._width &&
-			_scale == other._scale;
+			_scale == other._scale &&
+			_size_factor == other._size_factor;
 	}
 
 	bool operator!=( const FontStyle &other ) const
@@ -284,7 +295,8 @@ public:
 		if ( _weight != other._weight ) return _weight < other._weight;
 		if ( _slant != other._slant ) return _slant < other._slant;
 		if ( _width != other._width ) return _width < other._width;
-		return _scale < other._scale;
+		if ( _scale != other._scale ) return _scale < other._scale;
+		return _size_factor < other._size_factor;
 	}
 
 	FontProperties properties( void ) const
@@ -295,6 +307,7 @@ public:
 			.slant = _slant,
 			.width = _width,
 			.scale = _scale,
+			.size_factor = _size_factor,
 		};
 	}
 
@@ -305,5 +318,6 @@ public:
 	std::optional<Slant> _slant;
 	std::optional<Width> _width;
 	std::optional<Scale> _scale;
+	std::optional<float> _size_factor;
 };
 

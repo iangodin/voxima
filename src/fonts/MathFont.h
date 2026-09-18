@@ -43,6 +43,29 @@ public:
 	[[nodiscard]] float top_accent_attachment( uint32_t glyph_index ) const;
 	[[nodiscard]] float radical_rule_thickness() const;
 	[[nodiscard]] float radical_vertical_gap() const;
+	// Script placement, in font units. Shifts are magnitudes as stored in the table: a
+	// superscript is raised by superscript_shift, a subscript lowered by subscript_shift.
+	[[nodiscard]] float superscript_shift() const;
+	[[nodiscard]] float subscript_shift() const;
+	[[nodiscard]] float subscript_top_max() const;
+	[[nodiscard]] float subscript_baseline_drop_min() const;
+	[[nodiscard]] float superscript_bottom_min() const;
+	[[nodiscard]] float superscript_baseline_drop_max() const;
+	[[nodiscard]] float sub_superscript_gap_min() const;
+	[[nodiscard]] float superscript_bottom_max_with_subscript() const;
+	[[nodiscard]] float space_after_script() const;
+	// Percentages (e.g. 70 and 50), not distances
+	[[nodiscard]] float script_percent_scale_down() const;
+	[[nodiscard]] float script_script_percent_scale_down() const;
+	[[nodiscard]] float radical_kern_before_degree() const;
+	[[nodiscard]] float radical_kern_after_degree() const;
+	// Percentage (e.g. 60), not a distance
+	[[nodiscard]] float radical_degree_bottom_raise_percent() const;
+	[[nodiscard]] float fraction_rule_thickness() const;
+	[[nodiscard]] float fraction_numerator_shift_up() const;
+	[[nodiscard]] float fraction_numerator_gap_min() const;
+	[[nodiscard]] float fraction_denominator_shift_down() const;
+	[[nodiscard]] float fraction_denominator_gap_min() const;
 
 	[[nodiscard]] uint32_t get_glyph_index( char32_t codepoint ) const;
 	[[nodiscard]] uint32_t get_large_variant( char32_t codepoint, float target_height ) const;
