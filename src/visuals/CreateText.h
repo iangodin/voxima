@@ -28,5 +28,6 @@ std::vector<TextRange> create_ranges( std::string_view str, const FontStack &fon
 void center_group( Group &group );
 std::unique_ptr<Glyph> create_glyph( unsigned int glyph_id, const FontFace *font_face );
 
-/// Lay out plain text in the given style, baseline at y = 0 (not centered).
+/// Lay out text in the given style, baseline at y = 0 (not centered). The math intent
+/// sets letters in math italic unless the style says otherwise.
 std::unique_ptr<Group> make_text( Theme &theme, const std::string &text, const FontStyle &style );

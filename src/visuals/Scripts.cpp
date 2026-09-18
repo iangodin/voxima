@@ -32,15 +32,24 @@ bool is_glyph_run( const Visual &visual )
 	return false;
 }
 
+// How far the superscript clears the nucleus: the italic correction of its last glyph.
+// Composites (fractions, radicals, ...) have none.
 float italic_correction( const Visual &visual )
 {
-	if ( const auto *glyph = dynamic_cast<const MathGlyph *>( &visual ) )
+	if ( const auto *glyph = dynamic_cast<const Glyph *>( &visual ) )
 	{
 		return glyph->italicCorrection;
 	}
 	if ( const auto *assembly = dynamic_cast<const MathAssembly *>( &visual ) )
 	{
 		return assembly->italicCorrection;
+	}
+	if ( const auto *group = dynamic_cast<const Group *>( &visual ) )
+	{
+		if ( !group->extent && group->size() > 0 )
+		{
+			return italic_correction( **( group->end() - 1 ) );
+		}
 	}
 	return 0.F;
 }

@@ -203,7 +203,7 @@ MathFonts Theme::get_math( const FontStyle &style )
 	auto base_style = style.properties();
 
 	auto roman_stack = get_stack( FontStyle( "math", base_style ) );
-	auto italic_stack = get_stack( FontStyle( "math", base_style ).italic() );
+	auto italic_stack = get_stack( FontStyle( "math", base_style ).math_italic() );
 	auto bold_stack = get_stack( FontStyle( "math", base_style ).bold() );
 	auto sans_stack = get_stack( FontStyle( "math", base_style ).sans() );
 	auto mono_stack = get_stack( FontStyle( "math", base_style ).mono() );

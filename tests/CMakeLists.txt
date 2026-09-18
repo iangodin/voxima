@@ -10,6 +10,7 @@ add_executable( sonimation_unit_tests
 	TestLayout.cpp
 	TestMathStyle.cpp
 	TestScripts.cpp
+	TestMathAlphabet.cpp
 )
 
 target_link_libraries( sonimation_unit_tests

@@ -6,6 +6,7 @@
 #include <visuals/CreateText.h>
 #include <visuals/Layout.h>
 #include <visuals/Scripts.h>
+#include <themes/NewComputerModern.h>
 
 using Catch::Approx;
 
@@ -34,6 +35,23 @@ struct Fixture
 			sub ? text( "i", ScriptLevel::SCRIPT ) : nullptr );
 	}
 };
+
+// The rightmost glyph of a piece of text
+const Glyph *last_glyph( const Visual &visual )
+{
+	if ( const auto *glyph = dynamic_cast<const Glyph *>( &visual ) )
+	{
+		return glyph;
+	}
+	if ( const auto *group = dynamic_cast<const Group *>( &visual ) )
+	{
+		if ( group->size() > 0 )
+		{
+			return last_glyph( **( group->end() - 1 ) );
+		}
+	}
+	return nullptr;
+}
 
 // The baseline of a placed child, in the Scripts' frame
 float baseline_of( const Visual &visual )
@@ -108,9 +126,9 @@ TEST_CASE( "Scripts: both scripts", "[visuals]" )
 		CHECK( sup.min.y() >= f.font.superscript_bottom_max_with_subscript() * f.s - 1e-4F );
 	}
 
-	SECTION( "both scripts start at the same x" )
+	SECTION( "the superscript is shifted right of the subscript by the nucleus's italic correction" )
 	{
-		CHECK( sup.min.x() == Approx( sub.min.x() ) );
+		CHECK( sup.min.x() - sub.min.x() == Approx( last_glyph( *scripts->begin()->get() )->italicCorrection ) );
 	}
 }
 
@@ -137,4 +155,45 @@ TEST_CASE( "Scripts scale as a unit", "[visuals]" )
 	CHECK( scripts->extent->max.x() == Approx( before.max.x() * 2.F ) );
 	CHECK( scripts->extent->max.y() == Approx( before.max.y() * 2.F ) );
 	CHECK( scripts->extent->min.y() == Approx( before.min.y() * 2.F ) );
+}
+
+TEST_CASE( "Math text carries italic corrections and Scripts uses them", "[visuals]" )
+{
+	auto theme = NewComputerModern::create_theme();
+	FontStyle body = FontStyle{ Intent::MATH }.large();
+	MathFonts math_fonts = theme.get_math( body );
+	MathFont font( math_fonts.roman() );
+	const float s = math_fonts.roman().scale / static_cast<float>( math_fonts.roman().face->units_per_EM );
+
+	auto nucleus = make_text( theme, "f", body );
+	const Glyph *glyph = last_glyph( *nucleus );
+	REQUIRE( glyph != nullptr );
+
+	SECTION( "an italic letter maps to the math alphabet and takes its correction from the font" )
+	{
+		CHECK( glyph->index == font.get_glyph_index( 0x1D453 ) );
+		CHECK( glyph->italicCorrection > 0.F );
+		CHECK( glyph->italicCorrection == Approx( font.italic_correction( glyph->index ) * s ) );
+	}
+
+	SECTION( "text in a non-math font has none" )
+	{
+		auto prose = make_text( theme, "f", FontStyle{ Intent::PROSE } );
+		CHECK( last_glyph( *prose )->italicCorrection == 0.F );
+	}
+
+	SECTION( "the superscript clears the nucleus by that correction; the subscript does not" )
+	{
+		auto script = script_style( body, font, ScriptLevel::SCRIPT );
+		const float italic = glyph->italicCorrection;
+		Scripts scripts(
+			font, s, std::move( nucleus ), make_text( theme, "2", script ), make_text( theme, "i", script ) );
+
+		auto it = scripts.begin();
+		const AABB n = layout_extent( **it++ );
+		const AABB sup = layout_extent( **it++ );
+		const AABB sub = layout_extent( **it );
+		CHECK( sup.min.x() == Approx( n.max.x() + italic ) );
+		CHECK( sub.min.x() == Approx( n.max.x() ) );
+	}
 }

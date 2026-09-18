@@ -44,6 +44,7 @@ add_library( visuals STATIC
 	src/exporters/FfmpegRender.cpp
 	src/fonts/FontStack.cpp
 	src/fonts/MathFont.cpp
+	src/fonts/MathAlphabet.cpp
 	src/themes/NewComputerModern.cpp
 	src/themes/AcademicClassic.cpp
 	src/themes/EngineeringBlueprint.cpp

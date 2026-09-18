@@ -8,10 +8,12 @@
 #include <fonts/FontFace.h>
 #include <fonts/FontStack.h>
 #include <fonts/FontStyle.h>
+#include <fonts/MathAlphabet.h>
 
 #include <core/Theme.h>
 
 #include <hb-ft.h>
+#include <hb-ot.h>
 #include <hb.h>
 
 #include <map>
@@ -85,6 +87,14 @@ std::unique_ptr<Group> make_styled_text( Theme &theme, const StyledText &text )
 					return;
 				}
 
+				// Math italic (and the other math alphabets) are separate code points
+				std::string mapped;
+				if ( const auto alphabet = math_alphabet( style.font_style ); alphabet != MathAlphabet::UPRIGHT )
+				{
+					mapped = map_math_text( run_text, alphabet );
+					run_text = mapped;
+				}
+
 				FontStack stack = theme.get_stack( style.font_style );
 				auto ranges = create_ranges( run_text, stack );
 
@@ -133,6 +143,14 @@ std::unique_ptr<Group> make_styled_text( Theme &theme, const StyledText &text )
 						}
 						glyph->advanceX = static_cast<float>( pos.x_advance );
 						glyph->advanceY = static_cast<float>( pos.y_advance );
+
+						// Math fonts say how far a superscript should clear each glyph
+						hb_font_t *hb_font = font_cache.get( font_face );
+						if ( hb_ot_math_has_data( hb_font_get_face( hb_font ) ) )
+						{
+							glyph->italicCorrection = static_cast<float>(
+								hb_ot_math_get_glyph_italics_correction( hb_font, glyph_id ) );
+						}
 						if ( glyph->extent )
 						{
 							// Shaped advance (includes kerning) replaces the nominal one

@@ -20,6 +20,10 @@ struct Glyph : public Visual
 	float advanceX = 0.F;
 	float advanceY = 0.F;
 
+	// From the font's MATH table when it has one (0 otherwise): how far a superscript
+	// is pushed right of this glyph. Scales with the glyph.
+	float italicCorrection = 0.F;
+
 	void accept( VisualVisitor &visitor ) const override
 	{
 		visitor.visit( *this );
@@ -32,6 +36,7 @@ struct Glyph : public Visual
 		bearingY *= scale;
 		advanceX *= scale;
 		advanceY *= scale;
+		italicCorrection *= scale;
 		for ( auto &cmd : commands )
 		{
 			std::visit( [scale](auto&& arg) {

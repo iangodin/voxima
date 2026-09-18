@@ -1,6 +1,7 @@
 
 #pragma once
 
+#include <string>
 #include <string_view>
 #include <stdexcept>
 
@@ -45,4 +46,30 @@ inline char32_t decode_utf8( std::string_view &str )
 
 	str.remove_prefix( length );
 	return codepoint;
+}
+
+inline void append_utf8( std::string &out, char32_t codepoint )
+{
+	if ( codepoint < 0x80 )
+	{
+		out += static_cast<char>( codepoint );
+	}
+	else if ( codepoint < 0x800 )
+	{
+		out += static_cast<char>( 0xC0 | ( codepoint >> 6 ) );
+		out += static_cast<char>( 0x80 | ( codepoint & 0x3F ) );
+	}
+	else if ( codepoint < 0x10000 )
+	{
+		out += static_cast<char>( 0xE0 | ( codepoint >> 12 ) );
+		out += static_cast<char>( 0x80 | ( ( codepoint >> 6 ) & 0x3F ) );
+		out += static_cast<char>( 0x80 | ( codepoint & 0x3F ) );
+	}
+	else
+	{
+		out += static_cast<char>( 0xF0 | ( codepoint >> 18 ) );
+		out += static_cast<char>( 0x80 | ( ( codepoint >> 12 ) & 0x3F ) );
+		out += static_cast<char>( 0x80 | ( ( codepoint >> 6 ) & 0x3F ) );
+		out += static_cast<char>( 0x80 | ( codepoint & 0x3F ) );
+	}
 }

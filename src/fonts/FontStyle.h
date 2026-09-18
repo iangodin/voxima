@@ -27,6 +27,7 @@ enum class Slant
 	UPRIGHT,
 	ITALIC,
 	OBLIQUE,
+	MATH_ITALIC,
 };
 
 enum class Scale
@@ -171,6 +172,14 @@ public:
 	FontStyle &oblique( void )
 	{
 		_slant = Slant::OBLIQUE;
+		return *this;
+	}
+
+	// The math intent already defaults to this. Not the same as italic(): that asks for an
+	// italic font file, which math fonts don't have, so it has no visible effect there.
+	FontStyle &math_italic( void )
+	{
+		_slant = Slant::MATH_ITALIC;
 		return *this;
 	}
 
