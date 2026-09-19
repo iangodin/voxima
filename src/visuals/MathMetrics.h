@@ -5,6 +5,8 @@
 #include "visuals/MathAssembly.h"
 #include "visuals/MathGlyph.h"
 
+#include <optional>
+
 // How far a superscript (or an upper limit of a slanted operator) clears a nucleus: the
 // italic correction of its last glyph. Composites (fractions, radicals, ...) have none.
 inline float italic_correction( const Visual &visual )
@@ -40,4 +42,30 @@ struct ScriptBox
 inline ScriptBox measure_box( const Visual &visual )
 {
 	return { layout_extent( visual ), visual.position.y() + visual.baseline };
+}
+
+// The x, in the parent's frame, where an accent over this visual should be centered, when it is
+// a single character whose font says so. Anything else (several characters, a composite)
+// returns nothing, and the caller centers the accent over the visual's box instead.
+inline std::optional<float> top_accent_x( const Visual &visual )
+{
+	if ( const auto *glyph = dynamic_cast<const Glyph *>( &visual ) )
+	{
+		if ( glyph->topAccentAttachment )
+		{
+			return glyph->position.x() + *glyph->topAccentAttachment;
+		}
+		return std::nullopt;
+	}
+	if ( const auto *group = dynamic_cast<const Group *>( &visual ) )
+	{
+		if ( !group->extent && group->size() == 1 )
+		{
+			if ( auto inner = top_accent_x( **group->begin() ) )
+			{
+				return group->position.x() + *inner;
+			}
+		}
+	}
+	return std::nullopt;
 }

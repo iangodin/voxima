@@ -129,6 +129,41 @@ float MathFont::stack_gap_min() const
 	return static_cast<float>( hb_ot_math_get_constant( _hb_font, HB_OT_MATH_CONSTANT_STACK_GAP_MIN ) );
 }
 
+float MathFont::accent_base_height() const
+{
+	return static_cast<float>( hb_ot_math_get_constant( _hb_font, HB_OT_MATH_CONSTANT_ACCENT_BASE_HEIGHT ) );
+}
+
+float MathFont::overbar_vertical_gap() const
+{
+	return static_cast<float>( hb_ot_math_get_constant( _hb_font, HB_OT_MATH_CONSTANT_OVERBAR_VERTICAL_GAP ) );
+}
+
+float MathFont::overbar_rule_thickness() const
+{
+	return static_cast<float>( hb_ot_math_get_constant( _hb_font, HB_OT_MATH_CONSTANT_OVERBAR_RULE_THICKNESS ) );
+}
+
+float MathFont::overbar_extra_ascender() const
+{
+	return static_cast<float>( hb_ot_math_get_constant( _hb_font, HB_OT_MATH_CONSTANT_OVERBAR_EXTRA_ASCENDER ) );
+}
+
+float MathFont::underbar_vertical_gap() const
+{
+	return static_cast<float>( hb_ot_math_get_constant( _hb_font, HB_OT_MATH_CONSTANT_UNDERBAR_VERTICAL_GAP ) );
+}
+
+float MathFont::underbar_rule_thickness() const
+{
+	return static_cast<float>( hb_ot_math_get_constant( _hb_font, HB_OT_MATH_CONSTANT_UNDERBAR_RULE_THICKNESS ) );
+}
+
+float MathFont::underbar_extra_descender() const
+{
+	return static_cast<float>( hb_ot_math_get_constant( _hb_font, HB_OT_MATH_CONSTANT_UNDERBAR_EXTRA_DESCENDER ) );
+}
+
 float MathFont::script_percent_scale_down() const
 {
 	return static_cast<float>( hb_ot_math_get_constant( _hb_font, HB_OT_MATH_CONSTANT_SCRIPT_PERCENT_SCALE_DOWN ) );

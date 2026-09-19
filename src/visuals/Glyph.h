@@ -6,6 +6,7 @@
 #include "visuals/Path.h"
 
 #include <cstdint>
+#include <optional>
 
 struct FontFace;
 
@@ -24,6 +25,10 @@ struct Glyph : public Visual
 	// is pushed right of this glyph. Scales with the glyph.
 	float italicCorrection = 0.F;
 
+	// From the MATH table when the font has one: the x, from the glyph's origin, where an
+	// accent above it should be centered. Unset when the font doesn't say.
+	std::optional<float> topAccentAttachment;
+
 	void accept( VisualVisitor &visitor ) const override
 	{
 		visitor.visit( *this );
@@ -37,6 +42,10 @@ struct Glyph : public Visual
 		advanceX *= scale;
 		advanceY *= scale;
 		italicCorrection *= scale;
+		if ( topAccentAttachment )
+		{
+			*topAccentAttachment *= scale;
+		}
 		for ( auto &cmd : commands )
 		{
 			std::visit( [scale](auto&& arg) {

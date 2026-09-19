@@ -64,6 +64,14 @@ public:
 	[[nodiscard]] float stack_top_shift_up() const;
 	[[nodiscard]] float stack_bottom_shift_down() const;
 	[[nodiscard]] float stack_gap_min() const;
+	// Accents and bars, in font units
+	[[nodiscard]] float accent_base_height() const;
+	[[nodiscard]] float overbar_vertical_gap() const;
+	[[nodiscard]] float overbar_rule_thickness() const;
+	[[nodiscard]] float overbar_extra_ascender() const;
+	[[nodiscard]] float underbar_vertical_gap() const;
+	[[nodiscard]] float underbar_rule_thickness() const;
+	[[nodiscard]] float underbar_extra_descender() const;
 	// Percentages (e.g. 70 and 50), not distances
 	[[nodiscard]] float script_percent_scale_down() const;
 	[[nodiscard]] float script_script_percent_scale_down() const;

@@ -150,6 +150,8 @@ std::unique_ptr<Group> make_styled_text( Theme &theme, const StyledText &text )
 						{
 							glyph->italicCorrection = static_cast<float>(
 								hb_ot_math_get_glyph_italics_correction( hb_font, glyph_id ) );
+							glyph->topAccentAttachment = static_cast<float>(
+								hb_ot_math_get_glyph_top_accent_attachment( hb_font, glyph_id ) );
 						}
 						if ( glyph->extent )
 						{

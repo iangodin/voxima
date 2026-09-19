@@ -70,6 +70,9 @@ add_library( visuals STATIC
 	src/visuals/Row.cpp
 	src/visuals/Limits.cpp
 	src/visuals/Delimited.cpp
+	src/visuals/Accent.cpp
+	src/visuals/Bars.cpp
+	src/visuals/Matrix.cpp
 	src/visuals/LargeOperator.cpp
 )
 

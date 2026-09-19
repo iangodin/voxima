@@ -19,8 +19,11 @@
 #include <visuals/CreateMathLargeOperation.h>
 #include <visuals/Fraction.h>
 #include <visuals/Radical.h>
+#include <visuals/Accent.h>
+#include <visuals/Bars.h>
 #include <visuals/Delimited.h>
 #include <visuals/LargeOperator.h>
+#include <visuals/Matrix.h>
 #include <visuals/Row.h>
 #include <visuals/Scripts.h>
 #include <fonts/MathFont.h>
@@ -175,6 +178,38 @@ void show_math( Stage &stage )
 		make_text( *stage.theme, "k", style ) );
 	binomial->position = { 5.5f, 2.5f };
 	stage.visuals.add( std::move( binomial ) );
+
+	// Accents and rules: hat, tilde and vector arrow over letters (a tall base raises its
+	// accent), then an overline and an underline
+	auto marks = std::make_unique<Row>( math_font, glyph_scale );
+	auto add_mark = [&]( std::unique_ptr<Visual> &&mark )
+	{
+		marks->append( AtomClass::ORD, std::move( mark ) );
+		marks->append_space( Row::THIN );
+	};
+	add_mark( std::make_unique<Accent>( math_font, glyph_scale, make_text( *stage.theme, "x", style ), 0x2C6 ) );
+	add_mark( std::make_unique<Accent>( math_font, glyph_scale, make_text( *stage.theme, "y", style ), 0x2DC ) );
+	add_mark( std::make_unique<Accent>( math_font, glyph_scale, make_text( *stage.theme, "v", style ), 0x20D7 ) );
+	add_mark( std::make_unique<Accent>( math_font, glyph_scale, make_text( *stage.theme, "A", style ), 0x2C6 ) );
+	add_mark( std::make_unique<Overline>( math_font, glyph_scale, make_text( *stage.theme, "AB", style ) ) );
+	add_mark( std::make_unique<Underline>( math_font, glyph_scale, make_text( *stage.theme, "xy", style ) ) );
+	marks->position = { 1.5f, -2.5f };
+	stage.visuals.add( std::move( marks ) );
+
+	// A matrix in parentheses, and the same grid as a determinant
+	auto make_grid = [&]()
+	{
+		auto grid = std::make_unique<Matrix>( math_font, glyph_scale, MatrixOptions{ .column_sep_em = 0.6F } );
+		grid->append_row( make_cells( make_text( *stage.theme, "a", style ), make_text( *stage.theme, "b", style ) ) );
+		grid->append_row( make_cells( make_text( *stage.theme, "c", style ), make_text( *stage.theme, "d", style ) ) );
+		return grid;
+	};
+	auto pmatrix = std::make_unique<Delimited>( math_font, glyph_scale, U'(', make_grid(), U')' );
+	pmatrix->position = { 3.0f, 0.0f };
+	stage.visuals.add( std::move( pmatrix ) );
+	auto determinant = std::make_unique<Delimited>( math_font, glyph_scale, U'|', make_grid(), U'|' );
+	determinant->position = { 5.7f, 0.0f };
+	stage.visuals.add( std::move( determinant ) );
 }
 
 template<typename Ease>

@@ -15,6 +15,8 @@ add_executable( sonimation_unit_tests
 	TestSVGWriter.cpp
 	TestLimits.cpp
 	TestDelimited.cpp
+	TestAccents.cpp
+	TestMatrix.cpp
 )
 
 target_link_libraries( sonimation_unit_tests
