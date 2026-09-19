@@ -67,9 +67,9 @@ std::vector<AtomClass> effective_classes( const std::vector<AtomClass> &atoms )
 }
 }
 
-Row::Row( const MathFont &font, float glyph_scale, ScriptLevel level )
+Row::Row( const MathFont &font, float glyph_scale, MathStyle style )
 	: _mu( glyph_scale * static_cast<float>( font.face().face->units_per_EM ) / 18.F ),
-	  _level( level )
+	  _level( style.script_level() )
 {
 	math_axis = font.axis_height() * glyph_scale;
 }

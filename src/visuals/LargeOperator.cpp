@@ -1,4 +1,5 @@
 #include "visuals/LargeOperator.h"
+#include "visuals/Tags.h"
 #include "visuals/CreateMathLargeOperation.h"
 #include "visuals/Limits.h"
 #include "visuals/Scripts.h"
@@ -19,12 +20,23 @@ std::unique_ptr<Group> make_large_operator(
 	char32_t op,
 	std::unique_ptr<Visual> &&upper,
 	std::unique_ptr<Visual> &&lower,
-	bool display,
+	MathStyle style,
 	std::optional<LimitPlacement> placement )
 {
+	const bool display = style.is_display();
 	// create_math_large_op works in font units and takes the height it should reach
 	auto nucleus = create_math_large_op( font, op, display ? font.display_operator_min_height() : 0.F );
 	*nucleus *= glyph_scale;
+
+	// Either form names its limits the same way
+	if ( upper )
+	{
+		tag_visual( *upper, "upper" );
+	}
+	if ( lower )
+	{
+		tag_visual( *lower, "lower" );
+	}
 
 	const LimitPlacement where = placement.value_or( default_limit_placement( op ) );
 	if ( display && where == LimitPlacement::OVER_UNDER )

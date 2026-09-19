@@ -3,6 +3,7 @@
 #include "visuals/Group.h"
 #include "visuals/Visual.h"
 #include "fonts/MathFont.h"
+#include "fonts/MathStyle.h"
 #include <memory>
 #include <optional>
 
@@ -29,5 +30,5 @@ std::unique_ptr<Group> make_large_operator(
 	char32_t op,
 	std::unique_ptr<Visual> &&upper,
 	std::unique_ptr<Visual> &&lower,
-	bool display = true,
+	MathStyle style = MathStyle::display(),
 	std::optional<LimitPlacement> placement = std::nullopt );

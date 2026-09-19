@@ -1,4 +1,5 @@
 #include "visuals/Scripts.h"
+#include "visuals/Tags.h"
 #include "visuals/Layout.h"
 #include "visuals/MathMetrics.h"
 #include "visuals/MathAssembly.h"
@@ -40,9 +41,11 @@ Scripts::Scripts(
 	float s,
 	std::unique_ptr<Visual> &&nucleus,
 	std::unique_ptr<Visual> &&superscript,
-	std::unique_ptr<Visual> &&subscript )
+	std::unique_ptr<Visual> &&subscript,
+	MathStyle style )
 {
-	const float sup_shift = font.superscript_shift() * s;
+	// In a cramped style (under a radical, in a denominator...) the superscript rises less
+	const float sup_shift = ( style.cramped ? font.superscript_shift_cramped() : font.superscript_shift() ) * s;
 	const float sub_shift = font.subscript_shift() * s;
 	const float sub_top_max = font.subscript_top_max() * s;
 	const float sub_drop_min = font.subscript_baseline_drop_min() * s;
@@ -99,17 +102,17 @@ Scripts::Scripts(
 
 	const float italic = italic_correction( *nucleus );
 
-	add( std::move( nucleus ) );
+	tag_visual( add( std::move( nucleus ) ), "base" );
 	if ( superscript )
 	{
 		superscript->position = superscript->position.movedBy(
 			n_right + italic - sup.box.min.x(), u - sup.baseline );
-		add( std::move( superscript ) );
+		tag_visual( add( std::move( superscript ) ), "superscript" );
 	}
 	if ( subscript )
 	{
 		subscript->position = subscript->position.movedBy( n_right - sub.box.min.x(), -v - sub.baseline );
-		add( std::move( subscript ) );
+		tag_visual( add( std::move( subscript ) ), "subscript" );
 	}
 
 	math_axis = font.axis_height() * s;

@@ -6,6 +6,8 @@
 #include "visuals/AABB.h"
 
 #include <optional>
+#include <string>
+#include <vector>
 
 struct VisualVisitor;
 
@@ -37,6 +39,9 @@ struct Visual
 	// a visual can occupy more or less room than it paints: a glyph spans its advance
 	// width, a fraction includes its side padding. See layout_extent().
 	std::optional<AABB> extent;
+
+	// Names for finding this visual again later, e.g. to animate it (see visuals/Tags.h).
+	std::vector<std::string> tags;
 
 	virtual ~Visual() = default;
 	virtual void accept( VisualVisitor &visitor ) const = 0;

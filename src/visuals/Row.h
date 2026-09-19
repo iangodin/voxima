@@ -30,7 +30,7 @@ enum class AtomClass
 class Row : public Group
 {
 public:
-	Row( const MathFont &font, float glyph_scale, ScriptLevel level = ScriptLevel::TEXT );
+	Row( const MathFont &font, float glyph_scale, MathStyle style = MathStyle::display() );
 
 	Visual &append( AtomClass atom, std::unique_ptr<Visual> &&visual );
 

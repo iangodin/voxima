@@ -73,6 +73,8 @@ add_library( visuals STATIC
 	src/visuals/Accent.cpp
 	src/visuals/Bars.cpp
 	src/visuals/Matrix.cpp
+	src/math/Context.cpp
+	src/math/Expr.cpp
 	src/visuals/LargeOperator.cpp
 )
 

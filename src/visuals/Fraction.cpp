@@ -1,4 +1,5 @@
 #include "visuals/Fraction.h"
+#include "visuals/Tags.h"
 #include "visuals/Layout.h"
 #include "visuals/Rectangle.h"
 #include <algorithm>
@@ -22,10 +23,11 @@ Fraction::Fraction(
 
 	const float axis = font.axis_height() * glyph_scale;
 	const float rule = font.fraction_rule_thickness() * glyph_scale;
-	const float shift_up = font.fraction_numerator_shift_up() * glyph_scale;
-	const float shift_down = font.fraction_denominator_shift_down() * glyph_scale;
-	const float num_gap_min = font.fraction_numerator_gap_min() * glyph_scale;
-	const float den_gap_min = font.fraction_denominator_gap_min() * glyph_scale;
+	const bool display = options.style.is_display();
+	const float shift_up = ( display ? font.fraction_numerator_display_style_shift_up() : font.fraction_numerator_shift_up() ) * glyph_scale;
+	const float shift_down = ( display ? font.fraction_denominator_display_style_shift_down() : font.fraction_denominator_shift_down() ) * glyph_scale;
+	const float num_gap_min = ( display ? font.fraction_num_display_style_gap_min() : font.fraction_numerator_gap_min() ) * glyph_scale;
+	const float den_gap_min = ( display ? font.fraction_denom_display_style_gap_min() : font.fraction_denominator_gap_min() ) * glyph_scale;
 
 	const AABB num_box = layout_extent( *numerator );
 	const AABB den_box = layout_extent( *denominator );
@@ -48,9 +50,9 @@ Fraction::Fraction(
 	else
 	{
 		// No rule (TeX rule 15c): the stack's own shifts, pushed apart equally if too close
-		num_target = font.stack_top_shift_up() * glyph_scale;
-		den_drop = font.stack_bottom_shift_down() * glyph_scale;
-		const float gap_min = font.stack_gap_min() * glyph_scale;
+		num_target = ( display ? font.stack_top_display_style_shift_up() : font.stack_top_shift_up() ) * glyph_scale;
+		den_drop = ( display ? font.stack_bottom_display_style_shift_down() : font.stack_bottom_shift_down() ) * glyph_scale;
+		const float gap_min = ( display ? font.stack_display_style_gap_min() : font.stack_gap_min() ) * glyph_scale;
 		const float gap = ( num_target - num_depth ) - ( den_height - den_drop );
 		if ( gap < gap_min )
 		{
@@ -68,12 +70,13 @@ Fraction::Fraction(
 	denominator->position = denominator->position.movedBy(
 		side + ( width - den_box.width() ) / 2.F - den_box.min.x(), -den_drop - den_baseline );
 
-	add( std::move( numerator ) );
-	add( std::move( denominator ) );
+	tag_visual( add( std::move( numerator ) ), "numerator" );
+	tag_visual( add( std::move( denominator ) ), "denominator" );
 
 	if ( options.rule )
 	{
 		auto &bar = add( std::make_unique<Rectangle>() );
+		tag_visual( bar, "bar" );
 		bar.half_width = width / 2.F;
 		bar.half_height = rule / 2.F;
 		bar.position = { side + width / 2.F, axis };

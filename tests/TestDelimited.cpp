@@ -103,7 +103,7 @@ TEST_CASE( "Delimited: either delimiter is optional", "[visuals]" )
 TEST_CASE( "Fraction without a rule (stack)", "[visuals]" )
 {
 	Fixture f;
-	const FractionOptions stack_options{ .rule = false, .side_space = false };
+	const FractionOptions stack_options{ .rule = false, .side_space = false, .style = MathStyle::text() };
 	const float gap_min = f.font.stack_gap_min() * f.s;
 	const float shift_up = f.font.stack_top_shift_up() * f.s;
 	const float shift_down = f.font.stack_bottom_shift_down() * f.s;

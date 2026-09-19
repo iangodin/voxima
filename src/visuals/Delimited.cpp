@@ -1,4 +1,5 @@
 #include "visuals/Delimited.h"
+#include "visuals/Tags.h"
 #include "visuals/CreateMathLargeOperation.h"
 #include "visuals/Fraction.h"
 #include "visuals/MathMetrics.h"
@@ -17,8 +18,8 @@ Delimited::Delimited(
 	char32_t open,
 	std::unique_ptr<Visual> &&content,
 	char32_t close,
-	ScriptLevel level )
-	: Row( font, s, level )
+	MathStyle style )
+	: Row( font, s, style )
 {
 	const float em = s * static_cast<float>( font.face().face->units_per_EM );
 	const float axis = font.axis_height() * s;
@@ -38,12 +39,12 @@ Delimited::Delimited(
 
 	if ( open )
 	{
-		append( AtomClass::OPEN, make_delimiter( open ) );
+		tag_visual( append( AtomClass::OPEN, make_delimiter( open ) ), "open" );
 	}
-	append( AtomClass::ORD, std::move( content ) );
+	tag_visual( append( AtomClass::ORD, std::move( content ) ), "content" );
 	if ( close )
 	{
-		append( AtomClass::CLOSE, make_delimiter( close ) );
+		tag_visual( append( AtomClass::CLOSE, make_delimiter( close ) ), "close" );
 	}
 }
 
@@ -51,10 +52,11 @@ std::unique_ptr<Group> make_binomial(
 	const MathFont &font,
 	float glyph_scale,
 	std::unique_ptr<Visual> &&top,
-	std::unique_ptr<Visual> &&bottom )
+	std::unique_ptr<Visual> &&bottom,
+	MathStyle style )
 {
 	// The parentheses are the delimiters, so the stack needs no null-delimiter space of its own
 	auto stack = std::make_unique<Fraction>(
-		font, glyph_scale, std::move( top ), std::move( bottom ), FractionOptions{ .rule = false, .side_space = false } );
-	return std::make_unique<Delimited>( font, glyph_scale, U'(', std::move( stack ), U')' );
+		font, glyph_scale, std::move( top ), std::move( bottom ), FractionOptions{ .rule = false, .side_space = false, .style = style } );
+	return std::make_unique<Delimited>( font, glyph_scale, U'(', std::move( stack ), U')', style );
 }

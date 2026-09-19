@@ -17,6 +17,8 @@ add_executable( sonimation_unit_tests
 	TestDelimited.cpp
 	TestAccents.cpp
 	TestMatrix.cpp
+	TestExpr.cpp
+	TestTags.cpp
 )
 
 target_link_libraries( sonimation_unit_tests

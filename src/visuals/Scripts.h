@@ -3,6 +3,7 @@
 #include "visuals/Group.h"
 #include "visuals/Visual.h"
 #include "fonts/MathFont.h"
+#include "fonts/MathStyle.h"
 #include <memory>
 
 // A nucleus with an optional superscript and/or subscript attached to its right
@@ -17,5 +18,6 @@ public:
 		float glyph_scale,
 		std::unique_ptr<Visual> &&nucleus,
 		std::unique_ptr<Visual> &&superscript,
-		std::unique_ptr<Visual> &&subscript );
+		std::unique_ptr<Visual> &&subscript,
+		MathStyle style = MathStyle::display() );
 };

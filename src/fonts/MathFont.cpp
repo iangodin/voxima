@@ -164,6 +164,51 @@ float MathFont::underbar_extra_descender() const
 	return static_cast<float>( hb_ot_math_get_constant( _hb_font, HB_OT_MATH_CONSTANT_UNDERBAR_EXTRA_DESCENDER ) );
 }
 
+float MathFont::fraction_numerator_display_style_shift_up() const
+{
+	return static_cast<float>( hb_ot_math_get_constant( _hb_font, HB_OT_MATH_CONSTANT_FRACTION_NUMERATOR_DISPLAY_STYLE_SHIFT_UP ) );
+}
+
+float MathFont::fraction_denominator_display_style_shift_down() const
+{
+	return static_cast<float>( hb_ot_math_get_constant( _hb_font, HB_OT_MATH_CONSTANT_FRACTION_DENOMINATOR_DISPLAY_STYLE_SHIFT_DOWN ) );
+}
+
+float MathFont::fraction_num_display_style_gap_min() const
+{
+	return static_cast<float>( hb_ot_math_get_constant( _hb_font, HB_OT_MATH_CONSTANT_FRACTION_NUM_DISPLAY_STYLE_GAP_MIN ) );
+}
+
+float MathFont::fraction_denom_display_style_gap_min() const
+{
+	return static_cast<float>( hb_ot_math_get_constant( _hb_font, HB_OT_MATH_CONSTANT_FRACTION_DENOM_DISPLAY_STYLE_GAP_MIN ) );
+}
+
+float MathFont::stack_top_display_style_shift_up() const
+{
+	return static_cast<float>( hb_ot_math_get_constant( _hb_font, HB_OT_MATH_CONSTANT_STACK_TOP_DISPLAY_STYLE_SHIFT_UP ) );
+}
+
+float MathFont::stack_bottom_display_style_shift_down() const
+{
+	return static_cast<float>( hb_ot_math_get_constant( _hb_font, HB_OT_MATH_CONSTANT_STACK_BOTTOM_DISPLAY_STYLE_SHIFT_DOWN ) );
+}
+
+float MathFont::stack_display_style_gap_min() const
+{
+	return static_cast<float>( hb_ot_math_get_constant( _hb_font, HB_OT_MATH_CONSTANT_STACK_DISPLAY_STYLE_GAP_MIN ) );
+}
+
+float MathFont::radical_display_style_vertical_gap() const
+{
+	return static_cast<float>( hb_ot_math_get_constant( _hb_font, HB_OT_MATH_CONSTANT_RADICAL_DISPLAY_STYLE_VERTICAL_GAP ) );
+}
+
+float MathFont::superscript_shift_cramped() const
+{
+	return static_cast<float>( hb_ot_math_get_constant( _hb_font, HB_OT_MATH_CONSTANT_SUPERSCRIPT_SHIFT_UP_CRAMPED ) );
+}
+
 float MathFont::script_percent_scale_down() const
 {
 	return static_cast<float>( hb_ot_math_get_constant( _hb_font, HB_OT_MATH_CONSTANT_SCRIPT_PERCENT_SCALE_DOWN ) );

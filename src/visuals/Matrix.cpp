@@ -1,6 +1,8 @@
 #include "visuals/Matrix.h"
+#include "visuals/Tags.h"
 #include "visuals/MathMetrics.h"
 #include <algorithm>
+#include <string>
 
 namespace
 {
@@ -21,9 +23,13 @@ void Matrix::append_row( std::vector<std::unique_ptr<Visual>> &&cells )
 {
 	std::vector<Visual *> row;
 	row.reserve( cells.size() );
-	for ( auto &cell: cells )
+	const size_t r = _rows.size();
+	for ( size_t c = 0; c < cells.size(); ++c )
 	{
-		row.push_back( &add( std::move( cell ) ) );
+		Visual &cell = add( std::move( cells[c] ) );
+		tag_visual( cell, "cell" );
+		tag_visual( cell, "r" + std::to_string( r ) + "c" + std::to_string( c ) );
+		row.push_back( &cell );
 	}
 	_rows.push_back( std::move( row ) );
 	layout();

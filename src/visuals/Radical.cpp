@@ -1,12 +1,14 @@
 
 #include "visuals/Radical.h"
+#include "visuals/Tags.h"
 #include "visuals/Layout.h"
 #include "visuals/CreateMathLargeOperation.h"
 #include "visuals/Rectangle.h"
 #include <algorithm>
 
-Radical::Radical( const MathFont &font, float glyph_scale, std::unique_ptr<Visual> &&content )
-	: Radical( font, glyph_scale, nullptr, std::move( content ) )
+Radical::Radical(
+	const MathFont &font, float glyph_scale, std::unique_ptr<Visual> &&content, MathStyle style )
+	: Radical( font, glyph_scale, nullptr, std::move( content ), style )
 {
 }
 
@@ -14,7 +16,8 @@ Radical::Radical(
 	const MathFont &font,
 	float glyph_scale,
 	std::unique_ptr<Visual> &&index,
-	std::unique_ptr<Visual> &&content )
+	std::unique_ptr<Visual> &&content,
+	MathStyle style )
 {
 	// 1. Measure the radicand's layout box
 	const AABB content_box = layout_extent( *content );
@@ -25,7 +28,8 @@ Radical::Radical(
 
 	// 2. Calculate the minimum sign height (in canvas units)
 	float rule_thickness = font.radical_rule_thickness() * glyph_scale;
-	float vertical_gap = font.radical_vertical_gap() * glyph_scale;
+	float vertical_gap =
+		( style.is_display() ? font.radical_display_style_vertical_gap() : font.radical_vertical_gap() ) * glyph_scale;
 	float target_height = ( y_max + vertical_gap + rule_thickness ) - y_min;
 
 	// 3. Create radical sign (large op expects font units)
@@ -64,10 +68,12 @@ Radical::Radical(
 
 	// Add content, aligning its left edge with the right edge of the radical sign
 	auto &content_ref = add( std::move( content ) );
+	tag_visual( content_ref, "radicand" );
 	content_ref.position = content_ref.position.movedBy( sign_x + radical_width - x_min, 0.F );
 
 	// Draw procedural overline
 	auto &overline = add( std::make_unique<Rectangle>() );
+	tag_visual( overline, "overline" );
 	overline.color = { 1.F, 1.F, 1.F, 1.F };
 	overline.half_width = content_width / 2.F;
 	overline.half_height = rule_thickness / 2.F;
@@ -75,7 +81,7 @@ Radical::Radical(
 	overline.position = { overline_center_x, y_top - rule_thickness / 2.F };
 
 	const AABB placed_sign = layout_extent( *radical_sign );
-	add( std::move( radical_sign ) );
+	tag_visual( add( std::move( radical_sign ) ), "sign" );
 
 	if ( index )
 	{
@@ -83,7 +89,7 @@ Radical::Radical(
 		float raise = font.radical_degree_bottom_raise_percent() / 100.F;
 		float bottom = placed_sign.min.y() + raise * placed_sign.height();
 		index->position = index->position.movedBy( index_x - index_box.min.x(), bottom - index_box.min.y() );
-		add( std::move( index ) );
+		tag_visual( add( std::move( index ) ), "index" );
 	}
 
 	// The radicand sits on the incoming baseline (content wasn't shifted

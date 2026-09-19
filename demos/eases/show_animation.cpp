@@ -12,6 +12,8 @@
 #include <core/Stage.h>
 #include <core/Wait.h>
 
+#include <math/Expr.h>
+#include <visuals/Tags.h>
 #include <visuals/Circle.h>
 #include <visuals/CreateStyledText.h>
 #include <visuals/CreateText.h>
@@ -45,171 +47,79 @@ void show_title( Stage &stage )
 
 void show_math( Stage &stage )
 {
-	// 1. Get the math font from the current theme
-	MathFonts math_fonts = stage.theme->get_math( FontStyle{ Intent::MATH }.large() );
-	MathFont math_font( math_fonts.roman() );
+	using namespace math;
 
-	// 2. Determine scaling factors
-	const float target_height_canvas = 3.5f;
-	const float upem = static_cast<float>( math_fonts.roman().face->units_per_EM );
-	const float font_size = math_fonts.roman().scale;
-	const float glyph_scale = font_size / upem;
-
-	// 3. Common large operators
-	std::vector<char32_t> ops = {
-//		U'∫', // Integral
-//		U'∑', // Summation
-		U'√' // Square Root
-//		U'[', // Left Square Bracket
-//		U']'  // Right Square Bracket
+	// Formulas are described first, then built from the top in a style (display by default),
+	// which hands each part its own: numerators, scripts, radicands, indices ...
+	Context context( *stage.theme );
+	auto place = [&]( const Expr &formula, float x, float y ) -> Visual &
+	{
+		auto visual = formula.build( context );
+		visual->position = { x, y };
+		return stage.visuals.add( std::move( visual ) );
 	};
 
-	float x = -6.0f;
-	const float spacing = 3.0f;
+	// The integral of x dx from 0 to 1 is 1/2
+	place(
+		row( { op( integral( text( "0" ), text( "1" ) ) ),
+		       ord( "x" ),
+		       space( Row::THIN ),
+		       ord( upright( "d" ) ),
+		       ord( "x" ),
+		       rel( "=" ),
+		       inner( fraction( text( "1" ), text( "2" ) ) ) } ),
+		-6.0F,
+		2.5F );
 
-	auto style = FontStyle{ Intent::MATH }.large();
-	auto fraction = std::make_unique<Fraction>(
-		math_font,
-		glyph_scale,
-		make_text( *stage.theme, "22", style ),
-		make_text( *stage.theme, "7", style ) );
+	// A root with a wide index, around a fraction
+	// Parts can be found again after building, to color or animate them. The composites name
+	// their own parts, so none of this needs a tag of ours.
+	auto &root_formula = place( root( text( "137" ), fraction( text( "22" ), text( "7" ) ) ), -6.0F, 0.0F );
+	find_tag( root_formula, "numerator" )->color = Color{ 1.F, 0.4F, 0.4F, 1.F };
+	find_tag( root_formula, "denominator" )->color = Color{ 0.4F, 0.7F, 1.F, 1.F };
+	find_tag( root_formula, "sign" )->color = Color{ 1.F, 0.85F, 0.3F, 1.F };
+	find_tag( root_formula, "index" )->color = Color{ 0.5F, 1.F, 0.5F, 1.F };
 
-	for ( char32_t op: ops )
-	{
-		float h = ( op == U']' ) ? 8.0f : target_height_canvas;
-        if (op == U'√')
-        {
-            auto radical = std::make_unique<Radical>( math_font, glyph_scale,
-				make_text( *stage.theme, "137", script_style( style, math_font, ScriptLevel::SCRIPT_SCRIPT ) ),
-				std::move( fraction ) );
-            radical->position = { x, 0.0f };
-            stage.visuals.add(std::move(radical));
-        }
-        else
-        {
-            std::unique_ptr<Visual> visual = create_math_large_op( math_font, op, h / glyph_scale );
-            *visual *= glyph_scale;
-            visual->position = { x, 0.0f };
-            visual->color = Color{ 0.2f, 0.6f, 1.0f, 1.0f };
-            stage.visuals.add( std::move( visual ) );
-        }
-		x += spacing;
-	}
+	// x^2_i + 22/7 = 3.14
+	auto &equation = place(
+		row( { ord( tag( "power", scripts( text( "x" ), text( "2" ), text( "i" ) ) ) ),
+		       bin( "+" ),
+		       inner( tag( "ratio", fraction( text( "22" ), text( "7" ) ) ) ),
+		       rel( "=" ),
+		       ord( "3.14" ) } ),
+		-6.0F,
+		-2.5F );
+	// A path: the bar inside the part tagged "ratio", the superscript inside "power"
+	find_tag( equation, "ratio", "bar" )->color = Color{ 1.F, 0.85F, 0.3F, 1.F };
+	find_tag( equation, "power", "superscript" )->color = Color{ 1.F, 0.4F, 0.4F, 1.F };
 
-	// A formula: x with scripts + 22/7 = 3.14, spaced by atom class
-	auto script = script_style( style, math_font, ScriptLevel::SCRIPT );
-	auto row = std::make_unique<Row>( math_font, glyph_scale );
-	row->append(
-		AtomClass::ORD,
-		std::make_unique<Scripts>(
-			math_font,
-			glyph_scale,
-			make_text( *stage.theme, "x", style ),
-			make_text( *stage.theme, "2", script ),
-			make_text( *stage.theme, "i", script ) ) );
-	row->append( AtomClass::BIN, make_text( *stage.theme, "+", style ) );
-	row->append(
-		AtomClass::INNER,
-		std::make_unique<Fraction>(
-			math_font,
-			glyph_scale,
-			make_text( *stage.theme, "22", style ),
-			make_text( *stage.theme, "7", style ) ) );
-	row->append( AtomClass::REL, make_text( *stage.theme, "=", style ) );
-	row->append( AtomClass::ORD, make_text( *stage.theme, "3.14", style ) );
-	row->position = { -6.0f, -2.5f };
-	stage.visuals.add( std::move( row ) );
+	// A sum, a fraction in parentheses, a binomial
+	place( sum( text( "n=1" ), text( "\u221E" ) ), 1.5F, 0.0F );
+	place( parens( fraction( text( "22" ), text( "7" ) ) ), 2.5F, 2.5F );
+	place( binomial( text( "n" ), text( "k" ) ), 5.5F, 2.5F );
 
-	// A sum: limits above and below the operator
-	auto sum = make_large_operator(
-		math_font,
-		glyph_scale,
-		U'\u2211',
-		make_text( *stage.theme, "\u221E", script ),
-		make_text( *stage.theme, "n=1", script ) );
-	sum->position = { 1.5f, 0.0f };
-	stage.visuals.add( std::move( sum ) );
+	// Accents and rules
+	place(
+		row( { ord( hat( text( "x" ) ) ),
+		       space( Row::THIN ),
+		       ord( tilde( text( "y" ) ) ),
+		       space( Row::THIN ),
+		       ord( vec( text( "v" ) ) ),
+		       space( Row::THIN ),
+		       ord( hat( text( "A" ) ) ),
+		       space( Row::THIN ),
+		       ord( overline( text( "AB" ) ) ),
+		       space( Row::THIN ),
+		       ord( underline( text( "xy" ) ) ) } ),
+		1.5F,
+		-2.5F );
 
-	// An integral in a formula: limits at the side of the operator
-	auto upright = style;
-	upright.upright();
-	auto integral = std::make_unique<Row>( math_font, glyph_scale );
-	integral->append(
-		AtomClass::OP,
-		make_large_operator(
-			math_font,
-			glyph_scale,
-			U'\u222B',
-			make_text( *stage.theme, "1", script ),
-			make_text( *stage.theme, "0", script ) ) );
-	integral->append( AtomClass::ORD, make_text( *stage.theme, "x", style ) );
-	integral->append_space( Row::THIN );
-	integral->append( AtomClass::ORD, make_text( *stage.theme, "d", upright ) );
-	integral->append( AtomClass::ORD, make_text( *stage.theme, "x", style ) );
-	integral->append( AtomClass::REL, make_text( *stage.theme, "=", style ) );
-	integral->append(
-		AtomClass::INNER,
-		std::make_unique<Fraction>(
-			math_font,
-			glyph_scale,
-			make_text( *stage.theme, "1", style ),
-			make_text( *stage.theme, "2", style ) ) );
-	integral->position = { -6.0f, 2.5f };
-	stage.visuals.add( std::move( integral ) );
-
-	// Delimiters that stretch to fit their content: a fraction in parentheses, and a binomial
-	auto fenced = std::make_unique<Delimited>(
-		math_font,
-		glyph_scale,
-		U'(',
-		std::make_unique<Fraction>(
-			math_font,
-			glyph_scale,
-			make_text( *stage.theme, "22", style ),
-			make_text( *stage.theme, "7", style ) ),
-		U')' );
-	fenced->position = { 2.5f, 2.5f };
-	stage.visuals.add( std::move( fenced ) );
-
-	auto binomial = make_binomial(
-		math_font,
-		glyph_scale,
-		make_text( *stage.theme, "n", style ),
-		make_text( *stage.theme, "k", style ) );
-	binomial->position = { 5.5f, 2.5f };
-	stage.visuals.add( std::move( binomial ) );
-
-	// Accents and rules: hat, tilde and vector arrow over letters (a tall base raises its
-	// accent), then an overline and an underline
-	auto marks = std::make_unique<Row>( math_font, glyph_scale );
-	auto add_mark = [&]( std::unique_ptr<Visual> &&mark )
-	{
-		marks->append( AtomClass::ORD, std::move( mark ) );
-		marks->append_space( Row::THIN );
-	};
-	add_mark( std::make_unique<Accent>( math_font, glyph_scale, make_text( *stage.theme, "x", style ), 0x2C6 ) );
-	add_mark( std::make_unique<Accent>( math_font, glyph_scale, make_text( *stage.theme, "y", style ), 0x2DC ) );
-	add_mark( std::make_unique<Accent>( math_font, glyph_scale, make_text( *stage.theme, "v", style ), 0x20D7 ) );
-	add_mark( std::make_unique<Accent>( math_font, glyph_scale, make_text( *stage.theme, "A", style ), 0x2C6 ) );
-	add_mark( std::make_unique<Overline>( math_font, glyph_scale, make_text( *stage.theme, "AB", style ) ) );
-	add_mark( std::make_unique<Underline>( math_font, glyph_scale, make_text( *stage.theme, "xy", style ) ) );
-	marks->position = { 1.5f, -2.5f };
-	stage.visuals.add( std::move( marks ) );
-
-	// A matrix in parentheses, and the same grid as a determinant
-	auto make_grid = [&]()
-	{
-		auto grid = std::make_unique<Matrix>( math_font, glyph_scale, MatrixOptions{ .column_sep_em = 0.6F } );
-		grid->append_row( make_cells( make_text( *stage.theme, "a", style ), make_text( *stage.theme, "b", style ) ) );
-		grid->append_row( make_cells( make_text( *stage.theme, "c", style ), make_text( *stage.theme, "d", style ) ) );
-		return grid;
-	};
-	auto pmatrix = std::make_unique<Delimited>( math_font, glyph_scale, U'(', make_grid(), U')' );
-	pmatrix->position = { 3.0f, 0.0f };
-	stage.visuals.add( std::move( pmatrix ) );
-	auto determinant = std::make_unique<Delimited>( math_font, glyph_scale, U'|', make_grid(), U'|' );
-	determinant->position = { 5.7f, 0.0f };
-	stage.visuals.add( std::move( determinant ) );
+	// A matrix, and the same grid as a determinant
+	MatrixOptions tight{ .column_sep_em = 0.6F };
+	std::vector<std::vector<Expr>> grid = { { text( "a" ), text( "b" ) }, { text( "c" ), text( "d" ) } };
+	auto &matrix_formula = place( pmatrix( grid, tight ), 3.0F, 0.0F );
+	find_tag( matrix_formula, "r0c1" )->color = Color{ 0.5F, 1.F, 0.5F, 1.F }; // the entry b
+	place( vmatrix( grid, tight ), 5.7F, 0.0F );
 }
 
 template<typename Ease>

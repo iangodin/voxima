@@ -1,4 +1,5 @@
 #include "visuals/Limits.h"
+#include "visuals/Tags.h"
 #include "visuals/Layout.h"
 #include "visuals/MathMetrics.h"
 #include <algorithm>
@@ -44,14 +45,14 @@ Limits::Limits(
 			center - italic / 2.F - low.box.width() / 2.F - low.box.min.x(), baseline - low.baseline );
 	}
 
-	add( std::move( nucleus ) );
+	tag_visual( add( std::move( nucleus ) ), "base" );
 	if ( upper )
 	{
-		add( std::move( upper ) );
+		tag_visual( add( std::move( upper ) ), "upper" );
 	}
 	if ( lower )
 	{
-		add( std::move( lower ) );
+		tag_visual( add( std::move( lower ) ), "lower" );
 	}
 
 	math_axis = font.axis_height() * s;

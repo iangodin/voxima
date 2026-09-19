@@ -1,4 +1,5 @@
 #include "visuals/Bars.h"
+#include "visuals/Tags.h"
 #include "visuals/MathMetrics.h"
 #include "visuals/Rectangle.h"
 
@@ -13,8 +14,9 @@ Overline::Overline( const MathFont &font, float s, std::unique_ptr<Visual> &&con
 	const float width = b.box.width();
 	const float bar_bottom = b.height() + gap;
 
-	add( std::move( content ) );
+	tag_visual( add( std::move( content ) ), "content" );
 	auto &bar = add( std::make_unique<Rectangle>() );
+	tag_visual( bar, "line" );
 	bar.half_width = width / 2.F;
 	bar.half_height = thickness / 2.F;
 	bar.position = { width / 2.F, bar_bottom + thickness / 2.F };
@@ -38,8 +40,9 @@ Underline::Underline( const MathFont &font, float s, std::unique_ptr<Visual> &&c
 	const float width = b.box.width();
 	const float bar_top = -b.depth() - gap;
 
-	add( std::move( content ) );
+	tag_visual( add( std::move( content ) ), "content" );
 	auto &bar = add( std::make_unique<Rectangle>() );
+	tag_visual( bar, "line" );
 	bar.half_width = width / 2.F;
 	bar.half_height = thickness / 2.F;
 	bar.position = { width / 2.F, bar_top - thickness / 2.F };

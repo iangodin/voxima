@@ -72,6 +72,16 @@ public:
 	[[nodiscard]] float underbar_vertical_gap() const;
 	[[nodiscard]] float underbar_rule_thickness() const;
 	[[nodiscard]] float underbar_extra_descender() const;
+	// The display-style versions of the above, and the cramped superscript shift
+	[[nodiscard]] float fraction_numerator_display_style_shift_up() const;
+	[[nodiscard]] float fraction_denominator_display_style_shift_down() const;
+	[[nodiscard]] float fraction_num_display_style_gap_min() const;
+	[[nodiscard]] float fraction_denom_display_style_gap_min() const;
+	[[nodiscard]] float stack_top_display_style_shift_up() const;
+	[[nodiscard]] float stack_bottom_display_style_shift_down() const;
+	[[nodiscard]] float stack_display_style_gap_min() const;
+	[[nodiscard]] float radical_display_style_vertical_gap() const;
+	[[nodiscard]] float superscript_shift_cramped() const;
 	// Percentages (e.g. 70 and 50), not distances
 	[[nodiscard]] float script_percent_scale_down() const;
 	[[nodiscard]] float script_script_percent_scale_down() const;

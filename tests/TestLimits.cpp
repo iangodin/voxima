@@ -157,7 +157,13 @@ TEST_CASE( "Large operators", "[visuals]" )
 	auto build = [&]( char32_t op, bool display, std::optional<LimitPlacement> placement = std::nullopt )
 	{
 		return make_large_operator(
-			f.font, f.s, op, Fixture::circle( 0.05F ), Fixture::circle( 0.05F ), display, placement );
+			f.font,
+			f.s,
+			op,
+			Fixture::circle( 0.05F ),
+			Fixture::circle( 0.05F ),
+			display ? MathStyle::display() : MathStyle::text(),
+			placement );
 	};
 
 	SECTION( "default placement follows the operator" )

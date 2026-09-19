@@ -1,4 +1,5 @@
 #include "visuals/Accent.h"
+#include "visuals/Tags.h"
 #include "visuals/CreateText.h"
 #include "visuals/MathMetrics.h"
 #include <algorithm>
@@ -22,8 +23,8 @@ Accent::Accent( const MathFont &font, float s, std::unique_ptr<Visual> &&base, c
 	const float raise = std::max( 0.F, b.height() - font.accent_base_height() * s );
 	glyph->position = { attach_x - *glyph->topAccentAttachment, raise };
 
-	add( std::move( base ) );
-	add( std::move( glyph ) );
+	tag_visual( add( std::move( base ) ), "base" );
+	tag_visual( add( std::move( glyph ) ), "accent" );
 
 	math_axis = font.axis_height() * s;
 

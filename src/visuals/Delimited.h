@@ -20,7 +20,7 @@ public:
 		char32_t open,
 		std::unique_ptr<Visual> &&content,
 		char32_t close,
-		ScriptLevel level = ScriptLevel::TEXT );
+		MathStyle style = MathStyle::display() );
 };
 
 // n over k in parentheses, without a rule
@@ -28,4 +28,5 @@ std::unique_ptr<Group> make_binomial(
 	const MathFont &font,
 	float glyph_scale,
 	std::unique_ptr<Visual> &&top,
-	std::unique_ptr<Visual> &&bottom );
+	std::unique_ptr<Visual> &&bottom,
+	MathStyle style = MathStyle::display() );
