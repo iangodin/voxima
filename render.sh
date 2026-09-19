@@ -12,7 +12,7 @@ build/Release/sonimation --width 1280 --height 720 \
 	--render-dir render \
 	--save-png \
 	--save-svg \
-	--theme "Modern Technical" \
+	--theme "New Computer Modern" \
 	--container mkv \
 	--vcodec h264 \
 	--acodec opus \

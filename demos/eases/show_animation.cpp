@@ -19,6 +19,7 @@
 #include <visuals/CreateMathLargeOperation.h>
 #include <visuals/Fraction.h>
 #include <visuals/Radical.h>
+#include <visuals/Row.h>
 #include <visuals/Scripts.h>
 #include <fonts/MathFont.h>
 #include <fonts/MathStyle.h>
@@ -90,16 +91,29 @@ void show_math( Stage &stage )
 		x += spacing;
 	}
 
-	// x with a superscript and a subscript
+	// A formula: x with scripts + 22/7 = 3.14, spaced by atom class
 	auto script = script_style( style, math_font, ScriptLevel::SCRIPT );
-	auto scripts = std::make_unique<Scripts>(
-		math_font,
-		glyph_scale,
-		make_text( *stage.theme, "x", style ),
-		make_text( *stage.theme, "2", script ),
-		make_text( *stage.theme, "i", script ) );
-	scripts->position = { 1.0f, 0.0f };
-	stage.visuals.add( std::move( scripts ) );
+	auto row = std::make_unique<Row>( math_font, glyph_scale );
+	row->append(
+		AtomClass::ORD,
+		std::make_unique<Scripts>(
+			math_font,
+			glyph_scale,
+			make_text( *stage.theme, "x", style ),
+			make_text( *stage.theme, "2", script ),
+			make_text( *stage.theme, "i", script ) ) );
+	row->append( AtomClass::BIN, make_text( *stage.theme, "+", style ) );
+	row->append(
+		AtomClass::INNER,
+		std::make_unique<Fraction>(
+			math_font,
+			glyph_scale,
+			make_text( *stage.theme, "22", style ),
+			make_text( *stage.theme, "7", style ) ) );
+	row->append( AtomClass::REL, make_text( *stage.theme, "=", style ) );
+	row->append( AtomClass::ORD, make_text( *stage.theme, "3.14", style ) );
+	row->position = { -6.0f, -2.5f };
+	stage.visuals.add( std::move( row ) );
 }
 
 template<typename Ease>

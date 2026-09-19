@@ -52,6 +52,9 @@ private:
 	int _indent;
 	Color _current_color = { 1.F, 1.F, 1.F, 1.F };
 	Color _current_stroke_color = { 1.F, 1.F, 1.F, 1.F };
-	std::map<std::pair<const FontFace *, unsigned int>, std::vector<PathCommand>> _glyphs;
+	// Glyph outlines already written, keyed by the path data itself (which has the font size
+	// baked in), so identical outlines share one definition and different ones never do.
+	std::map<std::string, size_t> _glyph_ids;
+	std::vector<std::string> _glyph_paths;
 	std::vector<bool> _open_g_count;
 };

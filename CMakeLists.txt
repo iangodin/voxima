@@ -67,6 +67,7 @@ add_library( visuals STATIC
 	src/visuals/Radical.cpp
 	src/visuals/Fraction.cpp
 	src/visuals/Scripts.cpp
+	src/visuals/Row.cpp
 )
 
 target_compile_features( visuals PUBLIC cxx_std_20 )

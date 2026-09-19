@@ -103,14 +103,12 @@ SVGWriter::SVGWriter( std::ostream &out, int indent_level )
 
 void SVGWriter::write_defs( std::ostream &out )
 {
-	if ( _glyphs.empty() ) return;
+	if ( _glyph_paths.empty() ) return;
 
 	out << "  <defs>\n";
-	for ( const auto &[key, commands]: _glyphs )
+	for ( size_t id = 0; id < _glyph_paths.size(); ++id )
 	{
-		out << "    <path id=\"glyph_" << key.first << "_" << key.second << "\" d=\"";
-		emit_path_data( commands, out );
-		out << "\" />\n";
+		out << "    <path id=\"glyph_" << id << "\" d=\"" << _glyph_paths[id] << "\" />\n";
 	}
 	out << "  </defs>\n";
 }
@@ -225,18 +223,21 @@ void SVGWriter::visit( const Path &path )
 
 void SVGWriter::visit( const Glyph &glyph )
 {
-	auto key = std::make_pair( glyph.font_face, glyph.index );
-	if ( !_glyphs.contains( key ) )
+	std::ostringstream path;
+	emit_path_data( glyph.commands, path );
+	const auto [entry, is_new] = _glyph_ids.emplace( path.str(), _glyph_ids.size() );
+	if ( is_new )
 	{
-		_glyphs[key] = glyph.commands;
+		_glyph_paths.push_back( entry->first );
 	}
+	const size_t id = entry->second;
 
 	if ( open_g( glyph, false ) )
 	{
 		Color final_color = _current_color * glyph.color;
 		Color final_stroke_color = _current_stroke_color * glyph.stroke_color;
 
-		_out << indent() << "<use href=\"#glyph_" << glyph.font_face << "_" << glyph.index << "\" "
+		_out << indent() << "<use href=\"#glyph_" << id << "\" "
 		     << color_attributes( final_color ) << " "
 		     << stroke_attributes( glyph.stroke_thickness, final_stroke_color ) << " />\n";
 
