@@ -1,5 +1,6 @@
 #include "visuals/Scripts.h"
 #include "visuals/Layout.h"
+#include "visuals/MathMetrics.h"
 #include "visuals/MathAssembly.h"
 #include "visuals/MathGlyph.h"
 #include <algorithm>
@@ -32,41 +33,6 @@ bool is_glyph_run( const Visual &visual )
 	return false;
 }
 
-// How far the superscript clears the nucleus: the italic correction of its last glyph.
-// Composites (fractions, radicals, ...) have none.
-float italic_correction( const Visual &visual )
-{
-	if ( const auto *glyph = dynamic_cast<const Glyph *>( &visual ) )
-	{
-		return glyph->italicCorrection;
-	}
-	if ( const auto *assembly = dynamic_cast<const MathAssembly *>( &visual ) )
-	{
-		return assembly->italicCorrection;
-	}
-	if ( const auto *group = dynamic_cast<const Group *>( &visual ) )
-	{
-		if ( !group->extent && group->size() > 0 )
-		{
-			return italic_correction( **( group->end() - 1 ) );
-		}
-	}
-	return 0.F;
-}
-
-// A script's extents above and below its own baseline
-struct ScriptBox
-{
-	AABB box;
-	float baseline = 0.F;
-	float height() const { return box.max.y() - baseline; }
-	float depth() const { return baseline - box.min.y(); }
-};
-
-ScriptBox measure( const Visual &visual )
-{
-	return { layout_extent( visual ), visual.position.y() + visual.baseline };
-}
 }
 
 Scripts::Scripts(
@@ -87,7 +53,7 @@ Scripts::Scripts(
 	const float space_after = font.space_after_script() * s;
 
 	// Put the nucleus's baseline at y = 0 and its left edge at x = 0
-	const ScriptBox n = measure( *nucleus );
+	const ScriptBox n = measure_box( *nucleus );
 	nucleus->position = nucleus->position.movedBy( -n.box.min.x(), -n.baseline );
 	const float n_right = n.box.width();
 
@@ -100,8 +66,8 @@ Scripts::Scripts(
 		v = n.depth() + sub_drop_min;
 	}
 
-	const ScriptBox sup = superscript ? measure( *superscript ) : ScriptBox{};
-	const ScriptBox sub = subscript ? measure( *subscript ) : ScriptBox{};
+	const ScriptBox sup = superscript ? measure_box( *superscript ) : ScriptBox{};
+	const ScriptBox sub = subscript ? measure_box( *subscript ) : ScriptBox{};
 
 	if ( superscript )
 	{

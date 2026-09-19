@@ -19,6 +19,7 @@
 #include <visuals/CreateMathLargeOperation.h>
 #include <visuals/Fraction.h>
 #include <visuals/Radical.h>
+#include <visuals/LargeOperator.h>
 #include <visuals/Row.h>
 #include <visuals/Scripts.h>
 #include <fonts/MathFont.h>
@@ -114,6 +115,43 @@ void show_math( Stage &stage )
 	row->append( AtomClass::ORD, make_text( *stage.theme, "3.14", style ) );
 	row->position = { -6.0f, -2.5f };
 	stage.visuals.add( std::move( row ) );
+
+	// A sum: limits above and below the operator
+	auto sum = make_large_operator(
+		math_font,
+		glyph_scale,
+		U'\u2211',
+		make_text( *stage.theme, "\u221E", script ),
+		make_text( *stage.theme, "n=1", script ) );
+	sum->position = { 1.5f, 0.0f };
+	stage.visuals.add( std::move( sum ) );
+
+	// An integral in a formula: limits at the side of the operator
+	auto upright = style;
+	upright.upright();
+	auto integral = std::make_unique<Row>( math_font, glyph_scale );
+	integral->append(
+		AtomClass::OP,
+		make_large_operator(
+			math_font,
+			glyph_scale,
+			U'\u222B',
+			make_text( *stage.theme, "1", script ),
+			make_text( *stage.theme, "0", script ) ) );
+	integral->append( AtomClass::ORD, make_text( *stage.theme, "x", style ) );
+	integral->append_space( Row::THIN );
+	integral->append( AtomClass::ORD, make_text( *stage.theme, "d", upright ) );
+	integral->append( AtomClass::ORD, make_text( *stage.theme, "x", style ) );
+	integral->append( AtomClass::REL, make_text( *stage.theme, "=", style ) );
+	integral->append(
+		AtomClass::INNER,
+		std::make_unique<Fraction>(
+			math_font,
+			glyph_scale,
+			make_text( *stage.theme, "1", style ),
+			make_text( *stage.theme, "2", style ) ) );
+	integral->position = { -6.0f, 2.5f };
+	stage.visuals.add( std::move( integral ) );
 }
 
 template<typename Ease>

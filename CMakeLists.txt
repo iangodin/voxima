@@ -68,6 +68,8 @@ add_library( visuals STATIC
 	src/visuals/Fraction.cpp
 	src/visuals/Scripts.cpp
 	src/visuals/Row.cpp
+	src/visuals/Limits.cpp
+	src/visuals/LargeOperator.cpp
 )
 
 target_compile_features( visuals PUBLIC cxx_std_20 )

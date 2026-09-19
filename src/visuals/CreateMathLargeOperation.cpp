@@ -222,6 +222,9 @@ std::unique_ptr<Visual> create_math_large_op(
 	// The midpoint relative to the glyph origin is (height - depth) / 2.
 	float midpoint = ( height - depth ) / 2.0f;
 	math_glyph->position = math_glyph->position.withY( font.axis_height() - midpoint );
+	// The glyph is shifted to sit on the math axis. Its baseline anchor is the line it
+	// should share with its neighbours, so a row or scripts don't undo that shift.
+	math_glyph->baseline = -math_glyph->position.y();
 	math_glyph->math_axis = font.axis_height();
 
 	return math_glyph;

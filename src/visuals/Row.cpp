@@ -88,8 +88,16 @@ Visual &Row::append( AtomClass atom, std::unique_ptr<Visual> &&visual )
 {
 	Visual &ref = add( std::move( visual ) );
 	_atoms.push_back( atom );
+	_extra_mu.push_back( _pending_mu );
+	_pending_mu = 0.F;
 	layout();
 	return ref;
+}
+
+void Row::append_space( float mu )
+{
+	_pending_mu += mu;
+	layout();
 }
 
 void Row::layout()
@@ -104,12 +112,16 @@ void Row::layout()
 		{
 			x += static_cast<float>( spacing_mu( eff[i - 1], eff[i], _level ) ) * _mu;
 		}
+		x += _extra_mu[i] * _mu;
 
 		// Left edge at x, baseline at y = 0
 		const AABB box = layout_extent( child );
 		child.position = child.position.movedBy( x - box.min.x(), -( child.position.y() + child.baseline ) );
 		x += box.width();
 	}
+
+	// Space added after the last atom
+	x += _pending_mu * _mu;
 
 	// The box runs from the origin to the end of the last atom, and covers every child
 	extent.reset();

@@ -54,6 +54,12 @@ public:
 	[[nodiscard]] float sub_superscript_gap_min() const;
 	[[nodiscard]] float superscript_bottom_max_with_subscript() const;
 	[[nodiscard]] float space_after_script() const;
+	// Large operators and their limits, in font units
+	[[nodiscard]] float upper_limit_gap_min() const;
+	[[nodiscard]] float upper_limit_baseline_rise_min() const;
+	[[nodiscard]] float lower_limit_gap_min() const;
+	[[nodiscard]] float lower_limit_baseline_drop_min() const;
+	[[nodiscard]] float display_operator_min_height() const;
 	// Percentages (e.g. 70 and 50), not distances
 	[[nodiscard]] float script_percent_scale_down() const;
 	[[nodiscard]] float script_script_percent_scale_down() const;

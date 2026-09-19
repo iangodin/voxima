@@ -230,3 +230,66 @@ TEST_CASE( "Row::spacing_mu table", "[visuals]" )
 	CHECK( Row::spacing_mu( A::OPEN, A::INNER, ScriptLevel::TEXT ) == 0 );
 	CHECK( Row::spacing_mu( A::INNER, A::CLOSE, ScriptLevel::TEXT ) == 0 );
 }
+
+TEST_CASE( "Row: explicit space", "[visuals]" )
+{
+	Fixture f;
+	using A = AtomClass;
+
+	auto gap = []( Row &row )
+	{
+		auto it = row.begin();
+		const AABB first = layout_extent( **it++ );
+		const AABB second = layout_extent( **it );
+		return second.min.x() - first.max.x();
+	};
+
+	SECTION( "a thin space between ordinary atoms, as in x\\,dx" )
+	{
+		Row row( f.font, f.s );
+		row.append( A::ORD, Fixture::atom() );
+		row.append_space( Row::THIN );
+		row.append( A::ORD, Fixture::atom() );
+		CHECK( gap( row ) == Approx( 3.F * f.mu ) );
+	}
+
+	SECTION( "it adds to the automatic spacing" )
+	{
+		Row row( f.font, f.s );
+		row.append( A::ORD, Fixture::atom() );
+		row.append_space( Row::THIN );
+		row.append( A::REL, Fixture::atom() );
+		CHECK( gap( row ) == Approx( ( 5.F + 3.F ) * f.mu ) );
+	}
+
+	SECTION( "spaces accumulate and can be negative" )
+	{
+		Row row( f.font, f.s );
+		row.append( A::ORD, Fixture::atom() );
+		row.append_space( Row::THICK );
+		row.append_space( -Row::THIN );
+		row.append( A::ORD, Fixture::atom() );
+		CHECK( gap( row ) == Approx( 2.F * f.mu ) );
+	}
+
+	SECTION( "it is glue: it doesn't stop a binary operator turning ordinary" )
+	{
+		Row row( f.font, f.s );
+		row.append_space( Row::THIN );
+		row.append( A::BIN, Fixture::atom() );
+		row.append( A::ORD, Fixture::atom() );
+		auto it = row.begin();
+		const AABB bin = layout_extent( **it++ );
+		const AABB ord = layout_extent( **it );
+		// the operator has no left operand, so it is ordinary: nothing between the two atoms
+		CHECK( ord.min.x() - bin.max.x() == Approx( 0.F ).margin( 1e-5 ) );
+	}
+
+	SECTION( "space at the end widens the row" )
+	{
+		Row row( f.font, f.s );
+		row.append( A::ORD, Fixture::atom() );
+		row.append_space( Row::THIN );
+		CHECK( row.extent->max.x() == Approx( 0.2F + 3.F * f.mu ) );
+	}
+}

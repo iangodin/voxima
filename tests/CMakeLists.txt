@@ -13,6 +13,7 @@ add_executable( sonimation_unit_tests
 	TestMathAlphabet.cpp
 	TestRow.cpp
 	TestSVGWriter.cpp
+	TestLimits.cpp
 )
 
 target_link_libraries( sonimation_unit_tests

@@ -89,6 +89,31 @@ float MathFont::space_after_script() const
 	return static_cast<float>( hb_ot_math_get_constant( _hb_font, HB_OT_MATH_CONSTANT_SPACE_AFTER_SCRIPT ) );
 }
 
+float MathFont::upper_limit_gap_min() const
+{
+	return static_cast<float>( hb_ot_math_get_constant( _hb_font, HB_OT_MATH_CONSTANT_UPPER_LIMIT_GAP_MIN ) );
+}
+
+float MathFont::upper_limit_baseline_rise_min() const
+{
+	return static_cast<float>( hb_ot_math_get_constant( _hb_font, HB_OT_MATH_CONSTANT_UPPER_LIMIT_BASELINE_RISE_MIN ) );
+}
+
+float MathFont::lower_limit_gap_min() const
+{
+	return static_cast<float>( hb_ot_math_get_constant( _hb_font, HB_OT_MATH_CONSTANT_LOWER_LIMIT_GAP_MIN ) );
+}
+
+float MathFont::lower_limit_baseline_drop_min() const
+{
+	return static_cast<float>( hb_ot_math_get_constant( _hb_font, HB_OT_MATH_CONSTANT_LOWER_LIMIT_BASELINE_DROP_MIN ) );
+}
+
+float MathFont::display_operator_min_height() const
+{
+	return static_cast<float>( hb_ot_math_get_constant( _hb_font, HB_OT_MATH_CONSTANT_DISPLAY_OPERATOR_MIN_HEIGHT ) );
+}
+
 float MathFont::script_percent_scale_down() const
 {
 	return static_cast<float>( hb_ot_math_get_constant( _hb_font, HB_OT_MATH_CONSTANT_SCRIPT_PERCENT_SCALE_DOWN ) );

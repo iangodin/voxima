@@ -34,6 +34,15 @@ public:
 
 	Visual &append( AtomClass atom, std::unique_ptr<Visual> &&visual );
 
+	// Extra space (in mu) before the next atom, on top of the automatic spacing, like
+	// TeX's \, \: \; and \! (which is negative). It is glue, not an atom: it doesn't change
+	// how the atoms around it are classified. Space left at the end widens the row.
+	static constexpr float THIN = 3.F;
+	static constexpr float MEDIUM = 4.F;
+	static constexpr float THICK = 5.F;
+	static constexpr float QUAD = 18.F;
+	void append_space( float mu );
+
 	// The space TeX puts between two atoms, in mu (0, 3, 4 or 5), after any binary
 	// operator adjustment has been applied to `left` and `right`.
 	static int spacing_mu( AtomClass left, AtomClass right, ScriptLevel level );
@@ -44,4 +53,6 @@ private:
 	float _mu = 0.F;
 	ScriptLevel _level = ScriptLevel::TEXT;
 	std::vector<AtomClass> _atoms;
+	std::vector<float> _extra_mu; // explicit space before each atom
+	float _pending_mu = 0.F;      // explicit space waiting for the next atom
 };
