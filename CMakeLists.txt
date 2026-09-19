@@ -69,6 +69,7 @@ add_library( visuals STATIC
 	src/visuals/Scripts.cpp
 	src/visuals/Row.cpp
 	src/visuals/Limits.cpp
+	src/visuals/Delimited.cpp
 	src/visuals/LargeOperator.cpp
 )
 

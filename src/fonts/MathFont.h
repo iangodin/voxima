@@ -60,6 +60,10 @@ public:
 	[[nodiscard]] float lower_limit_gap_min() const;
 	[[nodiscard]] float lower_limit_baseline_drop_min() const;
 	[[nodiscard]] float display_operator_min_height() const;
+	// A fraction without a rule (a stack), in font units
+	[[nodiscard]] float stack_top_shift_up() const;
+	[[nodiscard]] float stack_bottom_shift_down() const;
+	[[nodiscard]] float stack_gap_min() const;
 	// Percentages (e.g. 70 and 50), not distances
 	[[nodiscard]] float script_percent_scale_down() const;
 	[[nodiscard]] float script_script_percent_scale_down() const;

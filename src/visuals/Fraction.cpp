@@ -14,10 +14,11 @@ Fraction::Fraction(
 	const MathFont &font,
 	float glyph_scale,
 	std::unique_ptr<Visual> &&numerator,
-	std::unique_ptr<Visual> &&denominator )
+	std::unique_ptr<Visual> &&denominator,
+	FractionOptions options )
 {
 	const float em = glyph_scale * static_cast<float>( font.face().face->units_per_EM );
-	const float side = NULL_DELIMITER_SPACE_EM * em;
+	const float side = options.side_space ? NULL_DELIMITER_SPACE_EM * em : 0.F;
 
 	const float axis = font.axis_height() * glyph_scale;
 	const float rule = font.fraction_rule_thickness() * glyph_scale;
@@ -35,10 +36,29 @@ Fraction::Fraction(
 	const float num_depth = num_baseline - num_box.min.y();
 	const float den_height = den_box.max.y() - den_baseline;
 
-	// Numerator baseline: at least shift_up above the baseline, and clear of the rule
-	const float num_target = std::max( shift_up, axis + rule / 2.F + num_gap_min + num_depth );
-	// Denominator baseline: at least shift_down below the baseline, and clear of the rule
-	const float den_drop = std::max( shift_down, den_height - axis + rule / 2.F + den_gap_min );
+	float num_target = 0.F; // numerator baseline above the fraction's baseline
+	float den_drop = 0.F;   // denominator baseline below it
+	if ( options.rule )
+	{
+		// Numerator baseline: at least shift_up above the baseline, and clear of the rule
+		num_target = std::max( shift_up, axis + rule / 2.F + num_gap_min + num_depth );
+		// Denominator baseline: at least shift_down below the baseline, and clear of the rule
+		den_drop = std::max( shift_down, den_height - axis + rule / 2.F + den_gap_min );
+	}
+	else
+	{
+		// No rule (TeX rule 15c): the stack's own shifts, pushed apart equally if too close
+		num_target = font.stack_top_shift_up() * glyph_scale;
+		den_drop = font.stack_bottom_shift_down() * glyph_scale;
+		const float gap_min = font.stack_gap_min() * glyph_scale;
+		const float gap = ( num_target - num_depth ) - ( den_height - den_drop );
+		if ( gap < gap_min )
+		{
+			const float extra = ( gap_min - gap ) / 2.F;
+			num_target += extra;
+			den_drop += extra;
+		}
+	}
 
 	// Center both children over the rule, inside the side spacing
 	const float width = std::max( num_box.width(), den_box.width() );
@@ -51,10 +71,13 @@ Fraction::Fraction(
 	add( std::move( numerator ) );
 	add( std::move( denominator ) );
 
-	auto &bar = add( std::make_unique<Rectangle>() );
-	bar.half_width = width / 2.F;
-	bar.half_height = rule / 2.F;
-	bar.position = { side + width / 2.F, axis };
+	if ( options.rule )
+	{
+		auto &bar = add( std::make_unique<Rectangle>() );
+		bar.half_width = width / 2.F;
+		bar.half_height = rule / 2.F;
+		bar.position = { side + width / 2.F, axis };
+	}
 
 	math_axis = axis;
 

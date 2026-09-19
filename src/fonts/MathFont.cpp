@@ -114,6 +114,21 @@ float MathFont::display_operator_min_height() const
 	return static_cast<float>( hb_ot_math_get_constant( _hb_font, HB_OT_MATH_CONSTANT_DISPLAY_OPERATOR_MIN_HEIGHT ) );
 }
 
+float MathFont::stack_top_shift_up() const
+{
+	return static_cast<float>( hb_ot_math_get_constant( _hb_font, HB_OT_MATH_CONSTANT_STACK_TOP_SHIFT_UP ) );
+}
+
+float MathFont::stack_bottom_shift_down() const
+{
+	return static_cast<float>( hb_ot_math_get_constant( _hb_font, HB_OT_MATH_CONSTANT_STACK_BOTTOM_SHIFT_DOWN ) );
+}
+
+float MathFont::stack_gap_min() const
+{
+	return static_cast<float>( hb_ot_math_get_constant( _hb_font, HB_OT_MATH_CONSTANT_STACK_GAP_MIN ) );
+}
+
 float MathFont::script_percent_scale_down() const
 {
 	return static_cast<float>( hb_ot_math_get_constant( _hb_font, HB_OT_MATH_CONSTANT_SCRIPT_PERCENT_SCALE_DOWN ) );

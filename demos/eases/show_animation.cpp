@@ -19,6 +19,7 @@
 #include <visuals/CreateMathLargeOperation.h>
 #include <visuals/Fraction.h>
 #include <visuals/Radical.h>
+#include <visuals/Delimited.h>
 #include <visuals/LargeOperator.h>
 #include <visuals/Row.h>
 #include <visuals/Scripts.h>
@@ -152,6 +153,28 @@ void show_math( Stage &stage )
 			make_text( *stage.theme, "2", style ) ) );
 	integral->position = { -6.0f, 2.5f };
 	stage.visuals.add( std::move( integral ) );
+
+	// Delimiters that stretch to fit their content: a fraction in parentheses, and a binomial
+	auto fenced = std::make_unique<Delimited>(
+		math_font,
+		glyph_scale,
+		U'(',
+		std::make_unique<Fraction>(
+			math_font,
+			glyph_scale,
+			make_text( *stage.theme, "22", style ),
+			make_text( *stage.theme, "7", style ) ),
+		U')' );
+	fenced->position = { 2.5f, 2.5f };
+	stage.visuals.add( std::move( fenced ) );
+
+	auto binomial = make_binomial(
+		math_font,
+		glyph_scale,
+		make_text( *stage.theme, "n", style ),
+		make_text( *stage.theme, "k", style ) );
+	binomial->position = { 5.5f, 2.5f };
+	stage.visuals.add( std::move( binomial ) );
 }
 
 template<typename Ease>
