@@ -395,6 +395,28 @@ Expr vec( Expr base )
 	return accent( std::move( base ), U'⃗' );
 }
 
+// ---- Dots ----------------------------------------------------------------------------------
+
+Expr ldots()
+{
+	return text( "…" ); // …
+}
+
+Expr cdots()
+{
+	return text( "⋯" ); // ⋯
+}
+
+Expr vdots()
+{
+	return text( "⋮" ); // ⋮
+}
+
+Expr ddots()
+{
+	return text( "⋱" ); // ⋱
+}
+
 // ---- Rows --------------------------------------------------------------------------------
 
 namespace

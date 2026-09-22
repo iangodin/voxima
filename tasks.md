@@ -27,7 +27,7 @@
   - [x] Explicit style override (\textstyle / \displaystyle equivalent)
   - [x] Named operators with limits (operatorname, lim, max, min, sin, cos, log, ...)
   - [x] Expose remaining math alphabets on Expr (script, fraktur, double-struck/blackboard, sans, mono)
-  - [ ] Dots (ldots, cdots, vdots, ddots)
+  - [x] Dots (ldots, cdots, vdots, ddots)
   - [ ] Over/underbrace
   - [ ] Stacked relations (stackrel)
   - [ ] Phantom / invisible spacing placeholder

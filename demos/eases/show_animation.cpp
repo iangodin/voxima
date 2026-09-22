@@ -130,19 +130,32 @@ void show_math( Stage &stage )
 	auto &matrix_formula = place( pmatrix( grid, tight ) );
 	find_tag( matrix_formula, "r0c1" )->color = Color{ 0.5F, 1.F, 0.5F, 1.F }; // the entry b
 
+	// An n x n matrix with an omitted middle: cdots across a row, vdots/ddots down and across
+	std::vector<std::vector<Expr>> ellipsis_grid = {
+		{ subscript( text( "a" ), text( "11" ) ), cdots(), subscript( text( "a" ), text( "1n" ) ) },
+		{ vdots(), ddots(), vdots() },
+		{ subscript( text( "a" ), text( "n1" ) ), cdots(), subscript( text( "a" ), text( "nn" ) ) } };
+	place( bmatrix( ellipsis_grid, tight ) );
+
 	new_row();
 
 	// Accents and rules
 	place(
 		row( { ord( hat( text( "x" ) ) ),
 		       space( Row::THIN ),
-		       ord( tilde( text( "y" ) ) ),
-		       space( Row::THIN ),
 		       ord( vec( text( "v" ) ) ),
 		       space( Row::THIN ),
-		       ord( overline( text( "AB" ) ) ),
-		       space( Row::THIN ),
-		       ord( underline( text( "xy" ) ) ) } ) );
+		       ord( overline( text( "AB" ) ) ) } ) );
+
+	// A list, its middle elided with ldots (cdots elides between operators instead, above)
+	place(
+		row( { ord( subscript( text( "a" ), text( "1" ) ) ),
+		       punct( "," ),
+		       ord( subscript( text( "a" ), text( "2" ) ) ),
+		       punct( "," ),
+		       ord( ldots() ),
+		       punct( "," ),
+		       ord( subscript( text( "a" ), text( "n" ) ) ) } ) );
 
 	// Named operators: lim moves its limit under itself in display style, sin never does
 	place(

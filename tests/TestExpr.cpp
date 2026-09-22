@@ -162,6 +162,23 @@ TEST_CASE( "math::Expr basics", "[math]" )
 		       f.body.font.get_glyph_index( 0x1D68A ) );
 	}
 
+	SECTION( "dots" )
+	{
+		auto glyph_index = []( const Visual &visual )
+		{
+			const Visual *v = &visual;
+			while ( const auto *group = dynamic_cast<const Group *>( v ) )
+			{
+				v = group->begin()->get();
+			}
+			return static_cast<const Glyph *>( v )->index;
+		};
+		CHECK( glyph_index( *ldots().build( f.context ) ) == f.body.font.get_glyph_index( 0x2026 ) );
+		CHECK( glyph_index( *cdots().build( f.context ) ) == f.body.font.get_glyph_index( 0x22EF ) );
+		CHECK( glyph_index( *vdots().build( f.context ) ) == f.body.font.get_glyph_index( 0x22EE ) );
+		CHECK( glyph_index( *ddots().build( f.context ) ) == f.body.font.get_glyph_index( 0x22F1 ) );
+	}
+
 	SECTION( "an expression can be built again, in any style" )
 	{
 		Expr formula = text( "22" );

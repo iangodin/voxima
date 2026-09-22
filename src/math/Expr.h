@@ -136,6 +136,15 @@ Expr bar( Expr base );
 Expr dot( Expr base );
 Expr vec( Expr base );
 
+// ---- Dots ----------------------------------------------------------------------------------
+
+// Ellipses: low dots for a list (a_1, a_2, \ldots, a_n), centered dots between operators
+// (a_1 + \cdots + a_n), and the vertical/diagonal dots a matrix uses for an omitted row/diagonal
+Expr ldots();
+Expr cdots();
+Expr vdots();
+Expr ddots();
+
 // ---- Rows --------------------------------------------------------------------------------
 
 // One item of a row: an atom of a class (which sets the spacing around it), or extra space
