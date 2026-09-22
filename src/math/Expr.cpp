@@ -4,6 +4,8 @@
 #include "visuals/CreateText.h"
 #include "visuals/Delimited.h"
 #include "visuals/Fraction.h"
+#include "visuals/Group.h"
+#include "visuals/Layout.h"
 #include "visuals/Limits.h"
 #include "visuals/Radical.h"
 #include "visuals/Scripts.h"
@@ -471,6 +473,46 @@ Expr vdots()
 Expr ddots()
 {
 	return text( "⋱" ); // ⋱
+}
+
+// ---- Phantom -------------------------------------------------------------------------------
+
+namespace
+{
+// An empty box the size of `built` (or just its width/height), so it takes the same room
+// without drawing anything
+std::unique_ptr<Visual> make_phantom( std::unique_ptr<Visual> &&built, bool keep_width, bool keep_height )
+{
+	const AABB box = layout_extent( *built );
+	auto placeholder = std::make_unique<Group>();
+	placeholder->extent = AABB{
+		{ keep_width ? box.min.x() : 0.F, keep_height ? box.min.y() : 0.F },
+		{ keep_width ? box.max.x() : 0.F, keep_height ? box.max.y() : 0.F } };
+	placeholder->baseline = keep_height ? built->baseline : 0.F;
+	placeholder->math_axis = built->math_axis;
+	return placeholder;
+}
+}
+
+Expr phantom( Expr content )
+{
+	return Expr::from(
+		[content = std::move( content )]( const Context &context, MathStyle style ) -> std::unique_ptr<Visual>
+		{ return make_phantom( content.build( context, style ), true, true ); } );
+}
+
+Expr hphantom( Expr content )
+{
+	return Expr::from(
+		[content = std::move( content )]( const Context &context, MathStyle style ) -> std::unique_ptr<Visual>
+		{ return make_phantom( content.build( context, style ), true, false ); } );
+}
+
+Expr vphantom( Expr content )
+{
+	return Expr::from(
+		[content = std::move( content )]( const Context &context, MathStyle style ) -> std::unique_ptr<Visual>
+		{ return make_phantom( content.build( context, style ), false, true ); } );
 }
 
 // ---- Rows --------------------------------------------------------------------------------

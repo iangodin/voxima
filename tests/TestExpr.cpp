@@ -304,6 +304,31 @@ TEST_CASE( "math::Expr builds the right constructs", "[math]" )
 		CHECK( under_brace.max.y() <= under_content.min.y() );
 	}
 
+	SECTION( "phantom reserves the room its content would take without drawing it" )
+	{
+		auto content = fraction( text( "1" ), text( "2" ) ).build( f.context );
+		const AABB content_box = layout_extent( *content );
+
+		auto ghost = phantom( fraction( text( "1" ), text( "2" ) ) ).build( f.context );
+		CHECK_FALSE( dynamic_cast<Fraction *>( ghost.get() ) != nullptr );
+		CHECK( static_cast<Group *>( ghost.get() )->size() == 0 ); // nothing to draw
+		const AABB ghost_box = layout_extent( *ghost );
+		CHECK( ghost_box.min.x() == Approx( content_box.min.x() ) );
+		CHECK( ghost_box.max.x() == Approx( content_box.max.x() ) );
+		CHECK( ghost_box.min.y() == Approx( content_box.min.y() ) );
+		CHECK( ghost_box.max.y() == Approx( content_box.max.y() ) );
+
+		auto h = hphantom( fraction( text( "1" ), text( "2" ) ) ).build( f.context );
+		const AABB h_box = layout_extent( *h );
+		CHECK( h_box.width() == Approx( content_box.width() ) );
+		CHECK( h_box.height() == 0.F );
+
+		auto v = vphantom( fraction( text( "1" ), text( "2" ) ) ).build( f.context );
+		const AABB v_box = layout_extent( *v );
+		CHECK( v_box.height() == Approx( content_box.height() ) );
+		CHECK( v_box.width() == 0.F );
+	}
+
 	SECTION( "rows and grids" )
 	{
 		auto r = row( { ord( "x" ), bin( "+" ), ord( "y" ) } ).build( f.context );

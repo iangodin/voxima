@@ -158,6 +158,15 @@ Expr cdots();
 Expr vdots();
 Expr ddots();
 
+// ---- Phantom -------------------------------------------------------------------------------
+
+// Reserves the room content would take without drawing it, so something else can line up
+// with it (TeX's \phantom). hphantom keeps only the width (zero height/depth), vphantom only
+// the height/depth (zero width).
+Expr phantom( Expr content );
+Expr hphantom( Expr content );
+Expr vphantom( Expr content );
+
 // ---- Rows --------------------------------------------------------------------------------
 
 // One item of a row: an atom of a class (which sets the spacing around it), or extra space

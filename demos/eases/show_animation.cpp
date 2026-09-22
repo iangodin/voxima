@@ -164,6 +164,20 @@ void show_math( Stage &stage )
 	// stackrel: a label stacked over a relation, always, whatever the style
 	place( row( { ord( "A" ), rel( stackrel( upright( "def" ), text( "=" ) ) ), ord( "B" ) } ) );
 
+	// phantom: the same row, then again with "bb" reserved but not drawn - same width, gap left blank
+	place(
+		row( { ord( "a" ),
+		       bin( "+" ),
+		       inner( row( { ord( "b" ), ord( "b" ) } ) ),
+		       bin( "+" ),
+		       ord( "c" ),
+		       space( Row::QUAD ),
+		       ord( "a" ),
+		       bin( "+" ),
+		       inner( phantom( row( { ord( "b" ), ord( "b" ) } ) ) ),
+		       bin( "+" ),
+		       ord( "c" ) } ) );
+
 	// Named operators: lim moves its limit under itself in display style, sin never does
 	place(
 		row( { op( lim( row( { ord( "x" ), rel( "→" ), ord( "0" ) } ) ) ),

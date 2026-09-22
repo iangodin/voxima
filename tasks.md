@@ -30,7 +30,7 @@
   - [x] Dots (ldots, cdots, vdots, ddots)
   - [x] Over/underbrace
   - [x] Stacked relations (stackrel)
-  - [ ] Phantom / invisible spacing placeholder
+  - [x] Phantom / invisible spacing placeholder
 
 ## Geometry Processing
   - [ ] Add morphing between shapes
