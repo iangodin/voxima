@@ -139,6 +139,29 @@ TEST_CASE( "math::Expr basics", "[math]" )
 		CHECK( glyph_index( *plain ) == f.body.font.get_glyph_index( U'x' ) );
 	}
 
+	SECTION( "the other math alphabets: script, fraktur, double-struck, sans, mono" )
+	{
+		auto glyph_index = []( const Visual &visual )
+		{
+			const Visual *v = &visual;
+			while ( const auto *group = dynamic_cast<const Group *>( v ) )
+			{
+				v = group->begin()->get();
+			}
+			return static_cast<const Glyph *>( v )->index;
+		};
+		CHECK( glyph_index( *script( "A" ).build( f.context ) ) ==
+		       f.body.font.get_glyph_index( 0x1D49C ) );
+		CHECK( glyph_index( *fraktur( "C" ).build( f.context ) ) ==
+		       f.body.font.get_glyph_index( 0x212D ) );
+		CHECK( glyph_index( *double_struck( "R" ).build( f.context ) ) ==
+		       f.body.font.get_glyph_index( 0x211D ) );
+		CHECK( glyph_index( *sans( "a" ).build( f.context ) ) ==
+		       f.body.font.get_glyph_index( 0x1D5BA ) );
+		CHECK( glyph_index( *mono( "a" ).build( f.context ) ) ==
+		       f.body.font.get_glyph_index( 0x1D68A ) );
+	}
+
 	SECTION( "an expression can be built again, in any style" )
 	{
 		Expr formula = text( "22" );

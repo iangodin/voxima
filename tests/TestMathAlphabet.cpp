@@ -69,12 +69,14 @@ TEST_CASE( "math_alphabet: what a style asks for", "[fonts]" )
 		CHECK( math_alphabet( FontStyle{ Intent::MATH }.upright() ) == MathAlphabet::UPRIGHT );
 	}
 
-	SECTION( "bold, sans, mono and script pick their own alphabet upright" )
+	SECTION( "bold, sans, mono, script, fraktur and double-struck pick their own alphabet upright" )
 	{
 		CHECK( math_alphabet( FontStyle{ Intent::MATH }.bold() ) == MathAlphabet::BOLD );
 		CHECK( math_alphabet( FontStyle{ Intent::MATH }.sans() ) == MathAlphabet::SANS );
 		CHECK( math_alphabet( FontStyle{ Intent::MATH }.mono() ) == MathAlphabet::MONO );
 		CHECK( math_alphabet( FontStyle{ Intent::MATH }.script() ) == MathAlphabet::SCRIPT );
+		CHECK( math_alphabet( FontStyle{ Intent::MATH }.fraktur() ) == MathAlphabet::FRAKTUR );
+		CHECK( math_alphabet( FontStyle{ Intent::MATH }.double_struck() ) == MathAlphabet::DOUBLE_STRUCK );
 	}
 
 	SECTION( "explicit math italic combines with bold" )

@@ -12,6 +12,8 @@ enum class TypeClass
 	SLAB,
 	MONO,
 	SCRIPT,
+	FRAKTUR,
+	DOUBLE_STRUCK,
 };
 
 enum class Weight
@@ -130,6 +132,20 @@ public:
 	FontStyle &script( void )
 	{
 		_typeclass = TypeClass::SCRIPT;
+		return *this;
+	}
+
+	// Math-alphabet requests only (𝔉𝔯𝔞𝔨𝔱𝔲𝔯, no font file has a Fraktur style of its own)
+	FontStyle &fraktur( void )
+	{
+		_typeclass = TypeClass::FRAKTUR;
+		return *this;
+	}
+
+	// Math-alphabet requests only (blackboard bold, e.g. ℝ, ℕ)
+	FontStyle &double_struck( void )
+	{
+		_typeclass = TypeClass::DOUBLE_STRUCK;
 		return *this;
 	}
 

@@ -68,6 +68,46 @@ Expr bold( std::string characters )
 		} );
 }
 
+namespace
+{
+// text() in one of the other math alphabets: FontStyle::(*setter)() picks it, upright
+Expr alphabet_text( std::string characters, FontStyle &( FontStyle::*setter )() )
+{
+	return Expr::from(
+		[characters = std::move( characters ), setter]( const Context &context, MathStyle style ) -> std::unique_ptr<Visual>
+		{
+			FontStyle font_style = context.font_style( style );
+			( font_style.*setter )();
+			return make_text( context.theme(), characters, font_style );
+		} );
+}
+}
+
+Expr script( std::string characters )
+{
+	return alphabet_text( std::move( characters ), &FontStyle::script );
+}
+
+Expr fraktur( std::string characters )
+{
+	return alphabet_text( std::move( characters ), &FontStyle::fraktur );
+}
+
+Expr double_struck( std::string characters )
+{
+	return alphabet_text( std::move( characters ), &FontStyle::double_struck );
+}
+
+Expr sans( std::string characters )
+{
+	return alphabet_text( std::move( characters ), &FontStyle::sans );
+}
+
+Expr mono( std::string characters )
+{
+	return alphabet_text( std::move( characters ), &FontStyle::mono );
+}
+
 // ---- Constructs --------------------------------------------------------------------------
 
 Expr fraction( Expr numerator, Expr denominator )

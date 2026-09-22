@@ -54,25 +54,37 @@ void show_math( Stage &stage )
 	// which hands each part its own: numerators, scripts, radicands, indices ...
 	Context context( *stage.theme );
 
-	// Lays formulas left to right from each one's own measured width, so nothing overlaps
-	// as formulas are added, removed or resized; new_row starts the next line down.
-	float x = 0.F;
-	float y = 0.F;
+	// Lays formulas left to right from each one's own measured width, wrapping to a new,
+	// lower row on its own (as well as when new_row is called) whenever one would run off
+	// the right edge of the default 16x9 camera view; so nothing overlaps or overflows as
+	// formulas are added, removed or resized.
+	constexpr float LEFT_EDGE = -7.5F;
+	constexpr float RIGHT_EDGE = 7.5F;
+	constexpr float TOP_Y = 3.2F;
+	constexpr float ROW_HEIGHT = 2.2F;
+	constexpr float GAP = 0.6F;
+
+	int row_index = 0;
+	float x = LEFT_EDGE;
 	auto place = [&]( const Expr &formula ) -> Visual &
 	{
 		auto visual = formula.build( context );
 		const AABB box = layout_extent( *visual );
+		if ( x > LEFT_EDGE && x + box.width() > RIGHT_EDGE )
+		{
+			++row_index;
+			x = LEFT_EDGE;
+		}
+		const float y = TOP_Y - static_cast<float>( row_index ) * ROW_HEIGHT;
 		visual->position = { x - box.min.x(), y };
-		x += box.width() + 0.8F;
+		x += box.width() + GAP;
 		return stage.visuals.add( std::move( visual ) );
 	};
-	auto new_row = [&]( float row_y )
+	auto new_row = [&]()
 	{
-		x = -6.5F;
-		y = row_y;
+		++row_index;
+		x = LEFT_EDGE;
 	};
-
-	new_row( 2.5F );
 
 	// The integral of x dx from 0 to 1 is 1/2
 	place(
@@ -96,7 +108,7 @@ void show_math( Stage &stage )
 	// A binomial coefficient
 	place( binomial( text( "n" ), text( "k" ) ) );
 
-	new_row( 0.F );
+	new_row();
 
 	// x^2_i + 22/7 = 3.14
 	auto &equation = place(
@@ -118,7 +130,7 @@ void show_math( Stage &stage )
 	auto &matrix_formula = place( pmatrix( grid, tight ) );
 	find_tag( matrix_formula, "r0c1" )->color = Color{ 0.5F, 1.F, 0.5F, 1.F }; // the entry b
 
-	new_row( -2.5F );
+	new_row();
 
 	// Accents and rules
 	place(
@@ -139,6 +151,20 @@ void show_math( Stage &stage )
 		       inner( fraction( row( { op( sin() ), space( Row::THIN ), ord( "x" ) } ), text( "x" ) ) ),
 		       rel( "=" ),
 		       ord( "1" ) } ) );
+
+	// The other math alphabets: blackboard bold, calligraphic, Fraktur, sans and mono
+	place(
+		row( { ord( "x" ),
+		       rel( "∈" ),
+		       ord( double_struck( "R" ) ),
+		       punct( "," ),
+		       ord( script( "A" ) ),
+		       punct( "," ),
+		       ord( fraktur( "g" ) ),
+		       punct( "," ),
+		       ord( sans( "v" ) ),
+		       punct( "," ),
+		       ord( mono( "t" ) ) } ) );
 }
 
 template<typename Ease>

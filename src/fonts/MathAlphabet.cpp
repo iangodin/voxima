@@ -151,6 +151,14 @@ MathAlphabet math_alphabet( const FontStyle &style )
 	{
 		typeclass_alphabet = MathAlphabet::SCRIPT;
 	}
+	else if ( props.typeclass == TypeClass::FRAKTUR )
+	{
+		typeclass_alphabet = MathAlphabet::FRAKTUR;
+	}
+	else if ( props.typeclass == TypeClass::DOUBLE_STRUCK )
+	{
+		typeclass_alphabet = MathAlphabet::DOUBLE_STRUCK;
+	}
 
 	std::optional<Slant> slant = props.slant;
 	if ( !slant && math_intent && !bold && !typeclass_alphabet )

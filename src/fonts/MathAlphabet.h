@@ -32,5 +32,6 @@ std::string map_math_text( std::string_view utf8, MathAlphabet variant );
 //  - MATH_ITALIC slant (the default for the math intent) -> ITALIC, or BOLD_ITALIC if bold
 //  - .upright() -> no mapping
 //  - in the math intent, with no slant given, an explicit .bold() / .sans() / .mono() /
-//    .script() picks that alphabet upright (like \mathbf, \mathsf, ...)
+//    .script() / .fraktur() / .double_struck() picks that alphabet upright (like \mathbf,
+//    \mathsf, \mathfrak, \mathbb, ...)
 MathAlphabet math_alphabet( const FontStyle &style );

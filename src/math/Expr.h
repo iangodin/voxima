@@ -51,6 +51,13 @@ Expr text( std::string characters );
 // No italic: function names, units, the d of dx
 Expr upright( std::string characters );
 Expr bold( std::string characters );
+// The rest of the Unicode math alphabets (\mathcal, \mathfrak, \mathbb, \mathsf, \mathtt),
+// each set upright, as text() sets math italic
+Expr script( std::string characters );
+Expr fraktur( std::string characters );
+Expr double_struck( std::string characters );
+Expr sans( std::string characters );
+Expr mono( std::string characters );
 
 // ---- Constructs --------------------------------------------------------------------------
 
