@@ -235,6 +235,23 @@ TEST_CASE( "math::Expr builds the right constructs", "[math]" )
 		           large_operator( U'∫', one(), one(), LimitPlacement::OVER_UNDER ).build( f.context ).get() ) != nullptr );
 	}
 
+	SECTION( "overset, underset and stackrel always stack, in any style" )
+	{
+		CHECK( dynamic_cast<Limits *>( overset( one(), one() ).build( f.context ).get() ) != nullptr );
+		CHECK( dynamic_cast<Limits *>( underset( one(), one() ).build( f.context ).get() ) != nullptr );
+		CHECK( dynamic_cast<Limits *>( stackrel( one(), one() ).build( f.context ).get() ) != nullptr );
+		CHECK( dynamic_cast<Limits *>(
+		           overset( one(), one() ).build( f.context, MathStyle::text() ).get() ) != nullptr );
+
+		auto over = overset( one(), text( "=" ) ).build( f.context );
+		CHECK( find_tag( *over, "upper" ) != nullptr );
+		CHECK( find_tag( *over, "lower" ) == nullptr );
+
+		auto under = underset( one(), text( "=" ) ).build( f.context );
+		CHECK( find_tag( *under, "lower" ) != nullptr );
+		CHECK( find_tag( *under, "upper" ) == nullptr );
+	}
+
 	SECTION( "named operators: moving limits behave like large operators, others stay at the side" )
 	{
 		CHECK( dynamic_cast<Limits *>( lim( one() ).build( f.context ).get() ) != nullptr );
@@ -373,6 +390,19 @@ TEST_CASE( "math::Expr hands each part its style", "[math]" )
 		a.reset();
 		(void) log( Fixture::probe( a ) ).build( f.context );
 		CHECK( *a == D.subscript() );
+	}
+
+	SECTION( "overset/underset put the label at superscript size, the base at the row's own style" )
+	{
+		(void) overset( Fixture::probe( a ), Fixture::probe( b ) ).build( f.context );
+		CHECK( *a == D.superscript() );
+		CHECK( *b == D );
+
+		a.reset();
+		b.reset();
+		(void) underset( Fixture::probe( a ), Fixture::probe( b ) ).build( f.context );
+		CHECK( *a == D.subscript() );
+		CHECK( *b == D );
 	}
 
 	SECTION( "overlines and accents cramp their content, underlines and delimiters do not" )

@@ -161,6 +161,9 @@ void show_math( Stage &stage )
 		       punct( "," ),
 		       ord( subscript( text( "a" ), text( "n" ) ) ) } ) );
 
+	// stackrel: a label stacked over a relation, always, whatever the style
+	place( row( { ord( "A" ), rel( stackrel( upright( "def" ), text( "=" ) ) ), ord( "B" ) } ) );
+
 	// Named operators: lim moves its limit under itself in display style, sin never does
 	place(
 		row( { op( lim( row( { ord( "x" ), rel( "→" ), ord( "0" ) } ) ) ),

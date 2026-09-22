@@ -29,7 +29,7 @@
   - [x] Expose remaining math alphabets on Expr (script, fraktur, double-struck/blackboard, sans, mono)
   - [x] Dots (ldots, cdots, vdots, ddots)
   - [x] Over/underbrace
-  - [ ] Stacked relations (stackrel)
+  - [x] Stacked relations (stackrel)
   - [ ] Phantom / invisible spacing placeholder
 
 ## Geometry Processing

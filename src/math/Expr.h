@@ -72,6 +72,15 @@ Expr subscript( Expr base, Expr script );
 // Either script may be empty
 Expr scripts( Expr base, Expr superscript_, Expr subscript_ );
 
+// A label stacked over (or under) a base, centered on it and at script size, always -
+// whatever the style, unlike a large operator's limits, which only stack in display style.
+// The base keeps its own size and class; wrap the whole thing (e.g. rel( overset( ... ) )) to
+// give it one, as TeX's \stackrel does. stackrel is \stackrel's classic plain-TeX name for
+// overset: A \stackrel{\mathrm{def}}{=} B
+Expr overset( Expr label, Expr base );
+Expr underset( Expr label, Expr base );
+Expr stackrel( Expr label, Expr base );
+
 // A large operator (∑ ∏ ∫ ...) and its limits, either of which may be empty. In display style
 // sums and products put them above and below, integrals at the side.
 Expr large_operator(

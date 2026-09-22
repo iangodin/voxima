@@ -4,6 +4,7 @@
 #include "visuals/CreateText.h"
 #include "visuals/Delimited.h"
 #include "visuals/Fraction.h"
+#include "visuals/Limits.h"
 #include "visuals/Radical.h"
 #include "visuals/Scripts.h"
 
@@ -192,6 +193,41 @@ Expr superscript( Expr base, Expr script )
 Expr subscript( Expr base, Expr script )
 {
 	return scripts( std::move( base ), Expr(), std::move( script ) );
+}
+
+namespace
+{
+Expr stacked( Expr label, Expr base, bool over )
+{
+	return Expr::from(
+		[label = std::move( label ), base = std::move( base ),
+			over]( const Context &context, MathStyle style ) -> std::unique_ptr<Visual>
+		{
+			const auto &m = context.metrics( style );
+			auto built_label = label.build( context, over ? style.superscript() : style.subscript() );
+			return std::make_unique<Limits>(
+				m.font,
+				m.glyph_scale,
+				base.build( context, style ),
+				over ? std::move( built_label ) : nullptr,
+				over ? nullptr : std::move( built_label ) );
+		} );
+}
+}
+
+Expr overset( Expr label, Expr base )
+{
+	return stacked( std::move( label ), std::move( base ), true );
+}
+
+Expr underset( Expr label, Expr base )
+{
+	return stacked( std::move( label ), std::move( base ), false );
+}
+
+Expr stackrel( Expr label, Expr base )
+{
+	return overset( std::move( label ), std::move( base ) );
 }
 
 Expr large_operator( char32_t symbol, Expr lower, Expr upper, std::optional<LimitPlacement> placement )
