@@ -2,16 +2,35 @@
 # Sonimation Task List
 
 ## Text Rendering
-  - [ ] Create StyledText class to support styling text
+  - [x] Create StyledText class to support styling text
   - [ ] Pass current text language all the way to Harfbuzz to help shape/layout gylphs
-  - [ ] Modify MFL library to return a tree of glyphs instead of linear sequence
-  - [ ] Integrate handling for BiDi text rendering
+  - [x] Integrate handling for BiDi text rendering
   - [ ] Add "highlighting" of missing glyphs (0xFFFD)
 
 ## Visuals
   - [ ] Render plots and charts
   - [ ] Import external SVG files
-  - [ ] Add support for images / photos
+  - [x] Add support for images / photos
+
+## Math Expressions
+  - [x] Build math::Expr tree (no parser, expressions built directly in C++)
+  - [x] Text atoms (italic/upright/bold) using the math alphabets
+  - [x] Fractions and binomials
+  - [x] Radicals and roots
+  - [x] Superscripts / subscripts
+  - [x] Large operators (sum, product, integral) with limits
+  - [x] Stretchy delimiters / fenced expressions (parens, brackets, braces, bars)
+  - [x] Accents, overline, underline
+  - [x] Rows with TeX-style atom spacing (ord/op/bin/rel/open/close/punct/inner)
+  - [x] Matrices and arrays (matrix, pmatrix, bmatrix, vmatrix, cases)
+  - [x] Tagging parts for later lookup/animation
+  - [x] Explicit style override (\textstyle / \displaystyle equivalent)
+  - [x] Named operators with limits (operatorname, lim, max, min, sin, cos, log, ...)
+  - [ ] Expose remaining math alphabets on Expr (script, fraktur, double-struck/blackboard, sans, mono)
+  - [ ] Dots (ldots, cdots, vdots, ddots)
+  - [ ] Over/underbrace
+  - [ ] Stacked relations (stackrel)
+  - [ ] Phantom / invisible spacing placeholder
 
 ## Geometry Processing
   - [ ] Add morphing between shapes

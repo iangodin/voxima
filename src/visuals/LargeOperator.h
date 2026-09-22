@@ -32,3 +32,18 @@ std::unique_ptr<Group> make_large_operator(
 	std::unique_ptr<Visual> &&lower,
 	MathStyle style = MathStyle::display(),
 	std::optional<LimitPlacement> placement = std::nullopt );
+
+// A named operator (an already-built nucleus, normally upright text such as "lim" or "sin")
+// with an optional upper and lower limit. `moving_limits` operators (\lim, \max, \sup, ...)
+// put their limits over and under in display style, at the side in text style, exactly like a
+// large operator with OVER_UNDER placement; other operators (\sin, \log, ...) always keep
+// their limits at the side, as an ordinary subscript/superscript. Limits are expected at
+// script size. Returns a Limits (over/under) or a Scripts (side).
+std::unique_ptr<Group> make_named_operator(
+	const MathFont &font,
+	float glyph_scale,
+	std::unique_ptr<Visual> &&nucleus,
+	std::unique_ptr<Visual> &&upper,
+	std::unique_ptr<Visual> &&lower,
+	MathStyle style = MathStyle::display(),
+	bool moving_limits = false );

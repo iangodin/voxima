@@ -20,6 +20,7 @@
 #include <visuals/StyledText.h>
 #include <visuals/CreateMathLargeOperation.h>
 #include <visuals/Fraction.h>
+#include <visuals/Layout.h>
 #include <visuals/Radical.h>
 #include <visuals/Accent.h>
 #include <visuals/Bars.h>
@@ -52,12 +53,26 @@ void show_math( Stage &stage )
 	// Formulas are described first, then built from the top in a style (display by default),
 	// which hands each part its own: numerators, scripts, radicands, indices ...
 	Context context( *stage.theme );
-	auto place = [&]( const Expr &formula, float x, float y ) -> Visual &
+
+	// Lays formulas left to right from each one's own measured width, so nothing overlaps
+	// as formulas are added, removed or resized; new_row starts the next line down.
+	float x = 0.F;
+	float y = 0.F;
+	auto place = [&]( const Expr &formula ) -> Visual &
 	{
 		auto visual = formula.build( context );
-		visual->position = { x, y };
+		const AABB box = layout_extent( *visual );
+		visual->position = { x - box.min.x(), y };
+		x += box.width() + 0.8F;
 		return stage.visuals.add( std::move( visual ) );
 	};
+	auto new_row = [&]( float row_y )
+	{
+		x = -6.5F;
+		y = row_y;
+	};
+
+	new_row( 2.5F );
 
 	// The integral of x dx from 0 to 1 is 1/2
 	place(
@@ -67,18 +82,21 @@ void show_math( Stage &stage )
 		       ord( upright( "d" ) ),
 		       ord( "x" ),
 		       rel( "=" ),
-		       inner( fraction( text( "1" ), text( "2" ) ) ) } ),
-		-6.0F,
-		2.5F );
+		       inner( fraction( text( "1" ), text( "2" ) ) ) } ) );
 
 	// A root with a wide index, around a fraction
 	// Parts can be found again after building, to color or animate them. The composites name
 	// their own parts, so none of this needs a tag of ours.
-	auto &root_formula = place( root( text( "137" ), fraction( text( "22" ), text( "7" ) ) ), -6.0F, 0.0F );
+	auto &root_formula = place( root( text( "137" ), fraction( text( "22" ), text( "7" ) ) ) );
 	find_tag( root_formula, "numerator" )->color = Color{ 1.F, 0.4F, 0.4F, 1.F };
 	find_tag( root_formula, "denominator" )->color = Color{ 0.4F, 0.7F, 1.F, 1.F };
 	find_tag( root_formula, "sign" )->color = Color{ 1.F, 0.85F, 0.3F, 1.F };
 	find_tag( root_formula, "index" )->color = Color{ 0.5F, 1.F, 0.5F, 1.F };
+
+	// A binomial coefficient
+	place( binomial( text( "n" ), text( "k" ) ) );
+
+	new_row( 0.F );
 
 	// x^2_i + 22/7 = 3.14
 	auto &equation = place(
@@ -86,17 +104,21 @@ void show_math( Stage &stage )
 		       bin( "+" ),
 		       inner( tag( "ratio", fraction( text( "22" ), text( "7" ) ) ) ),
 		       rel( "=" ),
-		       ord( "3.14" ) } ),
-		-6.0F,
-		-2.5F );
+		       ord( "3.14" ) } ) );
 	// A path: the bar inside the part tagged "ratio", the superscript inside "power"
 	find_tag( equation, "ratio", "bar" )->color = Color{ 1.F, 0.85F, 0.3F, 1.F };
 	find_tag( equation, "power", "superscript" )->color = Color{ 1.F, 0.4F, 0.4F, 1.F };
 
-	// A sum, a fraction in parentheses, a binomial
-	place( sum( text( "n=1" ), text( "\u221E" ) ), 1.5F, 0.0F );
-	place( parens( fraction( text( "22" ), text( "7" ) ) ), 2.5F, 2.5F );
-	place( binomial( text( "n" ), text( "k" ) ), 5.5F, 2.5F );
+	// A sum: in display style its limits go over and under it
+	place( sum( text( "n=1" ), text( "∞" ) ) );
+
+	// A matrix; its entries can be reached the same way, by row and column
+	MatrixOptions tight{ .column_sep_em = 0.6F };
+	std::vector<std::vector<Expr>> grid = { { text( "a" ), text( "b" ) }, { text( "c" ), text( "d" ) } };
+	auto &matrix_formula = place( pmatrix( grid, tight ) );
+	find_tag( matrix_formula, "r0c1" )->color = Color{ 0.5F, 1.F, 0.5F, 1.F }; // the entry b
+
+	new_row( -2.5F );
 
 	// Accents and rules
 	place(
@@ -106,20 +128,17 @@ void show_math( Stage &stage )
 		       space( Row::THIN ),
 		       ord( vec( text( "v" ) ) ),
 		       space( Row::THIN ),
-		       ord( hat( text( "A" ) ) ),
-		       space( Row::THIN ),
 		       ord( overline( text( "AB" ) ) ),
 		       space( Row::THIN ),
-		       ord( underline( text( "xy" ) ) ) } ),
-		1.5F,
-		-2.5F );
+		       ord( underline( text( "xy" ) ) ) } ) );
 
-	// A matrix, and the same grid as a determinant
-	MatrixOptions tight{ .column_sep_em = 0.6F };
-	std::vector<std::vector<Expr>> grid = { { text( "a" ), text( "b" ) }, { text( "c" ), text( "d" ) } };
-	auto &matrix_formula = place( pmatrix( grid, tight ), 3.0F, 0.0F );
-	find_tag( matrix_formula, "r0c1" )->color = Color{ 0.5F, 1.F, 0.5F, 1.F }; // the entry b
-	place( vmatrix( grid, tight ), 5.7F, 0.0F );
+	// Named operators: lim moves its limit under itself in display style, sin never does
+	place(
+		row( { op( lim( row( { ord( "x" ), rel( "→" ), ord( "0" ) } ) ) ),
+		       space( Row::THIN ),
+		       inner( fraction( row( { op( sin() ), space( Row::THIN ), ord( "x" ) } ), text( "x" ) ) ),
+		       rel( "=" ),
+		       ord( "1" ) } ) );
 }
 
 template<typename Ease>

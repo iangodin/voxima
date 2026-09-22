@@ -187,6 +187,87 @@ Expr integral( Expr lower, Expr upper )
 	return large_operator( U'∫', std::move( lower ), std::move( upper ) );
 }
 
+Expr named_operator( std::string name, Expr lower, Expr upper, bool moving_limits )
+{
+	return Expr::from(
+		[name = std::move( name ), lower = std::move( lower ), upper = std::move( upper ),
+			moving_limits]( const Context &context, MathStyle style ) -> std::unique_ptr<Visual>
+		{
+			const auto &m = context.metrics( style );
+			FontStyle font_style = context.font_style( style );
+			font_style.upright();
+
+			return make_named_operator(
+				m.font,
+				m.glyph_scale,
+				make_text( context.theme(), name, font_style ),
+				build_part( upper, context, style.superscript() ),
+				build_part( lower, context, style.subscript() ),
+				style,
+				moving_limits );
+		} );
+}
+
+Expr lim( Expr lower )
+{
+	return named_operator( "lim", std::move( lower ), {}, true );
+}
+
+Expr limsup( Expr lower )
+{
+	return named_operator( "lim sup", std::move( lower ), {}, true );
+}
+
+Expr liminf( Expr lower )
+{
+	return named_operator( "lim inf", std::move( lower ), {}, true );
+}
+
+Expr max( Expr lower )
+{
+	return named_operator( "max", std::move( lower ), {}, true );
+}
+
+Expr min( Expr lower )
+{
+	return named_operator( "min", std::move( lower ), {}, true );
+}
+
+Expr sup( Expr lower )
+{
+	return named_operator( "sup", std::move( lower ), {}, true );
+}
+
+Expr inf( Expr lower )
+{
+	return named_operator( "inf", std::move( lower ), {}, true );
+}
+
+Expr gcd( Expr lower )
+{
+	return named_operator( "gcd", std::move( lower ), {}, true );
+}
+
+Expr sin( Expr sub ) { return named_operator( "sin", std::move( sub ) ); }
+Expr cos( Expr sub ) { return named_operator( "cos", std::move( sub ) ); }
+Expr tan( Expr sub ) { return named_operator( "tan", std::move( sub ) ); }
+Expr cot( Expr sub ) { return named_operator( "cot", std::move( sub ) ); }
+Expr sec( Expr sub ) { return named_operator( "sec", std::move( sub ) ); }
+Expr csc( Expr sub ) { return named_operator( "csc", std::move( sub ) ); }
+Expr arcsin( Expr sub ) { return named_operator( "arcsin", std::move( sub ) ); }
+Expr arccos( Expr sub ) { return named_operator( "arccos", std::move( sub ) ); }
+Expr arctan( Expr sub ) { return named_operator( "arctan", std::move( sub ) ); }
+Expr sinh( Expr sub ) { return named_operator( "sinh", std::move( sub ) ); }
+Expr cosh( Expr sub ) { return named_operator( "cosh", std::move( sub ) ); }
+Expr tanh( Expr sub ) { return named_operator( "tanh", std::move( sub ) ); }
+Expr log( Expr sub ) { return named_operator( "log", std::move( sub ) ); }
+Expr ln( Expr sub ) { return named_operator( "ln", std::move( sub ) ); }
+Expr exp( Expr sub ) { return named_operator( "exp", std::move( sub ) ); }
+Expr det( Expr sub ) { return named_operator( "det", std::move( sub ) ); }
+Expr dim( Expr sub ) { return named_operator( "dim", std::move( sub ) ); }
+Expr deg( Expr sub ) { return named_operator( "deg", std::move( sub ) ); }
+Expr arg( Expr sub ) { return named_operator( "arg", std::move( sub ) ); }
+
 Expr fenced( char32_t left, Expr content, char32_t right )
 {
 	return Expr::from(

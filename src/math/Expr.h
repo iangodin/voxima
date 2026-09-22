@@ -73,6 +73,45 @@ Expr sum( Expr lower = {}, Expr upper = {} );
 Expr product( Expr lower = {}, Expr upper = {} );
 Expr integral( Expr lower = {}, Expr upper = {} );
 
+// A named operator (\operatorname), set upright with operator spacing, e.g. a custom
+// "argmax". `moving_limits` places `lower`/`upper` over and under in display style, at the
+// side in text style, like a large operator (\lim, \max, ...); otherwise they always sit at
+// the side, like an ordinary subscript/superscript (\sin, \log_2, ...).
+Expr named_operator( std::string name, Expr lower = {}, Expr upper = {}, bool moving_limits = false );
+
+// The standard operators with moving limits: lim, limsup and liminf take the variable and
+// where it tends to (e.g. lim( row( { ord( "x" ), rel( "→" ), ord( "0" ) } ) )); max,
+// min, sup, inf and gcd normally take the set or variable a value ranges over.
+Expr lim( Expr lower = {} );
+Expr limsup( Expr lower = {} );
+Expr liminf( Expr lower = {} );
+Expr max( Expr lower = {} );
+Expr min( Expr lower = {} );
+Expr sup( Expr lower = {} );
+Expr inf( Expr lower = {} );
+Expr gcd( Expr lower = {} );
+
+// The standard operators without limits; a subscript (such as log's base) stays at the side
+Expr sin( Expr sub = {} );
+Expr cos( Expr sub = {} );
+Expr tan( Expr sub = {} );
+Expr cot( Expr sub = {} );
+Expr sec( Expr sub = {} );
+Expr csc( Expr sub = {} );
+Expr arcsin( Expr sub = {} );
+Expr arccos( Expr sub = {} );
+Expr arctan( Expr sub = {} );
+Expr sinh( Expr sub = {} );
+Expr cosh( Expr sub = {} );
+Expr tanh( Expr sub = {} );
+Expr log( Expr sub = {} );
+Expr ln( Expr sub = {} );
+Expr exp( Expr sub = {} );
+Expr det( Expr sub = {} );
+Expr dim( Expr sub = {} );
+Expr deg( Expr sub = {} );
+Expr arg( Expr sub = {} );
+
 // Delimiters that stretch to fit the content; pass 0 for none
 Expr fenced( char32_t open, Expr content, char32_t close );
 Expr parens( Expr content );

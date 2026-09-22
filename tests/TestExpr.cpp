@@ -194,6 +194,17 @@ TEST_CASE( "math::Expr builds the right constructs", "[math]" )
 		           large_operator( U'∫', one(), one(), LimitPlacement::OVER_UNDER ).build( f.context ).get() ) != nullptr );
 	}
 
+	SECTION( "named operators: moving limits behave like large operators, others stay at the side" )
+	{
+		CHECK( dynamic_cast<Limits *>( lim( one() ).build( f.context ).get() ) != nullptr );
+		CHECK( dynamic_cast<Scripts *>( lim( one() ).build( f.context, MathStyle::text() ).get() ) != nullptr );
+		CHECK( dynamic_cast<Scripts *>( sin( one() ).build( f.context ).get() ) != nullptr );
+		CHECK( dynamic_cast<Scripts *>( log( one() ).build( f.context ).get() ) != nullptr );
+		CHECK( dynamic_cast<Scripts *>( named_operator( "argmax", one() ).build( f.context ).get() ) != nullptr );
+		CHECK( dynamic_cast<Limits *>(
+		           named_operator( "argmax", one(), Expr(), true ).build( f.context ).get() ) != nullptr );
+	}
+
 	SECTION( "delimiters, bars and accents" )
 	{
 		auto fenced_content = parens( one() ).build( f.context );
@@ -287,6 +298,16 @@ TEST_CASE( "math::Expr hands each part its style", "[math]" )
 		(void) sum( Fixture::probe( a ), Fixture::probe( b ) ).build( f.context );
 		CHECK( *a == D.subscript() );
 		CHECK( *b == D.superscript() );
+	}
+
+	SECTION( "limits of a named operator" )
+	{
+		(void) lim( Fixture::probe( a ) ).build( f.context );
+		CHECK( *a == D.subscript() );
+
+		a.reset();
+		(void) log( Fixture::probe( a ) ).build( f.context );
+		CHECK( *a == D.subscript() );
 	}
 
 	SECTION( "overlines and accents cramp their content, underlines and delimiters do not" )
