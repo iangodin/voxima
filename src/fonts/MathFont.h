@@ -100,11 +100,22 @@ public:
 	[[nodiscard]] MathAssemblyRecipe get_vertical_assembly( char32_t codepoint ) const;
 	[[nodiscard]] float min_connector_overlap() const;
 
+	// The same, but growing left to right instead of bottom to top: a stretchy glyph such as
+	// a brace (over/underbrace), a wide accent (widehat, widetilde) or a labeled arrow
+	[[nodiscard]] uint32_t get_large_variant_horizontal( char32_t codepoint, float target_width ) const;
+	[[nodiscard]] MathAssemblyRecipe get_horizontal_assembly( char32_t codepoint ) const;
+	[[nodiscard]] float min_connector_overlap_horizontal() const;
+
 	void get_glyph_metrics( uint32_t index, float &height, float &depth ) const;
+	// The glyph's ink width, for choosing a horizontal variant large enough
+	[[nodiscard]] float get_glyph_width( uint32_t index ) const;
 
 	const FontFace &face() const { return _face; }
 
 private:
+	[[nodiscard]] uint32_t get_variant( char32_t codepoint, float target_size, bool horizontal ) const;
+	[[nodiscard]] MathAssemblyRecipe get_assembly( char32_t codepoint, bool horizontal ) const;
+
 	FontFace _face;
 	hb_font_t *_hb_font = nullptr;
 };

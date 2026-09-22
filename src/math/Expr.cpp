@@ -359,6 +359,26 @@ Expr underline( Expr content )
 		} );
 }
 
+Expr overbrace( Expr content )
+{
+	return Expr::from(
+		[content = std::move( content )]( const Context &context, MathStyle style ) -> std::unique_ptr<Visual>
+		{
+			const auto &m = context.metrics( style );
+			return std::make_unique<Overbrace>( m.font, m.glyph_scale, content.build( context, style.cramp() ) );
+		} );
+}
+
+Expr underbrace( Expr content )
+{
+	return Expr::from(
+		[content = std::move( content )]( const Context &context, MathStyle style ) -> std::unique_ptr<Visual>
+		{
+			const auto &m = context.metrics( style );
+			return std::make_unique<Underbrace>( m.font, m.glyph_scale, content.build( context, style ) );
+		} );
+}
+
 Expr accent( Expr base, char32_t accent_glyph )
 {
 	return Expr::from(

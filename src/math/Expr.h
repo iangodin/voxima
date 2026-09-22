@@ -128,6 +128,10 @@ Expr bars( Expr content );
 
 Expr overline( Expr content );
 Expr underline( Expr content );
+// A brace that stretches to fit; label it with a super/subscript on the whole thing, as TeX
+// does: superscript( overbrace( content ), label )
+Expr overbrace( Expr content );
+Expr underbrace( Expr content );
 // Any accent glyph, and some common ones
 Expr accent( Expr base, char32_t accent_glyph );
 Expr hat( Expr base );

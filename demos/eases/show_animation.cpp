@@ -139,13 +139,17 @@ void show_math( Stage &stage )
 
 	new_row();
 
-	// Accents and rules
+	// Accents
 	place(
 		row( { ord( hat( text( "x" ) ) ),
 		       space( Row::THIN ),
-		       ord( vec( text( "v" ) ) ),
-		       space( Row::THIN ),
-		       ord( overline( text( "AB" ) ) ) } ) );
+		       ord( vec( text( "v" ) ) ) } ) );
+
+	// A stretchy brace, labeled by putting a superscript on the whole thing, as TeX does
+	place(
+		superscript(
+			overbrace( row( { ord( "a" ), bin( "+" ), ord( "b" ), bin( "+" ), ord( "c" ) } ) ),
+			text( "n" ) ) );
 
 	// A list, its middle elided with ldots (cdots elides between operators instead, above)
 	place(

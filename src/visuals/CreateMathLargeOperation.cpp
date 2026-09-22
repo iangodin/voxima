@@ -177,6 +177,160 @@ std::unique_ptr<MathAssembly> create_assembly(
 
 	return assembly;
 }
+
+// The same, growing left to right instead of bottom to top: parts are listed left to right
+// by the font, and are tiled by their advance (assembly parts have zero side bearings, as
+// ordinary shaped glyphs do), rather than the top-anchored placement vertical parts need.
+std::unique_ptr<MathAssembly> create_assembly_horizontal(
+	const MathFont &font, char32_t op, float target_width )
+{
+	auto recipe = font.get_horizontal_assembly( op );
+	if ( recipe.parts.empty() )
+	{
+		return nullptr;
+	}
+
+	float base_width = 0;
+	int extender_count = 0;
+	for ( const auto &part: recipe.parts )
+	{
+		if ( part.is_extender )
+		{
+			extender_count++;
+		}
+		else
+		{
+			base_width += part.full_advance;
+		}
+	}
+
+	if ( extender_count == 0 )
+	{
+		return nullptr;
+	}
+
+	float min_overlap = font.min_connector_overlap_horizontal();
+	float extender_width = 0;
+	for ( const auto &part: recipe.parts )
+	{
+		if ( part.is_extender )
+		{
+			extender_width += part.full_advance;
+		}
+	}
+
+	float A = base_width -
+	          ( static_cast<float>( recipe.parts.size() ) - extender_count - 1.0f ) * min_overlap;
+	float B = extender_width - static_cast<float>( extender_count ) * min_overlap;
+
+	int num_repeats = 1;
+	if ( B > 0 )
+	{
+		num_repeats = static_cast<int>( std::ceil( ( target_width - A ) / B ) );
+	}
+	if ( num_repeats < 1 )
+	{
+		num_repeats = 1;
+	}
+	if ( num_repeats > 1000 )
+	{
+		num_repeats = 1000;
+	}
+
+	std::vector<MathGlyphPart> concrete_parts;
+	for ( const auto &part: recipe.parts )
+	{
+		int repeats = part.is_extender ? num_repeats : 1;
+		for ( int r = 0; r < repeats; ++r )
+		{
+			concrete_parts.push_back( part );
+		}
+	}
+
+	struct Joint
+	{
+		float min;
+		float max;
+		float capacity;
+		float actual;
+	};
+	std::vector<Joint> joints;
+	float total_full_advance = 0;
+	float total_min_overlap = 0;
+	float total_capacity = 0;
+
+	for ( size_t i = 0; i < concrete_parts.size(); ++i )
+	{
+		total_full_advance += concrete_parts[i].full_advance;
+		if ( i < concrete_parts.size() - 1 )
+		{
+			float max_overlap = std::min(
+				concrete_parts[i].end_connector_length, concrete_parts[i + 1].start_connector_length );
+			float joint_min = std::min( min_overlap, max_overlap );
+
+			Joint joint;
+			joint.min = joint_min;
+			joint.max = max_overlap;
+			joint.capacity = joint.max - joint.min;
+			joint.actual = joint.min;
+
+			joints.push_back( joint );
+			total_min_overlap += joint.min;
+			total_capacity += joint.capacity;
+		}
+	}
+
+	float required_shrinkage = total_full_advance - target_width;
+	float extra_shrinkage_needed = required_shrinkage - total_min_overlap;
+
+	if ( extra_shrinkage_needed > 0 && total_capacity > 0 )
+	{
+		float ratio = extra_shrinkage_needed / total_capacity;
+		if ( ratio > 1.0f )
+		{
+			ratio = 1.0f;
+		}
+		for ( size_t i = 0; i < joints.size(); ++i )
+		{
+			joints[i].actual = joints[i].min + ( ratio * joints[i].capacity );
+		}
+	}
+
+	auto assembly = std::make_unique<MathAssembly>();
+	assembly->italicCorrection = recipe.italic_correction;
+	float current_x = 0;
+
+	for ( size_t i = 0; i < concrete_parts.size(); ++i )
+	{
+		const auto &part = concrete_parts[i];
+		auto glyph = create_glyph( part.glyph_index, &font.face() );
+		auto math_glyph = std::make_unique<MathGlyph>();
+		math_glyph->font_face = glyph->font_face;
+		math_glyph->index = glyph->index;
+		math_glyph->commands = std::move( glyph->commands );
+		math_glyph->bearingX = glyph->bearingX;
+		math_glyph->bearingY = glyph->bearingY;
+		math_glyph->advanceX = glyph->advanceX;
+		math_glyph->advanceY = glyph->advanceY;
+		math_glyph->extent = glyph->extent;
+
+		math_glyph->position = math_glyph->position.withX( current_x );
+		assembly->add( std::move( math_glyph ) );
+
+		if ( i < joints.size() )
+		{
+			current_x += ( part.full_advance - joints[i].actual );
+		}
+		else
+		{
+			current_x += part.full_advance;
+		}
+	}
+
+	assembly->math_axis = font.axis_height();
+
+	return assembly;
+}
 }
 
 std::unique_ptr<Visual> create_math_large_op(
@@ -226,6 +380,42 @@ std::unique_ptr<Visual> create_math_large_op(
 	// should share with its neighbours, so a row or scripts don't undo that shift.
 	math_glyph->baseline = -math_glyph->position.y();
 	math_glyph->math_axis = font.axis_height();
+
+	return math_glyph;
+}
+
+std::unique_ptr<Visual> create_math_large_op_horizontal(
+	const MathFont &font, char32_t op, float target_width )
+{
+	uint32_t selected_glyph_index = font.get_large_variant_horizontal( op, target_width );
+
+	// If the largest variant is still narrower than target, try assembly
+	if ( font.get_glyph_width( selected_glyph_index ) < target_width )
+	{
+		auto assembly = create_assembly_horizontal( font, op, target_width );
+		if ( assembly )
+		{
+			return assembly;
+		}
+	}
+
+	// Return the variant as-is: baseline at y = 0, left edge at x = 0, as the font designed
+	// it (unlike the vertical case, there's no shared axis to center a horizontal glyph on;
+	// the caller positions it relative to its own content)
+	auto base_glyph = create_glyph( selected_glyph_index, &font.face() );
+	auto math_glyph = std::make_unique<MathGlyph>();
+
+	math_glyph->font_face = base_glyph->font_face;
+	math_glyph->index = base_glyph->index;
+	math_glyph->commands = std::move( base_glyph->commands );
+	math_glyph->bearingX = base_glyph->bearingX;
+	math_glyph->bearingY = base_glyph->bearingY;
+	math_glyph->advanceX = base_glyph->advanceX;
+	math_glyph->advanceY = base_glyph->advanceY;
+	math_glyph->extent = base_glyph->extent;
+
+	math_glyph->italicCorrection = font.italic_correction( selected_glyph_index );
+	math_glyph->topAccentAttachment = font.top_accent_attachment( selected_glyph_index );
 
 	return math_glyph;
 }

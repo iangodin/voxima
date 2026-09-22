@@ -31,6 +31,7 @@
 //   Delimited    open, close, content
 //   Accent       base, accent
 //   Overline, Underline   content, line
+//   Overbrace, Underbrace   content, brace
 //   Matrix       cell, and r<row>c<column> for each cell, counted from 0 ("r0c1")
 
 // Add a name to a visual (once)

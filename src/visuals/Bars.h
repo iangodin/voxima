@@ -20,3 +20,20 @@ class Underline : public Group
 public:
 	Underline( const MathFont &font, float glyph_scale, std::unique_ptr<Visual> &&content );
 };
+
+// A brace that stretches to fit above the content (\overbrace), using the Overbar constants
+// for its gap and the room left above it. Put a superscript on the whole thing (as TeX does)
+// to label it, e.g. superscript( overbrace( content ), label ).
+class Overbrace : public Group
+{
+public:
+	Overbrace( const MathFont &font, float glyph_scale, std::unique_ptr<Visual> &&content );
+};
+
+// The same below the content (\underbrace), with the Underbar constants; label with a
+// subscript on the whole thing.
+class Underbrace : public Group
+{
+public:
+	Underbrace( const MathFont &font, float glyph_scale, std::unique_ptr<Visual> &&content );
+};

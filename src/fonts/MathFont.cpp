@@ -266,12 +266,12 @@ uint32_t MathFont::get_glyph_index( char32_t codepoint ) const
 	return index;
 }
 
-uint32_t MathFont::get_large_variant( char32_t codepoint, float target_height ) const
+uint32_t MathFont::get_variant( char32_t codepoint, float target_size, bool horizontal ) const
 {
 	hb_codepoint_t base_index = get_glyph_index( codepoint );
+	const hb_direction_t direction = horizontal ? HB_DIRECTION_LTR : HB_DIRECTION_BTT;
 
-	unsigned int count = hb_ot_math_get_glyph_variants(
-	    _hb_font, base_index, HB_DIRECTION_BTT, 0, nullptr, nullptr );
+	unsigned int count = hb_ot_math_get_glyph_variants( _hb_font, base_index, direction, 0, nullptr, nullptr );
 
 	if ( count == 0 )
 	{
@@ -279,13 +279,12 @@ uint32_t MathFont::get_large_variant( char32_t codepoint, float target_height ) 
 	}
 
 	std::vector<hb_ot_math_glyph_variant_t> hb_variants( count );
-	hb_ot_math_get_glyph_variants(
-	    _hb_font, base_index, HB_DIRECTION_BTT, 0, &count, hb_variants.data() );
+	hb_ot_math_get_glyph_variants( _hb_font, base_index, direction, 0, &count, hb_variants.data() );
 
 	uint32_t selected = hb_variants.back().glyph; // Default to largest
 	for ( const auto &v: hb_variants )
 	{
-		if ( static_cast<float>( v.advance ) >= target_height )
+		if ( static_cast<float>( v.advance ) >= target_size )
 		{
 			selected = v.glyph;
 			break;
@@ -294,22 +293,33 @@ uint32_t MathFont::get_large_variant( char32_t codepoint, float target_height ) 
 	return selected;
 }
 
-MathAssemblyRecipe MathFont::get_vertical_assembly( char32_t codepoint ) const
+uint32_t MathFont::get_large_variant( char32_t codepoint, float target_height ) const
+{
+	return get_variant( codepoint, target_height, false );
+}
+
+uint32_t MathFont::get_large_variant_horizontal( char32_t codepoint, float target_width ) const
+{
+	return get_variant( codepoint, target_width, true );
+}
+
+MathAssemblyRecipe MathFont::get_assembly( char32_t codepoint, bool horizontal ) const
 {
 	hb_codepoint_t base_index = get_glyph_index( codepoint );
+	const hb_direction_t direction = horizontal ? HB_DIRECTION_LTR : HB_DIRECTION_BTT;
 
 	unsigned int count = 8;
 	std::vector<hb_ot_math_glyph_part_t> hb_parts( count );
 	hb_position_t italics_correction = 0;
 
 	hb_ot_math_get_glyph_assembly(
-	    _hb_font, base_index, HB_DIRECTION_BTT, 0, &count, hb_parts.data(), &italics_correction );
+	    _hb_font, base_index, direction, 0, &count, hb_parts.data(), &italics_correction );
 
 	if ( count > hb_parts.size() )
 	{
 		hb_parts.resize( count );
 		hb_ot_math_get_glyph_assembly(
-		    _hb_font, base_index, HB_DIRECTION_BTT, 0, &count, hb_parts.data(), &italics_correction );
+		    _hb_font, base_index, direction, 0, &count, hb_parts.data(), &italics_correction );
 	}
 
 	if ( count == 0 )
@@ -330,9 +340,24 @@ MathAssemblyRecipe MathFont::get_vertical_assembly( char32_t codepoint ) const
 	return { parts, static_cast<float>( italics_correction ) };
 }
 
+MathAssemblyRecipe MathFont::get_vertical_assembly( char32_t codepoint ) const
+{
+	return get_assembly( codepoint, false );
+}
+
+MathAssemblyRecipe MathFont::get_horizontal_assembly( char32_t codepoint ) const
+{
+	return get_assembly( codepoint, true );
+}
+
 float MathFont::min_connector_overlap() const
 {
 	return static_cast<float>( hb_ot_math_get_min_connector_overlap( _hb_font, HB_DIRECTION_BTT ) );
+}
+
+float MathFont::min_connector_overlap_horizontal() const
+{
+	return static_cast<float>( hb_ot_math_get_min_connector_overlap( _hb_font, HB_DIRECTION_LTR ) );
 }
 
 void MathFont::get_glyph_metrics( uint32_t index, float &height, float &depth ) const
@@ -348,4 +373,14 @@ void MathFont::get_glyph_metrics( uint32_t index, float &height, float &depth ) 
 		height = 0.0f;
 		depth = 0.0f;
 	}
+}
+
+float MathFont::get_glyph_width( uint32_t index ) const
+{
+	FT_Face ft_face = _face.face.get();
+	if ( FT_Load_Glyph( ft_face, index, FT_LOAD_NO_SCALE ) == 0 )
+	{
+		return static_cast<float>( ft_face->glyph->metrics.width );
+	}
+	return 0.0f;
 }

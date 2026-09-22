@@ -13,6 +13,7 @@
 #include <visuals/MathGlyph.h>
 #include <visuals/Radical.h>
 #include <visuals/Scripts.h>
+#include <visuals/Tags.h>
 
 #include <algorithm>
 #include <optional>
@@ -260,6 +261,30 @@ TEST_CASE( "math::Expr builds the right constructs", "[math]" )
 		CHECK( dynamic_cast<Underline *>( underline( one() ).build( f.context ).get() ) != nullptr );
 		CHECK( dynamic_cast<Accent *>( hat( one() ).build( f.context ).get() ) != nullptr );
 		CHECK( dynamic_cast<Accent *>( vec( text( "v" ) ).build( f.context ).get() ) != nullptr );
+		CHECK( dynamic_cast<Overbrace *>( overbrace( one() ).build( f.context ).get() ) != nullptr );
+		CHECK( dynamic_cast<Underbrace *>( underbrace( one() ).build( f.context ).get() ) != nullptr );
+	}
+
+	SECTION( "over/underbrace stretch to fit their content and stay centered on it" )
+	{
+		auto narrow = overbrace( text( "x" ) ).build( f.context );
+		auto wide = overbrace( row( { ord( "x" ), bin( "+" ), ord( "y" ), bin( "+" ), ord( "z" ) } ) ).build( f.context );
+		CHECK( layout_extent( *wide ).width() > layout_extent( *narrow ).width() );
+
+		// The content's own width, and the brace centered under/over it
+		auto over = static_cast<Overbrace *>( wide.get() );
+		const AABB content_box = layout_extent( *find_tag( *over, "content" ) );
+		const AABB brace_box = layout_extent( *find_tag( *over, "brace" ) );
+		CHECK( brace_box.width() == Approx( content_box.width() ).margin( 0.05F ) );
+		CHECK( ( brace_box.min.x() + brace_box.max.x() ) / 2.F ==
+		       Approx( ( content_box.min.x() + content_box.max.x() ) / 2.F ).margin( 0.05F ) );
+
+		// The brace sits above the content, an underbrace's below it
+		CHECK( brace_box.min.y() >= content_box.max.y() );
+		auto under = underbrace( text( "x" ) ).build( f.context );
+		const AABB under_content = layout_extent( *find_tag( *under, "content" ) );
+		const AABB under_brace = layout_extent( *find_tag( *under, "brace" ) );
+		CHECK( under_brace.max.y() <= under_content.min.y() );
 	}
 
 	SECTION( "rows and grids" )
@@ -365,6 +390,14 @@ TEST_CASE( "math::Expr hands each part its style", "[math]" )
 
 		a.reset();
 		(void) parens( Fixture::probe( a ) ).build( f.context );
+		CHECK( *a == D );
+
+		a.reset();
+		(void) overbrace( Fixture::probe( a ) ).build( f.context );
+		CHECK( *a == D.cramp() );
+
+		a.reset();
+		(void) underbrace( Fixture::probe( a ) ).build( f.context );
 		CHECK( *a == D );
 	}
 
