@@ -19,6 +19,8 @@ add_executable( sonimation_unit_tests
 	TestMatrix.cpp
 	TestExpr.cpp
 	TestTags.cpp
+	TestSilence.cpp
+	TestVolume.cpp
 )
 
 target_link_libraries( sonimation_unit_tests

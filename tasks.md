@@ -44,8 +44,8 @@
   - [x] Implement audio resampling
   - [x] Add WAV file saving
   - [x] Add FLAC file saving
-  - [ ] Implement silence generator
-  - [ ] Implement simple volume effect
+  - [x] Implement silence generator
+  - [x] Implement simple volume effect
   - [x] Implement simple multi channel mixer
 
 ## Music

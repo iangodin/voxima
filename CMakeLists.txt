@@ -57,6 +57,8 @@ add_library( visuals STATIC
 	src/audio/Resample.cpp
 	src/audio/AudioMixer.cpp
 	src/audio/Microphone.cpp
+	src/audio/Silence.cpp
+	src/audio/Volume.cpp
 	src/utils/FreetypeError.cpp
 	src/utils/Huml.cpp
 	src/visuals/CreateMathLargeOperation.cpp
