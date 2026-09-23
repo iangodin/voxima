@@ -7,6 +7,7 @@
 
 #include <sndfile.h>
 
+#include <chrono>
 #include <fstream>
 #include <iostream>
 #include <memory>
@@ -96,10 +97,16 @@ int main( int argc, char *argv[] )
 		audiocpp_model_config load_config = {};
 		load_config.family_hint = "chatterbox";
 
+		const auto load_start = std::chrono::steady_clock::now();
+
 		audiocpp_model *model_raw = nullptr;
 		if ( audiocpp_model_load( registry.get(), model_path.c_str(), &load_config, nullptr, &model_raw ) != AUDIOCPP_OK )
 			throw std::runtime_error( std::string( "model load: " ) + audiocpp_last_error() );
 		std::unique_ptr<audiocpp_model, ModelDeleter> model( model_raw );
+
+		const auto load_end = std::chrono::steady_clock::now();
+		const double load_seconds = std::chrono::duration<double>( load_end - load_start ).count();
+		std::cout << "Loaded model in " << load_seconds << " s\n";
 
 		// "clon" is audio.cpp's internal task token for voice cloning
 		// ("clone" is the model-spec alias) - Chatterbox always needs a
@@ -126,10 +133,16 @@ int main( int argc, char *argv[] )
 
 		std::cout << "Synthesizing " << text.size() << " characters via Chatterbox (CPU)...\n";
 
+		const auto synth_start = std::chrono::steady_clock::now();
+
 		audiocpp_result *result_raw = nullptr;
 		if ( audiocpp_session_run( session.get(), request.get(), &result_raw ) != AUDIOCPP_OK )
 			throw std::runtime_error( std::string( "run: " ) + audiocpp_last_error() );
 		std::unique_ptr<audiocpp_result, ResultDeleter> result( result_raw );
+
+		const auto synth_end = std::chrono::steady_clock::now();
+		const double synth_seconds = std::chrono::duration<double>( synth_end - synth_start ).count();
+		std::cout << "Synthesized in " << synth_seconds << " s\n";
 
 		const float *samples = nullptr;
 		size_t frames = 0;
