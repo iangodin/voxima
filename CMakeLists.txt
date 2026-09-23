@@ -11,8 +11,22 @@ enable_testing()
 # Vendored via `extern/audio.cpp` (squashed git subtree, see tts.md). Added
 # before canim's own -Werror/-Wall/-Wextra below - those flags are directory
 # scoped and would otherwise leak into audio.cpp's own (not warning-clean
-# under our flag set) subdirectory build. CPU-only for now, no GPU backend.
-set( ENGINE_ENABLE_CUDA OFF CACHE BOOL "" FORCE )
+# under our flag set) subdirectory build.
+#
+# CUDA is auto-detected: if the toolkit is present we build the GPU backend,
+# otherwise this falls back to CPU-only. CANIM_TTS_CUDA=OFF forces CPU-only
+# even when a toolkit is present.
+option( CANIM_TTS_CUDA "Build audio.cpp's CUDA backend when a toolkit is available" ON )
+if ( CANIM_TTS_CUDA )
+	find_package( CUDAToolkit QUIET )
+endif()
+if ( CANIM_TTS_CUDA AND CUDAToolkit_FOUND )
+	message( STATUS "CUDA toolkit ${CUDAToolkit_VERSION} found - building TTS with GPU backend" )
+	set( ENGINE_ENABLE_CUDA ON CACHE BOOL "" FORCE )
+else()
+	message( STATUS "CUDA toolkit not found (or disabled) - TTS will be CPU-only" )
+	set( ENGINE_ENABLE_CUDA OFF CACHE BOOL "" FORCE )
+endif()
 set( ENGINE_ENABLE_HIP OFF CACHE BOOL "" FORCE )
 set( ENGINE_ENABLE_VULKAN OFF CACHE BOOL "" FORCE )
 set( ENGINE_ENABLE_METAL OFF CACHE BOOL "" FORCE )

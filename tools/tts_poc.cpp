@@ -111,8 +111,10 @@ int main( int argc, char *argv[] )
 		// "clon" is audio.cpp's internal task token for voice cloning
 		// ("clone" is the model-spec alias) - Chatterbox always needs a
 		// reference clip, there is no built-in voice for this family.
+		// "best" lets audio.cpp pick the fastest backend it was built with
+		// (CUDA if the toolkit was available at configure time, else CPU).
 		audiocpp_backend_config backend = {};
-		backend.backend = "cpu";
+		backend.backend = "best";
 		backend.device = 0;
 		backend.threads = 4;
 
