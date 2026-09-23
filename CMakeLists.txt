@@ -20,8 +20,20 @@ option( CANIM_TTS_CUDA "Build audio.cpp's CUDA backend when a toolkit is availab
 if ( CANIM_TTS_CUDA )
 	find_package( CUDAToolkit QUIET )
 endif()
-if ( CANIM_TTS_CUDA AND CUDAToolkit_FOUND )
-	message( STATUS "CUDA toolkit ${CUDAToolkit_VERSION} found - building TTS with GPU backend" )
+if ( CANIM_TTS_CUDA AND CUDAToolkit_FOUND AND NOT CMAKE_CUDA_COMPILER )
+	# find_package(CUDAToolkit) locates the toolkit independently of PATH,
+	# but enable_language(CUDA) (triggered by audio.cpp below) still needs
+	# nvcc findable via PATH or CMAKE_CUDA_COMPILER - nvcc frequently isn't
+	# on PATH even when the toolkit itself is installed. /usr/local/cuda is
+	# the default install location on nearly every Linux distro, so fall
+	# back to it explicitly rather than requiring the caller to set
+	# CUDACXX/PATH themselves.
+	find_program( CMAKE_CUDA_COMPILER NAMES nvcc
+		PATHS ${CUDAToolkit_BIN_DIR} /usr/local/cuda/bin
+		NO_DEFAULT_PATH )
+endif()
+if ( CANIM_TTS_CUDA AND CUDAToolkit_FOUND AND CMAKE_CUDA_COMPILER )
+	message( STATUS "CUDA toolkit ${CUDAToolkit_VERSION} found (nvcc: ${CMAKE_CUDA_COMPILER}) - building TTS with GPU backend" )
 	set( ENGINE_ENABLE_CUDA ON CACHE BOOL "" FORCE )
 else()
 	message( STATUS "CUDA toolkit not found (or disabled) - TTS will be CPU-only" )
