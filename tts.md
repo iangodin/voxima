@@ -220,9 +220,79 @@ through audio.cpp's C ABI, writes a `.wav` file. CPU only. No forced-alignment/t
 no multi-language, no voice-cloning-per-named-voice yet, no Narrator/Script wiring —
 purely "does the engine work end to end on our toolchain."
 
+## Proof of concept: done (2026-09-22)
+
+`tools/tts_poc.cpp` builds and runs end to end on Linux, CPU only:
+
+```
+make config && make
+./build/Release/tts_poc <text_file> models/Chatterbox-GGUF/chatterbox-q8_0.gguf \
+    voices/chatterbox/en-alba-mackenna-casual.wav <out.wav>
+```
+
+Produced 8-9s of audible English speech (peak ~27000/32768, not silent) from a
+123-character input sentence, cloning the reference voice clip. Wall time ~29s
+with 4 threads on this machine (`audiocpp_backend_config.threads`), i.e. CPU RTF
+is roughly 3-3.5x real time for a Q8_0 quantized 0.5B model on this
+hardware/thread count - not yet benchmarked systematically or tuned (thread
+count, quantization level) for a render-machine target.
+
+What this validated:
+- audio.cpp's C ABI (`audiocpp.h`) works as described: `registry_create` ->
+  `model_load` (`family_hint = "chatterbox"`) -> `session_create` (task token
+  is **`"clon"`**, not `"tts"` - Chatterbox only exposes voice-clone/voice-
+  conversion in this integration, confirmed against `docs/tts.md` and
+  `task_vocabulary.cpp`; there is no built-in-voice TTS path for the base
+  Chatterbox family, only for `chatterbox_turbo`) -> `request_create` +
+  `set_text` + `set_voice_audio` -> `session_run` -> `result_audio`.
+- CPU-only build config (`ENGINE_ENABLE_{CUDA,HIP,VULKAN,METAL}=OFF`,
+  `AUDIOCPP_BUILD_C_API=ON`) builds cleanly once canim's own
+  `-Werror -Wall -Wextra` is kept from leaking into the vendored subdirectory
+  (directory-scoped `add_compile_options` in CMake applies to subdirectories
+  added afterward - fixed by moving `add_subdirectory(extern/audio.cpp)`
+  before that block in the top-level `CMakeLists.txt`).
+- `AUDIOCPP_MODEL_SET=custom` / `AUDIOCPP_MODELS=chatterbox` restricts the
+  vendored build to just the one model family instead of audio.cpp's full
+  ~90-family default, which matters a lot for contributor build time.
+- Chatterbox Q8_0 GGUF weights: 2.09 GB, fetched from
+  `audio-cpp/audio.cpp-gguf` on HF Hub via `huggingface_hub.hf_hub_download`
+  (no `model_manager_v2.py`/native manager needed for a single-file fetch).
+  Live under `models/` (gitignored, not committed).
+- Reference voice clip: `voices/chatterbox/en-alba-mackenna-casual.wav`
+  (`kyutai/tts-voices`, CC0, purpose-built donation) - **checked into a new
+  top-level `voices/` directory**, not `assets/` (the existing `assets/` is
+  entirely gitignored project-wide, for downloaded/generated content like
+  fonts - not the right place for something meant to be tracked). Source/
+  license noted in `voices/chatterbox/SOURCES.md`.
+
+Deviations from the original integration sketch:
+- TTS is now unconditionally required (per this session's decision), so
+  `extern/audio.cpp` is `add_subdirectory`'d unconditionally in the top-level
+  `CMakeLists.txt`, no opt-in CMake flag.
+- Confirmed `git subtree add --squash` (not submodule) works cleanly:
+  `extern/audio.cpp` is a normal, complete, buildable source tree (~223MB).
+  The one upstream submodule it references (`audio.cpp-server-frontends`) is
+  absent/empty post-subtree and is harmless - it's only needed for
+  `AUDIOCPP_BUILD_SERVER_FRONTENDS` (off by default, not used here).
+
+Not yet exercised by the POC: multi-language, forced alignment/timestamps,
+`Narrator`/`TTSClient`/`Script` integration, Windows/macOS builds, voice
+selection beyond one hardcoded reference clip, cache-key versioning.
+
 ## Open questions for next session
 
-- Resolve Chinese reference voice sourcing (or accept the gap for now).
+- Resolve Chinese reference voice sourcing. Note: `model_specs/chatterbox.json`'s
+  own `languages` list does **not** include `zh` (confirmed in the POC's spec
+  file - the ambiguity flagged earlier in this doc is resolved: audio.cpp's
+  Chatterbox integration does not currently claim Chinese support, regardless
+  of what Resemble's own model card says). Worth re-checking upstream issues
+  before writing this off entirely.
 - Decide whether to keep Piper as a documented fallback path or drop it from
   consideration entirely.
 - Windows/macOS build validation (no Mac available yet; Windows untested).
+- Benchmark CPU RTF properly (thread count sweep, Q8_0 vs F16) before picking
+  a render-machine target/timeout budget.
+- Unrelated bug noticed in passing: `make test`'s Makefile target invokes
+  `ctest --preset conan-default`, which doesn't exist (only `conan-debug`/
+  `conan-release` do) - `make test` currently fails at the ctest step
+  regardless of TTS work. Worth a one-line Makefile fix separately.
