@@ -47,23 +47,23 @@ zero-shot cloning). We need Multilingual v3 for language coverage.
 Apache-2.0, pure C++ inference engine powered by ggml, no Python dependency. Has a
 Chatterbox 0.5B backbone backend built in (GGUF, 16-bit/Q8).
 
-Open items to verify in a validation spike:
-- **Chinese language coverage is ambiguous.** One doc surface listed 19 supported
-  languages without `zh` explicitly (ar, da, de, el, en, es, fi, fr, hi, it, ko, ms,
-  nl, no, pl, pt, sv, sw, tr); another mentioned a `cangjie_mapping.json` (Chinese g2p
-  asset) bundled in. Resemble's own model card lists Chinese for Multilingual v3.
-  Need to test directly rather than trust either doc summary.
+Open items to verify in a validation spike — **all resolved, see "Phase 1 validation
+spike: complete" below**:
+- ~~Chinese language coverage is ambiguous~~ — **resolved: not supported.** Tested
+  directly; hard error.
 - **No documented determinism/seed controls** in audio.cpp. Mitigated in practice by
   our existing cache (`TTSClient.cpp`), which stores exact synthesized bytes per
   `(text, speaker, language, rate)` hash and reuses them forever — so *within a
   project*, output is already bit-reproducible once cached. What actually matters is
   **speaker-identity consistency** across different lines, which comes from using a
   fixed reference clip per named voice, not from model-level sampling determinism.
-- Confirm the GGUF conversion doesn't add license terms beyond audio.cpp's Apache-2.0
-  and Chatterbox's own MIT weights.
-- Measure CPU-only real-time-factor (audio.cpp is CUDA-optimized; CPU fallback exists
-  but is described as "substantially slower"). Canim has no GPU dependency today.
-  First-time render cost matters even though the cache absorbs repeat renders.
+  (Not independently re-verified this session beyond the informal check under
+  "Speaker-identity consistency" below — still no seed/determinism control exposed by
+  the C ABI, unchanged.)
+- ~~Confirm the GGUF conversion doesn't add license terms~~ — **resolved: clean.**
+- ~~Measure CPU-only real-time-factor~~ — **resolved: ~4x RTF for realistic sentence
+  lengths.** See benchmark below. GPU (CUDA, added 2026-09-22/23) is ~8-9x faster
+  than CPU on the RTX 3070 Ti used for this work.
 
 ## Timing / subtitle sync
 
@@ -131,12 +131,20 @@ per language/voice we want. Distinguish two consent stories:
 
 | Language | Source | License | Consent story | Notes |
 |---|---|---|---|---|
-| en | [`kyutai/tts-voices`](https://huggingface.co/kyutai/tts-voices) — Unmute Voice Donation Project subset | CC0 | Purpose-built donation, explicit | 228 verified voices, ~10s clips, 48kHz WAV. Same HF collection also bundles VCTK (CC-BY 4.0, 109 speakers, studio 48kHz) as a fallback/alternate. |
-| fr | `kyutai/tts-voices` — Voice Donation Project subset | CC0 | Purpose-built donation, explicit | Same collection also bundles CML-TTS/French (CC-BY 4.0). |
-| de | [Thorsten-Voice](https://github.com/thorstenMueller/Thorsten-Voice) | **CC0** | Purpose-built, explicit — Thorsten Müller recorded and released it specifically for open TTS use | Best consent story of anything found. 23+ hours, 22,668 phrases, 44kHz, single fixed speaker. Separate emotional-variant datasets exist too (neutral/amused/sleepy/whispering/etc. on OpenSLR). Good candidate for a reference-clip-length sensitivity test (5s vs 20s clip, same speaker) before locking in clip lengths elsewhere. |
-| pl | [CML-TTS](https://arxiv.org/html/2306.10097) | CC-BY 4.0 | Repurposed (LibriVox-style audiobook narration) | Also covers es, fr (redundant with Kyutai), de (redundant with Thorsten), it, pt, nl. |
-| es | CML-TTS | CC-BY 4.0 | Repurposed | See above. |
-| zh | **none found** | — | — | Open gap. `AISHELL-3` (218 speakers) and `Aidatatang_200zh` (600 speakers) exist but are licensed "free for academic/research use," not clearly commercial-safe. Need to either vet one of those licenses carefully, use whatever default/demo reference Chatterbox ships (if any), or source/record a consenting Mandarin speaker ourselves. |
+| en | [`kyutai/tts-voices`](https://huggingface.co/kyutai/tts-voices), `alba-mackenna/casual.wav` | **CC BY 4.0** (corrected 2026-09-23 — see below) | Purpose-built voice acting, attribution required | Checked in: `voices/chatterbox/en-alba-mackenna-casual.wav`, 48kHz, ~10s. |
+| fr | `kyutai/tts-voices`, `cml-tts/fr/` subset | CC BY 4.0 | Repurposed (audiobook narration) | Checked in: `voices/chatterbox/fr-cml-tts-10087_11650_000028-0002.wav`, 24kHz, 7.24s. |
+| de | [`Thorsten-Voice/TV-44kHz-Full`](https://huggingface.co/datasets/Thorsten-Voice/TV-44kHz-Full) (canonical HF mirror of [thorstenMueller/Thorsten-Voice](https://github.com/thorstenMueller/Thorsten-Voice)) | **CC0** (confirmed against both the HF card and the author's own GitHub README) | Purpose-built, explicit | Checked in: `voices/chatterbox/de-thorsten-voice-short.wav`, 24kHz, 5.48s. A separate third-party HF mirror, `Thorsten-Voice/TV-24kHz-Neutral`, mislabels the same recordings CC-BY-4.0 — don't use that one as the license source. Clip-length sensitivity tested (5.48s vs 13.29s from the same speaker/subset) — both produce valid, comparably-sized output; no functional break from a longer reference clip. |
+| pl | [`freds0/cml_tts_dataset_polish`](https://huggingface.co/datasets/freds0/cml_tts_dataset_polish) (CML-TTS) | CC BY 4.0 | Repurposed | Checked in: `voices/chatterbox/pl-cml-tts-11295_11059_000062.wav`, 24kHz, 10.88s. |
+| es | [`freds0/cml_tts_dataset_spanish`](https://huggingface.co/datasets/freds0/cml_tts_dataset_spanish) (CML-TTS) | CC BY 4.0 | Repurposed | Checked in: `voices/chatterbox/es-cml-tts-3719_1378_000081.wav`, 24kHz, 10.91s. |
+| zh | **none — accepted gap, see below** | — | — | Not a licensing question: the model itself doesn't support Chinese through this integration (see "Phase 1 validation spike: complete"). |
+
+**License correction (2026-09-23):** the `en` clip was originally logged as CC0. It
+isn't — `kyutai/tts-voices`' own README states the `alba-mackenna/` collection
+(voice-acted characters) is "Released under the CC BY 4.0 licence", distinct from
+`voice-donations/` (the actual CC0 subset, but with anonymized/unlabeled-by-language
+filenames, not practical to pick a specific language from). Fixed in
+`voices/chatterbox/SOURCES.md`; still fine to use, just requires attribution (Alba
+MacKenna, via kyutai/tts-voices) rather than being license-free.
 
 Explicitly avoid: Expresso and EARS from the Kyutai collection — **CC-BY-NC**,
 non-commercial only.
@@ -148,12 +156,7 @@ reference-clip path per named voice.
 
 ## Rough phase breakdown (not yet scheduled)
 
-1. **Validation spike** — build audio.cpp, load the Chatterbox Multilingual GGUF,
-   manually synthesize en/fr/es/pl/de/zh samples via CLI. Settle the Chinese coverage
-   question. Measure CPU-only RTF. Test speaker-identity consistency across lines from
-   one reference clip. Test the Thorsten-Voice clip-length sensitivity question.
-   Confirm license chain (audio.cpp Apache-2.0 + Chatterbox MIT weights, no surprises
-   in the GGUF conversion).
+1. **Validation spike — complete, see "Phase 1 validation spike: complete" below.**
 2. **Backend swap** — stand up audio.cpp (per the integration decision above) as the
    new local TTS backend, replacing `edge_tts_server.py`. Retire `protocol.capnp` and
    the Python bridge if going with the C ABI. Replace `voices` config with reference-
@@ -279,20 +282,82 @@ Not yet exercised by the POC: multi-language, forced alignment/timestamps,
 `Narrator`/`TTSClient`/`Script` integration, Windows/macOS builds, voice
 selection beyond one hardcoded reference clip, cache-key versioning.
 
+## Phase 1 validation spike: complete (2026-09-23)
+
+All remaining phase-1 items closed out. Summary (detail folded into the relevant
+sections above):
+
+- **License chain: confirmed clean.** `extern/audio.cpp/LICENSE` is Apache-2.0
+  (ShugoAI LLC). The specific `Chatterbox-GGUF` package in the
+  `audio-cpp/audio.cpp-gguf` HF repo we pull `models/Chatterbox-GGUF/chatterbox-q8_0.gguf`
+  from is listed as MIT in that repo's own README license table, matching
+  `ResembleAI/chatterbox` upstream (also independently confirmed MIT via its HF
+  model card). The GGUF repo's own top-level HF tag is `license: other` only
+  because it's a multi-model bundle covering ~80 different model families each
+  under their own license — its README states explicitly "[u]se and
+  redistribution are governed by the corresponding original model license", i.e.
+  no additional terms are added by the GGUF conversion itself for our file.
+- **Chinese (`zh`): definitively not supported, not a licensing question.**
+  Directly tested: `tts_poc <chinese text file> ... zh` fails immediately with
+  `Error: run: unsupported Chatterbox language: zh` — a hard rejection from
+  audio.cpp's Chatterbox backend, not silently-wrong output. Matches
+  `extern/audio.cpp/model_specs/chatterbox.json`'s `languages` list, which
+  omits `zh` even though upstream `ResembleAI/chatterbox`'s own HF model card
+  tags list `zh` among 29 supported languages — the discrepancy is real:
+  Resemble's original model supports Chinese, audio.cpp's Chatterbox GGUF
+  integration currently does not expose it. **Decision needed from you:**
+  accept this gap for now (per the plan's own originally-listed option), or
+  pursue it upstream (file an audio.cpp issue/PR; the `cangjie_mapping`
+  asset referenced in the model spec's `sources.files` suggests some Chinese
+  g2p scaffolding already exists in the integration, just not wired to the
+  language allowlist — may not be a large fix, but this wasn't investigated
+  further this session).
+- **fr/de/es/pl reference voices: sourced and checked in.** See the updated
+  "Reference voices" table and `voices/chatterbox/SOURCES.md` above. Also
+  found and fixed a real license mislabel on the existing `en` clip (was
+  logged CC0, is actually CC BY 4.0) while re-verifying the `en` source.
+- **Multi-language synthesis smoke test: 4/4 pass.** fr/de/es/pl each
+  produced non-silent, sane-duration audio from a representative sentence
+  (peaks 5982-15285 of 32768, durations 3.4-4.5s for similar-length inputs).
+  Naturalness/correctness not judged (no listener) — only "did it produce
+  real audio, not silence or a crash."
+- **Speaker-identity consistency: 3/3 runs completed normally.** Three
+  different English sentences (short/medium/long) synthesized from the same
+  `en-alba-mackenna-casual.wav` reference all produced plausible,
+  duration-proportional audio. This only checks "the pipeline doesn't
+  break/degrade across repeated use of one reference clip" — actual
+  perceptual speaker-identity consistency needs a human listener and is not
+  verified here.
+- **Thorsten-Voice clip-length sensitivity: no functional issue.** 5.48s vs
+  13.29s reference clips from the same speaker both produced valid,
+  comparable-duration output for an identical input sentence. Again,
+  functional only, not a perceptual quality comparison.
+- **CPU RTF benchmark (RTX-class CPU, `backend=cpu` forced, `--threads 4`):**
+
+  | Input | Chars | Synth time | Audio duration | RTF |
+  |---|---|---|---|---|
+  | short | 11 | 11.83 s | 1.22 s | 9.7x |
+  | medium | 77 | 19.65 s | 4.66 s | 4.2x |
+  | long | 264 | 63.29 s | 15.9 s | 4.0x |
+
+  RTF converges to **~4x real time** for realistic narration-length
+  sentences; the short-input outlier (9.7x) reflects fixed per-request
+  overhead dominating a tiny output, not a per-character cost difference.
+  For comparison, **CUDA (RTX 3070 Ti, confirmed 2026-09-22) is ~8-9x faster
+  than this** — ~2.5-3.3s synthesis for the same 97-char benchmark sentence
+  that takes CPU ~24-26s, i.e. roughly real-time-or-faster on GPU vs ~4x
+  slower-than-real-time on CPU. Thread-count sweep and Q8_0-vs-F16 precision
+  comparison not done this session — the Q8_0/4-thread numbers above are
+  what a typical contributor machine would get.
+
 ## Open questions for next session
 
-- Resolve Chinese reference voice sourcing. Note: `model_specs/chatterbox.json`'s
-  own `languages` list does **not** include `zh` (confirmed in the POC's spec
-  file - the ambiguity flagged earlier in this doc is resolved: audio.cpp's
-  Chatterbox integration does not currently claim Chinese support, regardless
-  of what Resemble's own model card says). Worth re-checking upstream issues
-  before writing this off entirely.
+- **Chinese gap: accept for now, or pursue upstream?** Needs your decision
+  (see above) — this is the one item from phase 1 that isn't a clean
+  "resolved," it's a resolved *diagnosis* with an open *decision*.
 - Decide whether to keep Piper as a documented fallback path or drop it from
   consideration entirely.
 - Windows/macOS build validation (no Mac available yet; Windows untested).
-- Benchmark CPU RTF properly (thread count sweep, Q8_0 vs F16) before picking
-  a render-machine target/timeout budget.
-- Unrelated bug noticed in passing: `make test`'s Makefile target invokes
-  `ctest --preset conan-default`, which doesn't exist (only `conan-debug`/
-  `conan-release` do) - `make test` currently fails at the ctest step
-  regardless of TTS work. Worth a one-line Makefile fix separately.
+- Thread-count sweep and Q8_0 vs F16 precision comparison for CPU RTF, if a
+  CPU-only render target ends up mattering (GPU is fast enough that this may
+  not be worth doing).
