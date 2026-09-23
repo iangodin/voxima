@@ -6,6 +6,21 @@ project( Sonimation )
 set(CMAKE_CXX_SCAN_FOR_MODULES OFF)
 set( CMAKE_EXPORT_COMPILE_COMMANDS ON )
 
+enable_testing()
+
+# Vendored via `extern/audio.cpp` (squashed git subtree, see tts.md). Added
+# before canim's own -Werror/-Wall/-Wextra below - those flags are directory
+# scoped and would otherwise leak into audio.cpp's own (not warning-clean
+# under our flag set) subdirectory build. CPU-only for now, no GPU backend.
+set( ENGINE_ENABLE_CUDA OFF CACHE BOOL "" FORCE )
+set( ENGINE_ENABLE_HIP OFF CACHE BOOL "" FORCE )
+set( ENGINE_ENABLE_VULKAN OFF CACHE BOOL "" FORCE )
+set( ENGINE_ENABLE_METAL OFF CACHE BOOL "" FORCE )
+set( AUDIOCPP_BUILD_C_API ON CACHE BOOL "" FORCE )
+set( AUDIOCPP_MODEL_SET "custom" CACHE STRING "" FORCE )
+set( AUDIOCPP_MODELS "chatterbox" CACHE STRING "" FORCE )
+add_subdirectory( extern/audio.cpp )
+
 if ( WIN32 )
 	add_compile_definitions( WIN32_LEAN_AND_MEAN NOGDI _WIN32_WINNT=0x0601 )
 	add_compile_options( /utf-8 /EHsc /W4 )
@@ -26,8 +41,6 @@ find_package( SndFile 1.2.2 REQUIRED SYSTEM )
 find_package( soxr 0.1.3 REQUIRED SYSTEM )
 find_package( fribidi 1.0.13 REQUIRED SYSTEM )
 find_package( clipper2 2 REQUIRED SYSTEM )
-
-enable_testing()
 
 add_library( visuals STATIC
 	src/core/EaseCubic.cpp
@@ -122,5 +135,13 @@ target_link_libraries( test_huml PUBLIC visuals )
 add_executable( test_tts tools/test_tts.cpp )
 target_compile_features( test_tts PUBLIC cxx_std_20 )
 target_link_libraries( test_tts PUBLIC visuals )
+
+add_executable( tts_poc tools/tts_poc.cpp )
+target_compile_features( tts_poc PUBLIC cxx_std_20 )
+target_link_libraries( tts_poc PUBLIC audiocpp SndFile::sndfile )
+if ( NOT MSVC )
+	# audiocpp.h has a "/*" inside a doc comment that -Wcomment flags; not our header to fix.
+	target_compile_options( tts_poc PRIVATE -Wno-comment )
+endif()
 
 add_subdirectory( tests )
