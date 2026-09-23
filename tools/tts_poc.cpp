@@ -1,7 +1,8 @@
 
 // audio.cpp / Chatterbox proof of concept: reads a plain text file, clones a
-// reference voice, and writes the synthesized English speech to a WAV file.
-// CPU only. See tts.md for the plan this is validating.
+// reference voice, and writes the synthesized speech to a WAV file. Language
+// and backend default to en/best but are overridable for multi-language and
+// CPU-vs-GPU benchmarking. See tts.md for the plan this is validating.
 
 #include <audiocpp.h>
 
@@ -73,7 +74,7 @@ int main( int argc, char *argv[] )
 	if ( argc < 5 )
 	{
 		std::cerr << "Usage: " << argv[0]
-				  << " <text_file> <chatterbox_gguf> <voice_ref_wav> <out_wav>\n";
+				  << " <text_file> <chatterbox_gguf> <voice_ref_wav> <out_wav> [lang=en] [backend=best]\n";
 		return 1;
 	}
 
@@ -81,6 +82,8 @@ int main( int argc, char *argv[] )
 	const std::string model_path = argv[2];
 	const std::string voice_ref_path = argv[3];
 	const std::string out_path = argv[4];
+	const std::string language = argc > 5 ? argv[5] : "en";
+	const std::string backend_name = argc > 6 ? argv[6] : "best";
 
 	try
 	{
@@ -114,7 +117,7 @@ int main( int argc, char *argv[] )
 		// "best" lets audio.cpp pick the fastest backend it was built with
 		// (CUDA if the toolkit was available at configure time, else CPU).
 		audiocpp_backend_config backend = {};
-		backend.backend = "best";
+		backend.backend = backend_name.c_str();
 		backend.device = 0;
 		backend.threads = 4;
 
@@ -128,7 +131,7 @@ int main( int argc, char *argv[] )
 			throw std::runtime_error( "request allocation failed" );
 		std::unique_ptr<audiocpp_request, RequestDeleter> request( request_raw );
 
-		if ( audiocpp_request_set_text( request.get(), text.c_str(), "en" ) != AUDIOCPP_OK )
+		if ( audiocpp_request_set_text( request.get(), text.c_str(), language.c_str() ) != AUDIOCPP_OK )
 			throw std::runtime_error( std::string( "set_text: " ) + audiocpp_last_error() );
 		if ( audiocpp_request_set_voice_audio( request.get(), voice_ref.data(), voice_ref.size() / voice_channels, voice_rate, voice_channels ) != AUDIOCPP_OK )
 			throw std::runtime_error( std::string( "set_voice_audio: " ) + audiocpp_last_error() );
