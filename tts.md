@@ -157,16 +157,17 @@ reference-clip path per named voice.
 ## Rough phase breakdown (not yet scheduled)
 
 1. **Validation spike — complete, see "Phase 1 validation spike: complete" below.**
-2. **Backend swap** — stand up audio.cpp (per the integration decision above) as the
-   new local TTS backend, replacing `edge_tts_server.py`. Retire `protocol.capnp` and
-   the Python bridge if going with the C ABI. Replace `voices` config with reference-
-   clip paths.
-3. **Carry over fixes identified along the way**:
-   - Fix the `Narrator::speech()` duration bug.
-   - Add retry/backoff and a fail-fast reachability/availability check before a render
-     starts (today nothing auto-launches or health-checks the TTS backend).
-   - Version the cache key (include a model/backend identifier) so a future model
-     upgrade doesn't silently serve stale cached audio.
+2. **Backend swap — complete, see "Phase 2 backend swap: complete" below.**
+3. **Carry over fixes identified along the way — done as part of phase 2:**
+   - ~~Fix the `Narrator::speech()` duration bug.~~ Fixed.
+   - ~~Add retry/backoff and a fail-fast reachability/availability check before a render
+     starts.~~ Superseded: there's no separate server process to health-check anymore
+     (audio.cpp is in-process), so the equivalent is eager model/session load at
+     `TTSClient` construction time - a bad model path throws at startup, not mid-render.
+     Retry/backoff no longer applies to an in-process library call the way it did to a
+     flaky network server.
+   - ~~Version the cache key (include a model/backend identifier).~~ Done - the cache
+     hash now folds in the model file's name.
 4. **Subtitle sync** — wire in the forced-alignment pass, feeding the existing
    Subtitles task (tasks.md).
 5. **Testing** — add a mock/fake TTS backend mode so `Narrator`/`Narration` logic gets
@@ -362,6 +363,61 @@ Chinese narration becomes an actual near-term requirement.
 
 **Phase 1 (validation spike): complete.**
 
+## Phase 2 backend swap: complete (2026-09-24)
+
+`TTSClient` (`src/tts/TTSClient.h`/`.cpp`) now calls audio.cpp's C ABI in-process
+instead of talking capnp-over-socket to `edge_tts_server.py`. Design:
+
+- **Eager load, not lazy.** The constructor loads the Chatterbox GGUF and creates a
+  synthesis session immediately (`audiocpp_registry_create` -> `audiocpp_model_load`
+  -> `audiocpp_session_create` with task token `"clon"`). A missing/bad model path
+  throws at `DubbingStage::setup()` time, i.e. at render startup, not on the first
+  `synthesize()` call mid-render. This is the fail-fast mechanism that replaces phase
+  3's "retry/backoff and reachability check" item - there's no longer a separate
+  server process to health-check or retry against, so that item doesn't carry over
+  in its original shape.
+- **One model + one session, shared across all languages.** `DubbingStage` owns a
+  single `TTSClient`; every per-language `Narrator` calls into the same loaded
+  session. Proven end-to-end (not just assumed from audio.cpp's docs) by a real
+  render through `Producer`/`DubbingStage`/`Narrator` with `--lang en --lang fr`:
+  both languages synthesized correctly from the one persisted session, produced
+  non-silent audio (en: 3.54s, mean -20.5dB; fr: 3.54s, mean -25.1dB) and a working
+  file cache (one `.wav` per unique text/voice/language hash).
+- **`voices::` config is now a reference-clip path**, not an edge-tts ShortName.
+  Resolved by `Narrator` against a `--tts-voice-dir` base directory (default
+  `voices`) supplied via `DubbingStage::setup()`. `demos/eases/*.huml` updated for
+  en/fr/de (the languages with committed clips); `en-GB`/`fr-CA` now inherit their
+  base language's clip instead of carrying a stale edge-tts-only override; `zh`/`jp`
+  get an explicit comment that narration will fail for them (see the `ja` gap below).
+- **Cache format**: switched from raw cached capnp response bytes to a decoded
+  `.wav` per hash (`TTSClient`'s own cache, distinct from the model/voice files).
+  The hash now folds in the model file's name, so swapping GGUFs automatically
+  busts stale entries instead of silently serving audio from a different model.
+- **`Narrator::speech()` duration bug fixed** - `duration` now accumulates
+  unconditionally per result instead of only inside the resample branch.
+- **New CLI options** on `sonimation`: `--tts-model` (default
+  `models/Chatterbox-GGUF/chatterbox-q8_0.gguf`), `--tts-voice-dir` (default
+  `voices`), `--tts-backend` (default `best`, i.e. CUDA if built with it), `--tts-threads`
+  (default 4).
+- **New gap discovered**: Japanese (`ja`) is unsupported by this Chatterbox
+  integration too, same as `zh` - confirmed against `model_specs/chatterbox.json`'s
+  language allowlist (ar, da, de, el, en, es, fi, fr, hi, it, ko, ms, nl, no, pl, pt,
+  sv, sw, tr - no `zh`, no `ja`). Folded into the same accepted-gap decision as
+  Chinese; `demos/eases/jp.huml` flagged with a comment, not a functional blocker
+  since nothing renders it today.
+- **Retired**: `edge_tts_server.py`, `tts_client.py`, the `test_*.py` scripts,
+  `protocol.capnp` and its generated sources, `asio_wrapper.h`, and
+  `tools/test_tts.cpp` (superseded by `tools/tts_poc.cpp`). Dropped the `CapnProto`
+  and `asio` conan/CMake dependencies entirely - nothing else in the tree used
+  either. `word_boundaries`/`WordBoundary` also dropped from `SynthesisResult`:
+  Chatterbox doesn't produce them and nothing outside `TTSClient` consumed the field.
+- **`rate` parameter**: kept in `TTSClient::synthesize()`'s signature for API
+  compatibility, forwarded to `audiocpp_request_set_speaking_rate()` only when
+  non-default and the loaded model advertises style-conditioning support
+  (`audiocpp_model_supports_style_condition`). Not exercised by anything today -
+  `Narrator` always calls with the default 1.0.
+- `make test`: 5/5 pass, no regression from the dependency swap.
+
 ## Open questions for next session
 
 - Decide whether to keep Piper as a documented fallback path or drop it from
@@ -370,5 +426,7 @@ Chinese narration becomes an actual near-term requirement.
 - Thread-count sweep and Q8_0 vs F16 precision comparison for CPU RTF, if a
   CPU-only render target ends up mattering (GPU is fast enough that this may
   not be worth doing).
-- File an upstream issue on `0xShug0/audio.cpp` about the Chinese language
-  gap in the Chatterbox model spec, if/when it becomes a priority.
+- File an upstream issue on `0xShug0/audio.cpp` about the Chinese/Japanese
+  language gap in the Chatterbox model spec, if/when it becomes a priority.
+- Phase 4 (subtitle sync via forced alignment) and phase 5 (mock TTS backend for
+  ctest coverage of `Narrator`/`Narration`) are next up and still fully open.
