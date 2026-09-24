@@ -3,7 +3,7 @@ meta::
   inherit: null
 
 voices::
-  narrator: "en-US-AriaNeural"
+  narrator: "chatterbox/en-alba-mackenna-casual.wav"
 
 labels::
   ease_cubic_in: "Cubic In"

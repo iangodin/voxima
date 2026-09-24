@@ -1,6 +1,11 @@
 meta::
   lang:: "zh", "zh-CN"
 
+# zh is not supported by the current Chatterbox TTS backend (its language
+# allowlist omits zh - see tts.md, "Chinese (zh): definitively not
+# supported"). No reference clip exists; narrating this script will fail.
+# Accepted gap for now - do not include "zh"/"zh-CN" in --lang for a real
+# render until this is resolved upstream.
 voices::
   narrator: "默认"
 

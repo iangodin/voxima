@@ -2,8 +2,7 @@ meta::
   lang: "fr-CA"
   inherit: "fr"
 
-voices::
-  narrator: "fr-CA-SylvieNeural"
+# No CA-specific reference clip - inherits "fr"'s voice.
 
 intro: """
   Ceux-ci montrent diverses animations d'atténuation.
