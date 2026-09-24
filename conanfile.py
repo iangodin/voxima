@@ -18,8 +18,6 @@ class MyProjectConan(ConanFile):
     self.requires("doctest/2.4.12")
     self.requires("cli11/2.6.2")
     self.requires("ctre/3.10.0")
-    self.requires("asio/1.36.0")
-    self.requires("capnproto/1.1.0")
     self.requires("libsndfile/1.2.2")
     self.requires("soxr/0.1.3")
     self.requires("fribidi/1.0.13")

@@ -61,8 +61,6 @@ find_package( Freetype 2.14.1 REQUIRED SYSTEM )
 find_package( Catch2 3.13.0 REQUIRED SYSTEM )
 find_package( CLI11 2.6.2 REQUIRED SYSTEM )
 find_package( ctre 3.10.0 REQUIRED SYSTEM )
-find_package( asio 1.36.0 REQUIRED SYSTEM )
-find_package( CapnProto 1.1.0 REQUIRED SYSTEM )
 find_package( SndFile 1.2.2 REQUIRED SYSTEM )
 find_package( soxr 0.1.3 REQUIRED SYSTEM )
 find_package( fribidi 1.0.13 REQUIRED SYSTEM )
@@ -90,7 +88,6 @@ add_library( visuals STATIC
 	src/themes/ModernTechnical.cpp
 	src/themes/PlayfulDiscovery.cpp
 	src/themes/ThemeUtils.cpp
-	src/tts/protocol.capnp.c++
 	src/tts/TTSClient.cpp
 	src/audio/DubbingStage.cpp
 	src/audio/Resample.cpp
@@ -130,14 +127,16 @@ target_link_libraries( visuals PUBLIC
 	Freetype::Freetype
 	harfbuzz::harfbuzz
 	CLI11::CLI11
-	asio::asio
-	CapnProto::capnp
-	CapnProto::kj
+	audiocpp
 	SndFile::sndfile
 	soxr::soxr
 	fribidi::fribidi
 	clipper2::clipper2
 )
+if ( NOT MSVC )
+	# audiocpp.h has a "/*" inside a doc comment that -Wcomment flags; not our header to fix.
+	target_compile_options( visuals PRIVATE -Wno-comment )
+endif()
 
 add_executable( sonimation tools/main.cpp demos/eases/show_animation.cpp )
 target_compile_features( sonimation PUBLIC cxx_std_20 )
@@ -157,10 +156,6 @@ target_link_libraries( font_math_names PUBLIC Freetype::Freetype )
 add_executable( test_huml tools/test_huml.cpp )
 target_compile_features( test_huml PUBLIC cxx_std_20 )
 target_link_libraries( test_huml PUBLIC visuals )
-
-add_executable( test_tts tools/test_tts.cpp )
-target_compile_features( test_tts PUBLIC cxx_std_20 )
-target_link_libraries( test_tts PUBLIC visuals )
 
 add_executable( tts_poc tools/tts_poc.cpp )
 target_compile_features( tts_poc PUBLIC cxx_std_20 )
