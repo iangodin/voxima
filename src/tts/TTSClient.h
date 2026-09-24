@@ -63,6 +63,15 @@ public:
 
 	void setup( const std::filesystem::path &render_dir );
 
+	// Whether an aligner_model_path was configured at construction. Check
+	// this before calling align() for languages/renders where subtitle
+	// timing wasn't requested, rather than relying on align()'s throw for
+	// the (common, expected) "no aligner configured" case.
+	bool has_aligner() const
+	{
+		return !_aligner_model_path.empty();
+	}
+
 	// voice_ref_path is a reference clip to clone the speaker from. rate is
 	// a speaking-rate multiplier (1.0 = unchanged); only forwarded to the
 	// model if the loaded family advertises style-conditioning support.

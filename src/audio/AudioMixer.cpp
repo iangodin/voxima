@@ -92,6 +92,7 @@ void AudioMixer::write_audio( void )
 	}
 
 	sf_writef_float( _sndfile, _buffer.data(), static_cast<sf_count_t>( _buffer.frames() ) );
+	_frames_written += _buffer.frames();
 
 	std::fill( _buffer.begin(), _buffer.end(), 0.F );
 }

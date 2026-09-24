@@ -25,10 +25,20 @@ public:
 		return _buffer.rate();
 	}
 
+	// Total frames written to the output file so far - the ground truth for
+	// "current absolute position in this language's output audio stream",
+	// since write_audio() is called exactly once per video frame regardless
+	// of whether that frame carried real narration or silence.
+	size_t frames_written( void ) const
+	{
+		return _frames_written;
+	}
+
 	static bool supported_format( const std::string &filename );
 	static bool supported_codec( std::string_view codec );
 
 private:
 	SNDFILE *_sndfile = nullptr;
 	AudioBuffer _buffer;
+	size_t _frames_written = 0;
 };

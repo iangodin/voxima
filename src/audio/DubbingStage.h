@@ -3,6 +3,7 @@
 
 #include "AudioMixer.h"
 #include "Microphone.h"
+#include "SubtitleCue.h"
 
 #include <tts/TTSClient.h>
 
@@ -10,13 +11,16 @@
 #include <map>
 #include <optional>
 #include <string>
+#include <vector>
 
 class DubbingStage
 {
 public:
 	// Setup basic rendering parameters. tts_model is the Chatterbox GGUF to
 	// load, tts_voice_dir is the base directory reference-clip paths in
-	// scripts' voices:: blocks resolve against.
+	// scripts' voices:: blocks resolve against. aligner_model is optional
+	// (empty = no subtitle timing available) - the Qwen3 Forced Aligner GGUF
+	// used to produce word-level timestamps for subtitle cues.
 	void setup(
 		const std::filesystem::path &render_dir,
 		std::string_view codec,
@@ -25,7 +29,8 @@ public:
 		const std::filesystem::path &tts_model,
 		std::filesystem::path tts_voice_dir,
 		const std::string &tts_backend,
-		int tts_threads );
+		int tts_threads,
+		const std::filesystem::path &aligner_model = {} );
 
 	// Add a language track
 	void add_language( std::string_view lang );
@@ -59,6 +64,17 @@ public:
 		return _tts_voice_dir;
 	}
 
+	// Appends one subtitle cue for a language track. Called by Narrator once
+	// a narrated line's absolute timing (anchored to the real output audio
+	// position) is known.
+	void caption( std::string_view lang, SubtitleCue cue );
+
+	// Accumulated subtitle cues for a language, in the order they were
+	// captioned. Empty (not an error) for a language with no narration or
+	// where alignment/synthesis isn't supported (e.g. Polish alignment, or
+	// zh/ja synthesis - see tts.md's accepted-gap notes).
+	const std::vector<SubtitleCue> &subtitles( std::string_view lang ) const;
+
 	void close();
 
 private:
@@ -70,5 +86,6 @@ private:
 	std::map<std::string, AudioMixer, std::less<>> _mixers;
 	std::map<std::string, Microphone, std::less<>> _mics;
 	std::map<std::string, std::string, std::less<>> _outputs;
+	std::map<std::string, std::vector<SubtitleCue>, std::less<>> _subtitles;
 	std::string _codec;
 };
