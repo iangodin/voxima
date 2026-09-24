@@ -69,15 +69,18 @@ spike: complete" below**:
 
 Chatterbox does not emit word boundaries during synthesis the way edge-tts's streamed
 `WordBoundary` events did (autoregressive TTS models generally don't). audio.cpp ships
-a separate **forced-alignment model** (Meta MMS-300M, CTC-based, 1000+ languages) that
-takes our known script text plus the generated audio and produces acoustically-grounded
-word-level timestamps as a second pass.
+separate **forced-alignment models** that take our known script text plus the generated
+audio and produce acoustically-grounded word-level timestamps as a second pass. This
+plan originally named Meta MMS-300M for that role - **superseded, see "Phase 4 forced
+alignment: complete" below**, MMS turned out to be CC-BY-NC-4.0 (non-commercial) and was
+rejected; Qwen3 Forced Aligner (Apache-2.0) is what's actually wired in.
 
 Implication: subtitle sync becomes a two-step pipeline per line (synthesize, then
 align) instead of one. More robust in principle (grounded in the actual audio, not the
 model's internal timing estimate), but it's an extra inference call and a new failure
-mode to handle per line. Needs to be scoped as part of the Subtitles task
-(tasks.md `## Subtitles`) once this lands.
+mode to handle per line. The alignment pass itself is done (phase 4); SRT/WebVTT
+generation and muxing are still open, scoped as part of the Subtitles task
+(tasks.md `## Subtitles`).
 
 ## Integration approach: three options, leaning toward #1
 
@@ -168,8 +171,10 @@ reference-clip path per named voice.
      flaky network server.
    - ~~Version the cache key (include a model/backend identifier).~~ Done - the cache
      hash now folds in the model file's name.
-4. **Subtitle sync** — wire in the forced-alignment pass, feeding the existing
-   Subtitles task (tasks.md).
+4. **Subtitle sync — complete, see "Phase 4 forced alignment: complete" below.** Scoped
+   strictly to wiring the alignment pass into `TTSClient`; SRT/WebVTT generation and
+   muxing are NOT part of this phase and remain unimplemented - still open in
+   `tasks.md`'s `## Subtitles` task.
 5. **Testing** — add a mock/fake TTS backend mode so `Narrator`/`Narration` logic gets
    ctest coverage without requiring the real model.
 
@@ -418,6 +423,81 @@ instead of talking capnp-over-socket to `edge_tts_server.py`. Design:
   `Narrator` always calls with the default 1.0.
 - `make test`: 5/5 pass, no regression from the dependency swap.
 
+## Phase 4 forced alignment: complete (2026-09-24)
+
+**Model: Qwen3 Forced Aligner (`qwen3_forced_aligner`, 0.6B, GGUF), not Meta MMS-300M
+as originally planned.** MMS is disqualified: its checkpoint is CC-BY-NC-4.0
+(non-commercial - same rejection category as Coqui XTTS was in the original model
+comparison), audio.cpp lists it `"status": "community"` with "GGUF conversion is
+local-only, no public redistribution is approved" (no clean way to even fetch weights
+the way we did for Chatterbox), and its native text normalization only really covers
+nl/en. Qwen3 Forced Aligner is `"status": "supported"`, license verified against
+`extern/audio.cpp/docs/model_licenses.md`: **Apache-2.0**, redistributable, no
+caveats - consistent with audio.cpp's own Apache-2.0 and Chatterbox's MIT weights.
+
+**Language coverage**: 11 languages (`zh, en, yue, fr, de, it, ja, ko, pt, ru, es`).
+Covers en/fr/de/es of our five synthesis languages. **Polish has no alignment support**
+- accepted as a gap, same category as the zh/ja synthesis gaps from phase 2 (not
+pursued further this session).
+
+**API**: `TTSClient::align(text, audio, language) -> std::vector<WordTimestamp>`
+(`src/tts/TTSClient.h`), where `WordTimestamp` is `{ word, start_seconds, end_seconds,
+confidence }` - a deliberate callback to the `WordBoundary` struct phase 2 dropped
+(that was edge-tts's live streamed estimate; this is grounded forced-alignment
+instead). Unlike Chatterbox, the aligner model loads lazily on first `align()` call,
+not eagerly at `TTSClient` construction - most renders won't need subtitle timing and
+shouldn't pay for a second model load. `align()` throws if no `aligner_model_path` was
+given at construction.
+
+**Implementation notes**:
+- Uses audio.cpp's `"align"` task token, `audiocpp_request_set_audio()` (not
+  `set_voice_audio`, which is for cloning references) with the already-synthesized
+  PCM, and `audiocpp_result_word_count()`/`audiocpp_result_word()` for the per-word
+  results.
+- The aligner reports `start_sample`/`end_sample` in units of its own internal
+  frontend's sample rate (a Whisper-style 16 kHz frontend, per
+  `extern/audio.cpp/src/models/qwen3_asr/frontend_whisper.cpp`, which the aligner
+  shares its frontend design with - see `extern/audio.cpp/src/models/
+  qwen3_forced_aligner/session.cpp`), **not** the input audio's rate;
+  `audiocpp_request_set_audio()` resamples internally. This isn't documented as a
+  public constant, so it was confirmed empirically: synthesized audio at Chatterbox's
+  native rate, ran `align()`, and verified the last word's end time landed inside the
+  known audio duration (it did, both in English and French - see below).
+- `audiocpp_result_word()`'s confidence output is **always 0.0** for this model -
+  confirmed in audio.cpp's own source (`qwen3_forced_aligner/processor.cpp:347` hardcodes
+  `timestamp.confidence = 0.0F`). Not a bug in our integration; the field exists in the
+  C ABI generically but this model doesn't populate it.
+- Build: added `qwen3_forced_aligner` to `CMakeLists.txt`'s `AUDIOCPP_MODELS` custom
+  set alongside `chatterbox`. Confirmed via the configure-time "model composite"
+  message that this pulls in `qwen3_asr` as a linked dependency (shared frontend code
+  between the aligner and ASR families) but *not* `qwen3_tts` or audio.cpp's wider
+  ~90-family default set - acceptable scope.
+- New tool: `tools/align_poc.cpp` (mirrors `tools/tts_poc.cpp`) - synthesizes a line,
+  runs `align()`, prints word timestamps. Used for the verification below.
+- Aligner GGUF (`models/Qwen3-ForcedAligner-0.6B-GGUF/qwen3-forced-aligner-0.6b-q8_0.gguf`,
+  same `audio-cpp/audio.cpp-gguf` HF repo as Chatterbox) lives under `models/`
+  (gitignored), not committed.
+
+**Verification (real output, not just "it didn't crash")**:
+
+English, "Hello there, this is a test of forced alignment timing." (10 words, 3.7s
+audio): 10 words returned, monotonically increasing, last word ends at 3.36s (inside
+the 3.7s audio) - `Hello [0.160-0.480]` ... `timing [2.960-3.360]`.
+
+French, "Bonjour, ceci est un test de synchronisation." (7 words, 3.68s audio): 7 words
+returned, monotonically increasing, last word ends at 3.2s (inside the 3.68s audio) -
+`Bonjour [0.080-0.640]` ... `synchronisation [2.160-3.200]`.
+
+Both: word count matches the input sentence exactly, timestamps strictly increasing,
+per-word durations plausible for natural speech pacing (not all-zero, not degenerate).
+
+**Not in scope for phase 4** (deferred to `tasks.md`'s `## Subtitles` task): SRT/WebVTT
+file generation, muxing subtitle tracks into the rendered output, and wiring `align()`
+into `Narrator`/`Narration`'s actual render loop - this phase only proves the alignment
+capability itself works end to end via the standalone `TTSClient` API and `align_poc`.
+
+`make test`: 5/5 pass, no regression.
+
 ## Open questions for next session
 
 - Decide whether to keep Piper as a documented fallback path or drop it from
@@ -428,5 +508,11 @@ instead of talking capnp-over-socket to `edge_tts_server.py`. Design:
   not be worth doing).
 - File an upstream issue on `0xShug0/audio.cpp` about the Chinese/Japanese
   language gap in the Chatterbox model spec, if/when it becomes a priority.
-- Phase 4 (subtitle sync via forced alignment) and phase 5 (mock TTS backend for
-  ctest coverage of `Narrator`/`Narration`) are next up and still fully open.
+- Polish has no forced-alignment support (Qwen3 Forced Aligner's 11 languages don't
+  include `pl`) - accepted gap, same treatment as zh/ja. Subtitle timing for Polish
+  narration would need a different approach if it ever matters.
+- Wire `align()` into `Narrator`/`Narration`'s actual render loop, and build SRT/WebVTT
+  generation + muxing - both still fully open, tracked in `tasks.md`'s `## Subtitles`
+  task.
+- Phase 5 (mock TTS backend for ctest coverage of `Narrator`/`Narration`) is next up
+  and still fully open.
