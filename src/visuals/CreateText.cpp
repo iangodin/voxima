@@ -145,9 +145,17 @@ std::unique_ptr<Glyph> create_glyph( unsigned int glyph_id, const FontFace *font
 	return glyph;
 }
 
-std::unique_ptr<Group> make_text( Theme &theme, const std::string &text, const FontStyle &style )
+std::unique_ptr<Group> make_text(
+	Theme &theme,
+	const std::string &text,
+	const FontStyle &style,
+	const std::optional<std::string> &language )
 {
 	StyledText st( text );
 	st.set_font_style( 0, st.size(), style );
+	if ( language )
+	{
+		st.set_language( 0, st.size(), *language );
+	}
 	return make_styled_text( theme, st );
 }

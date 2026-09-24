@@ -145,3 +145,8 @@ void StyledText::set_bidi_level( size_t start, size_t end, size_t level )
 {
 	apply_to_style( _style, start, end, [&]( TextStyle &sty ) { sty.bidi_level = level; } );
 }
+
+void StyledText::set_language( size_t start, size_t end, std::string language )
+{
+	apply_to_style( _style, start, end, [&]( TextStyle &sty ) { sty.language = language; } );
+}

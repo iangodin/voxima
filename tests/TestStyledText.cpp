@@ -235,7 +235,7 @@ SCENARIO( "StyledText style application" )
 		WHEN( "checking line indices" )
 		{
 			StyledText multiline( "abc\ndef" );
-			
+
 			THEN( "line indices should be set" )
 			{
 				auto style0 = multiline.styles().find( 0 ); // 'a'
@@ -249,6 +249,23 @@ SCENARIO( "StyledText style application" )
 				auto style1 = multiline.styles().find( 4 ); // 'd'
 				REQUIRE( style1.has_value() );
 				CHECK( style1->line == 1 );
+			}
+		}
+
+		WHEN( "setting a language on part of the text" )
+		{
+			text.set_language( 6, 11, "fr-CA" );
+
+			THEN( "language should be set only on that range" )
+			{
+				auto unset = text.styles().find( 0 );
+				REQUIRE( unset.has_value() );
+				CHECK_FALSE( unset->language.has_value() );
+
+				auto style = text.styles().find( 6 );
+				REQUIRE( style.has_value() );
+				REQUIRE( style->language.has_value() );
+				CHECK( style->language.value() == "fr-CA" );
 			}
 		}
 	}

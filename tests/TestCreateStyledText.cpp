@@ -66,4 +66,22 @@ TEST_CASE( "make_styled_text basic rendering", "[visuals]" )
 		auto group = make_styled_text( theme, rtl );
 		CHECK( glyph_count( *group ) > 0 );
 	}
+
+	SECTION( "It shapes text with an explicit language set" )
+	{
+		// hb_buffer_set_language() is a shaping hint, not something that
+		// changes glyph *count* for plain Latin text - this checks the
+		// language-tagged path shapes successfully end to end, same as the
+		// untagged path, rather than asserting a specific glyph outcome.
+		StyledText tagged( "Bonjour" );
+		tagged.set_language( 0, tagged.size(), "fr-CA" );
+		auto group = make_styled_text( theme, tagged );
+		CHECK( glyph_count( *group ) >= 6 );
+	}
+
+	SECTION( "make_text passes the language through" )
+	{
+		auto group = make_text( theme, "Bonjour", FontStyle{ Intent::PROSE }, std::string( "fr-CA" ) );
+		CHECK( glyph_count( *group ) >= 6 );
+	}
 }

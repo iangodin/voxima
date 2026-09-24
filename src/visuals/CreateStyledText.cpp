@@ -116,6 +116,16 @@ std::unique_ptr<Group> make_styled_text( Theme &theme, const StyledText &text )
 							( *style.bidi_level % 2 == 0 ) ? HB_DIRECTION_LTR : HB_DIRECTION_RTL );
 					}
 
+					// Override guess_segment_properties' language (which falls
+					// back to the process locale, not the text's actual known
+					// language) the same way bidi_level already overrides its
+					// guessed direction.
+					if ( style.language )
+					{
+						hb_buffer_set_language(
+							buffer, hb_language_from_string( style.language->c_str(), -1 ) );
+					}
+
 					const auto &font_face = stack.font( range.font_index );
 					hb_shape( font_cache.get( font_face ), buffer, nullptr, 0 );
 

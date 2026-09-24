@@ -202,7 +202,8 @@ void show_math( Stage &stage )
 }
 
 template<typename Ease>
-Scene show_ease( Stage &stage, const std::string &name, Ease &&ease, float y, int64_t frames )
+Scene show_ease(
+	Stage &stage, const std::string &name, const std::string &lang, Ease &&ease, float y, int64_t frames )
 {
 	float x1 = -4.F;
 	float x2 = 7.F;
@@ -210,7 +211,7 @@ Scene show_ease( Stage &stage, const std::string &name, Ease &&ease, float y, in
 	circle.radius = 0.1F;
 	circle.position = { x1, y };
 
-	auto &label = stage.visuals.add( make_text( *stage.theme, name, FontStyle{ Intent::LABEL } ) );
+	auto &label = stage.visuals.add( make_text( *stage.theme, name, FontStyle{ Intent::LABEL }, lang ) );
 	label.position = { -6.F, y };
 
 	auto anim = ease( x1, x2, frames );
@@ -267,16 +268,16 @@ Screenplay my_screenplay( Stage &stage, Script &script )
 
 	/*
 	co_await choreograph(
-		show_ease( stage, label_cubic_in, ease_cubic_in, 3.F, duration ),
-		show_ease( stage, label_cubic_out, ease_cubic_out, 2.5F, duration ),
-		show_ease( stage, label_cubic_in_out, ease_cubic_in_out, 2.0F, duration ),
-		show_ease( stage, label_elastic_in, ease_elastic_in, 1.5F, duration ),
-		show_ease( stage, label_elastic_out, ease_elastic_out, 1.0F, duration ),
-		show_ease( stage, label_elastic_in_out, ease_elastic_in_out, 0.5F, duration ),
-		show_ease( stage, label_back_in, ease_back_in, 0.F, duration ),
-		show_ease( stage, label_back_out, ease_back_out, -0.5F, duration ),
-		show_ease( stage, label_back_in_out, ease_back_in_out, -1.0F, duration ),
-		show_ease( stage, label_linear, ease_linear, -1.5F, duration ),
+		show_ease( stage, label_cubic_in, lang, ease_cubic_in, 3.F, duration ),
+		show_ease( stage, label_cubic_out, lang, ease_cubic_out, 2.5F, duration ),
+		show_ease( stage, label_cubic_in_out, lang, ease_cubic_in_out, 2.0F, duration ),
+		show_ease( stage, label_elastic_in, lang, ease_elastic_in, 1.5F, duration ),
+		show_ease( stage, label_elastic_out, lang, ease_elastic_out, 1.0F, duration ),
+		show_ease( stage, label_elastic_in_out, lang, ease_elastic_in_out, 0.5F, duration ),
+		show_ease( stage, label_back_in, lang, ease_back_in, 0.F, duration ),
+		show_ease( stage, label_back_out, lang, ease_back_out, -0.5F, duration ),
+		show_ease( stage, label_back_in_out, lang, ease_back_in_out, -1.0F, duration ),
+		show_ease( stage, label_linear, lang, ease_linear, -1.5F, duration ),
 		narrate( stage, script ) );
 	*/
 	co_await wait_for( duration );

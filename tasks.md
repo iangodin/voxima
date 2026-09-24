@@ -3,7 +3,7 @@
 
 ## Text Rendering
   - [x] Create StyledText class to support styling text
-  - [ ] Pass current text language all the way to Harfbuzz to help shape/layout gylphs
+  - [x] Pass current text language all the way to Harfbuzz to help shape/layout gylphs
   - [x] Integrate handling for BiDi text rendering
   - [ ] Add "highlighting" of missing glyphs (0xFFFD)
 
