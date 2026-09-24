@@ -350,14 +350,25 @@ sections above):
   comparison not done this session — the Q8_0/4-thread numbers above are
   what a typical contributor machine would get.
 
+## Decision 2026-09-23: Chinese gap accepted
+
+Accepting the `zh` gap for now rather than blocking on an upstream fix to
+`0xShug0/audio.cpp`'s `model_specs/chatterbox.json` language allowlist. Not
+pursuing a local patch to our vendored `extern/audio.cpp` copy either — too
+fragile against future subtree updates, and the underlying g2p support may be
+disabled for a real reason we can't see from outside. Worth filing an issue
+upstream at some point, but not blocking phase 2 on it. Revisit if/when
+Chinese narration becomes an actual near-term requirement.
+
+**Phase 1 (validation spike): complete.**
+
 ## Open questions for next session
 
-- **Chinese gap: accept for now, or pursue upstream?** Needs your decision
-  (see above) — this is the one item from phase 1 that isn't a clean
-  "resolved," it's a resolved *diagnosis* with an open *decision*.
 - Decide whether to keep Piper as a documented fallback path or drop it from
   consideration entirely.
 - Windows/macOS build validation (no Mac available yet; Windows untested).
 - Thread-count sweep and Q8_0 vs F16 precision comparison for CPU RTF, if a
   CPU-only render target ends up mattering (GPU is fast enough that this may
   not be worth doing).
+- File an upstream issue on `0xShug0/audio.cpp` about the Chinese language
+  gap in the Chatterbox model spec, if/when it becomes a priority.
