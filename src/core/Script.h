@@ -41,6 +41,13 @@ public:
 		return _languages;
 	}
 
+	// The first language passed to --lang ("master"): what on-screen visuals
+	// render in when a Scene doesn't otherwise pick a language per element.
+	const std::string &master_language( void ) const
+	{
+		return _languages.front();
+	}
+
 	friend std::ostream &operator<<( std::ostream &output, const Script &script )
 	{
 		for ( auto &[name, lang]: script._native_scripts )

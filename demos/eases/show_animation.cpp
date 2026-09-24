@@ -240,7 +240,7 @@ Screenplay my_screenplay( Stage &stage, Script &script )
 
 	std::string not_found{ "\uFFFD" };
 
-	const std::string lang = "en";
+	const std::string lang = script.master_language();
 	std::string label_cubic_in{
 		script.fetch( lang, "labels", "ease_cubic_in" ).as_string( not_found ) };
 	std::string label_cubic_out{

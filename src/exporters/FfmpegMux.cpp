@@ -24,7 +24,8 @@ void FfmpegMux::add_video_track( std::string_view video )
 	++_input_files;
 }
 
-void FfmpegMux::add_audio_track( std::string_view audio, std::string_view lang, std::string_view title )
+void FfmpegMux::add_audio_track(
+	std::string_view audio, std::string_view lang, std::string_view title, bool is_default )
 {
 	if ( audio.empty() )
 	{
@@ -41,11 +42,13 @@ void FfmpegMux::add_audio_track( std::string_view audio, std::string_view lang, 
 	{
 		_metadata << " -metadata:s:a:" << _audio_tracks << " title=" << title;
 	}
+	_metadata << " -disposition:a:" << _audio_tracks << ( is_default ? " default" : " 0" );
 	++_input_files;
 	++_audio_tracks;
 }
 
-void FfmpegMux::add_subtitle_track( std::string_view subtitle, std::string_view lang, std::string_view title )
+void FfmpegMux::add_subtitle_track(
+	std::string_view subtitle, std::string_view lang, std::string_view title, bool is_default )
 {
 	if ( subtitle.empty() )
 	{
@@ -62,6 +65,7 @@ void FfmpegMux::add_subtitle_track( std::string_view subtitle, std::string_view 
 	{
 		_metadata << " -metadata:s:s:" << _subtitle_tracks << " title=" << title;
 	}
+	_metadata << " -disposition:s:" << _subtitle_tracks << ( is_default ? " default" : " 0" );
 	++_input_files;
 	++_subtitle_tracks;
 }

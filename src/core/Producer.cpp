@@ -389,7 +389,9 @@ bool Producer::produce( int argc, char *argv[] )
 			// Container "language" metadata is conventionally a bare ISO 639
 			// code, not a full BCP-47 regional tag - "en-GB" isn't itself a
 			// valid value the way "en" is.
-			mux.add_audio_track( _stage.audio.output( lang ), language::primary_subtag( lang ), {} );
+			mux.add_audio_track(
+				_stage.audio.output( lang ), language::primary_subtag( lang ), {},
+				lang == languages.front() );
 		}
 		for ( auto &lang: languages )
 		{
@@ -405,7 +407,8 @@ bool Producer::produce( int argc, char *argv[] )
 			write_vtt( vtt_path, cues );
 
 			mux.add_subtitle_track(
-				subtitle_ext == "vtt" ? vtt_path : srt_path, language::primary_subtag( lang ), {} );
+				subtitle_ext == "vtt" ? vtt_path : srt_path, language::primary_subtag( lang ), {},
+				lang == languages.front() );
 		}
 		mux.mux();
 	}

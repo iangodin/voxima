@@ -12,8 +12,15 @@ public:
 	~FfmpegMux();
 
 	void add_video_track( std::string_view video );
-	void add_audio_track( std::string_view audio, std::string_view lang, std::string_view title );
-	void add_subtitle_track( std::string_view subtitle, std::string_view lang, std::string_view title );
+
+	// is_default marks the track with the ffmpeg "default" disposition, so
+	// players pick it automatically - intended for the "master" (first)
+	// --lang track. Non-default tracks get their disposition explicitly
+	// cleared rather than left to ffmpeg's own heuristics.
+	void add_audio_track(
+		std::string_view audio, std::string_view lang, std::string_view title, bool is_default = false );
+	void add_subtitle_track(
+		std::string_view subtitle, std::string_view lang, std::string_view title, bool is_default = false );
 
 	void mux();
 
