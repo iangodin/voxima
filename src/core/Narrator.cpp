@@ -13,6 +13,7 @@ void Narrator::setup( std::string_view name, std::string_view lang, Script &scri
 	_voice_ref = stage.voice_dir() / script.fetch( lang, "voices", name ).as_string();
 	_script = script;
 	_tts = stage.tts();
+	_stage = stage;
 	_audio_rate = stage.rate();
 	_buffer = AudioBuffer( stage.audio_block(), _audio_rate, 1 );
 }
@@ -22,7 +23,10 @@ double Narrator::speech( const std::vector<std::string> &text )
 	double duration = 0.0;
 
 	_results.clear();
+	_pending_cues.clear();
+	_cues_emitted = false;
 
+	double cumulative = 0.0;
 	for ( const auto &t: text )
 	{
 		auto result = _tts->synthesize( t, _voice_ref, _language );
@@ -36,7 +40,34 @@ double Narrator::speech( const std::vector<std::string> &text )
 		{
 			result.audio = resample( result.audio.value(), _audio_rate );
 		}
-		duration += result.audio->duration();
+		const double line_duration = result.audio->duration();
+		duration += line_duration;
+
+		// Default cue span is the full synthesized line; refined below by
+		// forced alignment when available, trimming leading/trailing
+		// silence the model left in. Falls back gracefully for languages
+		// without alignment support (e.g. Polish - see tts.md).
+		double local_start = cumulative;
+		double local_end = cumulative + line_duration;
+		if ( _tts->has_aligner() )
+		{
+			try
+			{
+				auto words = _tts->align( t, result.audio.value(), _language );
+				if ( !words.empty() )
+				{
+					local_start = cumulative + words.front().start_seconds;
+					local_end = cumulative + words.back().end_seconds;
+				}
+			}
+			catch ( const std::exception & )
+			{
+				// Alignment unsupported/failed for this line's language -
+				// keep the full-buffer fallback span computed above.
+			}
+		}
+		_pending_cues.push_back( PendingCue{ local_start, local_end, t } );
+		cumulative += line_duration;
 
 		_results.push_back( std::move( result ) );
 	}
@@ -48,6 +79,26 @@ double Narrator::speech( const std::vector<std::string> &text )
 
 void Narrator::speak( size_t )
 {
+	// On the first speak() call of a batch, the mixer's current
+	// frames_written() is the absolute sample position this frame's audio
+	// will land at (write_audio() - which advances that counter - hasn't
+	// run yet this tick). That's the ground-truth anchor for converting
+	// this batch's local cue offsets into absolute output-stream time;
+	// naive cumulative-duration timing would be wrong whenever narration
+	// doesn't start exactly at the top of the render.
+	if ( !_cues_emitted && !_results.empty() )
+	{
+		const double anchor_seconds =
+			static_cast<double>( _mic->frames_written() ) / static_cast<double>( _audio_rate );
+		for ( const auto &cue: _pending_cues )
+		{
+			_stage->caption(
+				_language,
+				SubtitleCue{ anchor_seconds + cue.local_start, anchor_seconds + cue.local_end, cue.text } );
+		}
+		_cues_emitted = true;
+	}
+
 	size_t recorded = 0;
 
 	while ( recorded < _buffer.frames() && _current_result_index < _results.size() )
