@@ -82,6 +82,7 @@ add_library( visuals STATIC
 	src/exporters/SVGWriter.cpp
 	src/exporters/FfmpegMux.cpp
 	src/exporters/FfmpegRender.cpp
+	src/exporters/SubtitleWriter.cpp
 	src/fonts/FontStack.cpp
 	src/fonts/MathFont.cpp
 	src/fonts/MathAlphabet.cpp
