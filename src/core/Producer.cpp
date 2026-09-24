@@ -9,6 +9,7 @@
 #include <exporters/PngRender.h>
 #include <exporters/SubtitleWriter.h>
 #include <optional>
+#include <utils/Language.h>
 #include <utils/ParseSequenceName.h>
 #include <utils/Timer.h>
 
@@ -385,7 +386,10 @@ bool Producer::produce( int argc, char *argv[] )
 		mux.add_video_track( video_filename );
 		for ( auto &lang: languages )
 		{
-			mux.add_audio_track( _stage.audio.output( lang ), lang, {} );
+			// Container "language" metadata is conventionally a bare ISO 639
+			// code, not a full BCP-47 regional tag - "en-GB" isn't itself a
+			// valid value the way "en" is.
+			mux.add_audio_track( _stage.audio.output( lang ), language::primary_subtag( lang ), {} );
 		}
 		for ( auto &lang: languages )
 		{
@@ -400,7 +404,8 @@ bool Producer::produce( int argc, char *argv[] )
 			write_srt( srt_path, cues );
 			write_vtt( vtt_path, cues );
 
-			mux.add_subtitle_track( subtitle_ext == "vtt" ? vtt_path : srt_path, lang, {} );
+			mux.add_subtitle_track(
+				subtitle_ext == "vtt" ? vtt_path : srt_path, language::primary_subtag( lang ), {} );
 		}
 		mux.mux();
 	}

@@ -5,10 +5,17 @@
 #include <audio/Resample.h>
 #include <core/Stage.h>
 #include <cstring>
+#include <utils/Language.h>
 
 void Narrator::setup( std::string_view name, std::string_view lang, Script &script, DubbingStage &stage )
 {
 	_language = lang;
+	// Chatterbox's language allowlist is bare ISO 639-1 primary subtags (en,
+	// fr, de, ...), not full BCP-47 tags - a regional variant like "en-GB"
+	// or "fr-CA" would otherwise be rejected outright even though the base
+	// language is fully supported. _language stays the full requested tag
+	// for script/voice lookup (Script::fetch keys on it verbatim).
+	_tts_language = language::primary_subtag( lang );
 	_mic = stage.mic( lang );
 	_voice_ref = stage.voice_dir() / script.fetch( lang, "voices", name ).as_string();
 	_script = script;
@@ -29,7 +36,7 @@ double Narrator::speech( const std::vector<std::string> &text )
 	double cumulative = 0.0;
 	for ( const auto &t: text )
 	{
-		auto result = _tts->synthesize( t, _voice_ref, _language );
+		auto result = _tts->synthesize( t, _voice_ref, _tts_language );
 		if ( !result.success || !result.audio.has_value() )
 		{
 			throw std::runtime_error( "narration speech synthesis failed: " + result.message );
@@ -53,7 +60,7 @@ double Narrator::speech( const std::vector<std::string> &text )
 		{
 			try
 			{
-				auto words = _tts->align( t, result.audio.value(), _language );
+				auto words = _tts->align( t, result.audio.value(), _tts_language );
 				if ( !words.empty() )
 				{
 					local_start = cumulative + words.front().start_seconds;

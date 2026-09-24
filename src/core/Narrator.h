@@ -43,6 +43,7 @@ private:
 
 	std::filesystem::path _voice_ref;
 	std::string _language;
+	std::string _tts_language;
 	AudioBuffer _buffer;
 	ObserverPtr<Script> _script;
 	ObserverPtr<tts::TTSClient> _tts;
