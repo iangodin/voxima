@@ -137,8 +137,15 @@ struct SessionHandle
 	std::unique_ptr<audiocpp_session, SessionDeleter> ptr;
 };
 
-TTSClient::TTSClient( std::filesystem::path model_path, std::string backend, int threads ) :
-	_model_path( std::move( model_path ) )
+TTSClient::TTSClient(
+	std::filesystem::path model_path,
+	std::string backend,
+	int threads,
+	std::filesystem::path aligner_model_path ) :
+	_model_path( std::move( model_path ) ),
+	_backend( backend ),
+	_threads( threads ),
+	_aligner_model_path( std::move( aligner_model_path ) )
 {
 	audiocpp_registry *registry_raw = nullptr;
 	if ( audiocpp_registry_create( nullptr, &registry_raw ) != AUDIOCPP_OK )
@@ -299,6 +306,111 @@ SynthesisResult TTSClient::synthesize(
 	}
 
 	return result;
+}
+
+std::vector<WordTimestamp> TTSClient::align(
+	const std::string &text,
+	const AudioBuffer &audio,
+	const std::string &language )
+{
+	if ( _aligner_model_path.empty() )
+	{
+		throw std::runtime_error( "TTS: align() called but no aligner model path was configured" );
+	}
+
+	if ( !_aligner_session )
+	{
+		audiocpp_model_config load_config = {};
+		load_config.family_hint = "qwen3_forced_aligner";
+
+		audiocpp_model *model_raw = nullptr;
+		if ( audiocpp_model_load(
+				 _registry->ptr.get(), _aligner_model_path.string().c_str(), &load_config, nullptr, &model_raw ) !=
+			 AUDIOCPP_OK )
+		{
+			throw std::runtime_error(
+				"TTS: failed to load aligner model " + _aligner_model_path.string() + ": " +
+				audiocpp_last_error() );
+		}
+		_aligner_model = std::make_unique<ModelHandle>( ModelHandle{
+			std::unique_ptr<audiocpp_model, ModelDeleter>( model_raw ) } );
+
+		audiocpp_backend_config backend_config = {};
+		backend_config.backend = _backend.c_str();
+		backend_config.device = 0;
+		backend_config.threads = _threads;
+
+		audiocpp_session *session_raw = nullptr;
+		if ( audiocpp_session_create(
+				 _aligner_model->ptr.get(), "align", "offline", &backend_config, nullptr, &session_raw ) !=
+			 AUDIOCPP_OK )
+		{
+			throw std::runtime_error( std::string( "TTS: aligner session: " ) + audiocpp_last_error() );
+		}
+		_aligner_session = std::make_unique<SessionHandle>( SessionHandle{
+			std::unique_ptr<audiocpp_session, SessionDeleter>( session_raw ) } );
+	}
+
+	audiocpp_request *request_raw = audiocpp_request_create();
+	if ( !request_raw )
+	{
+		throw std::runtime_error( "TTS: aligner request allocation failed" );
+	}
+	std::unique_ptr<audiocpp_request, decltype( &audiocpp_request_free )> request(
+		request_raw, &audiocpp_request_free );
+
+	if ( audiocpp_request_set_text( request.get(), text.c_str(), language.c_str() ) != AUDIOCPP_OK )
+	{
+		throw std::runtime_error( std::string( "TTS: aligner set_text: " ) + audiocpp_last_error() );
+	}
+	if ( audiocpp_request_set_audio(
+			 request.get(),
+			 audio.data(),
+			 audio.frames(),
+			 static_cast<int>( audio.rate() ),
+			 static_cast<int>( audio.channels() ) ) != AUDIOCPP_OK )
+	{
+		throw std::runtime_error( std::string( "TTS: aligner set_audio: " ) + audiocpp_last_error() );
+	}
+
+	audiocpp_result *result_raw = nullptr;
+	if ( audiocpp_session_run( _aligner_session->ptr.get(), request.get(), &result_raw ) != AUDIOCPP_OK )
+	{
+		throw std::runtime_error( std::string( "TTS: aligner run: " ) + audiocpp_last_error() );
+	}
+	std::unique_ptr<audiocpp_result, decltype( &audiocpp_result_free )> align_result(
+		result_raw, &audiocpp_result_free );
+
+	// Qwen3 Forced Aligner reports start/end in samples at its own internal
+	// frontend rate (a Whisper-style 16 kHz audio frontend - see
+	// extern/audio.cpp/src/models/qwen3_asr/frontend_whisper.cpp, which the
+	// aligner shares the frontend design with), not the input audio's rate.
+	// audiocpp_request_set_audio() is given the real input rate and resamples
+	// internally, so this is a fixed model constant, not something we choose.
+	constexpr double kAlignerSampleRate = 16000.0;
+
+	std::vector<WordTimestamp> words;
+	size_t word_count = audiocpp_result_word_count( align_result.get() );
+	words.reserve( word_count );
+	for ( size_t i = 0; i < word_count; ++i )
+	{
+		const char *word_text = nullptr;
+		int64_t start_sample = 0;
+		int64_t end_sample = 0;
+		float confidence = 0.0f;
+		if ( audiocpp_result_word( align_result.get(), i, &word_text, &start_sample, &end_sample, &confidence ) !=
+			 AUDIOCPP_OK )
+		{
+			continue;
+		}
+		words.push_back( WordTimestamp{
+			word_text ? word_text : "",
+			static_cast<double>( start_sample ) / kAlignerSampleRate,
+			static_cast<double>( end_sample ) / kAlignerSampleRate,
+			confidence } );
+	}
+
+	return words;
 }
 
 }

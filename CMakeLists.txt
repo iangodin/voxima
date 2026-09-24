@@ -44,7 +44,10 @@ set( ENGINE_ENABLE_VULKAN OFF CACHE BOOL "" FORCE )
 set( ENGINE_ENABLE_METAL OFF CACHE BOOL "" FORCE )
 set( AUDIOCPP_BUILD_C_API ON CACHE BOOL "" FORCE )
 set( AUDIOCPP_MODEL_SET "custom" CACHE STRING "" FORCE )
-set( AUDIOCPP_MODELS "chatterbox" CACHE STRING "" FORCE )
+# chatterbox: narration synthesis. qwen3_forced_aligner: optional subtitle-
+# timing pass (see tts.md phase 4) - a separate, standalone family from
+# qwen3_tts/qwen3_asr, so this doesn't pull those in.
+set( AUDIOCPP_MODELS "chatterbox,qwen3_forced_aligner" CACHE STRING "" FORCE )
 add_subdirectory( extern/audio.cpp )
 
 if ( WIN32 )

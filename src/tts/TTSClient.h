@@ -6,6 +6,7 @@
 #include <memory>
 #include <optional>
 #include <string>
+#include <vector>
 
 namespace tts
 {
@@ -16,6 +17,17 @@ struct SynthesisResult
 	std::string status;
 	std::string message;
 	std::optional<AudioBuffer> audio;
+};
+
+// A single aligned word from align(), grounded in the actual synthesized
+// audio via forced alignment (as opposed to edge-tts's old streamed
+// WordBoundary estimates, which this replaces conceptually).
+struct WordTimestamp
+{
+	std::string word;
+	double start_seconds;
+	double end_seconds;
+	float confidence;
 };
 
 // Loaded registry/model/session are opaque here so callers don't need to see
@@ -32,10 +44,16 @@ public:
 	// Loads the Chatterbox model and creates a synthesis session immediately
 	// (fail fast: a missing/bad model file throws here, at startup, rather
 	// than on the first synthesize() call mid-render).
+	//
+	// aligner_model_path is optional (empty = alignment unavailable). Unlike
+	// the Chatterbox model, the aligner is loaded lazily on the first align()
+	// call rather than eagerly here - most renders don't need subtitle
+	// timing, so they shouldn't pay for a second model load they never use.
 	TTSClient(
 		std::filesystem::path model_path,
 		std::string backend = "best",
-		int threads = 4 );
+		int threads = 4,
+		std::filesystem::path aligner_model_path = {} );
 	~TTSClient();
 
 	TTSClient( TTSClient && ) noexcept;
@@ -54,12 +72,27 @@ public:
 		const std::string &language,
 		float rate = 1.0f );
 
+	// Forced-alignment pass over already-synthesized audio: returns
+	// word-level timestamps grounded in the actual waveform. Requires
+	// aligner_model_path to have been set at construction; throws otherwise.
+	// Loads the aligner model on first use.
+	std::vector<WordTimestamp> align(
+		const std::string &text,
+		const AudioBuffer &audio,
+		const std::string &language );
+
 private:
 	std::filesystem::path _model_path;
+	std::string _backend;
+	int _threads;
 	std::unique_ptr<RegistryHandle> _registry;
 	std::unique_ptr<ModelHandle> _model;
 	std::unique_ptr<SessionHandle> _session;
 	std::filesystem::path _cache_dir;
+
+	std::filesystem::path _aligner_model_path;
+	std::unique_ptr<ModelHandle> _aligner_model;
+	std::unique_ptr<SessionHandle> _aligner_session;
 };
 
 }
