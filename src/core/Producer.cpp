@@ -7,6 +7,7 @@
 #include <exporters/FfmpegRender.h>
 #include <exporters/FfmpegMux.h>
 #include <exporters/PngRender.h>
+#include <exporters/SubtitleWriter.h>
 #include <optional>
 #include <utils/ParseSequenceName.h>
 #include <utils/Timer.h>
@@ -20,7 +21,16 @@ std::string read_file( std::filesystem::path path )
 	return buffer;
 }
 
-void setup_codecs( std::string_view container, std::string &vcodec, std::string &acodec )
+// scodec/subtitle_ext pick the subtitle codec and sidecar file extension to
+// feed ffmpeg per container: mp4 only broadly supports mov_text (fed from an
+// .srt input, transcoded), mkv natively supports .srt, webm only supports
+// WebVTT (.vtt) - it doesn't accept SRT at all.
+void setup_codecs(
+	std::string_view container,
+	std::string &vcodec,
+	std::string &acodec,
+	std::string &scodec,
+	std::string &subtitle_ext )
 {
 	if ( container == "mp4" )
 	{
@@ -54,6 +64,9 @@ void setup_codecs( std::string_view container, std::string &vcodec, std::string 
 		{
 			throw std::runtime_error( "unknown audio codec " + std::string( acodec ) );
 		}
+
+		scodec = "mov_text";
+		subtitle_ext = "srt";
 	}
 	else if ( container == "mkv" )
 	{
@@ -83,6 +96,9 @@ void setup_codecs( std::string_view container, std::string &vcodec, std::string 
 		{
 			throw std::runtime_error( "unknown audio codec " + std::string( acodec ) );
 		}
+
+		scodec = "srt";
+		subtitle_ext = "srt";
 	}
 	else if ( container == "webm" )
 	{
@@ -120,6 +136,9 @@ void setup_codecs( std::string_view container, std::string &vcodec, std::string 
 		{
 			throw std::runtime_error( "unknown audio codec " + std::string( acodec ) );
 		}
+
+		scodec = "webvtt";
+		subtitle_ext = "vtt";
 	}
 	else
 	{
@@ -178,9 +197,16 @@ bool Producer::produce( int argc, char *argv[] )
 	int tts_threads = 4;
 	app.add_option( "--tts-threads", tts_threads, "TTS CPU thread count" );
 
+	std::string aligner_model = "models/Qwen3-ForcedAligner-0.6B-GGUF/qwen3-forced-aligner-0.6b-q8_0.gguf";
+	app.add_option(
+		"--aligner-model", aligner_model,
+		"Path to the Qwen3 Forced Aligner GGUF model, for subtitle timing (optional)" );
+
 	CLI11_PARSE( app, argc, argv );
 
-	setup_codecs( container, vcodec, acodec );
+	std::string scodec;
+	std::string subtitle_ext;
+	setup_codecs( container, vcodec, acodec, scodec, subtitle_ext );
 
 	std::cout << "Encoding " << vcodec << "+" << acodec << " into " << container << '\n';
 
@@ -230,7 +256,8 @@ bool Producer::produce( int argc, char *argv[] )
 		tts_model,
 		tts_voice_dir,
 		tts_backend,
-		tts_threads );
+		tts_threads,
+		aligner_model );
 	for ( auto &lang: languages )
 	{
 		_stage.audio.add_language( lang );
@@ -343,11 +370,37 @@ bool Producer::produce( int argc, char *argv[] )
 	if ( !video_filename.empty() && !final_filename.empty() )
 	{
 		Timer timer_mux( "  FFMPEG muxing: " );
-		FfmpegMux mux( final_filename, acodec );
+
+		bool any_subtitles = false;
+		for ( auto &lang: languages )
+		{
+			if ( !_stage.audio.subtitles( lang ).empty() )
+			{
+				any_subtitles = true;
+				break;
+			}
+		}
+
+		FfmpegMux mux( final_filename, acodec, any_subtitles ? scodec : std::string{} );
 		mux.add_video_track( video_filename );
 		for ( auto &lang: languages )
 		{
 			mux.add_audio_track( _stage.audio.output( lang ), lang, {} );
+		}
+		for ( auto &lang: languages )
+		{
+			const auto &cues = _stage.audio.subtitles( lang );
+			if ( cues.empty() )
+			{
+				continue;
+			}
+
+			const std::string srt_path = render_dir + "/subtitles." + lang + ".srt";
+			const std::string vtt_path = render_dir + "/subtitles." + lang + ".vtt";
+			write_srt( srt_path, cues );
+			write_vtt( vtt_path, cues );
+
+			mux.add_subtitle_track( subtitle_ext == "vtt" ? vtt_path : srt_path, lang, {} );
 		}
 		mux.mux();
 	}
