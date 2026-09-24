@@ -168,4 +168,8 @@ if ( NOT MSVC )
 	target_compile_options( tts_poc PRIVATE -Wno-comment )
 endif()
 
+add_executable( align_poc tools/align_poc.cpp )
+target_compile_features( align_poc PUBLIC cxx_std_20 )
+target_link_libraries( align_poc PUBLIC visuals )
+
 add_subdirectory( tests )
