@@ -1,6 +1,8 @@
 
 #include "Script.h"
 
+#include <utils/Language.h>
+
 #include <fstream>
 #include <sstream>
 #include <algorithm>
@@ -16,17 +18,28 @@ bool Script::load( std::string lang )
 		return true;
 	}
 
-	try
+	// Try the exact requested tag first, then progressively less specific
+	// BCP-47 fallbacks (e.g. "en-CA" -> "en") when no file exists for the
+	// exact tag. Whichever file actually supplied the content, the result is
+	// still stored under the tag the caller asked for, so later lookups
+	// (fetch(), TTS language derivation, subtitle/track metadata) stay keyed
+	// on what was requested rather than silently rewritten.
+	for ( const auto &candidate: language::fallback_chain( lang ) )
 	{
-		Value root = load_recursive( lang );
-		_native_scripts[lang] = root;
-		_languages.push_back( std::move( lang ) );
-		return true;
+		try
+		{
+			Value root = load_recursive( candidate );
+			_native_scripts[lang] = root;
+			_languages.push_back( lang );
+			return true;
+		}
+		catch ( ... )
+		{
+			continue;
+		}
 	}
-	catch ( ... )
-	{
-		return false;
-	}
+
+	return false;
 }
 
 Value Script::load_recursive( const std::string &lang )
