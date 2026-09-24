@@ -101,6 +101,7 @@ add_library( visuals STATIC
 	src/audio/Volume.cpp
 	src/utils/FreetypeError.cpp
 	src/utils/Huml.cpp
+	src/utils/Language.cpp
 	src/visuals/CreateMathLargeOperation.cpp
 	src/visuals/CreateText.cpp
 	src/visuals/CreateStyledText.cpp
