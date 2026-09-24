@@ -59,9 +59,9 @@
   - [x] Need "Speaker" that can generate audio with a language and voice parameters
 
 ##  Subtitles
-  - [ ] Generate SRT subtitles files
-  - [ ] Generate WebVTT subtitles files
-  - [ ] Mux subtitles into final stream
+  - [x] Generate SRT subtitles files
+  - [x] Generate WebVTT subtitles files
+  - [x] Mux subtitles into final stream
 
 ## Language Support
   - [ ] Handle BCP-47 / ISO 639 conversion
@@ -74,7 +74,7 @@
 ## Final Muxing
   - [x] Need to use ffmpeg to mix the audio and video (simple proof of concept)
   - [x] Need to use ffmpeg to mix the multiple audio tracks
-  - [ ] Need to use ffmpeg to mix the multiple subtitle tracks
+  - [x] Need to use ffmpeg to mix the multiple subtitle tracks
 
 ## Preview
   - [ ] Use SDL to present video/audio as it renders

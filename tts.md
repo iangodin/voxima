@@ -498,6 +498,95 @@ capability itself works end to end via the standalone `TTSClient` API and `align
 
 `make test`: 5/5 pass, no regression.
 
+## Subtitles task complete (2026-09-23)
+
+Wired `align()` into the real render pipeline and built SRT/WebVTT generation +
+muxing, closing out `tasks.md`'s `## Subtitles` task and the "mix the multiple
+subtitle tracks" item under `## Final Muxing`. This was scoped separately from phase
+4 (which only proved the alignment capability itself works, via the standalone
+`TTSClient` API and `align_poc`).
+
+**Timing design - the frame-counter anchor.** The naive approach (cumulative
+duration of narrated lines) is wrong whenever narration doesn't start exactly at the
+top of a render: `Narrator::speak()` is called once per video frame (in lockstep with
+`DubbingStage::write_audio()`, which writes every language mixer's buffer - silence
+included - once per Producer tick), so a line's *absolute* position in the final
+output audio depends on which frame narration happened to land on, not just how long
+prior lines were. Fixed by giving `AudioMixer` a running `frames_written()` counter,
+incremented exactly where `write_audio()` already writes to the sndfile. `Narrator`
+captures this counter (via its existing `Microphone` handle) at the first `speak()`
+call of a new narration batch - before that frame's `write_audio()` runs, so it's the
+exact absolute sample position that frame's audio will land at - and uses it as the
+anchor to convert each line's local (batch-relative) cue span into absolute time.
+This is accurate to one video frame (~1/24s at the demo's frame rate), not
+sample-exact - a deliberate simplification; captions don't need sub-frame precision,
+and chasing it would need much deeper plumbing for no visible benefit.
+
+**Per-line cue span**: forced alignment (`_tts->has_aligner()` + `align()`) gives the
+first/last word's start/end, trimming leading/trailing silence Chatterbox left in;
+falls back to the full synthesized-buffer duration `[0, duration]` when no aligner is
+configured, or `align()` throws/returns nothing (the Polish/zh/ja accepted-gap case) -
+subtitles still get generated for those languages, just without silence trimming.
+
+**Ownership**: cues are owned by `DubbingStage` (new `SubtitleCue` struct, a
+per-language `std::vector`, pushed via `DubbingStage::caption()`), not by the
+Scene-local `Narrator`/`Narration` objects - mirrors exactly how audio output is
+already owned there. `Narrator::speech()` now accumulates cues across every call for
+the render's lifetime (a render can have multiple narration scenes), rather than
+clearing them like `_results` does for playback state.
+
+**File formats and muxing**: new `src/exporters/SubtitleWriter.{h,cpp}` writes both
+SRT (`HH:MM:SS,mmm`) and WebVTT (`HH:MM:SS.mmm`, `WEBVTT` header) - both always
+written as sidecar files (`render/subtitles.<lang>.srt` / `.vtt`), satisfying the
+"generate SRT" and "generate WebVTT" checkboxes as real, separate deliverables
+regardless of container. `FfmpegMux` gained `add_subtitle_track()`; the actual
+subtitle codec is picked per output container in `Producer.cpp`'s `setup_codecs()`
+(mp4 -> `mov_text`, fed from the `.srt` sidecar, since mp4 has no other broadly
+compatible option; mkv -> `srt` natively, fed from `.srt`; webm -> `webvtt`, fed from
+`.vtt`, since webm doesn't accept SRT input at all). A language with zero cues is
+skipped cleanly, not treated as an error - e.g. a render with no narration, or a
+render using only zh/ja (unsupported for synthesis entirely, so no audio and no cues
+either).
+
+New CLI option: `--aligner-model` (default
+`models/Qwen3-ForcedAligner-0.6B-GGUF/qwen3-forced-aligner-0.6b-q8_0.gguf`), threaded
+through `DubbingStage::setup()` to `TTSClient`'s existing (previously unused in the
+real call site) `aligner_model_path` constructor argument.
+
+**Real end-to-end verification** (not just unit-level): temporarily re-enabled
+`demos/eases/show_animation.cpp`'s narration scene (same approach phase 2's work used
+- verified, then reverted back to the original committed/commented-out state
+afterward) and ran the actual `Producer`/`DubbingStage`/`Narrator` pipeline via
+`render.sh`'s invocation pattern (`--lang en --lang fr`, mkv container). Real output:
+
+```
+render/subtitles.en.srt:
+1
+00:00:00,240 --> 00:00:02,480
+These show various ease animations
+
+render/subtitles.fr.srt:
+1
+00:00:00,080 --> 00:00:02,720
+Ceux-ci montrent diverses animations de lissage.
+```
+
+`ffprobe` on the muxed `render/final.mkv` confirmed real subtitle streams, not just a
+successful exit code:
+
+```
+[STREAM] index=3 codec_name=subrip codec_type=subtitle TAG:language=en [/STREAM]
+[STREAM] index=4 codec_name=subrip codec_type=subtitle TAG:language=fr [/STREAM]
+```
+
+Cue timing is plausible (starts near the render's start, ~2.3-2.6s spans matching the
+synthesized audio duration for that one-line scene). mp4/webm codec selection was
+implemented per the same table above but not independently smoke-tested with a real
+render this session (only mkv was) - low risk since it's a straightforward per-format
+lookup, but worth a quick real check before relying on it for those containers.
+
+`make test`: 5/5 pass, no regression.
+
 ## Open questions for next session
 
 - Decide whether to keep Piper as a documented fallback path or drop it from
@@ -511,8 +600,7 @@ capability itself works end to end via the standalone `TTSClient` API and `align
 - Polish has no forced-alignment support (Qwen3 Forced Aligner's 11 languages don't
   include `pl`) - accepted gap, same treatment as zh/ja. Subtitle timing for Polish
   narration would need a different approach if it ever matters.
-- Wire `align()` into `Narrator`/`Narration`'s actual render loop, and build SRT/WebVTT
-  generation + muxing - both still fully open, tracked in `tasks.md`'s `## Subtitles`
-  task.
+- mp4/webm subtitle muxing (`mov_text`/`webvtt`) implemented but not independently
+  smoke-tested with a real render - only mkv was, this session.
 - Phase 5 (mock TTS backend for ctest coverage of `Narrator`/`Narration`) is next up
   and still fully open.
