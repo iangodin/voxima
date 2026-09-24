@@ -64,7 +64,7 @@
   - [x] Mux subtitles into final stream
 
 ## Language Support
-  - [ ] Handle BCP-47 / ISO 639 conversion
+  - [x] Handle BCP-47 / ISO 639 conversion
 
 ## Rendering
   - [ ] Add support for motion blur

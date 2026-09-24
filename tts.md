@@ -587,6 +587,21 @@ lookup, but worth a quick real check before relying on it for those containers.
 
 `make test`: 5/5 pass, no regression.
 
+## Fixed 2026-09-23: Chatterbox rejected regional language variants
+
+`Narrator` passed whatever raw `--lang` tag was requested (e.g. `en-GB`, `fr-CA`)
+straight through to `TTSClient::synthesize()`/`align()`. Chatterbox's language
+allowlist is bare ISO 639-1 primary subtags only, so a render with `--lang en-GB` or
+`--lang fr-CA` - both of which already have real demo scripts - hard-failed with
+`unsupported Chatterbox language: en-GB`, even though the base language is fully
+supported; only the tag was wrong. Fixed as part of `tasks.md`'s "Handle BCP-47 / ISO
+639 conversion" task: a new `language::primary_subtag()` utility (`src/utils/Language.h`)
+extracts the normalized primary subtag for TTS/container-metadata use, while
+`Narrator::language()`/script lookups keep the full requested tag. Confirmed via a real
+render (`--lang en-GB`, reverted the temporarily-uncommented demo narration scene
+afterward, per the usual verification pattern this session) - synthesizes correctly,
+mux metadata now reads `language=en` instead of the invalid `en-GB`.
+
 ## Open questions for next session
 
 - Decide whether to keep Piper as a documented fallback path or drop it from
