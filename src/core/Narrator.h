@@ -9,6 +9,7 @@
 
 #include <utils/ObserverPtr.h>
 
+#include <filesystem>
 #include <string>
 #include <vector>
 
@@ -31,7 +32,7 @@ public:
 	bool is_done() const;
 
 private:
-	std::string _voice;
+	std::filesystem::path _voice_ref;
 	std::string _language;
 	AudioBuffer _buffer;
 	ObserverPtr<Script> _script;

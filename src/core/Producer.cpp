@@ -166,6 +166,18 @@ bool Producer::produce( int argc, char *argv[] )
 	std::vector<std::string> languages;
 	app.add_option( "--lang", languages, "Language to use (first one is master, multiple allowed)" );
 
+	std::string tts_model = "models/Chatterbox-GGUF/chatterbox-q8_0.gguf";
+	app.add_option( "--tts-model", tts_model, "Path to the Chatterbox GGUF model" );
+
+	std::string tts_voice_dir = "voices";
+	app.add_option( "--tts-voice-dir", tts_voice_dir, "Base directory for narrator reference-clip paths" );
+
+	std::string tts_backend = "best";
+	app.add_option( "--tts-backend", tts_backend, "TTS backend: best, cpu or cuda" );
+
+	int tts_threads = 4;
+	app.add_option( "--tts-threads", tts_threads, "TTS CPU thread count" );
+
 	CLI11_PARSE( app, argc, argv );
 
 	setup_codecs( container, vcodec, acodec );
@@ -210,7 +222,15 @@ bool Producer::produce( int argc, char *argv[] )
 		_stage.theme->set_font_path( *font_path );
 	}
 
-	_stage.audio.setup( render_dir, "flac", 48000, static_cast<size_t>( _stage.camera.frame_rate ) );
+	_stage.audio.setup(
+		render_dir,
+		"flac",
+		48000,
+		static_cast<size_t>( _stage.camera.frame_rate ),
+		tts_model,
+		tts_voice_dir,
+		tts_backend,
+		tts_threads );
 	for ( auto &lang: languages )
 	{
 		_stage.audio.add_language( lang );

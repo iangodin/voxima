@@ -10,7 +10,7 @@ void Narrator::setup( std::string_view name, std::string_view lang, Script &scri
 {
 	_language = lang;
 	_mic = stage.mic( lang );
-	_voice = script.fetch( lang, "voices", name ).as_string();
+	_voice_ref = stage.voice_dir() / script.fetch( lang, "voices", name ).as_string();
 	_script = script;
 	_tts = stage.tts();
 	_audio_rate = stage.rate();
@@ -25,7 +25,7 @@ double Narrator::speech( const std::vector<std::string> &text )
 
 	for ( const auto &t: text )
 	{
-		auto result = _tts->synthesize( t, _voice, _language );
+		auto result = _tts->synthesize( t, _voice_ref, _language );
 		if ( !result.success || !result.audio.has_value() )
 		{
 			throw std::runtime_error( "narration speech synthesis failed: " + result.message );
@@ -35,8 +35,8 @@ double Narrator::speech( const std::vector<std::string> &text )
 		if ( result.audio->rate() != _audio_rate )
 		{
 			result.audio = resample( result.audio.value(), _audio_rate );
-			duration += result.audio->duration();
 		}
+		duration += result.audio->duration();
 
 		_results.push_back( std::move( result ) );
 	}
