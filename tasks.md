@@ -35,7 +35,12 @@
   - [x] Phantom / invisible spacing placeholder
 
 ## Geometry Processing
-  - [ ] Add morphing between shapes
+  - [x] Flatten any visual to cubic outlines (Outline: circles, rectangles, paths, glyphs, groups with transforms)
+  - [x] Morph between shapes and glyphs (feature-aware contour alignment, holes open/close, color/stroke blend)
+  - [x] co_await morph( stage, from, to, frames, ease ) and a scrubbable Morph object
+  - [ ] Morph groups: match parts by tag / identical glyph, fade the rest (formulas, x^2 -> x^3)
+  - [ ] Text and narration: word-level morphs driven by until_word
+  - [ ] Morph lines, arrow tips (open contours), image cross-fade, stagger
 
 ## Audio System
   - [x] Need a AudioMixer that mixes everything and generates the final audio to a WAV file

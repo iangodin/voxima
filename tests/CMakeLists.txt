@@ -25,6 +25,8 @@ add_executable( sonimation_unit_tests
 	TestScriptLanguageFallback.cpp
 	TestTimedWord.cpp
 	TestWords.cpp
+	TestOutline.cpp
+	TestMorph.cpp
 )
 
 target_link_libraries( sonimation_unit_tests

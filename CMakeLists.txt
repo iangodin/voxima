@@ -79,6 +79,9 @@ add_library( visuals STATIC
 	src/core/Theme.cpp
 	src/core/Narration.cpp
 	src/core/Narrator.cpp
+	src/visuals/Outline.cpp
+	src/visuals/MorphMatch.cpp
+	src/visuals/Morph.cpp
 	src/exporters/SVGWriter.cpp
 	src/exporters/FfmpegMux.cpp
 	src/exporters/FfmpegRender.cpp

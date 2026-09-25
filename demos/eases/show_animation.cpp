@@ -33,6 +33,8 @@
 #include <fonts/MathStyle.h>
 
 #include <core/Narration.h>
+#include <core/MorphAnim.h>
+#include <visuals/Rectangle.h>
 
 void show_title( Stage &stage )
 {
@@ -223,6 +225,57 @@ Scene show_ease(
 
 }
 
+// A shape that turns into other shapes and letters, one after the other: circle, square, then glyphs
+// (with holes that open and close) and back to the circle.
+Scene show_morph( Stage &stage )
+{
+	const Point home = { 0.F, 2.5F };
+
+	auto circle = [&]()
+	{
+		auto c = std::make_unique<Circle>();
+		c->radius = 0.8F;
+		c->position = home;
+		c->color = Color{ 1.F, 0.45F, 0.45F, 1.F };
+		return c;
+	};
+	auto square = [&]()
+	{
+		auto r = std::make_unique<Rectangle>();
+		r->half_width = r->half_height = 0.7F;
+		r->position = home;
+		r->color = Color{ 0.4F, 0.7F, 1.F, 1.F };
+		return r;
+	};
+	auto letter = [&]( const char *s, const Color &color )
+	{
+		auto text = make_text( *stage.theme, s, FontStyle{ Intent::PROSE }.huge() );
+		center_group( *text );
+		text->position = home;
+		text->color = color;
+		return text;
+	};
+
+	Visual *shown = &stage.visuals.add( circle() );
+	co_await wait_for( 12 );
+
+	std::vector<std::unique_ptr<Visual>> targets;
+	targets.push_back( square() );
+	targets.push_back( letter( "a", Color{ 1.F, 0.85F, 0.3F, 1.F } ) );
+	targets.push_back( letter( "e", Color{ 0.5F, 1.F, 0.5F, 1.F } ) );
+	targets.push_back( letter( "8", Color{ 1.F, 1.F, 1.F, 1.F } ) );
+	targets.push_back( letter( "x", Color{ 0.4F, 0.7F, 1.F, 1.F } ) );
+	targets.push_back( circle() );
+
+	for ( auto &target: targets )
+	{
+		Visual *next = target.get();
+		co_await morph( stage, *shown, std::move( target ), 36, ease_cubic_in_out );
+		shown = next;
+		co_await wait_for( 12 );
+	}
+}
+
 Scene narrate( Narration &narration )
 {
 	while ( !narration.is_done() )
@@ -327,6 +380,7 @@ Screenplay my_screenplay( Stage &stage, Script &script )
 		show_ease( stage, label_linear, lang, ease_linear, -1.5F, duration ),
 		narrate( stage, script ) );
 	*/
+	co_await show_morph( stage );
 	co_await show_karaoke( stage, script );
 	co_await wait_for( duration );
 }
