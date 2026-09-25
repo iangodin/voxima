@@ -1,13 +1,13 @@
 This design transforms your video/audio generator from a hard-coded application into a data-driven **localization and production engine**. By using HUML as the "Director's Script," you maintain a clean separation between C++ mechanics and creative intent.
 
 ### 1. The Core Architecture
-*   **Unified Source of Truth:** Each language has one HUML file containing metadata, speaker-to-voice mappings, visual text (LaTeX), and audio prose.
+*   **Unified Source of Truth:** Each language has one HUML file containing metadata, speaker-to-voice mappings, visual text, and audio prose.
 *   **The "Deep Merge" Pipeline:** At load time, regional HUML files (e.g., `fr-CA`) are recursively overlaid onto a base language (e.g., `en-US`). This ensures every key has a valid value while allowing specific regional overrides.
 *   **The "Missing" Proxy:** Your C++ `Document` uses a specialized `Missing` value to detect structural errors. In debug mode, these trigger high-visibility **magenta blocks** in the video output.
 
 ### 2. Text & Audio Handling
-*   **Visual vs. Spoken Separation:** Visuals (via MFL for math or HarfBuzz for labels) are decoupled from audio prose. This allows the script to be "human-friendly" while the screen remains mathematically precise.
-*   **Timing & Sync:** C++ coroutines drive the animation, using **Sherpa-ONNX token timestamps** to align audio playback with subtitle line breaks (defined by HUML newlines).
+*   **Visual vs. Spoken Separation:** Visuals (Math expression layout in C++, with HarfBuzz for text) are decoupled from audio prose. This allows the script to be "human-friendly" while the screen remains mathematically precise.
+*   **Timing & Sync:** C++ coroutines drive the animation, using the audio timestamps to align audio playback with subtitle line breaks (defined by HUML newlines).
 *   **The BiDi Gap:** You will implement a BiDi engine (like FriBidi) to reorder UTF-8 strings into visual order before passing them to HarfBuzz for shaping.
 
 ### 3. Data-Driven Sequencing
