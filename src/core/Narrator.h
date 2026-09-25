@@ -40,6 +40,13 @@ public:
 		return _words;
 	}
 
+	// The markers in the narrated text (see utils/Markers.h) and when each is reached, in the order they
+	// appear across the batch's lines. They are left out of what is spoken and shown as subtitles.
+	const std::vector<TimedMarker> &markers() const
+	{
+		return _markers;
+	}
+
 	// Seconds of this batch's audio consumed by speak() so far. Compare
 	// against TimedWord times to know which word is currently being spoken.
 	double position() const
@@ -68,6 +75,7 @@ private:
 	std::vector<tts::SynthesisResult> _results;
 	std::vector<PendingCue> _pending_cues;
 	std::vector<TimedWord> _words;
+	std::vector<TimedMarker> _markers;
 	size_t _position_frames = 0;
 	bool _cues_emitted = true;
 	size_t _audio_rate = 0;

@@ -18,6 +18,6 @@ labels::
   ease_linear: "Linéaire"
 
 intro: """
-  Ceux-ci montrent diverses animations de lissage.
-  Chaque mot s'illumine quand il est prononcé.
+  Ceux-ci montrent {a}diverses animations{b} de lissage.
+  Chaque mot {c}s'illumine{d} quand il est prononcé.
 """

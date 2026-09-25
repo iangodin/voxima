@@ -18,6 +18,6 @@ labels::
   ease_linear: "Liniowa"
 
 intro: """
-  Te animacje pokazują różne rodzaje łagodzenia.
-  Zobacz, jak każde słowo zapala się, gdy jest wypowiadane.
+  Te animacje pokazują {a}różne rodzaje{b} łagodzenia.
+  Zobacz, jak każde słowo {c}zapala się{d}, gdy jest wypowiadane.
 """

@@ -6,6 +6,9 @@
 #include <core/Director.h>
 #include <core/Stage.h>
 #include <cstring>
+#include <iostream>
+#include <map>
+#include <stdexcept>
 
 void Narration::setup( std::string_view name, Script &script, DubbingStage &stage )
 {
@@ -153,4 +156,99 @@ Coroutine Narration::animate_words( Group &text, WordEffect effect, size_t first
 	}
 
 	co_await choreograph_all( std::move( running ) );
+}
+
+const std::vector<TimedMarker> &Narration::markers() const
+{
+	static const std::vector<TimedMarker> none;
+	const Narrator *n = master();
+	return n ? n->markers() : none;
+}
+
+size_t Narration::marker_count() const
+{
+	return markers().size();
+}
+
+std::optional<size_t> Narration::find_marker( std::string_view name ) const
+{
+	const auto &all = markers();
+	for ( size_t i = 0; i < all.size(); ++i )
+	{
+		if ( all[i].name == name )
+		{
+			return i;
+		}
+	}
+	return std::nullopt;
+}
+
+double Narration::marker_time( size_t index ) const
+{
+	const auto &all = markers();
+	if ( index >= all.size() )
+	{
+		throw std::out_of_range( "no marker number " + std::to_string( index ) + " (the narration has " + std::to_string( all.size() ) + ")" );
+	}
+	return all[index].seconds;
+}
+
+double Narration::marker_time( std::string_view name ) const
+{
+	const auto index = find_marker( name );
+	if ( !index )
+	{
+		throw std::out_of_range( "no marker called '" + std::string( name ) + "' in the narration" );
+	}
+	return markers()[*index].seconds;
+}
+
+double Narration::duration() const
+{
+	const auto &spoken = words();
+	return spoken.empty() ? 0.0 : spoken.back().end_seconds;
+}
+
+Coroutine Narration::until_marker( size_t index )
+{
+	co_await until_time( marker_time( index ) );
+}
+
+Coroutine Narration::until_marker( std::string name )
+{
+	co_await until_time( marker_time( name ) );
+}
+
+Coroutine Narration::track_markers( size_t from, size_t to, std::function<void( float )> callback )
+{
+	co_await track_time( marker_time( from ), marker_time( to ), std::move( callback ) );
+}
+
+Coroutine Narration::track_markers( std::string from, std::string to, std::function<void( float )> callback )
+{
+	co_await track_time( marker_time( from ), marker_time( to ), std::move( callback ) );
+}
+
+Coroutine Narration::track_to_end( std::string from, std::function<void( float )> callback )
+{
+	co_await track_time( marker_time( from ), duration(), std::move( callback ) );
+}
+
+void Narration::check_markers() const
+{
+	std::map<std::string, std::vector<std::string>> names;
+	for ( const auto &narrator: _narrators )
+	{
+		auto &list = names[narrator.language()];
+		for ( const auto &marker: narrator.markers() )
+		{
+			list.push_back( marker.name );
+		}
+	}
+
+	const std::string main_language = _script->master_language();
+	for ( const auto &problem: marker_mismatches( names, main_language ) )
+	{
+		std::cerr << "warning: " << problem << '\n';
+	}
 }

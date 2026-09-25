@@ -49,6 +49,7 @@
 
 #include <core/Narration.h>
 #include <core/WordEffects.h>
+#include <utils/Markers.h>
 #include <utils/Words.h>
 #include <core/SceneRegistry.h>
 #include <core/MorphAnim.h>
@@ -462,9 +463,9 @@ Scene narrate( Narration &narration )
 	}
 }
 
-// A shape that changes on the words being said: a circle turns into a square over "show various ease", into
-// an a on "animations", and back into a circle over "light up". Each change takes exactly as long as the
-// narrator takes to say those words, whatever speed the voice happens to have.
+// A shape that changes on the phrases being said: a circle turns into a square between the markers {a} and {b}
+// in the script, into an a from {b} to {c}, and back into a circle from {c} to {d}. The markers are in the text of
+// every language, so this follows the narration whichever language it is in (word numbers would not).
 Scene follow_speech( Stage &stage, Narration &narration )
 {
 	const Point spot = { 5.5F, 2.5F };
@@ -479,7 +480,7 @@ Scene follow_speech( Stage &stage, Narration &narration )
 		*shown,
 		std::move( square ),
 		MorphOptions{},
-		[&]( Morph &m ) { return narration.track_words( 1, 3, [&m, smooth]( float t ) { m.set( smooth( t ) ); } ); } );
+		[&]( Morph &m ) { return narration.track_markers( "a", "b", [&m, smooth]( float t ) { m.set( smooth( t ) ); } ); } );
 	shown = next;
 
 	auto letter = demo_letter( stage, "a", Color{ 1.F, 0.85F, 0.3F, 1.F }, spot );
@@ -489,7 +490,7 @@ Scene follow_speech( Stage &stage, Narration &narration )
 		*shown,
 		std::move( letter ),
 		MorphOptions{},
-		[&]( Morph &m ) { return narration.track_words( 4, 4, [&m, smooth]( float t ) { m.set( smooth( t ) ); } ); } );
+		[&]( Morph &m ) { return narration.track_markers( "b", "c", [&m, smooth]( float t ) { m.set( smooth( t ) ); } ); } );
 	shown = next;
 
 	auto circle = demo_circle( spot );
@@ -499,7 +500,7 @@ Scene follow_speech( Stage &stage, Narration &narration )
 		*shown,
 		std::move( circle ),
 		MorphOptions{},
-		[&]( Morph &m ) { return narration.track_words( 8, 9, [&m, smooth]( float t ) { m.set( smooth( t ) ); } ); } );
+		[&]( Morph &m ) { return narration.track_markers( "c", "d", [&m, smooth]( float t ) { m.set( smooth( t ) ); } ); } );
 }
 
 // Narrated text with an effect on every word as it is said. The first line is dim until its words are spoken:
@@ -529,7 +530,8 @@ Scene show_karaoke( Stage &stage, Script &script )
 	const auto lines = script.fetch( lang, "intro" ).as_multiline();
 	for ( const auto &line: lines )
 	{
-		StyledText styled( line );
+		const std::string clean = strip_markers( line ); // the markers are cue points, not text
+		StyledText styled( clean );
 		styled.set_font_style( 0, styled.size(), FontStyle{ Intent::PROSE }.large() );
 		styled.set_language( 0, styled.size(), lang );
 
@@ -542,7 +544,7 @@ Scene show_karaoke( Stage &stage, Script &script )
 									  : all( { reveal(), color( white, yellow, white ), underline( yellow ) } );
 		running.push_back( narration.animate_words( text, effect, first_word ) );
 
-		first_word += split_words( line ).size();
+		first_word += split_words( clean ).size();
 		++line_number;
 	}
 

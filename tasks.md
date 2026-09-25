@@ -75,6 +75,12 @@
   - [x] Try the demo with --lang fr, Polish and no aligner model
   - [x] Per-word animation effects as coroutines: reveal, color, pop, underline (animate_words, word_effects::)
 
+  - [x] Markers: cue points ({name}) in the script text, the same in every language, with a time in each language's narration (marker_time / until_marker / track_markers)
+  - [ ] One container per language, each timed to its own narration (--separate)
+  - [ ] Single video with several audio tracks: one timeline per marker segment, shorter languages padded (main language never accelerated)
+  - [ ] Accelerate other languages up to --max-speedup (ffmpeg atempo, shortening pauses first)
+  - [ ] Effects over a span between two markers (progress across the glyphs), and subtitles that break at markers
+
 ##  Subtitles
   - [x] Generate SRT subtitles files
   - [x] Generate WebVTT subtitles files

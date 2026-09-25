@@ -656,6 +656,19 @@ clock as a function, so effects are unit-tested with a fake clock (`tests/TestWo
 `speak()` must still be called each frame (the demo's `narrate()` loop), typically in a
 `choreograph()` alongside these. They return at once if nothing is being narrated.
 
+**Markers (multi-language sync).** Word numbers do not carry over between languages (sentences differ in
+word count, words in length), so cue points are written into the script text instead, in every language, where
+they correspond: `These show {a}various ease{b} animations.` / `Ceux-ci montrent {a}diverses animations{b} de
+lissage.` (`utils/Markers.h`: `{name}`, name = letters, digits, `_`, `-`; `{{` and `}}` are literal braces; other
+braces are text; a marker between two spaces leaves one). They are taken out before synthesis, alignment,
+subtitles and display (`strip_markers()` for text shown on screen). `Narrator` times each one from the word
+alignment (`time_at_offset`: the start of the next word; inside a word, how far through it in letters; at the end,
+when the speech ends), or from the proportional estimate where there is no alignment. `Narration` exposes them for
+the main language: `marker_time( name | index )`, `until_marker`, `track_markers( from, to, cb )`,
+`track_to_end`, `duration()`. `speech()` warns on stderr if a language's markers differ from the main
+language's (missing, extra, or in another order). Verified on real renders: a shape driven by `{a}`..`{b}` starts
+and ends at the same offsets from the markers in English and French, although the markers fall at different times.
+
 **Text side.** `make_styled_text()` groups each word's glyphs into a `Group` tagged
 `"word<N>"` inside its `TextLine` (N counts through the whole text, across lines);
 `find_word( root, N )` looks it up. Glyphs are assigned by HarfBuzz cluster, so RTL words

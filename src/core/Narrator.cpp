@@ -6,6 +6,7 @@
 #include <core/Stage.h>
 #include <cstring>
 #include <utils/Language.h>
+#include <utils/Markers.h>
 
 void Narrator::setup( std::string_view name, std::string_view lang, Script &script, DubbingStage &stage )
 {
@@ -32,12 +33,17 @@ double Narrator::speech( const std::vector<std::string> &text )
 	_results.clear();
 	_pending_cues.clear();
 	_words.clear();
+	_markers.clear();
 	_position_frames = 0;
 	_cues_emitted = false;
 
 	double cumulative = 0.0;
-	for ( const auto &t: text )
+	for ( const auto &raw: text )
 	{
+		// Markers are cue points, not words: they are taken out before anything is spoken, aligned or shown
+		const MarkedText marked = parse_markers( raw );
+		const std::string &t = marked.text;
+
 		auto result = _tts->synthesize( t, _voice_ref, _tts_language );
 		if ( !result.success || !result.audio.has_value() )
 		{
@@ -85,6 +91,10 @@ double Narrator::speech( const std::vector<std::string> &text )
 			line_words = distribute_words( t, _pending_cues.size(), cumulative, line_duration );
 		}
 		_words.insert( _words.end(), line_words.begin(), line_words.end() );
+		for ( const auto &marker: marked.markers )
+		{
+			_markers.push_back( TimedMarker{ marker.name, time_at_offset( line_words, marker.offset, cumulative ), _pending_cues.size() } );
+		}
 		_pending_cues.push_back( PendingCue{ local_start, local_end, t } );
 		cumulative += line_duration;
 

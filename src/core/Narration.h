@@ -9,6 +9,8 @@
 #include <visuals/Tags.h>
 
 #include <functional>
+#include <optional>
+#include <string_view>
 
 #include <vector>
 
@@ -29,11 +31,42 @@ public:
 			duration = std::max( duration, narrator.speech( text ) );
 		}
 
+		check_markers();
 		return duration;
 	}
 
 	void speak( void );
 	bool is_done() const;
+
+	// ---- Markers (see utils/Markers.h) ----
+	//
+	// Cue points in the narrated text, the same in every language, so that what is animated follows what is said
+	// whatever the language (word numbers do not carry over: words differ in number and length). Times are seconds
+	// since the batch started, in the main language's narration (the one that drives the animation). Markers are
+	// addressed by their name ("a" for {a}) or by their number, counting from 0 in order of appearance.
+	//
+	//   co_await narration.until_marker( "a" );
+	//   co_await narration.track_markers( "a", "b", [&]( float t ) { morph.set( t ); } );
+
+	const std::vector<TimedMarker> &markers() const;
+	size_t marker_count() const;
+	std::optional<size_t> find_marker( std::string_view name ) const;
+
+	// When a marker is reached; throws std::out_of_range for one that does not exist
+	double marker_time( size_t index ) const;
+	double marker_time( std::string_view name ) const;
+
+	// How long the batch's narration lasts (seconds), to the end of the last word
+	double duration() const;
+
+	Coroutine until_marker( size_t index );
+	Coroutine until_marker( std::string name );
+
+	// Calls callback( t ) each frame with how far the narration is between two markers, 0 to 1 (see track_time).
+	// track_to_end runs from a marker to the end of the narration.
+	Coroutine track_markers( size_t from, size_t to, std::function<void( float )> callback );
+	Coroutine track_markers( std::string from, std::string to, std::function<void( float )> callback );
+	Coroutine track_to_end( std::string from, std::function<void( float )> callback );
 
 	// Word timing of the current speech() batch, taken from the script's
 	// master language (other language tracks have different timings; only one
@@ -85,6 +118,9 @@ public:
 	Coroutine on_words( Visual &text, std::function<void( Visual &, size_t )> callback );
 
 private:
+	// Warns (on stderr) if a language does not have the same markers as the main one
+	void check_markers() const;
+
 	const Narrator *master() const;
 
 	size_t _audio_block = 0;
