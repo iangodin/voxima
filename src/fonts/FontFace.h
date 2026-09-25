@@ -11,6 +11,10 @@ struct FontFace
 {
 	FontFacePtr face;
 	float scale = 1.F;
+
+	// A catch-all font (Adobe NotDef) that draws a plain box for every character, so it always has a glyph. It
+	// ends a font stack; a character only it has is one that is really missing (see MissingGlyph.h).
+	bool notdef = false;
 };
 
 struct GlyphEntry

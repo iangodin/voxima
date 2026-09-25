@@ -534,6 +534,30 @@ Scene show_karaoke( Stage &stage, Script &script )
 	co_await choreograph_all( std::move( running ) );
 }
 
+// Text that cannot be drawn: a script value that is missing turns into U+FFFD, and no font has the second
+// character. Both show as magenta boxes with their code in them, and are listed when the render finishes.
+Scene show_missing_glyphs( Stage &stage, Script &script )
+{
+	const std::string lang = script.master_language();
+	const std::string missing_value{ script.fetch( lang, "no such key" ).as_string( "\uFFFD" ) };
+
+	const std::vector<std::string> lines = {
+		"A script value that is missing: " + missing_value,
+		"A character no font has: \U0010FFFD",
+		"and one that does exist: \u00E9" };
+
+	float y = 1.5F;
+	for ( const auto &line: lines )
+	{
+		auto &text = stage.visuals.add( make_text( *stage.theme, line, FontStyle{ Intent::PROSE }.large(), lang ) );
+		center_group( text );
+		text.position = { 0.F, y };
+		y -= 1.2F;
+	}
+
+	co_await wait_for( 48 );
+}
+
 // The ease functions side by side, as circles racing across the screen while the narrator speaks
 Scene show_eases( Stage &stage, Script &script )
 {
@@ -577,6 +601,7 @@ Scene movie( Stage &stage, Script &script )
 		{ "morph-shapes", "morph-formula", "morph-text", "morph-strokes", "karaoke" } );
 }
 
+SONIMATION_SCENE( "missing-glyphs", "Characters that cannot be drawn, shown as magenta boxes (and reported)", show_missing_glyphs );
 SONIMATION_SCENE( "eases", "The ease functions, as circles racing across the screen (with narration)", show_eases );
 SONIMATION_SCENE( "formulas", "A page of laid-out math formulas", show_formulas );
 SONIMATION_SCENE( "morph-shapes", "A circle turning into a square and letters, with holes opening and closing", show_morph );

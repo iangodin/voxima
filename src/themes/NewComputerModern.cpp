@@ -21,7 +21,7 @@ namespace
 		fonts.append( theme.load_font( ThemeUtils::get_amiri_filename( properties ), 0, font_size ) );
 		fonts.append( theme.load_font( "SourceHanSerif.ttc", ThemeUtils::get_cjk_face_index( properties ), font_size ) );
 		fonts.append( theme.load_font( "Symbola-Emoji.ttf", 0, font_size ) );
-		fonts.append( theme.load_font( "AND-Regular.otf", 0, font_size ) );
+		fonts.append( theme.load_notdef_font( font_size ) );
 		return fonts;
 	}
 }

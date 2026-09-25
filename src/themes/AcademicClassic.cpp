@@ -24,7 +24,7 @@ namespace
 		fonts.append( theme.load_font( "Symbola-Emoji.ttf", 0, font_size ) );
 		fonts.append( theme.load_font( "SourceHanSerif.ttc", 0, font_size ) );
 		fonts.append( theme.load_font( "NewCMMono10-Regular.otf", 0, font_size ) );
-		fonts.append( theme.load_font( "AND-Regular.otf", 0, font_size ) );
+		fonts.append( theme.load_notdef_font( font_size ) );
 		return fonts;
 	}
 }

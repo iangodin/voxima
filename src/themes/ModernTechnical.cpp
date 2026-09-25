@@ -25,7 +25,7 @@ namespace
 		fonts.append( theme.load_font( "NotoSansCJK-Variable.ttc", 0, font_size ) );
 		fonts.append( theme.load_font(
 			ThemeUtils::get_fira_filename( properties, "FiraMono" ), 0, font_size ) );
-		fonts.append( theme.load_font( "AND-Regular.otf", 0, font_size ) );
+		fonts.append( theme.load_notdef_font( font_size ) );
 		return fonts;
 	}
 }
@@ -52,7 +52,7 @@ FontStack intent_math( const FontStyle &style, Theme &theme )
 	fonts.append( theme.load_font( "NotoSansCJK-Variable.ttc", 0, font_size ) );
 	fonts.append(
 		theme.load_font( ThemeUtils::get_fira_filename( properties, "FiraMono" ), 0, font_size ) );
-	fonts.append( theme.load_font( "AND-Regular.otf", 0, font_size ) );
+	fonts.append( theme.load_notdef_font( font_size ) );
 	return fonts;
 }
 

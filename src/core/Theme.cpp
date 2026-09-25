@@ -119,6 +119,13 @@ FontFace Theme::load_font( const std::string &name, size_t face_index, float sca
 	return load_variable_font( name, face_index, scale, 400, 100, 0 );
 }
 
+FontFace Theme::load_notdef_font( float scale )
+{
+	FontFace face = load_font( "AND-Regular.otf", 0, scale );
+	face.notdef = true;
+	return face;
+}
+
 FontFace Theme::load_variable_font(
 	const std::string &name,
 	size_t face_index,

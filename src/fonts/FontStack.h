@@ -2,11 +2,16 @@
 
 #include "fonts/FontFace.h"
 
+#include <optional>
 #include <vector>
 
 class FontStack
 {
 public:
+	// The first font in the stack that has the character, or nothing if none does
+	std::optional<GlyphEntry> find_codepoint( char32_t codepoint ) const;
+
+	// The same, but throws when no font has it
 	GlyphEntry lookup_codepoint( char32_t codepoint ) const;
 
 	void prepend( FontFace face )

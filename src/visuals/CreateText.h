@@ -20,6 +20,9 @@ struct FontFace;
 
 struct TextRange
 {
+	// font_index of a range of characters that no font draws (see MissingGlyph.h)
+	static constexpr size_t MISSING = static_cast<size_t>( -1 );
+
 	size_t font_index = 0;
 	size_t start = 0;
 	size_t length = 0;

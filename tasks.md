@@ -7,7 +7,7 @@
   - [x] Integrate handling for BiDi text rendering
   - [x] Group each word's glyphs into a tagged group (word0, word1, ...) sharing a word splitter with narration
   - [x] Text line spacing (scales with font size) and left/center/right alignment
-  - [ ] Add "highlighting" of missing glyphs (0xFFFD)
+  - [x] Highlight missing glyphs (0xFFFD and characters no font has) as magenta boxes with their code, listed at the end of the render
 
 ## Visuals
   - [ ] Render plots and charts

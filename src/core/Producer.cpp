@@ -2,6 +2,8 @@
 #include "Producer.h"
 #include "SceneRegistry.h"
 
+#include <visuals/MissingGlyph.h>
+
 #include "Script.h"
 
 #include <CLI/CLI.hpp>
@@ -207,6 +209,9 @@ bool Producer::produce( int argc, char *argv[] )
 	std::vector<std::string> scene_names;
 	app.add_option( "--scene", scene_names, "Scene to render; repeat it to play several in order (default: \"movie\")" );
 
+	bool strict_glyphs = false;
+	app.add_flag( "--strict-glyphs", strict_glyphs, "Exit with an error if any text had a missing glyph (they always show as magenta boxes and are listed at the end)" );
+
 	bool list_scenes = false;
 	app.add_flag( "--list-scenes", list_scenes, "List the scenes that can be rendered, and exit" );
 
@@ -217,6 +222,8 @@ bool Producer::produce( int argc, char *argv[] )
 		std::cout << "Scenes:\n" << describe_scenes();
 		return true;
 	}
+
+	clear_missing_glyph_reports();
 
 	// Decide what to render before anything slow (models, fonts) loads
 	if ( !scene_names.empty() )
@@ -457,6 +464,18 @@ bool Producer::produce( int argc, char *argv[] )
 				lang == languages.front() );
 		}
 		mux.mux();
+	}
+
+	// Text that could not be drawn was shown as magenta boxes; say what and where, so it can be fixed
+	const std::string missing = describe_missing_glyphs();
+	if ( !missing.empty() )
+	{
+		std::cerr << '\n' << missing;
+		if ( strict_glyphs )
+		{
+			std::cerr << "Failing because of --strict-glyphs.\n";
+			return false;
+		}
 	}
 
 	return true;

@@ -59,6 +59,10 @@ public:
 
 	FontFace load_font( const std::string &name, size_t face_index, float scale );
 
+	// The catch-all font that ends a font stack: it draws a box for every character, and is marked (FontFace::notdef)
+	// so that a character only it has is shown as a missing glyph
+	FontFace load_notdef_font( float scale );
+
 	FontFace load_variable_font(
 		const std::string &name,
 		size_t face_index,

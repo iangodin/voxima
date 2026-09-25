@@ -4,6 +4,7 @@
 #include <visuals/TextLine.h>
 #include <visuals/Glyph.h>
 #include <visuals/Bounds.h>
+#include <visuals/MissingGlyph.h>
 #include <visuals/Tags.h>
 
 #include <fonts/FontFace.h>
@@ -160,6 +161,33 @@ std::unique_ptr<Group> make_styled_text( Theme &theme, const StyledText &text, c
 					{
 						hb_buffer_set_language(
 							buffer, hb_language_from_string( style.language->c_str(), -1 ) );
+					}
+
+					// Characters no font draws (and U+FFFD) become loud magenta boxes with their code in them
+					if ( range.font_index == TextRange::MISSING )
+					{
+						const auto &marker_font = stack.font( 0 );
+						line_em = std::max( line_em, marker_font.scale );
+						const float marker_scale = marker_font.scale / static_cast<float>( marker_font.face->units_per_EM );
+
+						std::string_view rest = run_text.substr( range.start, range.length );
+						while ( !rest.empty() )
+						{
+							const size_t at = run_text.size() - rest.size();
+							const char32_t codepoint = decode_utf8( rest );
+
+							auto marker = create_missing_glyph( codepoint, marker_font );
+							marker->position = Point{ current_x / marker_scale, current_y / marker_scale };
+							*marker *= marker_scale;
+							const float advance = marker->advanceX;
+
+							placed.push_back( PlacedGlyph{
+								run_start + ( mapped.empty() ? at : original_offset( run_text, original_text, at ) ),
+								std::move( marker ) } );
+							current_x += advance;
+							report_missing_glyph( codepoint, line_view );
+						}
+						continue;
 					}
 
 					const auto &font_face = stack.font( range.font_index );

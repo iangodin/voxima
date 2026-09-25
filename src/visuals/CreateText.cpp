@@ -1,6 +1,7 @@
 #include <visuals/Bounds.h>
 #include <visuals/CreateText.h>
 #include <visuals/CreateStyledText.h>
+#include <visuals/MissingGlyph.h>
 #include <visuals/StyledText.h>
 #include <visuals/Group.h>
 
@@ -39,17 +40,18 @@ std::vector<TextRange> create_ranges( std::string_view str, const FontStack &fon
 	{
 		size_t offset = str.size() - remaining.size();
 		char32_t codepoint = decode_utf8( remaining );
-		auto entry = font.lookup_codepoint( codepoint );
+		// A character that will be drawn as a marker (no font has it, or it is U+FFFD) gets a range of its own kind
+		const size_t face = needs_marker( font, codepoint ) ? TextRange::MISSING : font.lookup_codepoint( codepoint ).font_index;
 
 		if ( !current_face.has_value() )
 		{
-			current_face = entry.font_index;
+			current_face = face;
 		}
 
-		if ( entry.font_index != current_face )
+		if ( face != current_face )
 		{
 			ranges.push_back( { current_face.value(), start_offset, offset - start_offset } );
-			current_face = entry.font_index;
+			current_face = face;
 			start_offset = offset;
 		}
 	}

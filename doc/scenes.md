@@ -57,3 +57,24 @@ scene is called "movie" and there is no `--scene`, the only registered scene is 
 
 A `Producer` can still be given a `Director` in code (`Producer producer( my_director )`), used when there is
 no `--scene`.
+
+## Missing glyphs
+
+A character that cannot be drawn is never left to fail quietly. Two things count:
+
+- a character no real font in the theme's stack has (the catch-all NotDef font at the end of the stack draws a
+  box for anything, so it does not count as having it), and
+- U+FFFD, the replacement character: what a script value that is missing (`as_string( "\uFFFD" )`) or a badly
+  encoded string turns into.
+
+Each is drawn as a **magenta box with the character's code in it** (`FFFD`, `10FFFD` ...), which keeps the text's
+spacing and is tagged `missing-glyph`. When the render finishes, every one is listed with the text it was in:
+
+```
+WARNING: 2 missing glyphs (drawn as magenta boxes in the video):
+  U+FFFD  in "A script value that is missing: ..."
+  U+10FFFD  in "A character no font has: ..."
+```
+
+`--strict-glyphs` makes the render exit with an error if there were any, for automated builds. (`--scene
+missing-glyphs` shows the effect.) Text that is not valid UTF-8 is still rejected outright.
