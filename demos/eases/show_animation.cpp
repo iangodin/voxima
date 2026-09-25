@@ -276,6 +276,48 @@ Scene show_morph( Stage &stage )
 	}
 }
 
+// A formula that is rewritten step by step. Parts that stay the same (the a, the b, the plus signs) only
+// slide into place, the rest morph or fade: leaves are matched by their tags, then by identical glyphs.
+Scene show_formula_morph( Stage &stage )
+{
+	using namespace math;
+	Context context( *stage.theme );
+
+	auto build = [&]( const Expr &formula )
+	{
+		auto visual = formula.build( context );
+		const AABB box = layout_extent( *visual );
+		visual->position = { -( box.min.x() + box.max.x() ) / 2.F, -2.5F };
+		return visual;
+	};
+
+	// Tagged parts are followed from one formula to the next wherever they end up; everything else is matched
+	// by identical glyphs, and what has no counterpart fades (the parentheses, the new terms)
+	const Expr a = tag( "a", text( "a" ) );
+	const Expr b = tag( "b", text( "b" ) );
+	const Expr expanded = row(
+		{ ord( superscript( a, text( "2" ) ) ),
+		  bin( "+" ),
+		  ord( text( "2ab" ) ),
+		  bin( "+" ),
+		  ord( superscript( b, text( "2" ) ) ) } );
+
+	Visual *shown = &stage.visuals.add( build( superscript( parens( row( { ord( a ), bin( "+" ), ord( b ) } ) ), text( "2" ) ) ) );
+	co_await wait_for( 12 );
+
+	std::vector<std::unique_ptr<Visual>> steps;
+	steps.push_back( build( expanded ) );
+	steps.push_back( build( radical( expanded ) ) );
+
+	for ( auto &step: steps )
+	{
+		Visual *next = step.get();
+		co_await morph( stage, *shown, std::move( step ), 40, ease_cubic_in_out );
+		shown = next;
+		co_await wait_for( 12 );
+	}
+}
+
 Scene narrate( Narration &narration )
 {
 	while ( !narration.is_done() )
@@ -381,6 +423,7 @@ Screenplay my_screenplay( Stage &stage, Script &script )
 		narrate( stage, script ) );
 	*/
 	co_await show_morph( stage );
+	co_await show_formula_morph( stage );
 	co_await show_karaoke( stage, script );
 	co_await wait_for( duration );
 }

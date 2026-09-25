@@ -13,6 +13,7 @@
 #include "visuals/RoundRectangle.h"
 
 #include <cmath>
+#include <cstring>
 #include <numbers>
 #include <type_traits>
 #include <variant>
@@ -64,6 +65,70 @@ Affine local_transform( const Visual &v )
 Point lerp( Point a, Point b, float t )
 {
 	return a + ( b - a ) * t;
+}
+
+// FNV-1a over what describes a leaf's geometry
+class Hasher
+{
+public:
+	Hasher &add( uint64_t value )
+	{
+		for ( int i = 0; i < 8; ++i )
+		{
+			_hash ^= ( value >> ( 8 * i ) ) & 0xFF;
+			_hash *= 1099511628211ULL;
+		}
+		return *this;
+	}
+
+	Hasher &add( float value )
+	{
+		uint32_t bits = 0;
+		std::memcpy( &bits, &value, sizeof( bits ) );
+		return add( static_cast<uint64_t>( bits ) );
+	}
+
+	Hasher &add( Point p )
+	{
+		return add( p.x() ).add( p.y() );
+	}
+
+	uint64_t result() const
+	{
+		return _hash == 0 ? 1 : _hash;
+	}
+
+private:
+	uint64_t _hash = 14695981039346656037ULL;
+};
+
+uint64_t hash_commands( const std::vector<PathCommand> &list )
+{
+	Hasher h;
+	h.add( static_cast<uint64_t>( 100 ) );
+	for ( const auto &command: list )
+	{
+		h.add( static_cast<uint64_t>( command.index() ) );
+		std::visit(
+			[&]( const auto &cmd )
+			{
+				using T = std::decay_t<decltype( cmd )>;
+				if constexpr ( std::is_same_v<T, MoveTo> || std::is_same_v<T, LineTo> )
+				{
+					h.add( cmd.to );
+				}
+				else if constexpr ( std::is_same_v<T, QuadTo> )
+				{
+					h.add( cmd.to ).add( cmd.ctrl1 );
+				}
+				else if constexpr ( std::is_same_v<T, CubicTo> )
+				{
+					h.add( cmd.to ).add( cmd.ctrl1 ).add( cmd.ctrl2 );
+				}
+			},
+			command );
+	}
+	return h.result();
 }
 
 class ContourBuilder
@@ -156,12 +221,12 @@ public:
 
 	void visit( const Circle &circle ) override
 	{
-		ellipse( circle, circle.radius, circle.radius );
+		ellipse( circle, circle.radius, circle.radius, Hasher().add( static_cast<uint64_t>( 1 ) ).add( circle.radius ).result() );
 	}
 
 	void visit( const Ellipse &e ) override
 	{
-		ellipse( e, e.half_width, e.half_height );
+		ellipse( e, e.half_width, e.half_height, Hasher().add( static_cast<uint64_t>( 2 ) ).add( e.half_width ).add( e.half_height ).result() );
 	}
 
 	void visit( const Rectangle &rect ) override
@@ -173,7 +238,7 @@ public:
 		b.line_to( { hw, -hh } );
 		b.line_to( { hw, hh } );
 		b.line_to( { -hw, hh } );
-		emit( rect, b );
+		emit( rect, b, Hasher().add( static_cast<uint64_t>( 3 ) ).add( hw ).add( hh ).result() );
 	}
 
 	void visit( const RoundRectangle &rect ) override
@@ -196,7 +261,7 @@ public:
 		if ( bl > 0.F ) b.arc_to( { -hw + bl, -hh }, { -hw, -hh + bl }, { -hw + bl, -hh + bl } );
 		b.line_to( { -hw, hh - tl } );
 		if ( tl > 0.F ) b.arc_to( { -hw, hh - tl }, { -hw + tl, hh }, { -hw + tl, hh - tl } );
-		emit( rect, b );
+		emit( rect, b, Hasher().add( static_cast<uint64_t>( 4 ) ).add( hw ).add( hh ).add( tl ).add( tr ).add( bl ).add( br ).result() );
 	}
 
 	void visit( const Path &path ) override
@@ -240,7 +305,7 @@ private:
 		return _xf * local_transform( v );
 	}
 
-	void ellipse( const Visual &v, float rx, float ry )
+	void ellipse( const Visual &v, float rx, float ry, uint64_t key )
 	{
 		// Starts at the right and runs the way SVG draws circles
 		ContourBuilder b( leaf_transform( v ) );
@@ -249,7 +314,7 @@ private:
 		b.cubic_to( { -rx * KAPPA, ry }, { -rx, ry * KAPPA }, { -rx, 0.F } );
 		b.cubic_to( { -rx, -ry * KAPPA }, { -rx * KAPPA, -ry }, { 0.F, -ry } );
 		b.cubic_to( { rx * KAPPA, -ry }, { rx, -ry * KAPPA }, { rx, 0.F } );
-		emit( v, b );
+		emit( v, b, key );
 	}
 
 	void commands( const Visual &v, const std::vector<PathCommand> &list )
@@ -284,10 +349,10 @@ private:
 				},
 				command );
 		}
-		emit( v, b );
+		emit( v, b, hash_commands( list ) );
 	}
 
-	void emit( const Visual &v, ContourBuilder &b )
+	void emit( const Visual &v, ContourBuilder &b, uint64_t key )
 	{
 		OutlineShape shape;
 		shape.contours = std::move( b.contours() );
@@ -298,6 +363,9 @@ private:
 		shape.fill = _color * v.color;
 		shape.stroke = _stroke * v.stroke_color;
 		shape.stroke_thickness = v.stroke_thickness * leaf_transform( v ).scale();
+		shape.tags = _tags;
+		shape.tags.insert( shape.tags.end(), v.tags.begin(), v.tags.end() );
+		shape.key = key;
 		shapes.push_back( std::move( shape ) );
 	}
 
@@ -306,7 +374,9 @@ private:
 		const Affine old_xf = _xf;
 		const Color old_color = _color;
 		const Color old_stroke = _stroke;
+		const size_t old_tags = _tags.size();
 
+		_tags.insert( _tags.end(), group.tags.begin(), group.tags.end() );
 		_xf = _xf * local_transform( group );
 		_color = _color * group.color;
 		_stroke = _stroke * group.stroke_color;
@@ -318,8 +388,10 @@ private:
 		_xf = old_xf;
 		_color = old_color;
 		_stroke = old_stroke;
+		_tags.resize( old_tags );
 	}
 
+	std::vector<std::string> _tags;
 	Affine _xf;
 	Color _color;
 	Color _stroke;

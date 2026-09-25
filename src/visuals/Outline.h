@@ -6,6 +6,8 @@
 #include "visuals/Visual.h"
 
 #include <cstddef>
+#include <cstdint>
+#include <string>
 #include <vector>
 
 // A cubic Bezier segment. Its start is the end of the previous segment (or Contour::start).
@@ -32,6 +34,14 @@ struct OutlineShape
 	Color fill;
 	Color stroke;
 	float stroke_thickness = 0.F;
+
+	// Every tag on the leaf and on the groups above it (within the visual that was flattened), so
+	// leaves can be matched by the names the composites give their parts
+	std::vector<std::string> tags;
+
+	// Identifies the leaf's own geometry, before any transform: two glyphs of the same letter at the
+	// same size have the same key wherever they sit. Never 0.
+	uint64_t key = 0;
 };
 
 // Every leaf below `visual` (or the visual itself) as cubic contours, in the coordinate frame of

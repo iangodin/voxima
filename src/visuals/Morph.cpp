@@ -41,14 +41,14 @@ Morph::Morph( const Visual &from, const Visual &to, const MorphOptions &options 
 	const auto shapes_a = to_outline( from );
 	const auto shapes_b = to_outline( to );
 
-	const size_t count = std::max( shapes_a.size(), shapes_b.size() );
-	for ( size_t i = 0; i < count; ++i )
+	_pairs = match_leaves( shapes_a, shapes_b, options.leaves );
+	for ( const LeafPair &pair: _pairs )
 	{
 		Part part;
-		if ( i < shapes_a.size() && i < shapes_b.size() )
+		if ( pair.a >= 0 && pair.b >= 0 )
 		{
-			const auto &a = shapes_a[i];
-			const auto &b = shapes_b[i];
+			const auto &a = shapes_a[static_cast<size_t>( pair.a )];
+			const auto &b = shapes_b[static_cast<size_t>( pair.b )];
 			part.contours = match_contours( a, b, options.costs );
 			part.fill_a = a.fill;
 			part.fill_b = b.fill;
@@ -57,10 +57,10 @@ Morph::Morph( const Visual &from, const Visual &to, const MorphOptions &options 
 			part.thickness_a = a.stroke_thickness;
 			part.thickness_b = b.stroke_thickness;
 		}
-		else if ( i < shapes_a.size() )
+		else if ( pair.a >= 0 )
 		{
 			// Nothing to become: fades out where it is
-			const auto &a = shapes_a[i];
+			const auto &a = shapes_a[static_cast<size_t>( pair.a )];
 			for ( const auto &c: a.contours )
 			{
 				part.contours.push_back( { c, c } );
@@ -73,7 +73,7 @@ Morph::Morph( const Visual &from, const Visual &to, const MorphOptions &options 
 		}
 		else
 		{
-			const auto &b = shapes_b[i];
+			const auto &b = shapes_b[static_cast<size_t>( pair.b )];
 			for ( const auto &c: b.contours )
 			{
 				part.contours.push_back( { c, c } );

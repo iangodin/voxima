@@ -1,6 +1,7 @@
 #pragma once
 
 #include "visuals/Group.h"
+#include "visuals/MorphLeaves.h"
 #include "visuals/MorphMatch.h"
 #include "visuals/Path.h"
 
@@ -9,6 +10,8 @@
 
 struct MorphOptions
 {
+	// How leaves are paired; see LeafMatch
+	LeafMatch leaves = LeafMatch::AUTO;
 	AlignCosts costs;
 };
 
@@ -17,7 +20,9 @@ struct MorphOptions
 // and stroke widths: t = 0 is `from`, t = 1 is `to`, and values outside that extrapolate (elastic and
 // back easing overshoot).
 //
-// Leaves of the two visuals are paired in drawing order; a leaf with no partner fades out (or in).
+// Leaves of the two visuals (each glyph, each shape) are paired up by MorphOptions::leaves: by default
+// with the same tags first, then identical glyphs in reading order, then the closest. Paired leaves
+// morph into each other (an identical pair just moves); a leaf with no partner fades out or in.
 //
 // The morph draws itself as a Group of Paths in the coordinate frame of the visuals' parent (see
 // to_outline()). Put visual() on the stage, or take it with release() and add it yourself; it must stay
@@ -45,6 +50,12 @@ public:
 		return _t;
 	}
 
+	// How the leaves were paired (indices into to_outline() of each visual, -1 for none)
+	const std::vector<LeafPair> &pairs() const
+	{
+		return _pairs;
+	}
+
 private:
 	struct Part
 	{
@@ -59,5 +70,6 @@ private:
 	std::unique_ptr<Group> _owned;
 	Group *_root = nullptr;
 	std::vector<Part> _parts;
+	std::vector<LeafPair> _pairs;
 	float _t = 0.F;
 };
