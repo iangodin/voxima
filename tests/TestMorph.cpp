@@ -50,18 +50,6 @@ bool same_point( Point a, Point b, float eps = 1e-3F )
 	return std::abs( a.x() - b.x() ) < eps && std::abs( a.y() - b.y() ) < eps;
 }
 
-bool has_point( const std::vector<Point> &points, Point p )
-{
-	for ( auto q: points )
-	{
-		if ( same_point( p, q ) )
-		{
-			return true;
-		}
-	}
-	return false;
-}
-
 bool finite( const Morph &morph )
 {
 	for ( const auto &shape: to_outline( const_cast<Morph &>( morph ).visual() ) )
@@ -115,36 +103,78 @@ AABB bounds_of( Visual &visual )
 }
 }
 
-TEST_CASE( "align_contours pairs a circle's extrema with a square's corners", "[morph]" )
+namespace
+{
+// Angle (radians, 0..pi) between two points as seen from the origin
+float angle_between( Point a, Point b )
+{
+	const float d = std::atan2( a.y(), a.x() ) - std::atan2( b.y(), b.x() );
+	return std::abs( std::remainder( d, 2.F * std::numbers::pi_v<float> ) );
+}
+
+// The largest angle, around the origin, that a point moves when its contour is morphed into the other
+float largest_twist( const ContourPair &pair )
+{
+	const auto a = corners( pair.a );
+	const auto b = corners( pair.b );
+	float worst = 0.F;
+	for ( size_t i = 0; i < a.size(); ++i )
+	{
+		worst = std::max( worst, angle_between( a[i], b[i] ) );
+	}
+	return worst;
+}
+}
+
+TEST_CASE( "align_contours does not twist a circle into a square", "[morph]" )
 {
 	const Contour circle = circle_contour( 1.F );
+
+	SECTION( "square" )
+	{
+		const ContourPair pair = align_contours( circle, rect_contour( 1.F, 1.F ) );
+		REQUIRE( pair.a.segs.size() == pair.b.segs.size() );
+		// the circle's extrema go to the square's edge midpoints, and its 45 degree points to the corners
+		CHECK( largest_twist( pair ) < 0.05F );
+	}
+
+	SECTION( "wide rectangle" )
+	{
+		const ContourPair pair = align_contours( circle, rect_contour( 2.F, 1.F ) );
+		CHECK( largest_twist( pair ) < 0.1F );
+	}
+
+	SECTION( "and back again" )
+	{
+		const ContourPair pair = align_contours( rect_contour( 1.F, 1.F ), circle );
+		CHECK( largest_twist( pair ) < 0.05F );
+	}
+
+	SECTION( "wherever the outlines start" )
+	{
+		// The same square, starting from a different corner
+		const Contour square = rect_contour( 1.F, 1.F );
+		Contour shifted;
+		shifted.start = square.segs[1].to;
+		shifted.segs = { square.segs[2], square.segs[3], square.segs[0], square.segs[1] };
+		CHECK( largest_twist( align_contours( circle, shifted ) ) < 0.05F );
+	}
+}
+
+TEST_CASE( "align_contours pairs corners with corners when both shapes have them", "[morph]" )
+{
+	// A square into a diamond (the same square turned 45 degrees) has four corners each: they pair up
+	// in order, one quarter of the way round from where the diamond's are, rather than being invented
 	const Contour square = rect_contour( 1.F, 1.F );
+	Rectangle turned;
+	turned.half_width = turned.half_height = 1.F;
+	turned.rotation = 45.F;
+	const Contour diamond = to_outline( turned )[0].contours[0];
 
-	const ContourPair pair = align_contours( circle, square );
-
-	// four features on each side, so no splitting is needed
-	REQUIRE( pair.a.segs.size() == 4 );
-	REQUIRE( pair.b.segs.size() == 4 );
-
-	// nothing changed shape: the same on-curve points as before
-	for ( auto p: corners( pair.a ) )
-	{
-		CHECK( has_point( corners( circle ), p ) );
-	}
-	for ( auto p: corners( pair.b ) )
-	{
-		CHECK( has_point( corners( square ), p ) );
-	}
-
-	// and each circle extremum is paired with a different corner
-	std::vector<Point> partners = corners( pair.b );
-	for ( size_t i = 0; i < partners.size(); ++i )
-	{
-		for ( size_t j = i + 1; j < partners.size(); ++j )
-		{
-			CHECK_FALSE( same_point( partners[i], partners[j] ) );
-		}
-	}
+	const ContourPair pair = align_contours( square, diamond );
+	CHECK( pair.a.segs.size() == pair.b.segs.size() );
+	CHECK( signed_area( pair.a ) == Approx( signed_area( square ) ).epsilon( 1e-4 ) );
+	CHECK( signed_area( pair.b ) == Approx( signed_area( diamond ) ).epsilon( 1e-4 ) );
 }
 
 TEST_CASE( "align_contours keeps both shapes exactly as they were", "[morph]" )
@@ -181,23 +211,6 @@ TEST_CASE( "align_contours splits the contour with fewer features", "[morph]" )
 	CHECK( pair.a.segs.size() >= 8 );
 	CHECK( pair.b.segs.size() == 8 ); // the octagon's corners are all kept
 	CHECK( signed_area( pair.b ) == Approx( signed_area( octagon ) ).epsilon( 1e-4 ) );
-}
-
-TEST_CASE( "align_contours result does not depend on where a contour starts", "[morph]" )
-{
-	// The same square, starting from a different corner
-	const Contour square = rect_contour( 1.F, 1.F );
-	Contour shifted;
-	shifted.start = square.segs[1].to;
-	shifted.segs = { square.segs[2], square.segs[3], square.segs[0], square.segs[1] };
-
-	const Contour circle = circle_contour( 1.F );
-	const ContourPair p1 = align_contours( circle, square );
-	const ContourPair p2 = align_contours( circle, shifted );
-
-	REQUIRE( p1.a.segs.size() == p2.a.segs.size() );
-	CHECK( same_point( p1.a.start, p2.a.start ) );
-	CHECK( same_point( p1.b.start, p2.b.start ) );
 }
 
 TEST_CASE( "point_contour is a contour that is one point", "[morph]" )

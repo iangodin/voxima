@@ -31,6 +31,15 @@ struct AlignCosts
 	float skip_corner = 1.F;
 	float skip_extremum = 0.15F;
 	float skip_smooth = 0.03F;
+	// ... and of leaving a projected knot unmatched (see below); they are optional by nature
+	float skip_projected = 0.02F;
+
+	// Knots are matched by kind of feature, which alone would twist a circle into a square (its extrema
+	// are a quarter turn from the square's corners' angles). So each contour also gets a knot at the
+	// nearest point to every real knot of the other, taking that knot's kind; the alignment then pairs
+	// points that are already close. A projection closer than this (as an arc fraction) to a knot
+	// already there is not added.
+	float min_projection_gap = 0.01F;
 };
 
 // Two contours cut into the same number of cubics, ready to interpolate segment by segment

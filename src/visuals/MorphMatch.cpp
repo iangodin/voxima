@@ -168,6 +168,7 @@ struct Knot
 	Point tangent; // direction of travel
 	float turn = 0.F;
 	Kind kind = Kind::SMOOTH;
+	bool projected = false; // added to sit next to a knot of the other contour, not a feature of this one
 };
 
 struct Analysis
@@ -258,7 +259,100 @@ struct Analysis
 		return at( segs[pos.seg], pos.t );
 	}
 
+	// Add a knot at the nearest point of this contour to each real knot of `other`, in this contour's
+	// terms (both compared relative to their own centroid and size), with that knot's kind
+	void add_projected( const Analysis &other, const AlignCosts &costs )
+	{
+		std::vector<Knot> added;
+		for ( const Knot &source: other.knots )
+		{
+			if ( source.projected )
+			{
+				continue;
+			}
+			const Point target = centroid + ( source.p - other.centroid ) / other.scale * scale;
+			const Position pos = nearest( target );
+			const float s = fraction( pos.seg, pos.t );
+			const Point p = at( segs[pos.seg], pos.t );
+
+			bool crowded = false;
+			for ( const auto *list: { &knots, &added } )
+			{
+				for ( const Knot &k: *list )
+				{
+					const float gap = std::abs( s - k.s );
+					if ( std::min( gap, 1.F - gap ) < costs.min_projection_gap && length( p - k.p ) < 0.05F * scale )
+					{
+						crowded = true;
+					}
+				}
+			}
+			if ( crowded )
+			{
+				continue;
+			}
+
+			Knot k;
+			k.pos = pos;
+			k.s = s;
+			k.p = p;
+			k.tangent = unit( derivative( segs[pos.seg], pos.t ), source.tangent );
+			k.turn = source.turn;
+			k.kind = source.kind;
+			k.projected = true;
+			added.push_back( k );
+		}
+
+		knots.insert( knots.end(), added.begin(), added.end() );
+		std::stable_sort(
+			knots.begin(),
+			knots.end(),
+			[]( const Knot &a, const Knot &b )
+			{
+				return a.pos.seg < b.pos.seg || ( a.pos.seg == b.pos.seg && a.pos.t < b.pos.t );
+			} );
+	}
+
 private:
+	// The point of the contour nearest to q: sampled along every segment, then refined
+	Position nearest( Point q ) const
+	{
+		constexpr int SAMPLES = 32;
+		Position best;
+		float best_d = std::numeric_limits<float>::max();
+		for ( size_t i = 0; i < segs.size(); ++i )
+		{
+			for ( int k = 0; k <= SAMPLES; ++k )
+			{
+				const float t = static_cast<float>( k ) / SAMPLES;
+				const float d = ( at( segs[i], t ) - q ).lengthSquared();
+				if ( d < best_d )
+				{
+					best_d = d;
+					best = { i, t };
+				}
+			}
+		}
+		// Narrow in on the minimum between the neighbouring samples
+		float lo = std::max( 0.F, best.t - 1.F / SAMPLES );
+		float hi = std::min( 1.F, best.t + 1.F / SAMPLES );
+		for ( int it = 0; it < 20; ++it )
+		{
+			const float m1 = lo + ( hi - lo ) / 3.F;
+			const float m2 = hi - ( hi - lo ) / 3.F;
+			if ( ( at( segs[best.seg], m1 ) - q ).lengthSquared() < ( at( segs[best.seg], m2 ) - q ).lengthSquared() )
+			{
+				hi = m2;
+			}
+			else
+			{
+				lo = m1;
+			}
+		}
+		best.t = ( lo + hi ) / 2.F;
+		return best;
+	}
+
 	void find_knots( const AlignCosts &costs )
 	{
 		const size_t n = segs.size();
@@ -333,9 +427,13 @@ float kind_cost( Kind a, Kind b, const AlignCosts &c )
 	return c.corner_extremum;
 }
 
-float skip_cost( Kind k, const AlignCosts &c )
+float skip_cost( const Knot &knot, const AlignCosts &c )
 {
-	switch ( k )
+	if ( knot.projected )
+	{
+		return c.skip_projected;
+	}
+	switch ( knot.kind )
 	{
 		case Kind::CORNER: return c.skip_corner;
 		case Kind::EXTREMUM: return c.skip_extremum;
@@ -461,7 +559,7 @@ private:
 				}
 				if ( k > 0 )
 				{
-					const float c = cost[idx( k - 1, l )] + skip_cost( ka( k ).kind, _costs );
+					const float c = cost[idx( k - 1, l )] + skip_cost( ka( k ), _costs );
 					if ( c < best )
 					{
 						best = c;
@@ -470,7 +568,7 @@ private:
 				}
 				if ( l > 0 )
 				{
-					const float c = cost[idx( k, l - 1 )] + skip_cost( kb( l ).kind, _costs );
+					const float c = cost[idx( k, l - 1 )] + skip_cost( kb( l ), _costs );
 					if ( c < best )
 					{
 						best = c;
@@ -625,8 +723,14 @@ ContourPair align_contours( const Contour &a, const Contour &b, const AlignCosts
 		return { a, b };
 	}
 
-	const Analysis an( a, costs );
-	const Analysis bn( b, costs );
+	Analysis an( a, costs );
+	Analysis bn( b, costs );
+	{
+		const Analysis real_a = an;
+		const Analysis real_b = bn;
+		an.add_projected( real_b, costs );
+		bn.add_projected( real_a, costs );
+	}
 	const Aligner aligner( an, bn, costs );
 	const Alignment al = aligner.best();
 
