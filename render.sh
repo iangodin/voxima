@@ -10,7 +10,6 @@ build/Release/sonimation --width 1280 --height 720 \
 	--script-dir demos/eases \
 	--font-dir assets/fonts \
 	--render-dir render \
-	--save-png \
 	--save-svg \
 	--theme "New Computer Modern" \
 	--container mkv \
