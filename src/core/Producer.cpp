@@ -1,5 +1,6 @@
 
 #include "Producer.h"
+#include "SceneRegistry.h"
 
 #include "Script.h"
 
@@ -203,7 +204,52 @@ bool Producer::produce( int argc, char *argv[] )
 		"--aligner-model", aligner_model,
 		"Path to the Qwen3 Forced Aligner GGUF model, for subtitle timing (optional)" );
 
+	std::vector<std::string> scene_names;
+	app.add_option( "--scene", scene_names, "Scene to render; repeat it to play several in order (default: \"movie\")" );
+
+	bool list_scenes = false;
+	app.add_flag( "--list-scenes", list_scenes, "List the scenes that can be rendered, and exit" );
+
 	CLI11_PARSE( app, argc, argv );
+
+	if ( list_scenes )
+	{
+		std::cout << "Scenes:\n" << describe_scenes();
+		return true;
+	}
+
+	// Decide what to render before anything slow (models, fonts) loads
+	if ( !scene_names.empty() )
+	{
+		const auto unknown = unknown_scenes( scene_names );
+		if ( !unknown.empty() )
+		{
+			std::string message = "unknown scene:";
+			for ( const auto &name: unknown )
+			{
+				message += " " + name;
+			}
+			throw std::runtime_error( message + "\nScenes:\n" + describe_scenes() );
+		}
+		_director = [scene_names]( Stage &stage, Script &script ) { return sequence( stage, script, scene_names ); };
+	}
+	else if ( !_director )
+	{
+		if ( SceneEntry::get_by_name( "movie" ) )
+		{
+			_director = []( Stage &stage, Script &script ) { return play( stage, script, "movie" ); };
+		}
+		else
+		{
+			const auto scenes = SceneEntry::all();
+			if ( scenes.size() != 1 )
+			{
+				throw std::runtime_error( "no scene to render: give --scene <name>, or register one called \"movie\"\nScenes:\n" + describe_scenes() );
+			}
+			const std::string only = scenes.front()->get_name();
+			_director = [only]( Stage &stage, Script &script ) { return play( stage, script, only ); };
+		}
+	}
 
 	std::string scodec;
 	std::string subtitle_ext;
@@ -413,5 +459,5 @@ bool Producer::produce( int argc, char *argv[] )
 		mux.mux();
 	}
 
-	return 0;
+	return true;
 }

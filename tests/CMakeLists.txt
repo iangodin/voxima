@@ -28,6 +28,7 @@ add_executable( sonimation_unit_tests
 	TestOutline.cpp
 	TestMorph.cpp
 	TestMorphLeaves.cpp
+	TestSceneRegistry.cpp
 )
 
 target_link_libraries( sonimation_unit_tests

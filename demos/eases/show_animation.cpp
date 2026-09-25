@@ -33,6 +33,7 @@
 #include <fonts/MathStyle.h>
 
 #include <core/Narration.h>
+#include <core/SceneRegistry.h>
 #include <core/MorphAnim.h>
 #include <visuals/ArrowTip.h>
 #include <visuals/Image.h>
@@ -257,7 +258,7 @@ std::unique_ptr<Group> demo_letter( Stage &stage, const char *s, const Color &co
 
 // A shape that turns into other shapes and letters, one after the other: circle, square, then glyphs
 // (with holes that open and close) and back to the circle.
-Scene show_morph( Stage &stage )
+Scene show_morph( Stage &stage, Script & )
 {
 	const Point home = { 0.F, 2.5F };
 	auto circle = [&]() { return demo_circle( home ); };
@@ -286,7 +287,7 @@ Scene show_morph( Stage &stage )
 
 // A formula that is rewritten step by step. Parts that stay the same (the a, the b, the plus signs) only
 // slide into place, the rest morph or fade: leaves are matched by their tags, then by identical glyphs.
-Scene show_formula_morph( Stage &stage )
+Scene show_formula_morph( Stage &stage, Script & )
 {
 	using namespace math;
 	Context context( *stage.theme );
@@ -328,7 +329,7 @@ Scene show_formula_morph( Stage &stage )
 
 // A sentence that is edited: words that stay put only slide into place, words that go away fade out, new
 // ones fade in, and a word that is replaced turns into its replacement letter by letter.
-Scene show_text_morph( Stage &stage )
+Scene show_text_morph( Stage &stage, Script & )
 {
 	auto line = [&]( const char *sentence )
 	{
@@ -358,9 +359,8 @@ Scene show_text_morph( Stage &stage )
 // Strokes, arrows, letters that morph one after another, and pictures: a line inflates into a disc, which
 // becomes an arrow that then turns; the arrow becomes a word whose letters change in a ripple; the word
 // becomes a picture, which moves and fades into a disc.
-Scene show_more_morphs( Stage &stage )
+Scene show_more_morphs( Stage &stage, Script & )
 {
-	stage.visuals.clear();
 	const Point spot = { 0.F, 1.F };
 
 	auto line = std::make_unique<Line>();
@@ -434,7 +434,6 @@ Scene show_more_morphs( Stage &stage )
 		shown = next;
 		co_await wait_for( 12 );
 	}
-	stage.visuals.clear();
 }
 
 Scene narrate( Narration &narration )
@@ -537,55 +536,54 @@ Scene show_karaoke( Stage &stage, Script &script )
 			} ) );
 }
 
-Screenplay my_screenplay( Stage &stage, Script &script )
+// The ease functions side by side, as circles racing across the screen while the narrator speaks
+Scene show_eases( Stage &stage, Script &script )
 {
-	int64_t duration = 24;
+	const int64_t duration = 24;
 
-	std::string not_found{ "\uFFFD" };
-
+	const std::string not_found{ "\uFFFD" };
 	const std::string lang = script.master_language();
-	std::string label_cubic_in{
-		script.fetch( lang, "labels", "ease_cubic_in" ).as_string( not_found ) };
-	std::string label_cubic_out{
-		script.fetch( lang, "labels", "ease_cubic_out" ).as_string( not_found ) };
-	std::string label_cubic_in_out{
-		script.fetch( lang, "labels", "ease_cubic_in_out" ).as_string( not_found ) };
-	std::string label_elastic_in{
-		script.fetch( lang, "labels", "ease_elastic_in" ).as_string( not_found ) };
-	std::string label_elastic_out{
-		script.fetch( lang, "labels", "ease_elastic_out" ).as_string( not_found ) };
-	std::string label_elastic_in_out{
-		script.fetch( lang, "labels", "ease_elastic_in_out" ).as_string( not_found ) };
-	std::string label_back_in{
-		script.fetch( lang, "labels", "ease_back_in" ).as_string( not_found ) };
-	std::string label_back_out{
-		script.fetch( lang, "labels", "ease_back_out" ).as_string( not_found ) };
-	std::string label_back_in_out{
-		script.fetch( lang, "labels", "ease_back_in_out" ).as_string( not_found ) };
-	std::string label_linear{
-		script.fetch( lang, "labels", "ease_linear" ).as_string( not_found ) };
+	auto label = [&]( const char *key ) { return std::string( script.fetch( lang, "labels", key ).as_string( not_found ) ); };
 
-	//show_title( stage );
-	// show_math( stage ); // shares the screen with the karaoke text below
+	Narration narration;
+	narration.setup( "narrator", script, stage.audio );
+	narration.speech( "intro" );
 
-	/*
 	co_await choreograph(
-		show_ease( stage, label_cubic_in, lang, ease_cubic_in, 3.F, duration ),
-		show_ease( stage, label_cubic_out, lang, ease_cubic_out, 2.5F, duration ),
-		show_ease( stage, label_cubic_in_out, lang, ease_cubic_in_out, 2.0F, duration ),
-		show_ease( stage, label_elastic_in, lang, ease_elastic_in, 1.5F, duration ),
-		show_ease( stage, label_elastic_out, lang, ease_elastic_out, 1.0F, duration ),
-		show_ease( stage, label_elastic_in_out, lang, ease_elastic_in_out, 0.5F, duration ),
-		show_ease( stage, label_back_in, lang, ease_back_in, 0.F, duration ),
-		show_ease( stage, label_back_out, lang, ease_back_out, -0.5F, duration ),
-		show_ease( stage, label_back_in_out, lang, ease_back_in_out, -1.0F, duration ),
-		show_ease( stage, label_linear, lang, ease_linear, -1.5F, duration ),
-		narrate( stage, script ) );
-	*/
-	co_await show_morph( stage );
-	co_await show_formula_morph( stage );
-	co_await show_text_morph( stage );
-	co_await show_more_morphs( stage );
-	co_await show_karaoke( stage, script );
-	co_await wait_for( duration );
+		show_ease( stage, label( "ease_cubic_in" ), lang, ease_cubic_in, 3.F, duration ),
+		show_ease( stage, label( "ease_cubic_out" ), lang, ease_cubic_out, 2.5F, duration ),
+		show_ease( stage, label( "ease_cubic_in_out" ), lang, ease_cubic_in_out, 2.0F, duration ),
+		show_ease( stage, label( "ease_elastic_in" ), lang, ease_elastic_in, 1.5F, duration ),
+		show_ease( stage, label( "ease_elastic_out" ), lang, ease_elastic_out, 1.0F, duration ),
+		show_ease( stage, label( "ease_elastic_in_out" ), lang, ease_elastic_in_out, 0.5F, duration ),
+		show_ease( stage, label( "ease_back_in" ), lang, ease_back_in, 0.F, duration ),
+		show_ease( stage, label( "ease_back_out" ), lang, ease_back_out, -0.5F, duration ),
+		show_ease( stage, label( "ease_back_in_out" ), lang, ease_back_in_out, -1.0F, duration ),
+		show_ease( stage, label( "ease_linear" ), lang, ease_linear, -1.5F, duration ),
+		narrate( narration ) );
 }
+
+// A page of laid-out formulas (see show_math)
+Scene show_formulas( Stage &stage, Script & )
+{
+	show_math( stage );
+	co_await wait_for( 72 );
+}
+
+// The whole demo: the scenes above one after another, each on a fresh stage
+Scene movie( Stage &stage, Script &script )
+{
+	co_await sequence(
+		stage,
+		script,
+		{ "morph-shapes", "morph-formula", "morph-text", "morph-strokes", "karaoke" } );
+}
+
+SONIMATION_SCENE( "eases", "The ease functions, as circles racing across the screen (with narration)", show_eases );
+SONIMATION_SCENE( "formulas", "A page of laid-out math formulas", show_formulas );
+SONIMATION_SCENE( "morph-shapes", "A circle turning into a square and letters, with holes opening and closing", show_morph );
+SONIMATION_SCENE( "morph-formula", "(a+b)^2 rewritten step by step, matching parts by tag and glyph", show_formula_morph );
+SONIMATION_SCENE( "morph-text", "A sentence edited word by word", show_text_morph );
+SONIMATION_SCENE( "morph-strokes", "A line, an arrow, staggered letters and a picture morphing", show_more_morphs );
+SONIMATION_SCENE( "karaoke", "Narrated text lit word by word, and a shape changing on the words", show_karaoke );
+SONIMATION_SCENE( "movie", "All the morph demos, then the karaoke", movie );

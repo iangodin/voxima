@@ -2,13 +2,14 @@
 #include <core/Screenplay.h>
 #include <core/Producer.h>
 
+#include <exception>
+#include <iostream>
+
 #include <themes/AcademicClassic.h>
 #include <themes/EngineeringBlueprint.h>
 #include <themes/ModernTechnical.h>
 #include <themes/PlayfulDiscovery.h>
 #include <themes/NewComputerModern.h>
-
-Screenplay my_screenplay( Stage &stage, Script &script );
 
 int main( int argc, char *argv[] )
 {
@@ -21,9 +22,18 @@ int main( int argc, char *argv[] )
 
 	int result = 0;
 
-	Producer producer( my_screenplay );
-	if ( !producer.produce( argc, argv ) )
-		result = -1;
+	// A mistake on the command line (an unknown scene, a missing script directory ...) is reported, not a crash
+	try
+	{
+		Producer producer;
+		if ( !producer.produce( argc, argv ) )
+			result = -1;
+	}
+	catch ( const std::exception &e )
+	{
+		std::cerr << "Error: " << e.what() << '\n';
+		result = 1;
+	}
 
 	return result;
 }

@@ -85,8 +85,8 @@
 
 ## Rendering
   - [ ] Add support for motion blur
-  - [ ] Add registry of "Scenes"
-  - [ ] Add command line option to select a scene to render
+  - [x] Add registry of "Scenes" (SONIMATION_SCENE, play/sequence for movies; see doc/scenes.md)
+  - [x] Add command line option to select a scene to render (--scene, repeatable; --list-scenes)
 
 ## Final Muxing
   - [x] Need to use ffmpeg to mix the audio and video (simple proof of concept)
