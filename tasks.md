@@ -64,7 +64,7 @@
   - [x] Expose per-word narration timing to animation (forced alignment, proportional fallback)
   - [x] co_await API: until_word / until_word_end / until_time / on_words
   - [x] Karaoke word highlighting demo
-  - [ ] Try the demo with --lang fr, Polish and no aligner model
+  - [x] Try the demo with --lang fr, Polish and no aligner model
   - [ ] Per-word animation helpers (fade / scale / underline over the word's duration)
 
 ##  Subtitles

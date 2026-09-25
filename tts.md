@@ -617,10 +617,10 @@ pronounceable (a lone dash, a quote) are not words, and Han/kana are split per c
 **Timing** (`src/audio/TimedWord.h`, `Narrator`). `Narrator::words()` gives a
 `TimedWord { word, line, begin, end, start_seconds, end_seconds }` per word, relative to
 the start of the `speech()` batch, across all its lines. `match_words()` pairs the
-aligner's words with `split_words()` when their counts agree. Otherwise - Polish (no
-aligner support), no `--aligner-model`, an alignment failure, or a tokenization mismatch
-around numbers/hyphens - `distribute_words()` spreads the words over the line in
-proportion to their length in code points. Subtitle cues are unchanged and still use the
+aligner's words with `split_words()` when their counts agree. Otherwise - no
+`--aligner-model`, an alignment failure or unsupported language, or a tokenization
+mismatch around numbers/hyphens - `distribute_words()` spreads the words over the line
+in proportion to their length in code points. Subtitle cues are unchanged and still use the
 aligned first/last word, or the whole line as a fallback.
 
 `Narrator::position()` is the seconds of the batch's audio consumed by `speak()` so far.
@@ -649,9 +649,29 @@ text to be the narrated lines as written.
 
 **Demo.** `demos/eases/show_animation.cpp`'s `show_karaoke` scene dims the narrated text
 and lights each word yellow as it is spoken. Verified with a real render (Chatterbox +
-Qwen aligner): the highlight tracks the speech and the SRT cues agree. Not yet run with
-`--lang fr`, with Polish, or with the aligner disabled (the fallback paths are covered
-only by unit tests of `distribute_words()`/`match_words()`).
+Qwen aligner): the highlight tracks the speech and the SRT cues agree.
+
+Checked on real renders (`demos/eases`, 24 fps; highlight timing measured from the
+rendered frames, and which path each line took confirmed with a temporary debug print):
+
+| Render | Aligner | Words matched | Result |
+|---|---|---|---|
+| `--lang en` | on | 5/5, 9/9 | real alignment |
+| `--lang fr` | on | 6/6, 7/7 | real alignment |
+| `--lang pl` | on | 6/6, 9/9 | real alignment (see below) |
+| `--lang en --aligner-model ""` | off | - | proportional fallback |
+
+In every render the highlighted words match the on-screen word count, line by line. The
+fallback's word starts follow the character-count prediction to within a frame (e.g.
+0.00/0.38/0.71/1.25/1.58 s measured vs 0.00/0.40/0.72/1.29/1.62 s predicted), and its
+subtitle cues are untrimmed (they abut) as expected.
+
+**Polish aligns in practice.** The Qwen3 Forced Aligner's documented language list does
+not include Polish, but for the demo sentences it returned the right number of words with
+plausible timings (also seen via `align_poc`), so `Narrator` takes the aligned path. Only
+two short sentences were checked, so treat Polish alignment as working but unverified
+beyond that; the proportional fallback is still there if it ever fails or miscounts.
+`demos/eases/pl.huml` was added for this check.
 
 **Text layout options** (same change set). `make_styled_text()` / `make_text()` take a
 `TextLayout { align, line_spacing }`. Line spacing is now `1.2 x` the largest font size
@@ -670,9 +690,9 @@ looks (single-line text is unaffected).
 - File an upstream issue on `0xShug0/audio.cpp` about the Chinese/Japanese
   language gap in the Chatterbox model spec, if/when it becomes a priority.
 - Polish has no forced-alignment support (Qwen3 Forced Aligner's 11 languages don't
-  include `pl`) - accepted gap, same treatment as zh/ja. Polish word-level sync falls back
-  to proportional distribution (see "Word-level animation sync"); subtitle cues use the
-  whole line.
+  include `pl`) - documented gap, but in practice it aligned two demo sentences correctly
+  (see "Word-level animation sync"). If a Polish line ever fails or miscounts, word sync
+  falls back to proportional distribution and the subtitle cue to the whole line.
 - mp4/webm subtitle muxing (`mov_text`/`webvtt`) implemented but not independently
   smoke-tested with a real render - only mkv was, this session.
 - Phase 5 (mock TTS backend for ctest coverage of `Narrator`/`Narration`) is next up
