@@ -237,6 +237,33 @@ TEST_CASE( "match_leaves lets parts that only one side names fade", "[morph]" )
 	}
 }
 
+TEST_CASE( "match_leaves pairs the one leaf of a kind on each side, wherever it went", "[morph]" )
+{
+	// A line and an arrow tip that both move a long way (an arrow that turns): far too far apart for
+	// proximity, but each kind is there once on each side
+	auto with_kind = []( LeafKind kind, uint64_t key, float x )
+	{
+		OutlineShape shape = leaf( key, x );
+		shape.kind = kind;
+		return shape;
+	};
+	std::vector<OutlineShape> a{ with_kind( LeafKind::LINE, 1, 0 ), with_kind( LeafKind::ARROW_TIP, 2, 3 ) };
+	std::vector<OutlineShape> b{ with_kind( LeafKind::LINE, 3, 100 ), with_kind( LeafKind::ARROW_TIP, 4, 103 ) };
+
+	const auto pairs = match_leaves( a, b, LeafMatch::AUTO );
+	CHECK( has( pairs, 0, 0 ) );
+	CHECK( has( pairs, 1, 1 ) );
+
+	SECTION( "but not when there are several of the kind, which is a job for distance" )
+	{
+		a.push_back( with_kind( LeafKind::LINE, 5, 6 ) );
+		b.push_back( with_kind( LeafKind::LINE, 6, 106 ) );
+		const auto again = match_leaves( a, b, LeafMatch::AUTO );
+		CHECK( has( again, 1, 1 ) ); // the tips are still alone
+		CHECK( has( again, 0, -1 ) ); // the lines are ambiguous and far away: they fade
+	}
+}
+
 TEST_CASE( "match_leaves lists leaves in the second visual's order", "[morph]" )
 {
 	std::vector<OutlineShape> a{ leaf( 1, 0 ), leaf( 2, 1 ), leaf( 3, 2 ) };

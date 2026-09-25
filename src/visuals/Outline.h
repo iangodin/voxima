@@ -18,12 +18,27 @@ struct CubicSeg
 	Point to;
 };
 
-// A closed loop of cubic segments. Fills close open paths implicitly, so every contour is closed:
-// the last segment ends where the contour starts.
+// A run of cubic segments. Almost every contour is a closed loop (fills close open paths implicitly): the
+// last segment ends where the contour starts. The exception is a stroke-only shape such as a Line, an open
+// contour that ends where it ends.
 struct Contour
 {
 	Point start;
 	std::vector<CubicSeg> segs;
+	bool closed = true;
+};
+
+// What a leaf was drawn as
+enum class LeafKind
+{
+	PATH,
+	GLYPH,
+	CIRCLE,
+	ELLIPSE,
+	RECTANGLE,
+	ROUND_RECTANGLE,
+	LINE,
+	ARROW_TIP
 };
 
 // One drawn leaf (a glyph, a circle, a path ...) as filled outlines. A glyph like "o" has two
@@ -44,6 +59,8 @@ struct OutlineShape
 	// (each text() in a formula) is laid out on its own and starts again at "word0".
 	int word = -1;
 
+	LeafKind kind = LeafKind::PATH;
+
 	// Identifies the leaf's own geometry, before any transform: two glyphs of the same letter at the
 	// same size have the same key wherever they sit. Never 0.
 	uint64_t key = 0;
@@ -53,14 +70,20 @@ struct OutlineShape
 // its parent: the visual's own position/rotation/scale and those of its groups are baked in
 // (same order as the SVG writer: translate, rotate, scale) and group colors are multiplied down.
 // Leaves come out in drawing order, one OutlineShape each. Lines, arrow tips and images have no
-// filled outline; they are skipped, and counted in `skipped` if it is given.
+// filled outline; they are skipped, and counted in `skipped` if it is given. (A Line becomes an open
+// contour with no fill, only a stroke; an ArrowTip is its triangle.)
 std::vector<OutlineShape> to_outline( const Visual &visual, size_t *skipped = nullptr );
 
-// Area enclosed by the contour, positive for one winding and negative for the other
+// Area enclosed by the contour, positive for one winding and negative for the other (an open contour
+// encloses what it would with a straight line back to its start)
 double signed_area( const Contour &contour );
 
 // Bounds of the contour's on-curve points (segment ends)
 AABB on_curve_bounds( const Contour &contour );
 
-// Same loop, walked the other way (it starts at the same point)
+// Same contour, walked the other way. A loop starts at the same point; an open contour starts at its end.
 Contour reversed( const Contour &contour );
+
+// An open contour as a closed loop that goes out along it and comes straight back (it encloses nothing),
+// so it can be morphed into or out of a filled shape. A closed contour is returned as it is.
+Contour closed_loop( const Contour &contour );

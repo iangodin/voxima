@@ -362,6 +362,35 @@ void match_by_proximity( State &st )
 		eb.push_back( extent_of( shape ) );
 	}
 
+	// A kind of leaf that is left once on each side is the same thing in a new place (an arrow tip when the
+	// arrow turns), however far it has moved
+	if ( gated )
+	{
+		for ( auto kind: { LeafKind::CIRCLE, LeafKind::ELLIPSE, LeafKind::RECTANGLE, LeafKind::ROUND_RECTANGLE, LeafKind::LINE, LeafKind::ARROW_TIP } )
+		{
+			std::vector<size_t> only_a;
+			std::vector<size_t> only_b;
+			for ( size_t i: st.free_a() )
+			{
+				if ( st.a[i].kind == kind && !lonely_a[i] )
+				{
+					only_a.push_back( i );
+				}
+			}
+			for ( size_t j: st.free_b() )
+			{
+				if ( st.b[j].kind == kind && !lonely_b[j] )
+				{
+					only_b.push_back( j );
+				}
+			}
+			if ( only_a.size() == 1 && only_b.size() == 1 )
+			{
+				st.pair( only_a[0], only_b[0] );
+			}
+		}
+	}
+
 	while ( true )
 	{
 		float best = std::numeric_limits<float>::max();

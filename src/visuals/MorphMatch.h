@@ -40,6 +40,11 @@ struct AlignCosts
 	// points that are already close. A projection closer than this (as an arc fraction) to a knot
 	// already there is not added.
 	float min_projection_gap = 0.01F;
+
+	// How many knots of the second contour are tried as the partner of the first's anchor knot. Trying all
+	// of them costs a full alignment each, which adds up on outlines with hundreds of knots; the nearest few
+	// (by position) are where the right one is.
+	size_t max_anchors = 16;
 };
 
 // Two contours cut into the same number of cubics, ready to interpolate segment by segment
@@ -55,11 +60,16 @@ struct ContourPair
 // contours should wind the same way; match_contours() takes care of that.
 ContourPair align_contours( const Contour &a, const Contour &b, const AlignCosts &costs = {} );
 
+// Two open contours (strokes) cut into the same number of cubics. Their ends stay their ends; each is cut
+// wherever the other has a joint, by how far along it is.
+ContourPair align_open( const Contour &a, const Contour &b );
+
 // A contour that is a single point, with the given number of (empty) segments
 Contour point_contour( Point p, size_t segments );
 
-// Pair up the contours of two shapes and align each pair. Holes go with holes and outers with outers
-// (by where they are and how big). Contours left over on the bigger side pair with a point on the
+// Pair up the contours of two shapes and align each pair. Open contours (strokes) go with open contours;
+// one left without goes with a closed one as a loop that goes out and back. Holes go with holes and
+// outers with outers (by where they are and how big). Contours left over on the bigger side pair with a point on the
 // other shape, so they shrink away (or grow from nothing). Winding is made consistent first, so the
 // fill rule keeps holes as holes throughout the morph.
 std::vector<ContourPair> match_contours( const OutlineShape &a, const OutlineShape &b, const AlignCosts &costs = {} );

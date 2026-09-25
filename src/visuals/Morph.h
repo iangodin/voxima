@@ -5,6 +5,7 @@
 #include "visuals/MorphMatch.h"
 #include "visuals/Path.h"
 
+#include <functional>
 #include <memory>
 #include <vector>
 
@@ -13,6 +14,15 @@ struct MorphOptions
 	// How leaves are paired; see LeafMatch
 	LeafMatch leaves = LeafMatch::AUTO;
 	AlignCosts costs;
+
+	// Spread the start of the parts over this fraction of the morph, in drawing order (so left to right
+	// through a word): 0 moves everything together, 0.5 has the last part start halfway through, each
+	// taking the remaining half. Clamped to [0, 0.95].
+	float stagger = 0.F;
+
+	// Shapes each part's own progress, 0 to 1 (on top of any easing that drives set()), such as a smoothstep.
+	// Applied while a part is between its start and end; beyond them it keeps extrapolating linearly.
+	std::function<float( float )> part_ease;
 };
 
 // A shape that changes from one visual into another. Both are flattened to cubic outlines, their
@@ -65,11 +75,14 @@ private:
 		Color stroke_a, stroke_b;
 		float thickness_a = 0.F;
 		float thickness_b = 0.F;
+		float delay = 0.F; // when the part starts, as a fraction of the whole morph
 	};
 
 	std::unique_ptr<Group> _owned;
 	Group *_root = nullptr;
 	std::vector<Part> _parts;
 	std::vector<LeafPair> _pairs;
+	float _stagger = 0.F;
+	std::function<float( float )> _part_ease;
 	float _t = 0.F;
 };

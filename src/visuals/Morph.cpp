@@ -36,7 +36,9 @@ Color transparent( Color c )
 
 Morph::Morph( const Visual &from, const Visual &to, const MorphOptions &options ) :
 	_owned( std::make_unique<Group>() ),
-	_root( _owned.get() )
+	_root( _owned.get() ),
+	_stagger( std::clamp( options.stagger, 0.F, 0.95F ) ),
+	_part_ease( options.part_ease )
 {
 	const auto shapes_a = to_outline( from );
 	const auto shapes_b = to_outline( to );
@@ -88,6 +90,12 @@ Morph::Morph( const Visual &from, const Visual &to, const MorphOptions &options 
 		_parts.push_back( std::move( part ) );
 	}
 
+	// Parts start one after another, in drawing order
+	for ( size_t k = 0; k < _parts.size(); ++k )
+	{
+		_parts[k].delay = _parts.size() > 1 ? _stagger * static_cast<float>( k ) / static_cast<float>( _parts.size() - 1 ) : 0.F;
+	}
+
 	set( 0.F );
 }
 
@@ -96,22 +104,38 @@ void Morph::set( float t )
 	_t = t;
 	for ( auto &part: _parts )
 	{
+		// This part's own progress: it starts at its delay and takes what is left of the morph. Inside the
+		// morph it stays between 0 and 1 (so it has finished before the end); outside, as when an ease
+		// overshoots, it carries on past.
+		float progress = ( _t - part.delay ) / ( 1.F - _stagger );
+		if ( _t >= 0.F && _t <= 1.F )
+		{
+			progress = std::clamp( progress, 0.F, 1.F );
+		}
+		if ( _part_ease && progress >= 0.F && progress <= 1.F )
+		{
+			progress = _part_ease( progress );
+		}
+
 		Path &path = *part.path;
-		path.color = lerp( part.fill_a, part.fill_b, t );
-		path.stroke_color = lerp( part.stroke_a, part.stroke_b, t );
-		path.stroke_thickness = std::max( 0.F, lerp( part.thickness_a, part.thickness_b, t ) );
+		path.color = lerp( part.fill_a, part.fill_b, progress );
+		path.stroke_color = lerp( part.stroke_a, part.stroke_b, progress );
+		path.stroke_thickness = std::max( 0.F, lerp( part.thickness_a, part.thickness_b, progress ) );
 
 		path.commands.clear();
 		for ( const auto &pair: part.contours )
 		{
-			path.commands.push_back( MoveTo{ lerp( pair.a.start, pair.b.start, t ) } );
+			path.commands.push_back( MoveTo{ lerp( pair.a.start, pair.b.start, progress ) } );
 			for ( size_t i = 0; i < pair.a.segs.size(); ++i )
 			{
 				const CubicSeg &a = pair.a.segs[i];
 				const CubicSeg &b = pair.b.segs[i];
-				path.commands.push_back( CubicTo{ lerp( a.to, b.to, t ), lerp( a.c1, b.c1, t ), lerp( a.c2, b.c2, t ) } );
+				path.commands.push_back( CubicTo{ lerp( a.to, b.to, progress ), lerp( a.c1, b.c1, progress ), lerp( a.c2, b.c2, progress ) } );
 			}
-			path.commands.push_back( Close{} );
+			if ( pair.a.closed )
+			{
+				path.commands.push_back( Close{} );
+			}
 		}
 	}
 }

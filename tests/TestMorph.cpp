@@ -3,16 +3,20 @@
 
 #include <core/Theme.h>
 #include <themes/AcademicClassic.h>
+#include <visuals/ArrowTip.h>
 #include <visuals/Circle.h>
 #include <visuals/CreateText.h>
 #include <visuals/Group.h>
+#include <visuals/Line.h>
 #include <visuals/Morph.h>
 #include <visuals/MorphMatch.h>
 #include <visuals/Outline.h>
+#include <visuals/Path.h>
 #include <visuals/Rectangle.h>
 
 #include <cmath>
 #include <numbers>
+#include <variant>
 
 using Catch::Approx;
 
@@ -484,5 +488,391 @@ TEST_CASE( "Group::replace and remove", "[morph]" )
 		CHECK( taken.get() == &b );
 		CHECK( group.size() == 2 );
 		CHECK_FALSE( group.remove( &b ) );
+	}
+}
+
+namespace
+{
+Contour polyline( std::initializer_list<Point> points )
+{
+	Contour c;
+	c.closed = false;
+	auto it = points.begin();
+	c.start = *it;
+	Point prev = *it;
+	for ( ++it; it != points.end(); ++it )
+	{
+		c.segs.push_back( { prev + ( *it - prev ) * ( 1.F / 3.F ), prev + ( *it - prev ) * ( 2.F / 3.F ), *it } );
+		prev = *it;
+	}
+	return c;
+}
+
+Point end_of( const Contour &c )
+{
+	return c.segs.back().to;
+}
+}
+
+TEST_CASE( "align_open cuts two strokes to the same number of pieces, ends fixed", "[morph]" )
+{
+	const Contour straight = polyline( { { 0.F, 0.F }, { 3.F, 0.F } } );
+	const Contour bent = polyline( { { 0.F, 0.F }, { 1.F, 0.F }, { 1.F, 2.F }, { 3.F, 2.F } } );
+
+	const ContourPair pair = align_open( straight, bent );
+
+	CHECK_FALSE( pair.a.closed );
+	CHECK_FALSE( pair.b.closed );
+	CHECK( pair.a.segs.size() == pair.b.segs.size() );
+	CHECK( pair.a.segs.size() >= 3 );
+	CHECK( same_point( pair.a.start, { 0.F, 0.F } ) );
+	CHECK( same_point( pair.b.start, { 0.F, 0.F } ) );
+	CHECK( same_point( end_of( pair.a ), { 3.F, 0.F } ) );
+	CHECK( same_point( end_of( pair.b ), { 3.F, 2.F } ) );
+
+	SECTION( "neither stroke changes shape" )
+	{
+		// every point of the straight one is still on the line
+		Point at = pair.a.start;
+		for ( const auto &seg: pair.a.segs )
+		{
+			CHECK( std::abs( seg.c1.y() ) < 1e-4F );
+			CHECK( std::abs( seg.c2.y() ) < 1e-4F );
+			CHECK( seg.to.x() >= at.x() - 1e-4F );
+			at = seg.to;
+		}
+		// and the bent one still passes through its corners
+		bool corner1 = false;
+		bool corner2 = false;
+		for ( const auto &seg: pair.b.segs )
+		{
+			corner1 = corner1 || same_point( seg.to, { 1.F, 0.F } );
+			corner2 = corner2 || same_point( seg.to, { 1.F, 2.F } );
+		}
+		CHECK( corner1 );
+		CHECK( corner2 );
+	}
+}
+
+TEST_CASE( "align_open of two single segments needs no cutting", "[morph]" )
+{
+	const ContourPair pair = align_open( polyline( { { 0.F, 0.F }, { 1.F, 0.F } } ), polyline( { { 0.F, 1.F }, { 5.F, 4.F } } ) );
+	CHECK( pair.a.segs.size() == 1 );
+	CHECK( pair.b.segs.size() == 1 );
+}
+
+TEST_CASE( "match_contours pairs strokes with strokes, and a lone stroke with a loop", "[morph]" )
+{
+	OutlineShape stroke_a;
+	stroke_a.contours.push_back( polyline( { { 0.F, 0.F }, { 2.F, 0.F } } ) );
+	OutlineShape stroke_b;
+	stroke_b.contours.push_back( polyline( { { 0.F, 1.F }, { 2.F, 3.F } } ) );
+	OutlineShape disc;
+	disc.contours.push_back( circle_contour( 1.F ) );
+
+	SECTION( "stroke to stroke stays open" )
+	{
+		const auto pairs = match_contours( stroke_a, stroke_b );
+		REQUIRE( pairs.size() == 1 );
+		CHECK_FALSE( pairs[0].a.closed );
+		CHECK_FALSE( pairs[0].b.closed );
+	}
+
+	SECTION( "stroke to a filled shape goes out and back, then morphs like any loop" )
+	{
+		const auto pairs = match_contours( stroke_a, disc );
+		REQUIRE( pairs.size() == 1 );
+		CHECK( pairs[0].a.closed );
+		CHECK( pairs[0].b.closed );
+		CHECK( pairs[0].a.segs.size() == pairs[0].b.segs.size() );
+		CHECK( signed_area( pairs[0].a ) == Approx( 0.0 ).margin( 1e-9 ) );
+		CHECK( std::abs( signed_area( pairs[0].b ) ) == Approx( std::numbers::pi ).epsilon( 1e-3 ) );
+	}
+
+	SECTION( "and the other way round" )
+	{
+		const auto pairs = match_contours( disc, stroke_a );
+		REQUIRE( pairs.size() == 1 );
+		CHECK( pairs[0].a.closed );
+		CHECK( pairs[0].b.closed );
+	}
+}
+
+TEST_CASE( "A line morphs into a disc and back", "[morph]" )
+{
+	Line line;
+	line.start = { -2.F, 0.F };
+	line.end = { 2.F, 0.F };
+	line.stroke_thickness = 0.2F;
+	line.stroke_color = { 1.F, 1.F, 0.F, 1.F };
+	Circle disc;
+	disc.radius = 1.F;
+	disc.color = { 1.F, 0.F, 0.F, 1.F };
+
+	Morph morph( line, disc );
+
+	morph.set( 0.F );
+	auto start = to_outline( morph.visual() );
+	REQUIRE( start.size() == 1 );
+	CHECK( start[0].fill.a == Approx( 0.F ) );
+	CHECK( start[0].stroke_thickness == Approx( 0.2F ) );
+	CHECK( std::abs( area_of( morph.visual() ) ) == Approx( 0.0 ).margin( 1e-6 ) );
+	CHECK( bounds_of( morph.visual() ).min.x() == Approx( -2.F ).margin( 1e-3 ) );
+	CHECK( bounds_of( morph.visual() ).max.x() == Approx( 2.F ).margin( 1e-3 ) );
+
+	morph.set( 1.F );
+	auto end = to_outline( morph.visual() );
+	CHECK( end[0].fill.a == Approx( 1.F ) );
+	CHECK( end[0].stroke_thickness == Approx( 0.F ).margin( 1e-6 ) );
+	CHECK( std::abs( area_of( morph.visual() ) ) == Approx( std::numbers::pi ).epsilon( 1e-3 ) );
+
+	for ( float t: { 0.25F, 0.5F, 0.75F, -0.2F, 1.2F } )
+	{
+		morph.set( t );
+		CHECK( finite( morph ) );
+	}
+
+	Morph back( disc, line );
+	back.set( 1.F );
+	CHECK( std::abs( area_of( back.visual() ) ) == Approx( 0.0 ).margin( 1e-6 ) );
+}
+
+TEST_CASE( "A line morphed into a line stays an open stroke", "[morph]" )
+{
+	Line a;
+	a.start = { 0.F, 0.F };
+	a.end = { 2.F, 0.F };
+	a.stroke_thickness = 0.1F;
+	Line b;
+	b.start = { 0.F, 1.F };
+	b.end = { 3.F, 2.F };
+	b.stroke_thickness = 0.3F;
+
+	Morph morph( a, b );
+	morph.set( 0.5F );
+
+	REQUIRE( morph.visual().size() == 1 );
+	const auto &path = static_cast<const Path &>( **morph.visual().begin() );
+	bool closes = false;
+	for ( const auto &cmd: path.commands )
+	{
+		closes = closes || std::holds_alternative<Close>( cmd );
+	}
+	CHECK_FALSE( closes );
+	CHECK( path.stroke_thickness == Approx( 0.2F ) );
+	CHECK( path.color.a == Approx( 0.F ) );
+}
+
+TEST_CASE( "A group with lines and an arrow head keeps them through a morph", "[morph]" )
+{
+	auto arrow = []( float dx, float dy )
+	{
+		auto g = std::make_unique<Group>();
+		auto line = std::make_unique<Line>();
+		line->end = { dx, dy };
+		line->stroke_thickness = 0.1F;
+		auto tip = std::make_unique<ArrowTip>();
+		tip->end = { dx, dy };
+		tip->size = 0.2F;
+		g->add( std::move( line ) );
+		g->add( std::move( tip ) );
+		return g;
+	};
+
+	auto right = arrow( 3.F, 0.F );
+	auto up = arrow( 0.F, 3.F );
+
+	Morph morph( *right, *up );
+	// the stroke turns into the stroke, the tip into the tip
+	REQUIRE( morph.visual().size() == 2 );
+	for ( auto p: morph.pairs() )
+	{
+		CHECK( p.a >= 0 );
+		CHECK( p.b >= 0 );
+	}
+	morph.set( 0.F );
+	CHECK( bounds_of( morph.visual() ).max.x() == Approx( 3.F ).margin( 1e-3 ) );
+	morph.set( 1.F );
+	CHECK( bounds_of( morph.visual() ).max.y() == Approx( 3.F ).margin( 1e-3 ) );
+}
+
+TEST_CASE( "align_contours copes with dense outlines and stays exact", "[morph]" )
+{
+	// A 300-corner polygon around a circle against a 260-corner one around a wobbly ring
+	auto ring = []( int n, float radius, float wobble )
+	{
+		Contour c;
+		auto at = [&]( int i )
+		{
+			const float a = 2.F * std::numbers::pi_v<float> * static_cast<float>( i ) / static_cast<float>( n );
+			const float r = radius * ( 1.F + wobble * std::sin( 7.F * a ) );
+			return Point{ r * std::cos( a ), r * std::sin( a ) };
+		};
+		c.start = at( 0 );
+		Point prev = c.start;
+		for ( int i = 1; i <= n; ++i )
+		{
+			const Point to = i == n ? c.start : at( i );
+			c.segs.push_back( { prev + ( to - prev ) * ( 1.F / 3.F ), prev + ( to - prev ) * ( 2.F / 3.F ), to } );
+			prev = to;
+		}
+		return c;
+	};
+	const Contour a = ring( 300, 1.F, 0.F );
+	const Contour b = ring( 260, 1.5F, 0.2F );
+
+	const ContourPair pair = align_contours( a, b );
+	CHECK( pair.a.segs.size() == pair.b.segs.size() );
+	CHECK( pair.a.segs.size() >= 300 );
+	CHECK( signed_area( pair.a ) == Approx( signed_area( a ) ).epsilon( 1e-4 ) );
+	CHECK( signed_area( pair.b ) == Approx( signed_area( b ) ).epsilon( 1e-4 ) );
+
+	SECTION( "trying only a few anchors gives an equally good pairing" )
+	{
+		AlignCosts few;
+		few.max_anchors = 2;
+		const ContourPair cheap = align_contours( a, b, few );
+		CHECK( cheap.a.segs.size() == cheap.b.segs.size() );
+		CHECK( signed_area( cheap.a ) == Approx( signed_area( a ) ).epsilon( 1e-4 ) );
+		CHECK( signed_area( cheap.b ) == Approx( signed_area( b ) ).epsilon( 1e-4 ) );
+	}
+}
+
+namespace
+{
+// Three discs in a row, and three rectangles in the same places
+std::unique_ptr<Group> discs()
+{
+	auto g = std::make_unique<Group>();
+	for ( int i = 0; i < 3; ++i )
+	{
+		auto c = std::make_unique<Circle>();
+		c->radius = 1.F;
+		c->position = { 5.F * static_cast<float>( i ), 0.F };
+		g->add( std::move( c ) );
+	}
+	return g;
+}
+
+std::unique_ptr<Group> boxes()
+{
+	auto g = std::make_unique<Group>();
+	for ( int i = 0; i < 3; ++i )
+	{
+		auto r = std::make_unique<Rectangle>();
+		r->half_width = 1.F;
+		r->half_height = 0.5F;
+		r->position = { 5.F * static_cast<float>( i ), 0.F };
+		g->add( std::move( r ) );
+	}
+	return g;
+}
+
+double part_area( Morph &morph, size_t k )
+{
+	return std::abs( signed_area( to_outline( morph.visual() )[k].contours[0] ) );
+}
+}
+
+TEST_CASE( "Morph stagger starts the parts one after another", "[morph]" )
+{
+	auto from = discs();
+	auto to = boxes();
+
+	MorphOptions options;
+	options.stagger = 0.5F;
+	Morph morph( *from, *to, options );
+	REQUIRE( morph.visual().size() == 3 );
+
+	const double disc = std::numbers::pi;
+	const double box = 4.0 * 1.0 * 0.5;
+
+	SECTION( "the ends are the source and the target, whatever the stagger" )
+	{
+		morph.set( 0.F );
+		for ( size_t k = 0; k < 3; ++k ) CHECK( part_area( morph, k ) == Approx( disc ).epsilon( 1e-3 ) );
+		morph.set( 1.F );
+		for ( size_t k = 0; k < 3; ++k ) CHECK( part_area( morph, k ) == Approx( box ).epsilon( 1e-3 ) );
+	}
+
+	SECTION( "halfway, the first part is done, the last has not begun" )
+	{
+		morph.set( 0.5F );
+		CHECK( part_area( morph, 0 ) == Approx( box ).epsilon( 1e-3 ) );
+		CHECK( part_area( morph, 2 ) == Approx( disc ).epsilon( 1e-3 ) );
+		// the middle one is half way there
+		const double mid = part_area( morph, 1 );
+		CHECK( mid < disc );
+		CHECK( mid > box );
+	}
+
+	SECTION( "parts that start later are behind" )
+	{
+		morph.set( 0.3F );
+		// 0.3 is 60% through the first part's span, 10% through the middle one's, not yet the last's
+		const double a = part_area( morph, 0 );
+		const double b = part_area( morph, 1 );
+		const double c = part_area( morph, 2 );
+		CHECK( a < b );
+		CHECK( b < c );
+		CHECK( c == Approx( disc ).epsilon( 1e-3 ) );
+	}
+
+	SECTION( "overshooting easing carries on past the ends" )
+	{
+		for ( float t: { -0.3F, 1.3F } )
+		{
+			morph.set( t );
+			CHECK( finite( morph ) );
+		}
+	}
+}
+
+TEST_CASE( "Morph without stagger moves every part together", "[morph]" )
+{
+	auto from = discs();
+	auto to = boxes();
+	Morph morph( *from, *to );
+	morph.set( 0.5F );
+	CHECK( part_area( morph, 0 ) == Approx( part_area( morph, 1 ) ).epsilon( 1e-4 ) );
+	CHECK( part_area( morph, 1 ) == Approx( part_area( morph, 2 ) ).epsilon( 1e-4 ) );
+}
+
+TEST_CASE( "Morph part_ease reshapes each part's own progress", "[morph]" )
+{
+	auto from = discs();
+	auto to = boxes();
+
+	MorphOptions options;
+	// nothing happens until a part is completely done, then it jumps
+	options.part_ease = []( float u ) { return u < 1.F ? 0.F : 1.F; };
+	Morph morph( *from, *to, options );
+
+	morph.set( 0.5F );
+	for ( size_t k = 0; k < 3; ++k )
+	{
+		CHECK( part_area( morph, k ) == Approx( std::numbers::pi ).epsilon( 1e-3 ) );
+	}
+	morph.set( 1.F );
+	for ( size_t k = 0; k < 3; ++k )
+	{
+		CHECK( part_area( morph, k ) == Approx( 2.0 ).epsilon( 1e-3 ) );
+	}
+}
+
+TEST_CASE( "Morph stagger outside its range is safe", "[morph]" )
+{
+	auto from = discs();
+	auto to = boxes();
+	for ( float stagger: { -1.F, 5.F } )
+	{
+		MorphOptions options;
+		options.stagger = stagger;
+		Morph morph( *from, *to, options );
+		for ( float t: { 0.F, 0.5F, 1.F } )
+		{
+			morph.set( t );
+			CHECK( finite( morph ) );
+		}
 	}
 }

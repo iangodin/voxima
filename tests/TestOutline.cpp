@@ -3,10 +3,12 @@
 
 #include <core/Theme.h>
 #include <themes/AcademicClassic.h>
+#include <visuals/ArrowTip.h>
 #include <visuals/Circle.h>
 #include <visuals/CreateText.h>
 #include <visuals/Ellipse.h>
 #include <visuals/Group.h>
+#include <visuals/Image.h>
 #include <visuals/Line.h>
 #include <visuals/Outline.h>
 #include <visuals/Path.h>
@@ -242,16 +244,105 @@ TEST_CASE( "to_outline carries colors, one shape per leaf", "[outline]" )
 	CHECK( shapes[0].stroke_thickness == Approx( 0.2F ) );
 }
 
-TEST_CASE( "to_outline skips what has no filled outline", "[outline]" )
+TEST_CASE( "to_outline skips what it cannot draw as an outline", "[outline]" )
 {
 	Group group;
-	group.add( std::make_unique<Line>() );
+	group.add( std::make_unique<Image>() );
 	group.add( std::make_unique<Circle>() );
 
 	size_t skipped = 0;
 	auto shapes = to_outline( group, &skipped );
 	CHECK( shapes.size() == 1 );
 	CHECK( skipped == 1 );
+}
+
+TEST_CASE( "to_outline gives a line as an open stroke with nothing to fill", "[outline]" )
+{
+	Line line;
+	line.start = { 1.F, 1.F };
+	line.end = { 4.F, 1.F };
+	line.stroke_thickness = 0.2F;
+	line.stroke_color = { 0.F, 1.F, 0.F, 1.F };
+	line.position = { 0.F, 2.F };
+
+	auto shapes = to_outline( line );
+	REQUIRE( shapes.size() == 1 );
+	REQUIRE( shapes[0].contours.size() == 1 );
+	const Contour &c = shapes[0].contours[0];
+
+	CHECK_FALSE( c.closed );
+	CHECK( c.segs.size() == 1 );
+	CHECK( c.start.x() == Approx( 1.F ) );
+	CHECK( c.start.y() == Approx( 3.F ) );
+	CHECK( c.segs.back().to.x() == Approx( 4.F ) );
+	CHECK( shapes[0].fill.a == 0.F );
+	CHECK( shapes[0].stroke_thickness == Approx( 0.2F ) );
+	CHECK( shapes[0].stroke == Color{ 0.F, 1.F, 0.F, 1.F } );
+	CHECK( signed_area( c ) == Approx( 0.0 ) );
+}
+
+TEST_CASE( "to_outline gives an arrow tip as its triangle", "[outline]" )
+{
+	ArrowTip arrow;
+	arrow.start = { 0.F, 0.F };
+	arrow.end = { 4.F, 0.F };
+	arrow.size = 0.5F;
+
+	auto shapes = to_outline( arrow );
+	REQUIRE( shapes.size() == 1 );
+	REQUIRE( shapes[0].contours.size() == 1 );
+	const Contour &c = shapes[0].contours[0];
+
+	CHECK( c.closed );
+	CHECK( c.segs.size() == 3 );
+	CHECK( c.start.x() == Approx( 4.F ) ); // the tip
+	// base 2 * size, height 2 * size
+	CHECK( std::abs( signed_area( c ) ) == Approx( 0.5 ) );
+	const AABB box = on_curve_bounds( c );
+	CHECK( box.min.x() == Approx( 3.F ) );
+	CHECK( box.height() == Approx( 1.F ) );
+
+	SECTION( "an arrow with no length draws nothing, as in the SVG" )
+	{
+		ArrowTip none;
+		CHECK( to_outline( none ).empty() );
+	}
+}
+
+TEST_CASE( "reversed and closed_loop handle open contours", "[outline]" )
+{
+	Line line;
+	line.start = { 0.F, 0.F };
+	line.end = { 3.F, 0.F };
+	const Contour open = to_outline( line )[0].contours[0];
+
+	SECTION( "an open contour starts at its end when reversed" )
+	{
+		const Contour r = reversed( open );
+		CHECK_FALSE( r.closed );
+		CHECK( r.start == open.segs.back().to );
+		CHECK( r.segs.back().to == open.start );
+		const Contour twice = reversed( r );
+		CHECK( twice.start == open.start );
+		CHECK( twice.segs.back().to == open.segs.back().to );
+	}
+
+	SECTION( "as a loop it goes out and comes back, enclosing nothing" )
+	{
+		const Contour loop = closed_loop( open );
+		CHECK( loop.closed );
+		CHECK( loop.segs.size() == 2 );
+		CHECK( loop.segs.back().to == loop.start );
+		CHECK( loop.segs.front().to == open.segs.back().to );
+		CHECK( signed_area( loop ) == Approx( 0.0 ).margin( 1e-9 ) );
+	}
+
+	SECTION( "a closed contour is left alone" )
+	{
+		Circle circle;
+		const Contour c = to_outline( circle )[0].contours[0];
+		CHECK( closed_loop( c ).segs.size() == c.segs.size() );
+	}
 }
 
 TEST_CASE( "reversed walks a contour the other way", "[outline]" )

@@ -143,13 +143,13 @@ public:
 
 	std::vector<Contour> &contours()
 	{
-		finish();
+		finish( true );
 		return _contours;
 	}
 
 	void move_to( Point p )
 	{
-		finish();
+		finish( true );
 		_current.start = _xf( p );
 		_cur = _current.start;
 		_open = true;
@@ -183,7 +183,13 @@ public:
 
 	void close()
 	{
-		finish();
+		finish( true );
+	}
+
+	// End the contour where it is, without closing it back to its start (a stroke)
+	void end_open()
+	{
+		finish( false );
 	}
 
 private:
@@ -193,15 +199,17 @@ private:
 		_cur = seg.to;
 	}
 
-	// End the contour being built: close it back to its start and keep it if it has any length
-	void finish()
+	// End the contour being built: close it back to its start (unless it is a stroke) and keep it if it has
+	// any length
+	void finish( bool closed )
 	{
 		if ( _open && !_current.segs.empty() )
 		{
-			if ( !( _cur == _current.start ) )
+			if ( closed && !( _cur == _current.start ) )
 			{
 				push( { lerp( _cur, _current.start, 1.F / 3.F ), lerp( _cur, _current.start, 2.F / 3.F ), _current.start } );
 			}
+			_current.closed = closed;
 			_contours.push_back( std::move( _current ) );
 		}
 		_current = {};
@@ -223,12 +231,12 @@ public:
 
 	void visit( const Circle &circle ) override
 	{
-		ellipse( circle, circle.radius, circle.radius, Hasher().add( static_cast<uint64_t>( 1 ) ).add( circle.radius ).result() );
+		ellipse( circle, circle.radius, circle.radius, LeafKind::CIRCLE, Hasher().add( static_cast<uint64_t>( 1 ) ).add( circle.radius ).result() );
 	}
 
 	void visit( const Ellipse &e ) override
 	{
-		ellipse( e, e.half_width, e.half_height, Hasher().add( static_cast<uint64_t>( 2 ) ).add( e.half_width ).add( e.half_height ).result() );
+		ellipse( e, e.half_width, e.half_height, LeafKind::ELLIPSE, Hasher().add( static_cast<uint64_t>( 2 ) ).add( e.half_width ).add( e.half_height ).result() );
 	}
 
 	void visit( const Rectangle &rect ) override
@@ -240,7 +248,7 @@ public:
 		b.line_to( { hw, -hh } );
 		b.line_to( { hw, hh } );
 		b.line_to( { -hw, hh } );
-		emit( rect, b, Hasher().add( static_cast<uint64_t>( 3 ) ).add( hw ).add( hh ).result() );
+		emit( rect, b, LeafKind::RECTANGLE, Hasher().add( static_cast<uint64_t>( 3 ) ).add( hw ).add( hh ).result() );
 	}
 
 	void visit( const RoundRectangle &rect ) override
@@ -263,27 +271,49 @@ public:
 		if ( bl > 0.F ) b.arc_to( { -hw + bl, -hh }, { -hw, -hh + bl }, { -hw + bl, -hh + bl } );
 		b.line_to( { -hw, hh - tl } );
 		if ( tl > 0.F ) b.arc_to( { -hw, hh - tl }, { -hw + tl, hh }, { -hw + tl, hh - tl } );
-		emit( rect, b, Hasher().add( static_cast<uint64_t>( 4 ) ).add( hw ).add( hh ).add( tl ).add( tr ).add( bl ).add( br ).result() );
+		emit( rect, b, LeafKind::ROUND_RECTANGLE, Hasher().add( static_cast<uint64_t>( 4 ) ).add( hw ).add( hh ).add( tl ).add( tr ).add( bl ).add( br ).result() );
 	}
 
 	void visit( const Path &path ) override
 	{
-		commands( path, path.commands );
+		commands( path, path.commands, LeafKind::PATH );
 	}
 
 	void visit( const Glyph &glyph ) override
 	{
-		commands( glyph, glyph.commands );
+		commands( glyph, glyph.commands, LeafKind::GLYPH );
 	}
 
-	void visit( const Line & ) override
+	void visit( const Line &line ) override
 	{
-		++skipped;
+		// Stroke only: an open contour, and nothing to fill
+		ContourBuilder b( leaf_transform( line ) );
+		b.move_to( line.start );
+		b.line_to( line.end );
+		b.end_open();
+		emit( line, b, LeafKind::LINE, Hasher().add( static_cast<uint64_t>( 5 ) ).add( line.start ).add( line.end ).result(), true );
 	}
 
-	void visit( const ArrowTip & ) override
+	void visit( const ArrowTip &arrow ) override
 	{
-		++skipped;
+		float dx = arrow.end.x() - arrow.start.x();
+		float dy = arrow.end.y() - arrow.start.y();
+		const float len = std::sqrt( dx * dx + dy * dy );
+		if ( len <= 0.0001F )
+		{
+			return; // the SVG writer draws nothing either
+		}
+		dx /= len;
+		dy /= len;
+		const float px = -dy;
+		const float py = dx;
+
+		// The tip is at `end`, the other two corners are back along the arrow, either side (as in SVGWriter)
+		ContourBuilder b( leaf_transform( arrow ) );
+		b.move_to( arrow.end );
+		b.line_to( { arrow.end.x() - dx * arrow.size * 2.F + px * arrow.size, arrow.end.y() - dy * arrow.size * 2.F + py * arrow.size } );
+		b.line_to( { arrow.end.x() - dx * arrow.size * 2.F - px * arrow.size, arrow.end.y() - dy * arrow.size * 2.F - py * arrow.size } );
+		emit( arrow, b, LeafKind::ARROW_TIP, Hasher().add( static_cast<uint64_t>( 6 ) ).add( arrow.start ).add( arrow.end ).add( arrow.size ).result() );
 	}
 
 	void visit( const Image & ) override
@@ -307,7 +337,7 @@ private:
 		return _xf * local_transform( v );
 	}
 
-	void ellipse( const Visual &v, float rx, float ry, uint64_t key )
+	void ellipse( const Visual &v, float rx, float ry, LeafKind kind, uint64_t key )
 	{
 		// Starts at the right and runs the way SVG draws circles
 		ContourBuilder b( leaf_transform( v ) );
@@ -316,10 +346,10 @@ private:
 		b.cubic_to( { -rx * KAPPA, ry }, { -rx, ry * KAPPA }, { -rx, 0.F } );
 		b.cubic_to( { -rx, -ry * KAPPA }, { -rx * KAPPA, -ry }, { 0.F, -ry } );
 		b.cubic_to( { rx * KAPPA, -ry }, { rx, -ry * KAPPA }, { rx, 0.F } );
-		emit( v, b, key );
+		emit( v, b, kind, key );
 	}
 
-	void commands( const Visual &v, const std::vector<PathCommand> &list )
+	void commands( const Visual &v, const std::vector<PathCommand> &list, LeafKind kind )
 	{
 		ContourBuilder b( leaf_transform( v ) );
 		for ( const auto &command: list )
@@ -351,10 +381,10 @@ private:
 				},
 				command );
 		}
-		emit( v, b, hash_commands( list ) );
+		emit( v, b, kind, hash_commands( list ) );
 	}
 
-	void emit( const Visual &v, ContourBuilder &b, uint64_t key )
+	void emit( const Visual &v, ContourBuilder &b, LeafKind kind, uint64_t key, bool stroke_only = false )
 	{
 		OutlineShape shape;
 		shape.contours = std::move( b.contours() );
@@ -363,11 +393,16 @@ private:
 			return;
 		}
 		shape.fill = _color * v.color;
+		if ( stroke_only )
+		{
+			shape.fill.a = 0.F;
+		}
 		shape.stroke = _stroke * v.stroke_color;
 		shape.stroke_thickness = v.stroke_thickness * leaf_transform( v ).scale();
 		shape.word = _word;
 		shape.tags = _tags;
 		shape.tags.insert( shape.tags.end(), v.tags.begin(), v.tags.end() );
+		shape.kind = kind;
 		shape.key = key;
 		shapes.push_back( std::move( shape ) );
 	}
@@ -448,6 +483,13 @@ double signed_area( const Contour &contour )
 		}
 		p0 = seg.to;
 	}
+
+	// An open contour encloses what it would with a straight line back to its start
+	if ( !contour.closed && !contour.segs.empty() )
+	{
+		const Point end = contour.segs.back().to;
+		area += ( static_cast<double>( end.x() ) * contour.start.y() - static_cast<double>( contour.start.x() ) * end.y() ) / 2.0;
+	}
 	return area;
 }
 
@@ -465,20 +507,34 @@ AABB on_curve_bounds( const Contour &contour )
 Contour reversed( const Contour &contour )
 {
 	Contour out;
+	out.closed = contour.closed;
 	if ( contour.segs.empty() )
 	{
 		out.start = contour.start;
 		return out;
 	}
 
-	out.start = contour.start;
-	// Segment i runs from prev(i) to segs[i].to; walked backwards it runs to prev(i) with the
-	// control points swapped. The loop is closed, so walking back from the start visits
-	// segs[n-1], segs[n-2], ... and finally returns to the start.
+	// Segment k runs from prev(k) to segs[k].to; walked backwards it runs to prev(k) with the control
+	// points swapped. A loop is walked back from its start (which is also the end of its last segment); an
+	// open contour from its end.
+	out.start = contour.closed ? contour.start : contour.segs.back().to;
 	for ( size_t k = contour.segs.size(); k-- > 0; )
 	{
 		const Point end = k == 0 ? contour.start : contour.segs[k - 1].to;
 		out.segs.push_back( { contour.segs[k].c2, contour.segs[k].c1, end } );
 	}
+	return out;
+}
+
+Contour closed_loop( const Contour &contour )
+{
+	if ( contour.closed || contour.segs.empty() )
+	{
+		return contour;
+	}
+	Contour out = contour;
+	out.closed = true;
+	const Contour back = reversed( contour );
+	out.segs.insert( out.segs.end(), back.segs.begin(), back.segs.end() );
 	return out;
 }

@@ -497,8 +497,26 @@ public:
 			}
 		}
 
-		Alignment best;
+		// The knots of B to try: all of them, or the few nearest the anchor's place when there are many
+		std::vector<size_t> tries( _nb );
 		for ( size_t j = 0; j < _nb; ++j )
+		{
+			tries[j] = j;
+		}
+		if ( _nb > _costs.max_anchors )
+		{
+			const Point where = ( _a.knots[anchor].p - _a.centroid ) / _a.scale;
+			auto distance = [&]( size_t j ) { return ( ( _b.knots[j].p - _b.centroid ) / _b.scale - where ).lengthSquared(); };
+			std::partial_sort(
+				tries.begin(),
+				tries.begin() + static_cast<std::ptrdiff_t>( _costs.max_anchors ),
+				tries.end(),
+				[&]( size_t x, size_t y ) { return distance( x ) < distance( y ); } );
+			tries.resize( _costs.max_anchors );
+		}
+
+		Alignment best;
+		for ( size_t j: tries )
 		{
 			Alignment candidate = run( anchor, j );
 			if ( candidate.cost < best.cost )
@@ -836,6 +854,90 @@ ContourPair align_contours( const Contour &a, const Contour &b, const AlignCosts
 	return { cut_contour( an, cut_a ), cut_contour( bn, cut_b ) };
 }
 
+ContourPair align_open( const Contour &a, const Contour &b )
+{
+	if ( a.segs.empty() || b.segs.empty() )
+	{
+		return { a, b };
+	}
+
+	const Analysis an( a, {} );
+	const Analysis bn( b, {} );
+
+	// Where each contour has a joint, as how far along it is: those are where both get cut
+	struct Joint
+	{
+		float s;
+		bool in_a;
+		bool in_b;
+		size_t seg_a;
+		size_t seg_b;
+	};
+	std::vector<Joint> joints;
+	for ( size_t i = 1; i < an.segs.size(); ++i )
+	{
+		joints.push_back( { an.fraction( i, 0.F ), true, false, i, 0 } );
+	}
+	for ( size_t j = 1; j < bn.segs.size(); ++j )
+	{
+		joints.push_back( { bn.fraction( j, 0.F ), false, true, 0, j } );
+	}
+	std::stable_sort( joints.begin(), joints.end(), []( const Joint &x, const Joint &y ) { return x.s < y.s; } );
+
+	// Joints of the two that fall in the same place are one
+	std::vector<Joint> merged;
+	for ( const Joint &joint: joints )
+	{
+		if ( !merged.empty() && joint.s - merged.back().s < 1e-4F && ( ( joint.in_a && !merged.back().in_a ) || ( joint.in_b && !merged.back().in_b ) ) )
+		{
+			Joint &last = merged.back();
+			if ( joint.in_a )
+			{
+				last.in_a = true;
+				last.seg_a = joint.seg_a;
+			}
+			else
+			{
+				last.in_b = true;
+				last.seg_b = joint.seg_b;
+			}
+		}
+		else
+		{
+			merged.push_back( joint );
+		}
+	}
+
+	std::vector<Position> cut_a{ { 0, 0.F } };
+	std::vector<Position> cut_b{ { 0, 0.F } };
+	for ( const Joint &joint: merged )
+	{
+		cut_a.push_back( joint.in_a ? Position{ joint.seg_a, 0.F } : an.locate( joint.s ) );
+		cut_b.push_back( joint.in_b ? Position{ joint.seg_b, 0.F } : bn.locate( joint.s ) );
+	}
+	cut_a.push_back( { an.segs.size() - 1, 1.F } );
+	cut_b.push_back( { bn.segs.size() - 1, 1.F } );
+
+	auto build = [&]( const Analysis &analysis, const std::vector<Position> &cuts )
+	{
+		Contour out;
+		out.closed = false;
+		out.start = analysis.point( cuts.front() );
+		for ( size_t m = 0; m + 1 < cuts.size(); ++m )
+		{
+			const Position from = cuts[m];
+			const Position to = cuts[m + 1];
+			// No joint is ever inside a piece, so it stays in one segment or runs to the end of it
+			const Bez piece = from.seg == to.seg ? sub( analysis.segs[from.seg], from.t, std::max( from.t, to.t ) )
+												 : sub( analysis.segs[from.seg], from.t, 1.F );
+			out.segs.push_back( { piece.p1, piece.p2, piece.p3 } );
+		}
+		return out;
+	};
+
+	return { build( an, cut_a ), build( bn, cut_b ) };
+}
+
 Contour point_contour( Point p, size_t segments )
 {
 	Contour c;
@@ -879,8 +981,55 @@ std::vector<ContourPair> match_contours( const OutlineShape &a, const OutlineSha
 		return std::pair{ std::move( items ), sign };
 	};
 
-	auto [items_a, sign_a] = describe( a.contours );
-	auto [items_b, sign_b] = describe( b.contours );
+	// Strokes go with strokes; a stroke with none to go with becomes a loop that goes out and back, so it can
+	// turn into (or out of) a filled shape
+	std::vector<Contour> closed_a;
+	std::vector<Contour> closed_b;
+	std::vector<Contour> open_a;
+	std::vector<Contour> open_b;
+	for ( const auto &c: a.contours )
+	{
+		( c.closed ? closed_a : open_a ).push_back( c );
+	}
+	for ( const auto &c: b.contours )
+	{
+		( c.closed ? closed_b : open_b ).push_back( c );
+	}
+
+	std::vector<ContourPair> result;
+	while ( !open_a.empty() && !open_b.empty() )
+	{
+		float best = std::numeric_limits<float>::max();
+		size_t bi = 0;
+		size_t bj = 0;
+		for ( size_t i = 0; i < open_a.size(); ++i )
+		{
+			for ( size_t j = 0; j < open_b.size(); ++j )
+			{
+				const float d = ( feature_of( open_a[i] ).centroid - feature_of( open_b[j] ).centroid ).lengthSquared();
+				if ( d < best )
+				{
+					best = d;
+					bi = i;
+					bj = j;
+				}
+			}
+		}
+		result.push_back( align_open( open_a[bi], open_b[bj] ) );
+		open_a.erase( open_a.begin() + static_cast<std::ptrdiff_t>( bi ) );
+		open_b.erase( open_b.begin() + static_cast<std::ptrdiff_t>( bj ) );
+	}
+	for ( const auto &c: open_a )
+	{
+		closed_a.push_back( closed_loop( c ) );
+	}
+	for ( const auto &c: open_b )
+	{
+		closed_b.push_back( closed_loop( c ) );
+	}
+
+	auto [items_a, sign_a] = describe( closed_a );
+	auto [items_b, sign_b] = describe( closed_b );
 
 	// Same winding on both sides, or the fill rule would turn holes into fill mid-morph
 	if ( sign_a != sign_b )
@@ -914,8 +1063,6 @@ std::vector<ContourPair> match_contours( const OutlineShape &a, const OutlineSha
 		const double ay = std::abs( y.feature.area ) + 1e-9;
 		return d + 0.3F * static_cast<float>( std::abs( std::log( ax / ay ) ) );
 	};
-
-	std::vector<ContourPair> result;
 
 	// Best pairs first, holes with holes and outers with outers
 	for ( bool outer: { true, false } )
