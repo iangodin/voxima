@@ -223,16 +223,63 @@ Scene show_ease(
 
 }
 
-Scene narrate( Stage &stage, Script &script )
+Scene narrate( Narration &narration )
 {
-	Narration narration;
-	narration.setup( "narrator", script, stage.audio );
-	narration.speech( "intro" );
 	while ( !narration.is_done() )
 	{
 		narration.speak();
 		co_await wait_for( 1 );
 	}
+}
+
+// Karaoke: shows the narrated text dimmed, then lights up each word as it is
+// spoken (the word being spoken in yellow, words already spoken in white).
+Scene show_karaoke( Stage &stage, Script &script )
+{
+	const std::string lang = script.master_language();
+
+	// The text must be the narrated lines as written: word N spoken is word N here.
+	std::string shown;
+	for ( const auto &line: script.fetch( lang, "intro" ).as_multiline() )
+	{
+		shown += ( shown.empty() ? "" : "\n" ) + line;
+	}
+
+	StyledText styled( shown );
+	styled.set_font_style( 0, styled.size(), FontStyle{ Intent::PROSE }.large() );
+	styled.set_language( 0, styled.size(), lang );
+
+	auto &text = stage.visuals.add( make_styled_text( *stage.theme, styled, TextLayout{ .align = TextAlign::CENTER } ) );
+	center_group( text );
+	text.position = { 0.F, 0.5F };
+
+	const Color unspoken{ 0.45F, 0.45F, 0.45F, 1.F };
+	const Color spoken{ 1.F, 1.F, 1.F, 1.F };
+	const Color speaking{ 1.F, 0.85F, 0.3F, 1.F };
+
+	for ( size_t i = 0; find_word( text, i ); ++i )
+	{
+		find_word( text, i )->color = unspoken;
+	}
+
+	Narration narration;
+	narration.setup( "narrator", script, stage.audio );
+	narration.speech( "intro" );
+
+	Visual *current = nullptr;
+	co_await choreograph(
+		narrate( narration ),
+		narration.on_words(
+			text,
+			[&current, spoken, speaking]( Visual &word, size_t )
+			{
+				if ( current )
+				{
+					current->color = spoken;
+				}
+				word.color = speaking;
+				current = &word;
+			} ) );
 }
 
 Screenplay my_screenplay( Stage &stage, Script &script )
@@ -264,7 +311,7 @@ Screenplay my_screenplay( Stage &stage, Script &script )
 		script.fetch( lang, "labels", "ease_linear" ).as_string( not_found ) };
 
 	//show_title( stage );
-	show_math( stage );
+	// show_math( stage ); // shares the screen with the karaoke text below
 
 	/*
 	co_await choreograph(
@@ -280,5 +327,6 @@ Screenplay my_screenplay( Stage &stage, Script &script )
 		show_ease( stage, label_linear, lang, ease_linear, -1.5F, duration ),
 		narrate( stage, script ) );
 	*/
+	co_await show_karaoke( stage, script );
 	co_await wait_for( duration );
 }

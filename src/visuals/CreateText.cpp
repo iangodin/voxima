@@ -149,7 +149,8 @@ std::unique_ptr<Group> make_text(
 	Theme &theme,
 	const std::string &text,
 	const FontStyle &style,
-	const std::optional<std::string> &language )
+	const std::optional<std::string> &language,
+	const TextLayout &layout )
 {
 	StyledText st( text );
 	st.set_font_style( 0, st.size(), style );
@@ -157,5 +158,5 @@ std::unique_ptr<Group> make_text(
 	{
 		st.set_language( 0, st.size(), *language );
 	}
-	return make_styled_text( theme, st );
+	return make_styled_text( theme, st, layout );
 }

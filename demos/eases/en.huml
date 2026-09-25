@@ -18,5 +18,6 @@ labels::
   ease_linear: "Linear"
 
 intro: """
-  These show various ease animations
+  These show various ease animations.
+  Watch each word light up as it is spoken.
 """

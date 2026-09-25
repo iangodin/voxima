@@ -19,4 +19,5 @@ labels::
 
 intro: """
   Ceux-ci montrent diverses animations de lissage.
+  Chaque mot s'illumine quand il est prononcé.
 """

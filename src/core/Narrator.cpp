@@ -31,6 +31,8 @@ double Narrator::speech( const std::vector<std::string> &text )
 
 	_results.clear();
 	_pending_cues.clear();
+	_words.clear();
+	_position_frames = 0;
 	_cues_emitted = false;
 
 	double cumulative = 0.0;
@@ -56,6 +58,7 @@ double Narrator::speech( const std::vector<std::string> &text )
 		// without alignment support (e.g. Polish - see tts.md).
 		double local_start = cumulative;
 		double local_end = cumulative + line_duration;
+		std::vector<TimedWord> line_words;
 		if ( _tts->has_aligner() )
 		{
 			try
@@ -65,6 +68,7 @@ double Narrator::speech( const std::vector<std::string> &text )
 				{
 					local_start = cumulative + words.front().start_seconds;
 					local_end = cumulative + words.back().end_seconds;
+					line_words = match_words( t, _pending_cues.size(), cumulative, words );
 				}
 			}
 			catch ( const std::exception & )
@@ -73,6 +77,14 @@ double Narrator::speech( const std::vector<std::string> &text )
 				// keep the full-buffer fallback span computed above.
 			}
 		}
+		// No usable alignment (unsupported language, no aligner model,
+		// failure, or a word count that disagrees with split_words()):
+		// spread the words proportionally over the whole line instead.
+		if ( line_words.empty() )
+		{
+			line_words = distribute_words( t, _pending_cues.size(), cumulative, line_duration );
+		}
+		_words.insert( _words.end(), line_words.begin(), line_words.end() );
 		_pending_cues.push_back( PendingCue{ local_start, local_end, t } );
 		cumulative += line_duration;
 
@@ -141,6 +153,7 @@ void Narrator::speak( size_t )
 	{
 		std::fill( _buffer.frame( recorded ), _buffer.end(), 0.F );
 	}
+	_position_frames += recorded;
 	_mic->record( _buffer );
 }
 

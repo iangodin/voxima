@@ -4,6 +4,7 @@
 #include <visuals/TextLine.h>
 #include <visuals/Glyph.h>
 #include <visuals/Bounds.h>
+#include <visuals/Tags.h>
 
 #include <fonts/FontFace.h>
 #include <fonts/FontStack.h>
@@ -12,11 +13,15 @@
 
 #include <core/Theme.h>
 
+#include <utils/Words.h>
+
 #include <hb-ft.h>
 #include <hb-ot.h>
 #include <hb.h>
 
+#include <algorithm>
 #include <map>
+#include <string>
 
 namespace
 {
@@ -49,9 +54,33 @@ struct HbFontCache
 	}
 };
 
+// Math alphabets swap each code point for another (usually a longer UTF-8
+// sequence), so a cluster's byte offset in the shaped text is not one in the
+// original. Both strings hold the same code points in the same order.
+size_t original_offset( std::string_view shaped, std::string_view original, size_t cluster )
+{
+	const size_t codepoints = codepoint_count( shaped.substr( 0, cluster ) );
+	size_t offset = 0;
+	for ( size_t i = 0; i < codepoints && offset < original.size(); ++i )
+	{
+		std::string_view rest = original.substr( offset );
+		const size_t before = rest.size();
+		decode_utf8( rest );
+		offset += before - rest.size();
+	}
+	return offset;
 }
 
-std::unique_ptr<Group> make_styled_text( Theme &theme, const StyledText &text )
+// A shaped glyph and where in the text it came from
+struct PlacedGlyph
+{
+	size_t offset; // byte offset of its cluster in StyledText::text()
+	std::unique_ptr<Glyph> glyph;
+};
+
+}
+
+std::unique_ptr<Group> make_styled_text( Theme &theme, const StyledText &text, const TextLayout &layout )
 {
 	auto root = std::make_unique<Group>();
 
@@ -61,10 +90,13 @@ std::unique_ptr<Group> make_styled_text( Theme &theme, const StyledText &text )
 	// The first line's baseline is at y = 0 and the origin is at the start of the line;
 	// further lines go below. Callers position (or center) the result as they see fit.
 	float current_y = 0.0f;
-	const float line_height = 0.5f;
+	float previous_em = 0.5f; // font size of the line above, for blank lines
+	std::vector<TextLine *> line_groups;
+	std::vector<float> line_widths;
 
 	const std::string &full_text = text.text();
 	TextStyle default_style;
+	size_t word_counter = 0; // words so far, across lines (see "word<N>" tags below)
 
 	for ( const auto &line_view: text.lines() )
 	{
@@ -74,6 +106,9 @@ std::unique_ptr<Group> make_styled_text( Theme &theme, const StyledText &text )
 
 		auto &line_group = root->add( std::make_unique<TextLine>() );
 		line_group.baseline = current_y;
+		float line_em = 0.0f; // largest font size on this line
+
+		std::vector<PlacedGlyph> placed;
 
 		text.styles().for_each(
 			line_start,
@@ -88,6 +123,7 @@ std::unique_ptr<Group> make_styled_text( Theme &theme, const StyledText &text )
 				}
 
 				// Math italic (and the other math alphabets) are separate code points
+				const std::string_view original_text = run_text;
 				std::string mapped;
 				if ( const auto alphabet = math_alphabet( style.font_style ); alphabet != MathAlphabet::UPRIGHT )
 				{
@@ -127,6 +163,7 @@ std::unique_ptr<Group> make_styled_text( Theme &theme, const StyledText &text )
 					}
 
 					const auto &font_face = stack.font( range.font_index );
+					line_em = std::max( line_em, font_face.scale );
 					hb_shape( font_cache.get( font_face ), buffer, nullptr, 0 );
 
 					unsigned int glyph_count;
@@ -203,7 +240,11 @@ std::unique_ptr<Group> make_styled_text( Theme &theme, const StyledText &text )
 						}
 
 						*glyph *= glyph_scale;
-						line_group.add( std::move( glyph ) );
+
+						const size_t cluster = glyph_info[i].cluster;
+						placed.push_back( PlacedGlyph{
+							run_start + ( mapped.empty() ? cluster : original_offset( run_text, original_text, cluster ) ),
+							std::move( glyph ) } );
 
 						current_x += static_cast<float>( pos.x_advance ) * glyph_scale;
 						current_y += static_cast<float>( pos.y_advance ) * glyph_scale;
@@ -211,10 +252,64 @@ std::unique_ptr<Group> make_styled_text( Theme &theme, const StyledText &text )
 				}
 			} );
 
-		current_y -= line_height;
+		// Gather each word's glyphs into a Group tagged "word<N>", N counting
+		// words through the whole text (split_words(), the same splitter the
+		// narration timing uses, so word N here is spoken word N). Glyph
+		// positions are already absolute within the line and the word groups sit
+		// at the origin, so this doesn't move anything. Glyphs outside any word
+		// (spaces, lone punctuation) stay directly in the line. A word is
+		// gathered by logical position, so an RTL word's glyphs are found even
+		// though they are laid out in reverse.
+		const auto spans = split_words( line_view );
+		std::vector<Group *> word_groups( spans.size(), nullptr );
+		for ( auto &item: placed )
+		{
+			const size_t local = item.offset - line_start;
+			auto it = std::upper_bound(
+				spans.begin(), spans.end(), local, []( size_t value, const WordSpan &span ) { return value < span.begin; } );
+			const size_t k = static_cast<size_t>( it - spans.begin() );
+			if ( k > 0 && local < spans[k - 1].end )
+			{
+				Group *&group = word_groups[k - 1];
+				if ( !group )
+				{
+					group = &line_group.add( std::make_unique<Group>() );
+					tag_visual( *group, "word" + std::to_string( word_counter + k - 1 ) );
+				}
+				group->add( std::move( item.glyph ) );
+			}
+			else
+			{
+				line_group.add( std::move( item.glyph ) );
+			}
+		}
+		word_counter += spans.size();
+
+		line_groups.push_back( &line_group );
+		line_widths.push_back( current_x );
+
+		if ( line_em <= 0.0f )
+		{
+			line_em = previous_em;
+		}
+		previous_em = line_em;
+		current_y -= line_em * layout.line_spacing;
 	}
 
 	hb_buffer_destroy( buffer );
+
+	// Align the lines within the widest one. Glyph positions are relative to their line, so
+	// moving the line moves everything on it.
+	if ( layout.align != TextAlign::LEFT )
+	{
+		const float block_width = *std::max_element( line_widths.begin(), line_widths.end() );
+		for ( size_t i = 0; i < line_groups.size(); ++i )
+		{
+			const float slack = block_width - line_widths[i];
+			const float shift = layout.align == TextAlign::CENTER ? slack / 2.0f : slack;
+			line_groups[i]->position = { shift, 0.0f };
+		}
+	}
 
 	return root;
 }

@@ -1,6 +1,7 @@
 
 #pragma once
 
+#include <visuals/CreateStyledText.h>
 #include <visuals/Group.h>
 
 #include <fonts/FontStyle.h>
@@ -36,4 +37,5 @@ std::unique_ptr<Group> make_text(
 	Theme &theme,
 	const std::string &text,
 	const FontStyle &style,
-	const std::optional<std::string> &language = std::nullopt );
+	const std::optional<std::string> &language = std::nullopt,
+	const TextLayout &layout = {} );

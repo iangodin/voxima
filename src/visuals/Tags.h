@@ -123,3 +123,11 @@ T *find_tag_as( Visual &root, Names... names )
 {
 	return dynamic_cast<T *>( find_tag( root, names... ) );
 }
+
+// The group of glyphs for word `index` of laid-out text (make_styled_text tags
+// them "word0", "word1", ... counting through the whole text, using the same
+// split_words() as the narration timing), or nullptr if there is no such word.
+inline Visual *find_word( Visual &root, size_t index )
+{
+	return find_tag( root, "word" + std::to_string( index ) );
+}

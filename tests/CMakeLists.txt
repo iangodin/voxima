@@ -23,6 +23,8 @@ add_executable( sonimation_unit_tests
 	TestVolume.cpp
 	TestLanguage.cpp
 	TestScriptLanguageFallback.cpp
+	TestTimedWord.cpp
+	TestWords.cpp
 )
 
 target_link_libraries( sonimation_unit_tests

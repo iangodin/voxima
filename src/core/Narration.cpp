@@ -37,3 +37,56 @@ bool Narration::is_done() const
 	return std::all_of( _narrators.begin(), _narrators.end(), is_done );
 }
 
+
+const Narrator *Narration::master() const
+{
+	for ( const auto &n: _narrators )
+	{
+		if ( n.language() == _script->master_language() )
+		{
+			return &n;
+		}
+	}
+	return _narrators.empty() ? nullptr : &_narrators.front();
+}
+
+const std::vector<TimedWord> &Narration::words() const
+{
+	static const std::vector<TimedWord> empty;
+	const Narrator *n = master();
+	return n ? n->words() : empty;
+}
+
+Coroutine Narration::until_time( double seconds )
+{
+	const Narrator *n = master();
+	while ( n && !n->is_done() && n->position() < seconds )
+	{
+		co_yield NextFrame{};
+	}
+}
+
+Coroutine Narration::until_word( size_t index )
+{
+	const auto &w = words();
+	co_await until_time( index < w.size() ? w[index].start_seconds : 1e300 );
+}
+
+Coroutine Narration::until_word_end( size_t index )
+{
+	const auto &w = words();
+	co_await until_time( index < w.size() ? w[index].end_seconds : 1e300 );
+}
+
+Coroutine Narration::on_words( Visual &text, std::function<void( Visual &, size_t )> callback )
+{
+	const size_t count = words().size();
+	for ( size_t i = 0; i < count; ++i )
+	{
+		co_await until_word( i );
+		if ( Visual *word = find_word( text, i ) )
+		{
+			callback( *word, i );
+		}
+	}
+}
