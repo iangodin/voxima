@@ -7,6 +7,8 @@
 #include "Script.h"
 
 #include <cstdint>
+#include <string>
+#include <vector>
 
 class Producer
 {
@@ -27,6 +29,24 @@ public:
 	bool produce( int argc, char *argv[] );
 
 private:
+	// One render: the languages that go into one container, where it and its files are written, and how
+	struct RenderJob
+	{
+		std::vector<std::string> languages; // the first is the master
+		std::string render_dir;
+		std::string container;
+		std::string vcodec;
+		std::string acodec;
+		std::string scodec;
+		std::string subtitle_ext;
+		bool save_png = false;
+		bool save_svg = false;
+	};
+
+	// Play the scene(s) through once for these languages, and write the container. The models are loaded (by
+	// produce()) once for all the renders.
+	bool render( const RenderJob &job );
+
 	bool tick()
 	{
 		++_current_frame;

@@ -61,3 +61,52 @@ TEST_CASE( "Script::load falls back to the primary subtag when no file exists fo
 		CHECK_FALSE( script.load( "xx-YY" ) );
 	}
 }
+
+TEST_CASE( "Script::select_languages picks which loaded languages are in use", "[script][language]" )
+{
+	ScriptDirFixture fixture;
+	{
+		std::ofstream fr( fixture.dir / "fr.huml" );
+		fr << "meta::\n  lang: \"fr\"\n\nvoices::\n  narrator: \"fr-cml-tts.wav\"\n";
+	}
+
+	Script script;
+	script.set_directory( fixture.dir );
+	REQUIRE( script.load( "en" ) );
+	REQUIRE( script.load( "fr" ) );
+	REQUIRE( script.languages() == std::vector<std::string>{ "en", "fr" } );
+	CHECK( script.master_language() == "en" );
+
+	SECTION( "one language on its own, and it is the master" )
+	{
+		script.select_languages( { "fr" } );
+		CHECK( script.languages() == std::vector<std::string>{ "fr" } );
+		CHECK( script.master_language() == "fr" );
+		// the text is still there for the ones not in use
+		CHECK( script.fetch( "en", "voices", "narrator" ).as_string() == "en-alba-mackenna-casual.wav" );
+	}
+
+	SECTION( "and back to all of them, in any order" )
+	{
+		script.select_languages( { "fr" } );
+		script.select_languages( { "fr", "en" } );
+		CHECK( script.languages() == std::vector<std::string>{ "fr", "en" } );
+		CHECK( script.master_language() == "fr" );
+	}
+
+	SECTION( "loading one that is already loaded puts it back in use" )
+	{
+		script.select_languages( { "fr" } );
+		REQUIRE( script.load( "en" ) );
+		CHECK( script.languages() == std::vector<std::string>{ "fr", "en" } );
+	}
+
+	SECTION( "a language that was never loaded, or none at all, is an error" )
+	{
+		CHECK_THROWS_AS( script.select_languages( { "de" } ), std::invalid_argument );
+		CHECK_THROWS_AS( script.select_languages( { "en", "de" } ), std::invalid_argument );
+		CHECK_THROWS_AS( script.select_languages( {} ), std::invalid_argument );
+		// nothing changed
+		CHECK( script.languages() == std::vector<std::string>{ "en", "fr" } );
+	}
+}

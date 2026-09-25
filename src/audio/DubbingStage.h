@@ -32,6 +32,10 @@ public:
 		int tts_threads,
 		const std::filesystem::path &aligner_model = {} );
 
+	// Start a fresh set of tracks, one per language, writing into render_dir (created if need be): what a render
+	// does, after setup() has loaded the models once. Everything from a previous render (mixers, subtitles) is dropped.
+	void begin( const std::filesystem::path &render_dir, const std::vector<std::string> &languages );
+
 	// Add a language track
 	void add_language( std::string_view lang );
 

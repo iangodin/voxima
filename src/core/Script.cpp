@@ -1,4 +1,5 @@
 
+#include <stdexcept>
 #include "Script.h"
 
 #include <utils/Language.h>
@@ -11,10 +12,13 @@ using namespace huml;
 
 bool Script::load( std::string lang )
 {
-	auto it = std::find( _languages.begin(), _languages.end(), lang );
-	if ( it != _languages.end() )
+	if ( _native_scripts.find( lang ) != _native_scripts.end() )
 	{
 		// Already loaded
+		if ( std::find( _languages.begin(), _languages.end(), lang ) == _languages.end() )
+		{
+			_languages.push_back( lang ); // and in use again
+		}
 		return true;
 	}
 
@@ -40,6 +44,22 @@ bool Script::load( std::string lang )
 	}
 
 	return false;
+}
+
+void Script::select_languages( const std::vector<std::string> &languages )
+{
+	if ( languages.empty() )
+	{
+		throw std::invalid_argument( "select_languages needs at least one language" );
+	}
+	for ( const auto &lang: languages )
+	{
+		if ( _native_scripts.find( lang ) == _native_scripts.end() )
+		{
+			throw std::invalid_argument( "language not loaded: " + lang );
+		}
+	}
+	_languages = languages;
 }
 
 Value Script::load_recursive( const std::string &lang )

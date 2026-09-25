@@ -22,6 +22,10 @@ public:
 
 	bool load( std::string lang );
 
+	// Make these (already loaded) languages the ones in use, in this order: the first is the master. This is how a
+	// render for a single language is made from a script that has loaded several. Throws if one is not loaded.
+	void select_languages( const std::vector<std::string> &languages );
+
 	template<typename ...Keys>
 	const huml::Value &fetch( std::string_view lang, Keys &&...keys ) const
 	{

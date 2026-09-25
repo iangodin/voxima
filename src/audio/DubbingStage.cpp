@@ -32,6 +32,21 @@ void DubbingStage::setup(
 	_tts->setup( _render_dir );
 }
 
+void DubbingStage::begin( const std::filesystem::path &render_dir, const std::vector<std::string> &languages )
+{
+	_mixers.clear();
+	_mics.clear();
+	_outputs.clear();
+	_subtitles.clear();
+
+	_render_dir = render_dir;
+	std::filesystem::create_directories( _render_dir );
+	for ( const auto &lang: languages )
+	{
+		add_language( lang );
+	}
+}
+
 void DubbingStage::add_language( std::string_view lang )
 {
 	AudioMixer &mixer = _mixers[std::string( lang )];

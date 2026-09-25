@@ -150,6 +150,166 @@ void setup_codecs(
 	}
 }
 
+bool Producer::render( const RenderJob &job )
+{
+	// A fresh start: the tracks for these languages, the languages in use, an empty stage
+	_script.select_languages( job.languages );
+	_stage.visuals.clear();
+	_stage.audio.begin( job.render_dir, job.languages );
+	_current_frame = -1;
+
+	_screenplay = _director( _stage, _script );
+	_screenplay.handle.promise().producer_ptr = this;
+
+	std::optional<FfmpegRender> ffmpeg;
+	std::optional<PngRender> pngs;
+	std::tuple<std::string, int, std::string> svgs = {};
+	bool write_svgs = false;
+
+	const std::string video_filename = job.render_dir + "/video.mkv";
+	ffmpeg = FfmpegRender( video_filename, job.vcodec, static_cast<double>( _stage.camera.frame_rate ) );
+
+	const std::string final_filename = job.render_dir + "/final." + job.container;
+
+	if ( job.save_png )
+	{
+		pngs = PngRender( job.render_dir + "/frame.", ".png", 8 );
+	}
+
+	if ( job.save_svg )
+	{
+		write_svgs = true;
+		svgs = { job.render_dir + "/frame.", 8, ".svg" };
+	}
+
+	size_t frame = 0;
+	Timer timer_total;
+	while ( true )
+	{
+		Timer timer_frame( "Frame " + std::to_string( frame ) + ": " );
+		{
+			//Timer timer_tick( "  tick: " );
+			if ( !tick() )
+			{
+				//timer_tick.abort();
+				timer_frame.abort();
+				break;
+			}
+		}
+
+		std::ostringstream svg;
+		{
+			//Timer timer_svg_gen( "  SVG generation: " );
+			_stage.save_svg( svg );
+		}
+
+		if ( ffmpeg || pngs || write_svgs )
+		{
+			if ( write_svgs )
+			{
+				//Timer timer_svg_save( "  SVG saving: " );
+				std::stringstream filename;
+				filename << std::get<0>( svgs ) << std::setw( std::get<1>( svgs ) )
+						 << std::setfill( '0' ) << frame << std::get<2>( svgs );
+				std::ofstream svg_file( filename.str() );
+				svg_file << svg.str();
+			}
+
+			if ( ffmpeg || pngs )
+			{
+				auto doc = lunasvg::Document::loadFromData( svg.str() );
+				if ( doc == nullptr )
+				{
+					throw std::runtime_error( "could not load SVG" );
+				}
+
+				lunasvg::Bitmap bitmap;
+				{
+					//Timer timer_render( "  SVG rendering: " );
+					bitmap = doc->renderToBitmap();
+					if ( bitmap.isNull() )
+					{
+						std::cerr << "ERROR: could not render to bitmap\n";
+						return false;
+					}
+				}
+
+				if ( ffmpeg )
+				{
+					//Timer timer_ffmpeg( "  FFMPEG encoding: " );
+					ffmpeg->encode( bitmap );
+				}
+
+				if ( pngs )
+				{
+					//Timer timer_pngs( "  PNG compression: " );
+					pngs->encode( bitmap );
+				}
+			}
+		}
+
+		{
+			//Timer timer_audio_enc( "  Audio encoding: " );
+			_stage.audio.write_audio();
+		}
+		++frame;
+	}
+	timer_total.message( "Total render " + std::to_string( frame ) + " frames: ", frame );
+
+	if ( ffmpeg )
+	{
+		ffmpeg->close();
+	}
+	_stage.audio.close();
+
+	if ( !video_filename.empty() && !final_filename.empty() )
+	{
+		Timer timer_mux( "  FFMPEG muxing: " );
+
+		bool any_subtitles = false;
+		for ( const auto &lang: job.languages )
+		{
+			if ( !_stage.audio.subtitles( lang ).empty() )
+			{
+				any_subtitles = true;
+				break;
+			}
+		}
+
+		FfmpegMux mux( final_filename, job.acodec, any_subtitles ? job.scodec : std::string{} );
+		mux.add_video_track( video_filename );
+		for ( const auto &lang: job.languages )
+		{
+			// Container "language" metadata is conventionally a bare ISO 639
+			// code, not a full BCP-47 regional tag - "en-GB" isn't itself a
+			// valid value the way "en" is.
+			mux.add_audio_track(
+				_stage.audio.output( lang ), language::primary_subtag( lang ), {},
+				lang == job.languages.front() );
+		}
+		for ( const auto &lang: job.languages )
+		{
+			const auto &cues = _stage.audio.subtitles( lang );
+			if ( cues.empty() )
+			{
+				continue;
+			}
+
+			const std::string srt_path = job.render_dir + "/subtitles." + lang + ".srt";
+			const std::string vtt_path = job.render_dir + "/subtitles." + lang + ".vtt";
+			write_srt( srt_path, cues );
+			write_vtt( vtt_path, cues );
+
+			mux.add_subtitle_track(
+				job.subtitle_ext == "vtt" ? vtt_path : srt_path, language::primary_subtag( lang ), {},
+				lang == job.languages.front() );
+		}
+		mux.mux();
+	}
+
+	return true;
+}
+
 bool Producer::produce( int argc, char *argv[] )
 {
 	CLI::App app{ "Sonimation" };
@@ -208,6 +368,12 @@ bool Producer::produce( int argc, char *argv[] )
 
 	std::vector<std::string> scene_names;
 	app.add_option( "--scene", scene_names, "Scene to render; repeat it to play several in order (default: \"movie\")" );
+
+	bool separate = false;
+	app.add_flag(
+		"--separate",
+		separate,
+		"One video per language, each timed to its own narration, in <render-dir>/<lang>/ (instead of one video with a track for each language)" );
 
 	bool strict_glyphs = false;
 	app.add_flag( "--strict-glyphs", strict_glyphs, "Exit with an error if any text had a missing glyph (they always show as magenta boxes and are listed at the end)" );
@@ -312,158 +478,19 @@ bool Producer::produce( int argc, char *argv[] )
 		tts_backend,
 		tts_threads,
 		aligner_model );
-	for ( auto &lang: languages )
+	// A render for all the languages together (one container with a track for each), or with --separate one
+	// for each language, timed to that language's own narration
+	bool ok = true;
+	if ( separate )
 	{
-		_stage.audio.add_language( lang );
+		for ( const auto &lang: languages )
+		{
+			ok = render( { { lang }, render_dir + "/" + lang, container, vcodec, acodec, scodec, subtitle_ext, save_png, save_svg } ) && ok;
+		}
 	}
-
-	_screenplay = _director( _stage, _script );
-	_screenplay.handle.promise().producer_ptr = this;
-
-	std::optional<FfmpegRender> ffmpeg;
-	std::optional<PngRender> pngs;
-	std::tuple<std::string, int, std::string> svgs = {};
-	bool write_svgs = false;
-
-	const std::string video_filename = render_dir + "/video.mkv";
-	ffmpeg = FfmpegRender( video_filename, vcodec, static_cast<double>( _stage.camera.frame_rate ) );
-
-	const std::string final_filename = render_dir + "/final." + container;
-
-	if ( save_png )
+	else
 	{
-		pngs = PngRender( render_dir + "/frame.", ".png", 8 );
-	}
-
-	if ( save_svg )
-	{
-		write_svgs = true;
-		svgs = { render_dir + "/frame.", 8, ".svg" };
-	}
-
-	size_t frame = 0;
-	Timer timer_total;
-	while ( true )
-	{
-		Timer timer_frame( "Frame " + std::to_string( frame ) + ": " );
-		{
-			//Timer timer_tick( "  tick: " );
-			if ( !tick() )
-			{
-				//timer_tick.abort();
-				timer_frame.abort();
-				break;
-			}
-		}
-
-		std::ostringstream svg;
-		{
-			//Timer timer_svg_gen( "  SVG generation: " );
-			_stage.save_svg( svg );
-		}
-
-		if ( ffmpeg || pngs || write_svgs )
-		{
-			if ( write_svgs )
-			{
-				//Timer timer_svg_save( "  SVG saving: " );
-				std::stringstream filename;
-				filename << std::get<0>( svgs ) << std::setw( std::get<1>( svgs ) )
-						 << std::setfill( '0' ) << frame << std::get<2>( svgs );
-				std::ofstream svg_file( filename.str() );
-				svg_file << svg.str();
-			}
-
-			if ( ffmpeg || pngs )
-			{
-				auto doc = lunasvg::Document::loadFromData( svg.str() );
-				if ( doc == nullptr )
-				{
-					throw std::runtime_error( "could not load SVG" );
-				}
-
-				lunasvg::Bitmap bitmap;
-				{
-					//Timer timer_render( "  SVG rendering: " );
-					bitmap = doc->renderToBitmap();
-					if ( bitmap.isNull() )
-					{
-						std::cerr << "ERROR: could not render to bitmap\n";
-						return false;
-					}
-				}
-
-				if ( ffmpeg )
-				{
-					//Timer timer_ffmpeg( "  FFMPEG encoding: " );
-					ffmpeg->encode( bitmap );
-				}
-
-				if ( pngs )
-				{
-					//Timer timer_pngs( "  PNG compression: " );
-					pngs->encode( bitmap );
-				}
-			}
-		}
-
-		{
-			//Timer timer_audio_enc( "  Audio encoding: " );
-			_stage.audio.write_audio();
-		}
-		++frame;
-	}
-	timer_total.message( "Total render " + std::to_string( frame ) + " frames: ", frame );
-
-	if ( ffmpeg )
-	{
-		ffmpeg->close();
-	}
-	_stage.audio.close();
-
-	if ( !video_filename.empty() && !final_filename.empty() )
-	{
-		Timer timer_mux( "  FFMPEG muxing: " );
-
-		bool any_subtitles = false;
-		for ( auto &lang: languages )
-		{
-			if ( !_stage.audio.subtitles( lang ).empty() )
-			{
-				any_subtitles = true;
-				break;
-			}
-		}
-
-		FfmpegMux mux( final_filename, acodec, any_subtitles ? scodec : std::string{} );
-		mux.add_video_track( video_filename );
-		for ( auto &lang: languages )
-		{
-			// Container "language" metadata is conventionally a bare ISO 639
-			// code, not a full BCP-47 regional tag - "en-GB" isn't itself a
-			// valid value the way "en" is.
-			mux.add_audio_track(
-				_stage.audio.output( lang ), language::primary_subtag( lang ), {},
-				lang == languages.front() );
-		}
-		for ( auto &lang: languages )
-		{
-			const auto &cues = _stage.audio.subtitles( lang );
-			if ( cues.empty() )
-			{
-				continue;
-			}
-
-			const std::string srt_path = render_dir + "/subtitles." + lang + ".srt";
-			const std::string vtt_path = render_dir + "/subtitles." + lang + ".vtt";
-			write_srt( srt_path, cues );
-			write_vtt( vtt_path, cues );
-
-			mux.add_subtitle_track(
-				subtitle_ext == "vtt" ? vtt_path : srt_path, language::primary_subtag( lang ), {},
-				lang == languages.front() );
-		}
-		mux.mux();
+		ok = render( { languages, render_dir, container, vcodec, acodec, scodec, subtitle_ext, save_png, save_svg } );
 	}
 
 	// Text that could not be drawn was shown as magenta boxes; say what and where, so it can be fixed
@@ -478,5 +505,5 @@ bool Producer::produce( int argc, char *argv[] )
 		}
 	}
 
-	return true;
+	return ok;
 }

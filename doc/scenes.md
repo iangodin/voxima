@@ -58,6 +58,22 @@ scene is called "movie" and there is no `--scene`, the only registered scene is 
 A `Producer` can still be given a `Director` in code (`Producer producer( my_director )`), used when there is
 no `--scene`.
 
+## Languages: one video for all, or one per language
+
+```
+sonimation ... --lang en --lang fr              # one container with an audio and a subtitle track for each language
+sonimation ... --lang en --lang fr --separate   # one container per language, in <render-dir>/en/ and <render-dir>/fr/
+```
+
+- **Together** (the default): the visuals are timed to the first language (the master), and the other languages'
+  audio and subtitles are laid alongside. Their narration takes its own time, so they are not synchronised with
+  the visuals (see the plans for one timeline per marker segment in `tasks.md`).
+- **`--separate`:** each language is a complete render of its own: its narration and its subtitles, the script's
+  text for that language on screen, and animation timed to *its* narration, through the markers in the script
+  (`{name}`, see `tts.md`). Each folder holds `final.<container>` and the pieces it was made from. The models are
+  loaded once for all of them. It is up to the scene to adapt to the narration: use `until_marker`,
+  `track_markers` and the like rather than fixed frame counts, so that it follows whatever each language takes.
+
 ## Missing glyphs
 
 A character that cannot be drawn is never left to fail quietly. Two things count:
