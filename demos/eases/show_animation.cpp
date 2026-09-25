@@ -34,6 +34,9 @@
 
 #include <core/Narration.h>
 #include <core/MorphAnim.h>
+#include <visuals/ArrowTip.h>
+#include <visuals/Image.h>
+#include <visuals/Line.h>
 #include <visuals/Rectangle.h>
 
 void show_title( Stage &stage )
@@ -352,6 +355,88 @@ Scene show_text_morph( Stage &stage )
 	}
 }
 
+// Strokes, arrows, letters that morph one after another, and pictures: a line inflates into a disc, which
+// becomes an arrow that then turns; the arrow becomes a word whose letters change in a ripple; the word
+// becomes a picture, which moves and fades into a disc.
+Scene show_more_morphs( Stage &stage )
+{
+	stage.visuals.clear();
+	const Point spot = { 0.F, 1.F };
+
+	auto line = std::make_unique<Line>();
+	line->start = { -2.F, 0.F };
+	line->end = { 2.F, 0.F };
+	line->stroke_thickness = 0.12F;
+	line->stroke_color = Color{ 1.F, 0.85F, 0.3F, 1.F };
+	line->position = spot;
+
+	auto arrow = [&]( float degrees )
+	{
+		auto group = std::make_unique<Group>();
+		auto shaft = std::make_unique<Line>();
+		shaft->start = { -1.5F, 0.F };
+		shaft->end = { 1.2F, 0.F };
+		shaft->stroke_thickness = 0.12F;
+		shaft->stroke_color = Color{ 0.5F, 1.F, 0.5F, 1.F };
+		auto tip = std::make_unique<ArrowTip>();
+		tip->start = { -1.5F, 0.F };
+		tip->end = { 1.6F, 0.F };
+		tip->size = 0.3F;
+		tip->color = Color{ 0.5F, 1.F, 0.5F, 1.F };
+		group->add( std::move( shaft ) );
+		group->add( std::move( tip ) );
+		group->position = spot;
+		group->rotation = degrees;
+		return group;
+	};
+	auto word = [&]( const char *s )
+	{
+		auto text = make_text( *stage.theme, s, FontStyle{ Intent::PROSE }.huge() );
+		center_group( *text );
+		text->position = spot;
+		return text;
+	};
+	auto picture = [&]( Point at, float scale )
+	{
+		auto image = std::make_unique<Image>();
+		image->path = "assets/images/testcard.png";
+		image->half_width = image->half_height = 1.2F;
+		image->position = at;
+		image->scale_x = image->scale_y = scale;
+		return image;
+	};
+
+	struct Step
+	{
+		std::unique_ptr<Visual> to;
+		int64_t frames;
+		MorphOptions options;
+	};
+	std::vector<Step> steps;
+	steps.push_back( { demo_circle( spot ), 40, {} } );  // the line inflates into a disc
+	steps.push_back( { arrow( 0.F ), 40, {} } );         // the disc becomes an arrow, and
+	steps.push_back( { arrow( 60.F ), 40, {} } );        // the arrow turns
+	MorphOptions ripple;
+	ripple.stagger = 0.6F;
+	ripple.part_ease = []( float t ) { return t * t * ( 3.F - 2.F * t ); };
+	steps.push_back( { word( "smooth" ), 40, {} } );     // the arrow becomes a word
+	steps.push_back( { word( "morph" ), 60, ripple } );  // whose letters change one after another
+	steps.push_back( { picture( spot, 1.F ), 40, {} } ); // the word cross-fades into a picture
+	steps.push_back( { picture( { 3.F, spot.y() }, 0.6F ), 40, {} } ); // which moves and shrinks
+	steps.push_back( { demo_circle( { 3.F, spot.y() } ), 40, {} } );   // and fades into a disc
+
+	Visual *shown = &stage.visuals.add( std::move( line ) );
+	co_await wait_for( 12 );
+	for ( auto &step: steps )
+	{
+		Visual *next = step.to.get();
+		co_await morph( stage, *shown, std::move( step.to ), step.frames, ease_cubic_in_out, step.options );
+		shown = next;
+		co_await wait_for( 12 );
+	}
+	stage.visuals.clear();
+}
+
 Scene narrate( Narration &narration )
 {
 	while ( !narration.is_done() )
@@ -500,6 +585,7 @@ Screenplay my_screenplay( Stage &stage, Script &script )
 	co_await show_morph( stage );
 	co_await show_formula_morph( stage );
 	co_await show_text_morph( stage );
+	co_await show_more_morphs( stage );
 	co_await show_karaoke( stage, script );
 	co_await wait_for( duration );
 }

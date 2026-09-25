@@ -7,6 +7,7 @@
 
 #include <cstddef>
 #include <cstdint>
+#include <optional>
 #include <string>
 #include <vector>
 
@@ -38,7 +39,20 @@ enum class LeafKind
 	RECTANGLE,
 	ROUND_RECTANGLE,
 	LINE,
-	ARROW_TIP
+	ARROW_TIP,
+	IMAGE
+};
+
+// Where an Image leaf ends up, in its parent's frame: what an Image needs to be drawn there
+struct ImageInfo
+{
+	std::string path;
+	float half_width = 1.F;
+	float half_height = 1.F;
+	Point position;
+	float rotation = 0.F; // degrees
+	float scale_x = 1.F;
+	float scale_y = 1.F;
 };
 
 // One drawn leaf (a glyph, a circle, a path ...) as filled outlines. A glyph like "o" has two
@@ -61,6 +75,10 @@ struct OutlineShape
 
 	LeafKind kind = LeafKind::PATH;
 
+	// Set for an Image, which has no outline (contours is empty): the picture and where it is. Its `fill`
+	// carries the alpha it is drawn with.
+	std::optional<ImageInfo> image;
+
 	// Identifies the leaf's own geometry, before any transform: two glyphs of the same letter at the
 	// same size have the same key wherever they sit. Never 0.
 	uint64_t key = 0;
@@ -70,8 +88,9 @@ struct OutlineShape
 // its parent: the visual's own position/rotation/scale and those of its groups are baked in
 // (same order as the SVG writer: translate, rotate, scale) and group colors are multiplied down.
 // Leaves come out in drawing order, one OutlineShape each. Lines, arrow tips and images have no
-// filled outline; they are skipped, and counted in `skipped` if it is given. (A Line becomes an open
-// contour with no fill, only a stroke; an ArrowTip is its triangle.)
+// filled outline. (A Line becomes an open contour with no fill, only a stroke; an ArrowTip is its triangle;
+// an Image is a shape with `image` set and no contours.) Left out, and counted in `skipped` if it is given:
+// an image placed with a shear, which an Image cannot be drawn as.
 std::vector<OutlineShape> to_outline( const Visual &visual, size_t *skipped = nullptr );
 
 // Area enclosed by the contour, positive for one winding and negative for the other (an open contour

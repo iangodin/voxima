@@ -7,6 +7,7 @@
 #include <visuals/Circle.h>
 #include <visuals/CreateText.h>
 #include <visuals/Group.h>
+#include <visuals/Image.h>
 #include <visuals/Line.h>
 #include <visuals/Morph.h>
 #include <visuals/MorphMatch.h>
@@ -873,6 +874,95 @@ TEST_CASE( "Morph stagger outside its range is safe", "[morph]" )
 		{
 			morph.set( t );
 			CHECK( finite( morph ) );
+		}
+	}
+}
+
+namespace
+{
+std::unique_ptr<Image> picture( const char *path, Point at, float alpha = 1.F )
+{
+	auto image = std::make_unique<Image>();
+	image->path = path;
+	image->half_width = 1.6F;
+	image->half_height = 0.9F;
+	image->position = at;
+	image->color = { 1.F, 1.F, 1.F, alpha };
+	return image;
+}
+
+const Image &image_part( Morph &morph, size_t k )
+{
+	return dynamic_cast<const Image &>( **( morph.visual().begin() + static_cast<std::ptrdiff_t>( k ) ) );
+}
+}
+
+TEST_CASE( "Morph moves the same picture and cross-fades different ones", "[morph]" )
+{
+	SECTION( "the same picture moves, staying as it is" )
+	{
+		auto from = picture( "a.png", { 0.F, 0.F } );
+		auto to = picture( "a.png", { 4.F, 2.F } );
+		Morph morph( *from, *to );
+
+		REQUIRE( morph.visual().size() == 1 );
+		morph.set( 0.5F );
+		CHECK( image_part( morph, 0 ).position.x() == Approx( 2.F ) );
+		CHECK( image_part( morph, 0 ).position.y() == Approx( 1.F ) );
+		CHECK( image_part( morph, 0 ).color.a == Approx( 1.F ) );
+		CHECK( image_part( morph, 0 ).path == "a.png" );
+	}
+
+	SECTION( "a different picture fades out while the new one fades in" )
+	{
+		auto from = picture( "a.png", { 0.F, 0.F } );
+		auto to = picture( "b.png", { 0.F, 0.F } );
+		Morph morph( *from, *to );
+
+		REQUIRE( morph.visual().size() == 2 );
+		morph.set( 0.F );
+		CHECK( image_part( morph, 0 ).color.a == Approx( 1.F ) );
+		CHECK( image_part( morph, 1 ).color.a == Approx( 0.F ) );
+		morph.set( 0.25F );
+		CHECK( image_part( morph, 0 ).color.a == Approx( 0.75F ) );
+		CHECK( image_part( morph, 1 ).color.a == Approx( 0.25F ) );
+		morph.set( 1.F );
+		CHECK( image_part( morph, 0 ).color.a == Approx( 0.F ) );
+		CHECK( image_part( morph, 1 ).color.a == Approx( 1.F ) );
+		CHECK( image_part( morph, 0 ).path == "a.png" );
+		CHECK( image_part( morph, 1 ).path == "b.png" );
+	}
+
+	SECTION( "a picture and a shape cross-fade too" )
+	{
+		auto from = picture( "a.png", { 0.F, 0.F } );
+		Circle disc;
+		Morph morph( *from, disc );
+
+		REQUIRE( morph.visual().size() == 2 );
+		morph.set( 0.F );
+		// the picture is still there, the disc not yet visible
+		const auto shapes = to_outline( morph.visual() );
+		REQUIRE( shapes.size() == 2 );
+		CHECK( shapes[0].image.has_value() );
+		CHECK( shapes[0].fill.a == Approx( 1.F ) );
+		CHECK( shapes[1].fill.a == Approx( 0.F ) );
+		morph.set( 1.F );
+		const auto done = to_outline( morph.visual() );
+		CHECK( done[0].fill.a == Approx( 0.F ) );
+		CHECK( done[1].fill.a == Approx( 1.F ) );
+	}
+
+	SECTION( "extrapolating stays sensible" )
+	{
+		auto from = picture( "a.png", { 0.F, 0.F } );
+		auto to = picture( "b.png", { 0.F, 0.F } );
+		Morph morph( *from, *to );
+		for ( float t: { -0.5F, 1.5F } )
+		{
+			morph.set( t );
+			CHECK( image_part( morph, 0 ).color.a >= 0.F );
+			CHECK( image_part( morph, 0 ).color.a <= 1.F );
 		}
 	}
 }

@@ -1,6 +1,8 @@
 #include <catch2/catch_test_macros.hpp>
 #include <exporters/SVGWriter.h>
 #include <visuals/Glyph.h>
+#include <visuals/Group.h>
+#include <visuals/Image.h>
 
 #include <memory>
 #include <sstream>
@@ -117,4 +119,37 @@ TEST_CASE( "SVGWriter output is reproducible", "[exporters]" )
 	// ids are plain counters, not memory addresses
 	CHECK_FALSE( contains( first.first, "0x" ) );
 	CHECK_FALSE( contains( first.second, "0x" ) );
+}
+
+TEST_CASE( "SVGWriter fades an image by its color's alpha", "[exporters]" )
+{
+	auto write = []( float alpha, float group_alpha )
+	{
+		Group group;
+		group.color = { 1.F, 1.F, 1.F, group_alpha };
+		auto image = std::make_unique<Image>();
+		image->path = "picture.png";
+		image->color = { 1.F, 1.F, 1.F, alpha };
+		group.add( std::move( image ) );
+
+		std::ostringstream body;
+		SVGWriter writer( body );
+		group.accept( writer );
+		return body.str();
+	};
+
+	SECTION( "an opaque picture is written as it always was" )
+	{
+		CHECK_FALSE( contains( write( 1.F, 1.F ), "opacity" ) );
+	}
+
+	SECTION( "a see-through one carries its alpha" )
+	{
+		CHECK( contains( write( 0.5F, 1.F ), "opacity=\"0.5000\"" ) );
+	}
+
+	SECTION( "and its group's alpha counts too" )
+	{
+		CHECK( contains( write( 0.5F, 0.5F ), "opacity=\"0.2500\"" ) );
+	}
 }

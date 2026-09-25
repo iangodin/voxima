@@ -1,6 +1,7 @@
 #pragma once
 
 #include "visuals/Group.h"
+#include "visuals/Image.h"
 #include "visuals/MorphLeaves.h"
 #include "visuals/MorphMatch.h"
 #include "visuals/Path.h"
@@ -29,6 +30,9 @@ struct MorphOptions
 // contours are paired and cut to match (see MorphMatch.h), and set( t ) blends the control points, colors
 // and stroke widths: t = 0 is `from`, t = 1 is `to`, and values outside that extrapolate (elastic and
 // back easing overshoot).
+//
+// A picture (Image) is not an outline: it can only turn into the same picture, moving to where that is, and
+// otherwise cross-fades with whatever replaces it.
 //
 // Leaves of the two visuals (each glyph, each shape) are paired up by MorphOptions::leaves: by default
 // with the same tags first, then identical glyphs in reading order, then the closest. Paired leaves
@@ -70,6 +74,10 @@ private:
 	struct Part
 	{
 		Path *path = nullptr;
+		// For a picture instead: it moves from one place to the other and fades in or out
+		Image *image = nullptr;
+		ImageInfo image_a;
+		ImageInfo image_b;
 		std::vector<ContourPair> contours;
 		Color fill_a, fill_b;
 		Color stroke_a, stroke_b;

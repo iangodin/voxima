@@ -309,9 +309,17 @@ void SVGWriter::visit( const Image &image )
 
 		// Note: We need a transform="scale(1, -1)" on the image itself
 		// so it's not flipped upside down by the global scale(1, -1)
+		// The alpha of the color (the image's own times its groups') fades the picture
+		const float opacity = ( _current_color * image.color ).a;
+
 		_out << indent() << "<image href=\"" << image.path << "\" x=\"" << x
 		     << "\" y=\"" << -y - h << "\" width=\"" << w
-		     << "\" height=\"" << h << "\" transform=\"scale(1, -1)\" />\n";
+		     << "\" height=\"" << h << "\" transform=\"scale(1, -1)\"";
+		if ( opacity != 1.F )
+		{
+			_out << " opacity=\"" << opacity << "\"";
+		}
+		_out << " />\n";
 
 		close_g();
 	}

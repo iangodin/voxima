@@ -278,6 +278,12 @@ struct Extent
 
 Extent extent_of( const OutlineShape &shape )
 {
+	if ( shape.image )
+	{
+		const ImageInfo &im = *shape.image;
+		return { im.position, 2.F * std::hypot( im.half_width * im.scale_x, im.half_height * im.scale_y ) };
+	}
+
 	AABB box;
 	for ( const auto &c: shape.contours )
 	{
@@ -457,6 +463,29 @@ std::vector<LeafPair> match_leaves( const std::vector<OutlineShape> &a, const st
 		case LeafMatch::BY_INDEX:
 			match_by_index( st );
 			break;
+	}
+
+	// A picture can only turn into the same picture (it just moves); into anything else it fades out while
+	// the other fades in
+	{
+		std::vector<LeafPair> checked;
+		for ( const LeafPair &p: st.pairs )
+		{
+			if ( p.a >= 0 && p.b >= 0 )
+			{
+				const OutlineShape &x = a[static_cast<size_t>( p.a )];
+				const OutlineShape &y = b[static_cast<size_t>( p.b )];
+				const bool any_image = x.image || y.image;
+				if ( any_image && !( x.image && y.image && x.key == y.key ) )
+				{
+					checked.push_back( { p.a, -1 } );
+					checked.push_back( { -1, p.b } );
+					continue;
+				}
+			}
+			checked.push_back( p );
+		}
+		st.pairs = std::move( checked );
 	}
 
 	for ( size_t i: st.free_a() )

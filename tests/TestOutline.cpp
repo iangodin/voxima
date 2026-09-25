@@ -244,14 +244,77 @@ TEST_CASE( "to_outline carries colors, one shape per leaf", "[outline]" )
 	CHECK( shapes[0].stroke_thickness == Approx( 0.2F ) );
 }
 
-TEST_CASE( "to_outline skips what it cannot draw as an outline", "[outline]" )
+TEST_CASE( "to_outline gives an image its place, with no outline", "[outline]" )
 {
 	Group group;
-	group.add( std::make_unique<Image>() );
+	group.position = { 10.F, 0.F };
+	group.scale_x = group.scale_y = 2.F;
+	auto image = std::make_unique<Image>();
+	image->path = "picture.png";
+	image->half_width = 1.6F;
+	image->half_height = 0.9F;
+	image->position = { 1.F, 1.F };
+	image->color = { 1.F, 1.F, 1.F, 0.5F };
+	group.add( std::move( image ) );
+
+	const auto shapes = to_outline( group );
+	REQUIRE( shapes.size() == 1 );
+	REQUIRE( shapes[0].image.has_value() );
+	const ImageInfo &im = *shapes[0].image;
+
+	CHECK( shapes[0].contours.empty() );
+	CHECK( shapes[0].kind == LeafKind::IMAGE );
+	CHECK( im.path == "picture.png" );
+	CHECK( im.half_width == 1.6F );
+	// the group doubles the picture's own offset and moves it
+	CHECK( im.position.x() == Approx( 12.F ) );
+	CHECK( im.position.y() == Approx( 2.F ) );
+	CHECK( im.scale_x == Approx( 2.F ) );
+	CHECK( im.scale_y == Approx( 2.F ) );
+	CHECK( im.rotation == Approx( 0.F ).margin( 1e-4 ) );
+	CHECK( shapes[0].fill.a == Approx( 0.5F ) );
+	CHECK( shapes[0].key != 0 );
+
+	SECTION( "the same picture has the same key wherever it is, another has not" )
+	{
+		Image same;
+		same.path = "picture.png";
+		same.half_width = 1.6F;
+		same.half_height = 0.9F;
+		same.position = { 50.F, 50.F };
+		Image other = same;
+		other.path = "other.png";
+		CHECK( to_outline( same )[0].key == shapes[0].key );
+		CHECK( to_outline( other )[0].key != shapes[0].key );
+	}
+
+	SECTION( "a rotation is kept as one" )
+	{
+		Group turned;
+		turned.rotation = 90.F;
+		auto leaf = std::make_unique<Image>();
+		leaf->position = { 1.F, 0.F };
+		turned.add( std::move( leaf ) );
+		const auto s = to_outline( turned );
+		REQUIRE( s.size() == 1 );
+		CHECK( s[0].image->rotation == Approx( 90.F ).margin( 1e-3 ) );
+		CHECK( s[0].image->position.x() == Approx( 0.F ).margin( 1e-4 ) );
+		CHECK( s[0].image->position.y() == Approx( 1.F ).margin( 1e-4 ) );
+	}
+}
+
+TEST_CASE( "to_outline leaves out an image placed with a shear", "[outline]" )
+{
+	// Scaled unevenly by a group, then turned by the picture itself: not a position, rotation and scale
+	Group group;
+	group.scale_x = 2.F;
+	auto image = std::make_unique<Image>();
+	image->rotation = 30.F;
+	group.add( std::move( image ) );
 	group.add( std::make_unique<Circle>() );
 
 	size_t skipped = 0;
-	auto shapes = to_outline( group, &skipped );
+	const auto shapes = to_outline( group, &skipped );
 	CHECK( shapes.size() == 1 );
 	CHECK( skipped == 1 );
 }

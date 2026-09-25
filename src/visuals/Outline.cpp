@@ -316,9 +316,48 @@ public:
 		emit( arrow, b, LeafKind::ARROW_TIP, Hasher().add( static_cast<uint64_t>( 6 ) ).add( arrow.start ).add( arrow.end ).add( arrow.size ).result() );
 	}
 
-	void visit( const Image & ) override
+	void visit( const Image &image ) override
 	{
-		++skipped;
+		// An Image has no outline, but it can be told where it has got to: undo the transforms into a
+		// position, rotation and scale (which a rotated, unevenly scaled group makes impossible)
+		const Affine m = leaf_transform( image );
+		const float sx = std::hypot( m.a, m.b );
+		if ( sx < 1e-9F )
+		{
+			++skipped;
+			return;
+		}
+		const float sy = ( m.a * m.d - m.b * m.c ) / sx;
+		const float shear = ( m.a * m.c + m.b * m.d ) / ( sx * std::max( std::abs( sy ), 1e-9F ) );
+		if ( std::abs( shear ) > 1e-3F )
+		{
+			++skipped;
+			return;
+		}
+
+		OutlineShape shape;
+		shape.image = ImageInfo{
+			image.path,
+			image.half_width,
+			image.half_height,
+			{ m.tx, m.ty },
+			std::atan2( m.b, m.a ) * 180.F / std::numbers::pi_v<float>,
+			sx,
+			sy };
+		shape.fill = _color * image.color;
+		shape.stroke = _stroke * image.stroke_color;
+		shape.word = _word;
+		shape.tags = _tags;
+		shape.tags.insert( shape.tags.end(), image.tags.begin(), image.tags.end() );
+		shape.kind = LeafKind::IMAGE;
+		Hasher h;
+		h.add( static_cast<uint64_t>( 7 ) );
+		for ( char c: image.path )
+		{
+			h.add( static_cast<uint64_t>( static_cast<unsigned char>( c ) ) );
+		}
+		shape.key = h.add( image.half_width ).add( image.half_height ).result();
+		shapes.push_back( std::move( shape ) );
 	}
 
 	void visit( const Group &group ) override

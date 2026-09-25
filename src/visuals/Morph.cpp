@@ -47,6 +47,24 @@ Morph::Morph( const Visual &from, const Visual &to, const MorphOptions &options 
 	for ( const LeafPair &pair: _pairs )
 	{
 		Part part;
+		const OutlineShape *sa = pair.a >= 0 ? &shapes_a[static_cast<size_t>( pair.a )] : nullptr;
+		const OutlineShape *sb = pair.b >= 0 ? &shapes_b[static_cast<size_t>( pair.b )] : nullptr;
+		if ( ( sa && sa->image ) || ( sb && sb->image ) )
+		{
+			// A picture: the same one moves, a lone one fades (leaf matching never pairs it with anything else)
+			part.image_a = sa ? *sa->image : *sb->image;
+			part.image_b = sb ? *sb->image : *sa->image;
+			part.fill_a = sa ? sa->fill : transparent( sb->fill );
+			part.fill_b = sb ? sb->fill : transparent( sa->fill );
+			auto node = std::make_unique<Image>();
+			node->path = part.image_a.path;
+			node->half_width = part.image_a.half_width;
+			node->half_height = part.image_a.half_height;
+			part.image = &_root->add( std::move( node ) );
+			_parts.push_back( std::move( part ) );
+			continue;
+		}
+
 		if ( pair.a >= 0 && pair.b >= 0 )
 		{
 			const auto &a = shapes_a[static_cast<size_t>( pair.a )];
@@ -115,6 +133,17 @@ void Morph::set( float t )
 		if ( _part_ease && progress >= 0.F && progress <= 1.F )
 		{
 			progress = _part_ease( progress );
+		}
+
+		if ( part.image )
+		{
+			Image &image = *part.image;
+			image.position = lerp( part.image_a.position, part.image_b.position, progress );
+			image.rotation = lerp( part.image_a.rotation, part.image_b.rotation, progress );
+			image.scale_x = lerp( part.image_a.scale_x, part.image_b.scale_x, progress );
+			image.scale_y = lerp( part.image_a.scale_y, part.image_b.scale_y, progress );
+			image.color = lerp( part.fill_a, part.fill_b, progress );
+			continue;
 		}
 
 		Path &path = *part.path;
