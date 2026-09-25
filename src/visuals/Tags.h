@@ -124,10 +124,22 @@ T *find_tag_as( Visual &root, Names... names )
 	return dynamic_cast<T *>( find_tag( root, names... ) );
 }
 
-// The group of glyphs for word `index` of laid-out text (make_styled_text tags
-// them "word0", "word1", ... counting through the whole text, using the same
-// split_words() as the narration timing), or nullptr if there is no such word.
+// The tag make_styled_text gives the group of glyphs of word `index`: "word0", "word1", ... counting
+// through the whole text, using the same split_words() as the narration timing
+inline std::string word_tag( size_t index )
+{
+	return "word" + std::to_string( index );
+}
+
+// Whether a tag is one of those ("word" and then digits only)
+inline bool is_word_tag( std::string_view tag )
+{
+	return tag.size() > 4 && tag.substr( 0, 4 ) == "word" &&
+		   std::all_of( tag.begin() + 4, tag.end(), []( char c ) { return c >= '0' && c <= '9'; } );
+}
+
+// The group of glyphs for word `index` of laid-out text, or nullptr if there is no such word.
 inline Visual *find_word( Visual &root, size_t index )
 {
-	return find_tag( root, "word" + std::to_string( index ) );
+	return find_tag( root, word_tag( index ) );
 }

@@ -80,3 +80,15 @@ std::vector<TimedWord> match_words(
 	}
 	return words;
 }
+
+// How far `position` is through [from, to], from 0 (at or before from) to 1 (at or past to). A span with
+// no length is 1 once it has been reached.
+inline float progress( double position, double from, double to )
+{
+	if ( to <= from )
+	{
+		return position >= from ? 1.F : 0.F;
+	}
+	const double t = ( position - from ) / ( to - from );
+	return static_cast<float>( t < 0.0 ? 0.0 : ( t > 1.0 ? 1.0 : t ) );
+}

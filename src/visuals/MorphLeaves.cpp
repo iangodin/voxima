@@ -1,5 +1,7 @@
 #include "visuals/MorphLeaves.h"
 
+#include "visuals/Tags.h"
+
 #include <algorithm>
 #include <cmath>
 #include <limits>
@@ -61,6 +63,113 @@ struct State
 		return out;
 	}
 };
+
+// The words of laid-out text: the leaves under one "word<N>" tag, and a key for the word as a whole
+struct Word
+{
+	std::vector<size_t> leaves;
+	uint64_t key = 0;
+};
+
+std::vector<Word> words_of( const std::vector<OutlineShape> &shapes )
+{
+	std::vector<std::string> order;
+	std::map<std::string, Word> by_tag;
+	for ( size_t i = 0; i < shapes.size(); ++i )
+	{
+		for ( const auto &tag: shapes[i].tags )
+		{
+			if ( is_word_tag( tag ) )
+			{
+				if ( by_tag.emplace( tag, Word{} ).second )
+				{
+					order.push_back( tag );
+				}
+				by_tag[tag].leaves.push_back( i );
+				break;
+			}
+		}
+	}
+
+	std::vector<Word> words;
+	for ( const auto &tag: order )
+	{
+		Word word = std::move( by_tag[tag] );
+		uint64_t h = 14695981039346656037ULL;
+		for ( size_t leaf: word.leaves )
+		{
+			h = ( h ^ shapes[leaf].key ) * 1099511628211ULL;
+		}
+		word.key = h;
+		words.push_back( std::move( word ) );
+	}
+	return words;
+}
+
+// Identical words stay together, in reading order; the words in between pair up in order
+void match_by_word( State &st )
+{
+	const auto wa = words_of( st.a );
+	const auto wb = words_of( st.b );
+	const size_t n = wa.size();
+	const size_t m = wb.size();
+	if ( n == 0 || m == 0 )
+	{
+		return;
+	}
+
+	auto pair_words = [&]( const Word &x, const Word &y )
+	{
+		for ( size_t k = 0; k < std::min( x.leaves.size(), y.leaves.size() ); ++k )
+		{
+			st.pair( x.leaves[k], y.leaves[k] );
+		}
+	};
+
+	std::vector<std::vector<size_t>> lcs( n + 1, std::vector<size_t>( m + 1, 0 ) );
+	for ( size_t i = n; i-- > 0; )
+	{
+		for ( size_t j = m; j-- > 0; )
+		{
+			lcs[i][j] = wa[i].key == wb[j].key ? lcs[i + 1][j + 1] + 1 : std::max( lcs[i + 1][j], lcs[i][j + 1] );
+		}
+	}
+
+	// Walk both, pairing identical words and, in each stretch between them, the words in order
+	std::vector<size_t> gap_a;
+	std::vector<size_t> gap_b;
+	auto flush = [&]()
+	{
+		for ( size_t k = 0; k < std::min( gap_a.size(), gap_b.size() ); ++k )
+		{
+			pair_words( wa[gap_a[k]], wb[gap_b[k]] );
+		}
+		gap_a.clear();
+		gap_b.clear();
+	};
+
+	size_t i = 0;
+	size_t j = 0;
+	while ( i < n || j < m )
+	{
+		if ( i < n && j < m && wa[i].key == wb[j].key && lcs[i][j] == lcs[i + 1][j + 1] + 1 )
+		{
+			flush();
+			pair_words( wa[i], wb[j] );
+			++i;
+			++j;
+		}
+		else if ( i < n && ( j == m || lcs[i + 1][j] >= lcs[i][j + 1] ) )
+		{
+			gap_a.push_back( i++ );
+		}
+		else
+		{
+			gap_b.push_back( j++ );
+		}
+	}
+	flush();
+}
 
 // Leaves under the same tag pair up in order. The most specific tags (the fewest leaves) go first, so a
 // broad tag such as a whole row can't take leaves that a "numerator" would have paired exactly.
@@ -264,9 +373,13 @@ std::vector<LeafPair> match_leaves( const std::vector<OutlineShape> &a, const st
 	switch ( mode )
 	{
 		case LeafMatch::AUTO:
+			match_by_word( st );
 			match_by_tag( st );
 			match_by_glyph( st );
 			match_by_proximity( st );
+			break;
+		case LeafMatch::BY_WORD:
+			match_by_word( st );
 			break;
 		case LeafMatch::BY_TAG:
 			match_by_tag( st );

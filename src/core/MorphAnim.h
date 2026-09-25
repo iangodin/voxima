@@ -23,17 +23,12 @@ Scene morph_to( Morph &morph, int64_t frames, Ease &&ease )
 	morph.set( 1.F );
 }
 
-// Turn `from` into `to` on the stage. `from` must be a direct child of stage.visuals; it is taken off the
-// stage for the morph (and dies with it, so do not use the reference afterwards), and `to` takes its place
-// when the morph ends, so the last frame is the real thing, not a flattened copy.
-template<typename Ease>
-Scene morph(
-	Stage &stage,
-	Visual &from,
-	std::unique_ptr<Visual> to,
-	int64_t frames,
-	Ease &&ease,
-	MorphOptions options = {} )
+// Turn `from` into `to` on the stage, with `drive( morph )` (a Scene that calls morph.set() as it goes: morph_to,
+// or something tied to the narration) deciding when. `from` must be a direct child of stage.visuals; it is taken
+// off the stage for the morph (and dies with it, so do not use the reference afterwards), and `to` takes its place
+// when the drive finishes, so the last frame is the real thing, not a flattened copy.
+template<typename Drive>
+Scene morph_driven( Stage &stage, Visual &from, std::unique_ptr<Visual> to, MorphOptions options, Drive &&drive )
 {
 	Morph shape( from, *to, options );
 	std::unique_ptr<Visual> drawn = shape.release();
@@ -45,7 +40,21 @@ Scene morph(
 		throw std::invalid_argument( "morph: 'from' must be a direct child of stage.visuals" );
 	}
 
-	co_await morph_to( shape, frames, ease );
+	co_await drive( shape );
 
 	stage.visuals.replace( drawn_ptr, std::move( to ) );
+}
+
+// Turn `from` into `to` over `frames`, shaped by an ease function (see morph_driven for what happens to the visuals)
+template<typename Ease>
+Scene morph(
+	Stage &stage,
+	Visual &from,
+	std::unique_ptr<Visual> to,
+	int64_t frames,
+	Ease &&ease,
+	MorphOptions options = {} )
+{
+	co_await morph_driven(
+		stage, from, std::move( to ), options, [&]( Morph &shape ) { return morph_to( shape, frames, ease ); } );
 }

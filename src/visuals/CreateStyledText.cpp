@@ -274,7 +274,7 @@ std::unique_ptr<Group> make_styled_text( Theme &theme, const StyledText &text, c
 				if ( !group )
 				{
 					group = &line_group.add( std::make_unique<Group>() );
-					tag_visual( *group, "word" + std::to_string( word_counter + k - 1 ) );
+					tag_visual( *group, word_tag( word_counter + k - 1 ) );
 				}
 				group->add( std::move( item.glyph ) );
 			}

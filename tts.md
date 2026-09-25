@@ -637,6 +637,13 @@ co_await narration.until_time( 1.5 );     // seconds since the batch started
 co_await narration.on_words( text, []( Visual &word, size_t index ) { ... } );
 ```
 
+`track_time( from, to, cb )` / `track_words( first, last, cb )` call `cb( t )` every frame with how far the
+narration is through the span (0 to 1, the last call exactly 1). They drive something that should last as long
+as the words do, e.g. a morph: `co_await narration.track_words( 2, 3, [&]( float t ) { morph.set( t ); } )`.
+With `morph_driven( stage, from, to, options, drive )` (`core/MorphAnim.h`) a shape can change on the words
+being said (the demo's `follow_speech`). Morphing text: `LeafMatch::AUTO` matches whole words first (identical
+words kept in reading order, the words between paired in order), so "the big cat" -> "the cat" fades only "big".
+
 `speak()` must still be called each frame (the demo's `narrate()` loop), typically in a
 `choreograph()` alongside these. They return at once if nothing is being narrated.
 

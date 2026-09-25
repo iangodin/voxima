@@ -90,3 +90,34 @@ Coroutine Narration::on_words( Visual &text, std::function<void( Visual &, size_
 		}
 	}
 }
+
+Coroutine Narration::track_time( double from, double to, std::function<void( float )> callback )
+{
+	co_await until_time( from );
+
+	const Narrator *n = master();
+	while ( n && !n->is_done() )
+	{
+		const float t = progress( n->position(), from, to );
+		if ( t >= 1.F )
+		{
+			break;
+		}
+		callback( t );
+		co_yield NextFrame{};
+	}
+	callback( 1.F );
+}
+
+Coroutine Narration::track_words( size_t first, size_t last, std::function<void( float )> callback )
+{
+	const auto &w = words();
+	if ( w.empty() )
+	{
+		callback( 1.F );
+		co_return;
+	}
+	first = std::min( first, w.size() - 1 );
+	last = std::clamp( last, first, w.size() - 1 );
+	co_await track_time( w[first].start_seconds, w[last].end_seconds, std::move( callback ) );
+}

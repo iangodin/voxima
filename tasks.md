@@ -39,7 +39,7 @@
   - [x] Morph between shapes and glyphs (feature-aware contour alignment, holes open/close, color/stroke blend)
   - [x] co_await morph( stage, from, to, frames, ease ) and a scrubbable Morph object
   - [x] Morph groups: match parts by tag / identical glyph / proximity, fade the rest (formulas, x^2 -> x^3)
-  - [ ] Text and narration: word-level morphs driven by until_word
+  - [x] Text and narration: word-aware text morphs, and morphs driven by the narration (track_words)
   - [ ] Morph lines, arrow tips (open contours), image cross-fade, stagger
 
 ## Audio System

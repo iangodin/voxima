@@ -71,3 +71,19 @@ TEST_CASE( "match_words gives up when the word counts disagree", "[audio]" )
 	std::vector<Aligned> aligned{ { 0.0, 1.0 } };
 	CHECK( match_words( "two words", 0, 0.0, aligned ).empty() );
 }
+
+TEST_CASE( "progress runs from 0 to 1 across a span", "[audio]" )
+{
+	CHECK( progress( 5.0, 10.0, 20.0 ) == 0.F );
+	CHECK( progress( 10.0, 10.0, 20.0 ) == 0.F );
+	CHECK( progress( 15.0, 10.0, 20.0 ) == 0.5F );
+	CHECK( progress( 20.0, 10.0, 20.0 ) == 1.F );
+	CHECK( progress( 99.0, 10.0, 20.0 ) == 1.F );
+}
+
+TEST_CASE( "progress of a span with no length is 1 once reached", "[audio]" )
+{
+	CHECK( progress( 1.0, 2.0, 2.0 ) == 0.F );
+	CHECK( progress( 2.0, 2.0, 2.0 ) == 1.F );
+	CHECK( progress( 3.0, 2.0, 2.0 ) == 1.F );
+}

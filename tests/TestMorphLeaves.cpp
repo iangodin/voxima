@@ -2,6 +2,7 @@
 #include <catch2/catch_test_macros.hpp>
 
 #include <core/Theme.h>
+#include <visuals/CreateText.h>
 #include <math/Expr.h>
 #include <themes/NewComputerModern.h>
 #include <visuals/Morph.h>
@@ -387,5 +388,116 @@ TEST_CASE( "Morph by tag follows the parts of a formula, wherever they moved", "
 			CHECK( tag_of( a, "left" ) == tag_of( b, "left" ) );
 			CHECK( tag_of( a, "right" ) == tag_of( b, "right" ) );
 		}
+	}
+}
+
+namespace
+{
+size_t both( const Pairs &pairs )
+{
+	return static_cast<size_t>( std::count_if( pairs.begin(), pairs.end(), []( LeafPair p ) { return p.a >= 0 && p.b >= 0; } ) );
+}
+
+size_t only_a( const Pairs &pairs )
+{
+	return static_cast<size_t>( std::count_if( pairs.begin(), pairs.end(), []( LeafPair p ) { return p.a >= 0 && p.b < 0; } ) );
+}
+
+size_t only_b( const Pairs &pairs )
+{
+	return static_cast<size_t>( std::count_if( pairs.begin(), pairs.end(), []( LeafPair p ) { return p.a < 0 && p.b >= 0; } ) );
+}
+}
+
+TEST_CASE( "is_word_tag recognises the tags of laid-out words", "[morph]" )
+{
+	CHECK( is_word_tag( word_tag( 0 ) ) );
+	CHECK( is_word_tag( word_tag( 42 ) ) );
+	CHECK_FALSE( is_word_tag( "word" ) );
+	CHECK_FALSE( is_word_tag( "words" ) );
+	CHECK_FALSE( is_word_tag( "word3x" ) );
+	CHECK_FALSE( is_word_tag( "numerator" ) );
+}
+
+TEST_CASE( "Text morphs match whole words", "[morph]" )
+{
+	Theme theme = NewComputerModern::create_theme();
+	const FontStyle style{ Intent::PROSE };
+	auto shapes = [&]( const char *s ) { return to_outline( *make_text( theme, s, style ) ); };
+
+	SECTION( "a word that goes away fades, the others are kept" )
+	{
+		const auto a = shapes( "the big cat" );
+		const auto b = shapes( "the cat" );
+		REQUIRE( a.size() == 9 );
+		REQUIRE( b.size() == 6 );
+
+		const auto pairs = match_leaves( a, b, LeafMatch::BY_WORD );
+		CHECK( complete( pairs, 9, 6 ) );
+		CHECK( both( pairs ) == 6 );
+		CHECK( only_a( pairs ) == 3 ); // "big"
+		CHECK( only_b( pairs ) == 0 );
+
+		// and what was kept is the same letters: they only move
+		for ( auto p: pairs )
+		{
+			if ( p.a >= 0 && p.b >= 0 )
+			{
+				CHECK( a[static_cast<size_t>( p.a )].key == b[static_cast<size_t>( p.b )].key );
+			}
+		}
+	}
+
+	SECTION( "a word that appears fades in" )
+	{
+		const auto pairs = match_leaves( shapes( "a cat" ), shapes( "a big cat" ), LeafMatch::BY_WORD );
+		CHECK( both( pairs ) == 4 ); // a, c, a, t
+		CHECK( only_b( pairs ) == 3 );
+		CHECK( only_a( pairs ) == 0 );
+	}
+
+	SECTION( "different words between identical ones pair in order, letter by letter" )
+	{
+		const auto a = shapes( "one two three" );
+		const auto b = shapes( "uno dos" );
+		const auto pairs = match_leaves( a, b, LeafMatch::BY_WORD );
+		CHECK( complete( pairs, a.size(), b.size() ) );
+		CHECK( both( pairs ) == 6 );      // one-uno and two-dos
+		CHECK( only_a( pairs ) == 5 );    // "three" fades
+	}
+
+	SECTION( "a replaced word turns into its replacement, the rest stays" )
+	{
+		const auto a = shapes( "a big cat" );
+		const auto b = shapes( "a red cat" );
+		const auto pairs = match_leaves( a, b, LeafMatch::BY_WORD );
+		size_t identical = 0;
+		for ( auto p: pairs )
+		{
+			if ( p.a >= 0 && p.b >= 0 && a[static_cast<size_t>( p.a )].key == b[static_cast<size_t>( p.b )].key )
+			{
+				++identical;
+			}
+		}
+		CHECK( both( pairs ) == 7 );  // a, big-red, cat
+		CHECK( identical == 4 );      // a, c, a, t
+	}
+
+	SECTION( "AUTO does the same for text" )
+	{
+		const auto a = shapes( "the big cat" );
+		const auto b = shapes( "the cat" );
+		const auto pairs = match_leaves( a, b, LeafMatch::AUTO );
+		CHECK( both( pairs ) == 6 );
+		CHECK( only_a( pairs ) == 3 );
+	}
+
+	SECTION( "words that are not laid-out text are left to the other matchers" )
+	{
+		std::vector<OutlineShape> a{ leaf( 1, 0 ) };
+		std::vector<OutlineShape> b{ leaf( 1, 0 ) };
+		const auto pairs = match_leaves( a, b, LeafMatch::BY_WORD );
+		CHECK( has( pairs, 0, -1 ) );
+		CHECK( has( pairs, -1, 0 ) );
 	}
 }

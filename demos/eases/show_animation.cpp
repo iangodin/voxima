@@ -225,36 +225,41 @@ Scene show_ease(
 
 }
 
+std::unique_ptr<Circle> demo_circle( Point at )
+{
+	auto c = std::make_unique<Circle>();
+	c->radius = 0.8F;
+	c->position = at;
+	c->color = Color{ 1.F, 0.45F, 0.45F, 1.F };
+	return c;
+}
+
+std::unique_ptr<Rectangle> demo_square( Point at )
+{
+	auto r = std::make_unique<Rectangle>();
+	r->half_width = r->half_height = 0.7F;
+	r->position = at;
+	r->color = Color{ 0.4F, 0.7F, 1.F, 1.F };
+	return r;
+}
+
+std::unique_ptr<Group> demo_letter( Stage &stage, const char *s, const Color &color, Point at )
+{
+	auto text = make_text( *stage.theme, s, FontStyle{ Intent::PROSE }.huge() );
+	center_group( *text );
+	text->position = at;
+	text->color = color;
+	return text;
+}
+
 // A shape that turns into other shapes and letters, one after the other: circle, square, then glyphs
 // (with holes that open and close) and back to the circle.
 Scene show_morph( Stage &stage )
 {
 	const Point home = { 0.F, 2.5F };
-
-	auto circle = [&]()
-	{
-		auto c = std::make_unique<Circle>();
-		c->radius = 0.8F;
-		c->position = home;
-		c->color = Color{ 1.F, 0.45F, 0.45F, 1.F };
-		return c;
-	};
-	auto square = [&]()
-	{
-		auto r = std::make_unique<Rectangle>();
-		r->half_width = r->half_height = 0.7F;
-		r->position = home;
-		r->color = Color{ 0.4F, 0.7F, 1.F, 1.F };
-		return r;
-	};
-	auto letter = [&]( const char *s, const Color &color )
-	{
-		auto text = make_text( *stage.theme, s, FontStyle{ Intent::PROSE }.huge() );
-		center_group( *text );
-		text->position = home;
-		text->color = color;
-		return text;
-	};
+	auto circle = [&]() { return demo_circle( home ); };
+	auto square = [&]() { return demo_square( home ); };
+	auto letter = [&]( const char *s, const Color &color ) { return demo_letter( stage, s, color, home ); };
 
 	Visual *shown = &stage.visuals.add( circle() );
 	co_await wait_for( 12 );
@@ -327,6 +332,46 @@ Scene narrate( Narration &narration )
 	}
 }
 
+// A shape that changes on the words being said: a circle turns into a square over "show various ease", into
+// an a on "animations", and back into a circle over "light up". Each change takes exactly as long as the
+// narrator takes to say those words, whatever speed the voice happens to have.
+Scene follow_speech( Stage &stage, Narration &narration )
+{
+	const Point spot = { 5.5F, 2.5F };
+	auto smooth = []( float t ) { return t * t * ( 3.F - 2.F * t ); };
+
+	Visual *shown = &stage.visuals.add( demo_circle( spot ) );
+
+	auto square = demo_square( spot );
+	Visual *next = square.get();
+	co_await morph_driven(
+		stage,
+		*shown,
+		std::move( square ),
+		MorphOptions{},
+		[&]( Morph &m ) { return narration.track_words( 1, 3, [&m, smooth]( float t ) { m.set( smooth( t ) ); } ); } );
+	shown = next;
+
+	auto letter = demo_letter( stage, "a", Color{ 1.F, 0.85F, 0.3F, 1.F }, spot );
+	next = letter.get();
+	co_await morph_driven(
+		stage,
+		*shown,
+		std::move( letter ),
+		MorphOptions{},
+		[&]( Morph &m ) { return narration.track_words( 4, 4, [&m, smooth]( float t ) { m.set( smooth( t ) ); } ); } );
+	shown = next;
+
+	auto circle = demo_circle( spot );
+	next = circle.get();
+	co_await morph_driven(
+		stage,
+		*shown,
+		std::move( circle ),
+		MorphOptions{},
+		[&]( Morph &m ) { return narration.track_words( 8, 9, [&m, smooth]( float t ) { m.set( smooth( t ) ); } ); } );
+}
+
 // Karaoke: shows the narrated text dimmed, then lights up each word as it is
 // spoken (the word being spoken in yellow, words already spoken in white).
 Scene show_karaoke( Stage &stage, Script &script )
@@ -364,6 +409,7 @@ Scene show_karaoke( Stage &stage, Script &script )
 	Visual *current = nullptr;
 	co_await choreograph(
 		narrate( narration ),
+		follow_speech( stage, narration ),
 		narration.on_words(
 			text,
 			[&current, spoken, speaking]( Visual &word, size_t )

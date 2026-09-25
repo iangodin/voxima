@@ -51,6 +51,16 @@ public:
 	Coroutine until_word( size_t index );
 	Coroutine until_word_end( size_t index );
 
+	// Calls callback( t ) once per frame with how far the narration has got through the span, from 0 to 1
+	// (the last call is always exactly 1), then finishes. Waits for the span to start first. Use it to
+	// drive something that should take as long as the narration does, such as Morph::set() (through an
+	// ease if you like), so a change lands on the words being said. Times are seconds since the batch
+	// started; track_words() spans from the start of word `first` to the end of word `last`.
+	//
+	//   co_await narration.track_words( 2, 3, [&]( float t ) { morph.set( t ); } );
+	Coroutine track_time( double from, double to, std::function<void( float )> callback );
+	Coroutine track_words( size_t first, size_t last, std::function<void( float )> callback );
+
 	// Karaoke-style sync: as each word of the narration starts, calls
 	// callback( word_visual, index ) with the matching "word<N>" group from
 	// `text` (a make_styled_text()/make_text() result), and finishes after the
