@@ -33,6 +33,8 @@
 #include <fonts/MathStyle.h>
 
 #include <core/Narration.h>
+#include <core/WordEffects.h>
+#include <utils/Words.h>
 #include <core/SceneRegistry.h>
 #include <core/MorphAnim.h>
 #include <visuals/ArrowTip.h>
@@ -485,55 +487,51 @@ Scene follow_speech( Stage &stage, Narration &narration )
 		[&]( Morph &m ) { return narration.track_words( 8, 9, [&m, smooth]( float t ) { m.set( smooth( t ) ); } ); } );
 }
 
-// Karaoke: shows the narrated text dimmed, then lights up each word as it is
-// spoken (the word being spoken in yellow, words already spoken in white).
+// Narrated text with an effect on every word as it is said. The first line is dim until its words are spoken:
+// each lights up yellow, pops, and settles to white. The second line is invisible until its words are spoken:
+// each fades in, flashes yellow, and is underlined as it is said. Beside them a shape changes on the words.
 Scene show_karaoke( Stage &stage, Script &script )
 {
+	using namespace word_effects;
+
 	const std::string lang = script.master_language();
-
-	// The text must be the narrated lines as written: word N spoken is word N here.
-	std::string shown;
-	for ( const auto &line: script.fetch( lang, "intro" ).as_multiline() )
-	{
-		shown += ( shown.empty() ? "" : "\n" ) + line;
-	}
-
-	StyledText styled( shown );
-	styled.set_font_style( 0, styled.size(), FontStyle{ Intent::PROSE }.large() );
-	styled.set_language( 0, styled.size(), lang );
-
-	auto &text = stage.visuals.add( make_styled_text( *stage.theme, styled, TextLayout{ .align = TextAlign::CENTER } ) );
-	center_group( text );
-	text.position = { 0.F, 0.5F };
-
-	const Color unspoken{ 0.45F, 0.45F, 0.45F, 1.F };
-	const Color spoken{ 1.F, 1.F, 1.F, 1.F };
-	const Color speaking{ 1.F, 0.85F, 0.3F, 1.F };
-
-	for ( size_t i = 0; find_word( text, i ); ++i )
-	{
-		find_word( text, i )->color = unspoken;
-	}
+	const Color dim{ 0.45F, 0.45F, 0.45F, 1.F };
+	const Color white{ 1.F, 1.F, 1.F, 1.F };
+	const Color yellow{ 1.F, 0.85F, 0.3F, 1.F };
 
 	Narration narration;
 	narration.setup( "narrator", script, stage.audio );
 	narration.speech( "intro" );
 
-	Visual *current = nullptr;
-	co_await choreograph(
-		narrate( narration ),
-		follow_speech( stage, narration ),
-		narration.on_words(
-			text,
-			[&current, spoken, speaking]( Visual &word, size_t )
-			{
-				if ( current )
-				{
-					current->color = spoken;
-				}
-				word.color = speaking;
-				current = &word;
-			} ) );
+	// One text per narrated line, shown as it is written: word N spoken is word N of the line, from the first
+	// word of that line on.
+	std::vector<Coroutine> running;
+	running.push_back( narrate( narration ) );
+	running.push_back( follow_speech( stage, narration ) );
+
+	size_t first_word = 0;
+	size_t line_number = 0;
+	const auto lines = script.fetch( lang, "intro" ).as_multiline();
+	for ( const auto &line: lines )
+	{
+		StyledText styled( line );
+		styled.set_font_style( 0, styled.size(), FontStyle{ Intent::PROSE }.large() );
+		styled.set_language( 0, styled.size(), lang );
+
+		auto &text = stage.visuals.add( make_styled_text( *stage.theme, styled ) );
+		center_group( text );
+		text.position = { 0.F, 1.F - 0.9F * static_cast<float>( line_number ) };
+
+		const WordEffect effect = line_number % 2 == 0
+									  ? all( { color( dim, yellow, white ), pop( 1.15F ) } )
+									  : all( { reveal(), color( white, yellow, white ), underline( yellow ) } );
+		running.push_back( narration.animate_words( text, effect, first_word ) );
+
+		first_word += split_words( line ).size();
+		++line_number;
+	}
+
+	co_await choreograph_all( std::move( running ) );
 }
 
 // The ease functions side by side, as circles racing across the screen while the narrator speaks

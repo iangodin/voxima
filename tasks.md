@@ -73,7 +73,7 @@
   - [x] co_await API: until_word / until_word_end / until_time / on_words
   - [x] Karaoke word highlighting demo
   - [x] Try the demo with --lang fr, Polish and no aligner model
-  - [ ] Per-word animation helpers (fade / scale / underline over the word's duration)
+  - [x] Per-word animation effects as coroutines: reveal, color, pop, underline (animate_words, word_effects::)
 
 ##  Subtitles
   - [x] Generate SRT subtitles files

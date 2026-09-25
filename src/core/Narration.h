@@ -2,6 +2,7 @@
 
 #include "Coroutine.h"
 #include "Narrator.h"
+#include "WordEffects.h"
 
 #include <utils/ObserverPtr.h>
 
@@ -60,6 +61,17 @@ public:
 	//   co_await narration.track_words( 2, 3, [&]( float t ) { morph.set( t ); } );
 	Coroutine track_time( double from, double to, std::function<void( float )> callback );
 	Coroutine track_words( size_t first, size_t last, std::function<void( float )> callback );
+
+	// Runs `effect` (see WordEffects.h and word_effects::) on every word of `text`, each starting when its
+	// word does and lasting as long as the effect does. Word i of the text is word first_word + i of the
+	// narration (for text shown a sentence at a time). Finishes when every effect has. Run it alongside the
+	// loop that calls speak(), and do not call speech() again until it is done.
+	//
+	//   co_await choreograph(
+	//       narrate( narration ),
+	//       narration.animate_words( text, word_effects::all( { word_effects::color( grey, yellow, white ),
+	//                                                            word_effects::pop() } ) ) );
+	Coroutine animate_words( Group &text, WordEffect effect, size_t first_word = 0 );
 
 	// Karaoke-style sync: as each word of the narration starts, calls
 	// callback( word_visual, index ) with the matching "word<N>" group from

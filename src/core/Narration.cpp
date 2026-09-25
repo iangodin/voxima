@@ -3,6 +3,7 @@
 
 #include <algorithm>
 #include <audio/Resample.h>
+#include <core/Director.h>
 #include <core/Stage.h>
 #include <cstring>
 
@@ -120,4 +121,36 @@ Coroutine Narration::track_words( size_t first, size_t last, std::function<void(
 	first = std::min( first, w.size() - 1 );
 	last = std::clamp( last, first, w.size() - 1 );
 	co_await track_time( w[first].start_seconds, w[last].end_seconds, std::move( callback ) );
+}
+
+Coroutine Narration::animate_words( Group &text, WordEffect effect, size_t first_word )
+{
+	const Narrator *n = master();
+	if ( !n )
+	{
+		co_return;
+	}
+
+	// One coroutine per word. Each waits for its word by itself, so they can all be started now.
+	const auto &spoken = n->words();
+	std::vector<Coroutine> running;
+	for ( size_t i = 0;; ++i )
+	{
+		Visual *word = find_word( text, i );
+		const size_t index = first_word + i;
+		if ( !word || index >= spoken.size() )
+		{
+			break;
+		}
+		running.push_back( effect( WordContext{
+			text,
+			*word,
+			index,
+			spoken[index].start_seconds,
+			spoken[index].end_seconds,
+			[n]() { return n->position(); },
+			[n]() { return n->is_done(); } } ) );
+	}
+
+	co_await choreograph_all( std::move( running ) );
 }

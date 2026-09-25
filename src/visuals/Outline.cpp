@@ -495,6 +495,11 @@ std::vector<OutlineShape> to_outline( const Visual &visual, size_t *skipped )
 	return std::move( builder.shapes );
 }
 
+Point place_in_parent( const Visual &visual, Point p )
+{
+	return local_transform( visual )( p );
+}
+
 double signed_area( const Contour &contour )
 {
 	// Green's theorem: half the integral of x dy - y dx. On a cubic the integrand is a degree-5

@@ -644,6 +644,15 @@ With `morph_driven( stage, from, to, options, drive )` (`core/MorphAnim.h`) a sh
 being said (the demo's `follow_speech`). Morphing text: `LeafMatch::AUTO` matches whole words first (identical
 words kept in reading order, the words between paired in order), so "the big cat" -> "the cat" fades only "big".
 
+**Per-word effects.** `narration.animate_words( text, effect, first_word = 0 )` runs an effect on every word of a
+laid-out text, each starting when its word is said. An effect is a coroutine over a `WordContext` (the word's
+visual, its text, its timing, `bounds()`, `center()`, and `over_word( fn )` / `over_time( from, to, fn )`, which
+call `fn( t )` with t from 0 to 1), so it keeps its state in local variables and cleans up after itself
+(`core/WordEffects.h`). Ready-made ones in `word_effects::`: `reveal()`, `color( before, during, after )`, `pop( scale )`,
+`underline( color )`, combined with `all( { ... } )`. The setup at the top of an effect runs as soon as
+`animate_words` starts, so words can be hidden or dimmed until they are said. The context carries the narration
+clock as a function, so effects are unit-tested with a fake clock (`tests/TestWordEffects.cpp`).
+
 `speak()` must still be called each frame (the demo's `narrate()` loop), typically in a
 `choreograph()` alongside these. They return at once if nothing is being narrated.
 

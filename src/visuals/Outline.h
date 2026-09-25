@@ -100,6 +100,10 @@ double signed_area( const Contour &contour );
 // Bounds of the contour's on-curve points (segment ends)
 AABB on_curve_bounds( const Contour &contour );
 
+// Where a point given in the visual's own coordinates lands in its parent's: the visual's position, rotation
+// and scale applied (in the order the SVG writer uses)
+Point place_in_parent( const Visual &visual, Point p );
+
 // Same contour, walked the other way. A loop starts at the same point; an open contour starts at its end.
 Contour reversed( const Contour &contour );
 

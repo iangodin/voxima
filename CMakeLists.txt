@@ -80,6 +80,7 @@ add_library( visuals STATIC
 	src/core/Narration.cpp
 	src/core/Narrator.cpp
 	src/core/SceneRegistry.cpp
+	src/core/WordEffects.cpp
 	src/visuals/Outline.cpp
 	src/visuals/MorphMatch.cpp
 	src/visuals/MorphLeaves.cpp
