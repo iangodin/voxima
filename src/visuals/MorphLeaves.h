@@ -8,8 +8,8 @@
 enum class LeafMatch
 {
 	// Words first (for text laid out by make_styled_text), then tags, then identical glyphs, then what is
-	// left by proximity (only leaves near each other and of a similar size; the rest fade): what you want
-	// for text and formulas, and the default
+	// left by proximity (only leaves near each other and of a similar size, and not parts that only one
+	// visual has a name for; the rest fade): what you want for text and formulas, and the default
 	AUTO,
 	// Only the words of laid-out text: identical words are kept, in reading order, and the words between
 	// them pair up in order, letter by letter ("the big cat" -> "the cat" keeps the and cat, and lets big

@@ -210,6 +210,33 @@ TEST_CASE( "match_leaves proximity leaves unrelated parts to fade", "[morph]" )
 	}
 }
 
+TEST_CASE( "match_leaves lets parts that only one side names fade", "[morph]" )
+{
+	// Both leaf pairs sit in the same place at the same size, but the first leaf of `a` is tagged "open",
+	// which nothing in `b` is: it has nothing to become, so it fades even though something is next to it.
+	std::vector<OutlineShape> a{ leaf( 1, 0, 0, { "open" } ), leaf( 3, 20 ) };
+	std::vector<OutlineShape> b{ leaf( 2, 0.5F ), leaf( 4, 20.5F ) };
+
+	const auto pairs = match_leaves( a, b, LeafMatch::AUTO );
+	CHECK( complete( pairs, 2, 2 ) );
+	CHECK( has( pairs, 0, -1 ) );
+	CHECK( has( pairs, -1, 0 ) );
+	CHECK( has( pairs, 1, 1 ) );
+
+	SECTION( "unless the other side has that name too" )
+	{
+		b[0].tags = { "open" };
+		CHECK( has( match_leaves( a, b, LeafMatch::AUTO ), 0, 0 ) );
+	}
+
+	SECTION( "a single shape is never held back by its tag" )
+	{
+		std::vector<OutlineShape> one_a{ leaf( 1, 0, 0, { "circle" } ) };
+		std::vector<OutlineShape> one_b{ leaf( 2, 30 ) };
+		CHECK( has( match_leaves( one_a, one_b, LeafMatch::AUTO ), 0, 0 ) );
+	}
+}
+
 TEST_CASE( "match_leaves lists leaves in the second visual's order", "[morph]" )
 {
 	std::vector<OutlineShape> a{ leaf( 1, 0 ), leaf( 2, 1 ), leaf( 3, 2 ) };
@@ -499,5 +526,77 @@ TEST_CASE( "Text morphs match whole words", "[morph]" )
 		const auto pairs = match_leaves( a, b, LeafMatch::BY_WORD );
 		CHECK( has( pairs, 0, -1 ) );
 		CHECK( has( pairs, -1, 0 ) );
+	}
+}
+
+TEST_CASE( "Formulas made of several pieces of text are not mistaken for one word", "[morph]" )
+{
+	// Every text() in a formula is laid out on its own, so each starts again at "word0". Matching by that
+	// name once paired the "(" of (a+b)^2 with a new b and made the old b fade.
+	Theme theme = NewComputerModern::create_theme();
+	math::Context context( theme );
+	using namespace math;
+
+	const Expr a = tag( "a", text( "a" ) );
+	const Expr b = tag( "b", text( "b" ) );
+	const Expr expanded = row(
+		{ ord( superscript( a, text( "2" ) ) ),
+		  bin( "+" ),
+		  ord( text( "2ab" ) ),
+		  bin( "+" ),
+		  ord( superscript( b, text( "2" ) ) ) } );
+	auto before = superscript( parens( row( { ord( a ), bin( "+" ), ord( b ) } ) ), text( "2" ) ).build( context );
+	auto after = expanded.build( context );
+
+	const auto shapes_a = to_outline( *before );
+	const auto shapes_b = to_outline( *after );
+
+	auto has_tag = []( const OutlineShape &s, const char *name )
+	{
+		return std::find( s.tags.begin(), s.tags.end(), name ) != s.tags.end();
+	};
+	auto partner_of = [&]( const char *name )
+	{
+		const auto pairs = match_leaves( shapes_a, shapes_b );
+		for ( auto p: pairs )
+		{
+			if ( p.a >= 0 && p.b >= 0 && has_tag( shapes_a[static_cast<size_t>( p.a )], name ) )
+			{
+				return p.b;
+			}
+		}
+		return -1;
+	};
+
+	SECTION( "each piece of text is its own word" )
+	{
+		int most = -1;
+		for ( const auto &s: shapes_a )
+		{
+			most = std::max( most, s.word );
+		}
+		CHECK( most >= 3 ); // (, a, +, b, ), 2: several words, not one
+	}
+
+	SECTION( "tagged parts follow their tags" )
+	{
+		const int a_partner = partner_of( "a" );
+		const int b_partner = partner_of( "b" );
+		REQUIRE( a_partner >= 0 );
+		REQUIRE( b_partner >= 0 );
+		CHECK( has_tag( shapes_b[static_cast<size_t>( a_partner )], "a" ) );
+		CHECK( has_tag( shapes_b[static_cast<size_t>( b_partner )], "b" ) );
+	}
+
+	SECTION( "the parentheses have nothing to become and fade" )
+	{
+		const auto pairs = match_leaves( shapes_a, shapes_b );
+		for ( auto p: pairs )
+		{
+			if ( p.a >= 0 && ( has_tag( shapes_a[static_cast<size_t>( p.a )], "open" ) || has_tag( shapes_a[static_cast<size_t>( p.a )], "close" ) ) )
+			{
+				CHECK( p.b < 0 );
+			}
+		}
 	}
 }

@@ -11,7 +11,9 @@
 #include "visuals/Path.h"
 #include "visuals/Rectangle.h"
 #include "visuals/RoundRectangle.h"
+#include "visuals/Tags.h"
 
+#include <algorithm>
 #include <cmath>
 #include <cstring>
 #include <numbers>
@@ -363,6 +365,7 @@ private:
 		shape.fill = _color * v.color;
 		shape.stroke = _stroke * v.stroke_color;
 		shape.stroke_thickness = v.stroke_thickness * leaf_transform( v ).scale();
+		shape.word = _word;
 		shape.tags = _tags;
 		shape.tags.insert( shape.tags.end(), v.tags.begin(), v.tags.end() );
 		shape.key = key;
@@ -375,8 +378,13 @@ private:
 		const Color old_color = _color;
 		const Color old_stroke = _stroke;
 		const size_t old_tags = _tags.size();
+		const int old_word = _word;
 
 		_tags.insert( _tags.end(), group.tags.begin(), group.tags.end() );
+		if ( std::any_of( group.tags.begin(), group.tags.end(), []( const std::string &t ) { return is_word_tag( t ); } ) )
+		{
+			_word = _next_word++;
+		}
 		_xf = _xf * local_transform( group );
 		_color = _color * group.color;
 		_stroke = _stroke * group.stroke_color;
@@ -389,8 +397,11 @@ private:
 		_color = old_color;
 		_stroke = old_stroke;
 		_tags.resize( old_tags );
+		_word = old_word;
 	}
 
+	int _word = -1;
+	int _next_word = 0;
 	std::vector<std::string> _tags;
 	Affine _xf;
 	Color _color;

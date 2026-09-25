@@ -64,7 +64,7 @@ struct State
 	}
 };
 
-// The words of laid-out text: the leaves under one "word<N>" tag, and a key for the word as a whole
+// The words of laid-out text: the leaves in one word group, and a key for the word as a whole
 struct Word
 {
 	std::vector<size_t> leaves;
@@ -73,35 +73,31 @@ struct Word
 
 std::vector<Word> words_of( const std::vector<OutlineShape> &shapes )
 {
-	std::vector<std::string> order;
-	std::map<std::string, Word> by_tag;
+	std::vector<Word> words;
+	std::map<int, size_t> index; // word id -> position in `words`
 	for ( size_t i = 0; i < shapes.size(); ++i )
 	{
-		for ( const auto &tag: shapes[i].tags )
+		const int id = shapes[i].word;
+		if ( id < 0 )
 		{
-			if ( is_word_tag( tag ) )
-			{
-				if ( by_tag.emplace( tag, Word{} ).second )
-				{
-					order.push_back( tag );
-				}
-				by_tag[tag].leaves.push_back( i );
-				break;
-			}
+			continue;
 		}
+		auto [it, added] = index.emplace( id, words.size() );
+		if ( added )
+		{
+			words.emplace_back();
+		}
+		words[it->second].leaves.push_back( i );
 	}
 
-	std::vector<Word> words;
-	for ( const auto &tag: order )
+	for ( auto &word: words )
 	{
-		Word word = std::move( by_tag[tag] );
 		uint64_t h = 14695981039346656037ULL;
 		for ( size_t leaf: word.leaves )
 		{
 			h = ( h ^ shapes[leaf].key ) * 1099511628211ULL;
 		}
 		word.key = h;
-		words.push_back( std::move( word ) );
 	}
 	return words;
 }
@@ -181,6 +177,10 @@ void match_by_tag( State &st )
 	{
 		for ( const auto &tag: shape.tags )
 		{
+			if ( is_word_tag( tag ) )
+			{
+				continue; // words are matched as words (see match_by_word), not by their tag's name
+			}
 			if ( size.emplace( tag, 0 ).second )
 			{
 				names.push_back( tag );
@@ -308,11 +308,49 @@ bool plausible( const Extent &x, const Extent &y )
 	return length_of( x.center - y.center ) <= 0.5F * ( x.diagonal + y.diagonal );
 }
 
+// Whether the leaf has a tag (other than a word's) that no leaf of the other visual has: a part that one
+// side names and the other lacks, like the parentheses of (a+b)^2 when it becomes a^2 + 2ab + b^2. It has
+// nothing to become.
+bool has_unshared_tag( const OutlineShape &shape, const std::vector<OutlineShape> &others )
+{
+	for ( const auto &tag: shape.tags )
+	{
+		if ( is_word_tag( tag ) )
+		{
+			continue;
+		}
+		const bool shared = std::any_of(
+			others.begin(),
+			others.end(),
+			[&]( const OutlineShape &o ) { return std::find( o.tags.begin(), o.tags.end(), tag ) != o.tags.end(); } );
+		if ( !shared )
+		{
+			return true;
+		}
+	}
+	return false;
+}
+
 // Whatever is left: the closest plausible pairs first. When either visual is a single leaf the caller
 // asked for that shape to turn into the other whatever the distance or size, so nothing is ruled out.
 void match_by_proximity( State &st )
 {
 	const bool gated = st.a.size() > 1 && st.b.size() > 1;
+
+	// Parts only one side has a name for fade instead of turning into something nearby
+	std::vector<bool> lonely_a( st.a.size(), false );
+	std::vector<bool> lonely_b( st.b.size(), false );
+	if ( gated )
+	{
+		for ( size_t i = 0; i < st.a.size(); ++i )
+		{
+			lonely_a[i] = has_unshared_tag( st.a[i], st.b );
+		}
+		for ( size_t j = 0; j < st.b.size(); ++j )
+		{
+			lonely_b[j] = has_unshared_tag( st.b[j], st.a );
+		}
+	}
 	std::vector<Extent> ea;
 	std::vector<Extent> eb;
 	for ( const auto &shape: st.a )
@@ -334,7 +372,7 @@ void match_by_proximity( State &st )
 		{
 			for ( size_t j: st.free_b() )
 			{
-				if ( gated && !plausible( ea[i], eb[j] ) )
+				if ( gated && ( lonely_a[i] || lonely_b[j] || !plausible( ea[i], eb[j] ) ) )
 				{
 					continue;
 				}

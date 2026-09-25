@@ -39,6 +39,11 @@ struct OutlineShape
 	// leaves can be matched by the names the composites give their parts
 	std::vector<std::string> tags;
 
+	// Which word of laid-out text the leaf is in (make_styled_text's "word<N>" groups), counted in drawing
+	// order, or -1. Words are told apart by the group they are, not by the tag's name: every piece of text
+	// (each text() in a formula) is laid out on its own and starts again at "word0".
+	int word = -1;
+
 	// Identifies the leaf's own geometry, before any transform: two glyphs of the same letter at the
 	// same size have the same key wherever they sit. Never 0.
 	uint64_t key = 0;

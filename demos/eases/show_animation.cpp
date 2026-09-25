@@ -323,6 +323,35 @@ Scene show_formula_morph( Stage &stage )
 	}
 }
 
+// A sentence that is edited: words that stay put only slide into place, words that go away fade out, new
+// ones fade in, and a word that is replaced turns into its replacement letter by letter.
+Scene show_text_morph( Stage &stage )
+{
+	auto line = [&]( const char *sentence )
+	{
+		auto text = make_text( *stage.theme, sentence, FontStyle{ Intent::PROSE }.large() );
+		center_group( *text );
+		text->position = { 0.F, -1.2F };
+		return text;
+	};
+
+	Visual *shown = &stage.visuals.add( line( "The big cat sat down" ) );
+	co_await wait_for( 12 );
+
+	std::vector<std::unique_ptr<Visual>> sentences;
+	sentences.push_back( line( "The cat sat down" ) );        // "big" fades away
+	sentences.push_back( line( "The cat sat on the mat" ) );  // "on the mat" fades in
+	sentences.push_back( line( "The dog ran off" ) );         // words replaced, "The" stays
+
+	for ( auto &sentence: sentences )
+	{
+		Visual *next = sentence.get();
+		co_await morph( stage, *shown, std::move( sentence ), 40, ease_cubic_in_out );
+		shown = next;
+		co_await wait_for( 12 );
+	}
+}
+
 Scene narrate( Narration &narration )
 {
 	while ( !narration.is_done() )
@@ -470,6 +499,7 @@ Screenplay my_screenplay( Stage &stage, Script &script )
 	*/
 	co_await show_morph( stage );
 	co_await show_formula_morph( stage );
+	co_await show_text_morph( stage );
 	co_await show_karaoke( stage, script );
 	co_await wait_for( duration );
 }
