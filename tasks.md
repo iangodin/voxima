@@ -5,6 +5,8 @@
   - [x] Create StyledText class to support styling text
   - [x] Pass current text language all the way to Harfbuzz to help shape/layout gylphs
   - [x] Integrate handling for BiDi text rendering
+  - [x] Group each word's glyphs into a tagged group (word0, word1, ...) sharing a word splitter with narration
+  - [x] Text line spacing (scales with font size) and left/center/right alignment
   - [ ] Add "highlighting" of missing glyphs (0xFFFD)
 
 ## Visuals
@@ -57,6 +59,13 @@
   - [x] Add C++ client to generate voice audio
   - [x] Decode Edge-TTS audio into float/PCM buffer
   - [x] Need "Speaker" that can generate audio with a language and voice parameters
+
+## Narration Sync
+  - [x] Expose per-word narration timing to animation (forced alignment, proportional fallback)
+  - [x] co_await API: until_word / until_word_end / until_time / on_words
+  - [x] Karaoke word highlighting demo
+  - [ ] Try the demo with --lang fr, Polish and no aligner model
+  - [ ] Per-word animation helpers (fade / scale / underline over the word's duration)
 
 ##  Subtitles
   - [x] Generate SRT subtitles files

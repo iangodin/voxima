@@ -602,6 +602,63 @@ render (`--lang en-GB`, reverted the temporarily-uncommented demo narration scen
 afterward, per the usual verification pattern this session) - synthesizes correctly,
 mux metadata now reads `language=en` instead of the invalid `en-GB`.
 
+## Word-level animation sync (2026-09-24)
+
+The forced-alignment pass (phase 4) used to feed only subtitle cues: `Narrator` kept the
+first word's start and the last word's end and threw the rest away. The per-word times
+now reach the animation code, so visuals can be driven by what is being said.
+
+**One definition of "a word".** `split_words()` (`src/utils/Words.h`) is shared by the
+narration timing and the text layout, so spoken word N is word N on screen. Whitespace
+separates words, punctuation stays attached, no-break spaces glue, tokens with nothing
+pronounceable (a lone dash, a quote) are not words, and Han/kana are split per character
+(no dictionary segmentation - a documented approximation of UAX #29, not ICU).
+
+**Timing** (`src/audio/TimedWord.h`, `Narrator`). `Narrator::words()` gives a
+`TimedWord { word, line, begin, end, start_seconds, end_seconds }` per word, relative to
+the start of the `speech()` batch, across all its lines. `match_words()` pairs the
+aligner's words with `split_words()` when their counts agree. Otherwise - Polish (no
+aligner support), no `--aligner-model`, an alignment failure, or a tokenization mismatch
+around numbers/hyphens - `distribute_words()` spreads the words over the line in
+proportion to their length in code points. Subtitle cues are unchanged and still use the
+aligned first/last word, or the whole line as a fallback.
+
+`Narrator::position()` is the seconds of the batch's audio consumed by `speak()` so far.
+Word times and position are both batch-relative, so no absolute anchor is needed;
+animation lands within a frame of the audio.
+
+**API** (`Narration`, master language only - other tracks have different timings):
+
+```cpp
+narration.speech( "intro" );
+co_await narration.until_word( 3 );       // resumes when word 3 starts
+co_await narration.until_word_end( 3 );
+co_await narration.until_time( 1.5 );     // seconds since the batch started
+co_await narration.on_words( text, []( Visual &word, size_t index ) { ... } );
+```
+
+`speak()` must still be called each frame (the demo's `narrate()` loop), typically in a
+`choreograph()` alongside these. They return at once if nothing is being narrated.
+
+**Text side.** `make_styled_text()` groups each word's glyphs into a `Group` tagged
+`"word<N>"` inside its `TextLine` (N counts through the whole text, across lines);
+`find_word( root, N )` looks it up. Glyphs are assigned by HarfBuzz cluster, so RTL words
+and words split by style ranges work, and math-alphabet remapping is accounted for. Word
+groups sit at the origin, so glyph positions are unchanged. This requires the on-screen
+text to be the narrated lines as written.
+
+**Demo.** `demos/eases/show_animation.cpp`'s `show_karaoke` scene dims the narrated text
+and lights each word yellow as it is spoken. Verified with a real render (Chatterbox +
+Qwen aligner): the highlight tracks the speech and the SRT cues agree. Not yet run with
+`--lang fr`, with Polish, or with the aligner disabled (the fallback paths are covered
+only by unit tests of `distribute_words()`/`match_words()`).
+
+**Text layout options** (same change set). `make_styled_text()` / `make_text()` take a
+`TextLayout { align, line_spacing }`. Line spacing is now `1.2 x` the largest font size
+on the line above (it was a fixed 0.5 world units), and lines can be left/center/right
+aligned within the widest line. The default spacing changes how existing multi-line text
+looks (single-line text is unaffected).
+
 ## Open questions for next session
 
 - Decide whether to keep Piper as a documented fallback path or drop it from
@@ -613,8 +670,9 @@ mux metadata now reads `language=en` instead of the invalid `en-GB`.
 - File an upstream issue on `0xShug0/audio.cpp` about the Chinese/Japanese
   language gap in the Chatterbox model spec, if/when it becomes a priority.
 - Polish has no forced-alignment support (Qwen3 Forced Aligner's 11 languages don't
-  include `pl`) - accepted gap, same treatment as zh/ja. Subtitle timing for Polish
-  narration would need a different approach if it ever matters.
+  include `pl`) - accepted gap, same treatment as zh/ja. Polish word-level sync falls back
+  to proportional distribution (see "Word-level animation sync"); subtitle cues use the
+  whole line.
 - mp4/webm subtitle muxing (`mov_text`/`webvtt`) implemented but not independently
   smoke-tested with a real render - only mkv was, this session.
 - Phase 5 (mock TTS backend for ctest coverage of `Narrator`/`Narration`) is next up
