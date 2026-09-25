@@ -1,3 +1,18 @@
+// The demo's scenes. With no --scene the "movie" scene renders (the morph scenes, then the karaoke); any one can be
+// rendered on its own, or several in order:
+//
+//     sonimation ... --scene morph-text
+//     sonimation ... --scene morph-shapes --scene karaoke
+//     sonimation --list-scenes
+//
+// Not part of the movie, so they are only rendered when asked for:
+//   missing-glyphs  characters that cannot be drawn, as magenta boxes (it warns at the end of the render, so
+//                   it would make every full render do so)
+//   eases           the ease functions racing across the screen, with narration
+//   formulas        a page of laid-out math
+//
+// See doc/scenes.md.
+
 
 
 #include <core/Coroutine.h>
