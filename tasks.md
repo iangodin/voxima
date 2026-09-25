@@ -40,7 +40,10 @@
   - [x] co_await morph( stage, from, to, frames, ease ) and a scrubbable Morph object
   - [x] Morph groups: match parts by tag / identical glyph / proximity, fade the rest (formulas, x^2 -> x^3)
   - [x] Text and narration: word-aware text morphs, and morphs driven by the narration (track_words)
-  - [ ] Morph lines, arrow tips (open contours), image cross-fade, stagger
+  - [x] Morph lines and arrow tips (open stroke contours; a line can inflate into a disc)
+  - [x] Image cross-fade (same picture moves, different pictures fade) - needs opacity in the SVG writer
+  - [x] Stagger (parts start one after another) and per-part ease
+  - [x] Cap on anchors tried for very dense outlines
 
 ## Audio System
   - [x] Need a AudioMixer that mixes everything and generates the final audio to a WAV file
