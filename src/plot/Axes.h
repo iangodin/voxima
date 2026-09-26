@@ -68,6 +68,10 @@ struct AxesOptions
 	bool arrows = true;
 	bool grid = false;
 
+	// With a grid: lines at the x ticks (up and down), and lines at the y ticks (across). A chart of bars has only the second.
+	bool grid_x = true;
+	bool grid_y = true;
+
 	// What the axes are called, at their ends, in math italic ("" for none)
 	std::string x_label = "x";
 	std::string y_label = "y";

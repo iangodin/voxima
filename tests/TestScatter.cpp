@@ -64,7 +64,7 @@ TEST_CASE( "scatter markers of every kind, and lines of every style", "[scatter]
 {
 	Theme theme = NewComputerModern::create_theme();
 	auto axes = small_axes( theme );
-	for ( Marker kind: { Marker::CIRCLE, Marker::SQUARE, Marker::DIAMOND, Marker::TRIANGLE, Marker::CROSS, Marker::PLUS } )
+	for ( MarkerShape kind: { MarkerShape::CIRCLE, MarkerShape::SQUARE, MarkerShape::DIAMOND, MarkerShape::TRIANGLE, MarkerShape::CROSS, MarkerShape::PLUS } )
 	{
 		auto points = scatter( *axes, { { 3.0, 3.0 } }, { .marker = kind } );
 		const AABB box = box_of( points->marker( 0 ) );

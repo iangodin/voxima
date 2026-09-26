@@ -107,6 +107,7 @@ add_library( visuals STATIC
 	src/plot/Axes.cpp
 	src/plot/NumberLine.cpp
 	src/plot/Scatter.cpp
+	src/plot/BarChart.cpp
 	src/plot/Graph.cpp
 	src/core/ProducerPreview.cpp
 	src/core/Theme.cpp

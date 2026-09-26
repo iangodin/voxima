@@ -32,7 +32,9 @@
 #include <math/Symbols.h>
 #include <visuals/Tags.h>
 #include <visuals/Circle.h>
+#include <plot/BarChart.h>
 #include <plot/NumberLine.h>
+#include <plot/Scatter.h>
 #include <visuals/Brace.h>
 #include <visuals/Callout.h>
 #include <visuals/Connector.h>
@@ -1031,6 +1033,45 @@ Scene show_geometry( Stage &stage, Script & )
 	co_await wait_for( stage, 2s );
 }
 
+// Data charts: scatter plots (markers, and a line through them), and bars grouped and stacked
+Scene show_charts( Stage &stage, Script & )
+{
+	Theme &theme = *stage.theme;
+
+	// Points, one series joined by a line, another as crosses
+	auto &plot_axes = stage.visuals.add( make_axes( theme, { .x = { 0, 10 }, .y = { 0, 8 }, .width = 7.F, .height = 4.5F, .grid = true, .x_label = "t", .y_label = "v" } ) );
+	plot_axes.position = { -3.7F, 0.2F };
+	plot_axes.add_plot( scatter( plot_axes, { { 1, 1.5 }, { 2, 2.4 }, { 3.5, 3.0 }, { 5, 5.2 }, { 6.5, 5.6 }, { 8, 7.1 }, { 9.5, 7.4 } }, { .line = JoinStyle::SMOOTH } ) );
+	plot_axes.add_plot( scatter( plot_axes, { { 1, 3.0 }, { 2.5, 2.2 }, { 4, 4.6 }, { 5.5, 3.1 }, { 7, 4.4 }, { 9, 5.0 } }, { .marker = MarkerShape::CROSS, .size = 0.14F } ) );
+	plot_axes.add_plot( scatter( plot_axes, { { 2, 6.5 }, { 4, 7.4 }, { 6, 6.0 } }, { .marker = MarkerShape::TRIANGLE } ) );
+
+	// Bars side by side
+	auto &bars = stage.visuals.add( make_bar_chart( theme, {
+		.categories = { "Q1", "Q2", "Q3", "Q4" },
+		.series = { { "north", { 12, 19, 15, 22 } }, { "south", { 9, 14, 20, 17 } } },
+		.width = 4.8F, .height = 4.F, .value_labels = true } ) );
+	bars.position = { 4.9F, 0.6F };
+
+	auto &title = stage.visuals.add( make_text( theme, "Points and bars", FontStyle{ Intent::TITLE } ) );
+	move_to( title, { 0.F, 4.1F }, Anchor::TOP );
+
+	co_await wait_for( stage, 2s );
+
+	// Stacked, going across, in a color a category
+	stage.visuals.clear();
+	auto &stacked = stage.visuals.add( make_bar_chart( theme, {
+		.categories = { "one", "two", "three" },
+		.series = { { "a", { 3, 5, 2 } }, { "b", { 2, 1, 4 } }, { "c", { 1, 2, 3 } } },
+		.stacked = true, .horizontal = true, .width = 6.F, .height = 3.5F, .value_labels = true } ) );
+	stacked.position = { -4.F, 0.F };
+	auto &signed_bars = stage.visuals.add( make_bar_chart( theme, {
+		.categories = { "a", "b", "c", "d", "e" },
+		.series = { { "change", { 4, -2, 3, -5, 1 } } },
+		.width = 5.5F, .height = 4.F, .color_by_category = true } ) );
+	signed_bars.position = { 4.5F, 0.F };
+	co_await wait_for( stage, 2s );
+}
+
 // Music under the demo movie. Music is not in the repository (assets/ is not): without the file the movie
 // plays silent, and says so.
 constexpr const char *MOVIE_MUSIC = "assets/music/Alexander Ehlers - Spacetime.mp3";
@@ -1064,6 +1105,7 @@ SONIMATION_SCENE( "verbs", "Fade, slide, grow and indicate, with connectors foll
 SONIMATION_SCENE( "diagram", "A diagram laid out in layers, a callout, a wrapped list, and evenly spread headings", show_diagram );
 SONIMATION_SCENE( "geometry", "A triangle with named corners and marked angles", show_geometry );
 SONIMATION_SCENE( "math-marks", "Cancelled and boxed parts, colors, primes, and words between math", show_math_marks );
+SONIMATION_SCENE( "charts", "Scatter plots and bar charts: grouped, stacked, horizontal, with negatives", show_charts );
 SONIMATION_SCENE( "camera", "Zooming in on a graph, and panning along it", show_camera );
 SONIMATION_SCENE( "plot", "Axes crossing in the middle, and graphs drawn on them", show_plot );
 SONIMATION_SCENE( "plot-edge", "The same, with the axes along the left and bottom", show_plot_edge );

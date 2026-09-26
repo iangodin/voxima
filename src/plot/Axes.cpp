@@ -195,11 +195,15 @@ std::unique_ptr<Axes> make_axes( Theme &theme, const AxesOptions &options )
 		grid->stroke_thickness = options.thickness * 0.6F;
 		for ( double x: axes->_x_ticks )
 		{
+			if ( !options.grid_x )
+				break;
 			grid->commands.push_back( MoveTo{ axes->at( x, options.y.min ) } );
 			grid->commands.push_back( LineTo{ axes->at( x, options.y.max ) } );
 		}
 		for ( double y: axes->_y_ticks )
 		{
+			if ( !options.grid_y )
+				break;
 			grid->commands.push_back( MoveTo{ axes->at( options.x.min, y ) } );
 			grid->commands.push_back( LineTo{ axes->at( options.x.max, y ) } );
 		}

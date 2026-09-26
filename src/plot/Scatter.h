@@ -10,7 +10,7 @@
 #include <utility>
 #include <vector>
 
-enum class Marker
+enum class MarkerShape
 {
 	CIRCLE,
 	SQUARE,
@@ -30,7 +30,7 @@ enum class JoinStyle
 
 struct ScatterOptions
 {
-	Marker marker = Marker::CIRCLE;
+	MarkerShape marker = MarkerShape::CIRCLE;
 
 	// Half the marker's width, in stage units
 	float size = 0.12F;
@@ -87,5 +87,5 @@ private:
 
 // The points on the axes. Add the result with add_plot, so it moves with them and is drawn under their numbers:
 //
-//     auto &chart = axes.add_plot( scatter( axes, { { 1, 2.5 }, { 2, 3.1 }, { 3, 2.8 } }, { .marker = Marker::DIAMOND, .line = JoinStyle::STRAIGHT } ) );
+//     auto &chart = axes.add_plot( scatter( axes, { { 1, 2.5 }, { 2, 3.1 }, { 3, 2.8 } }, { .marker = MarkerShape::DIAMOND, .line = JoinStyle::STRAIGHT } ) );
 std::unique_ptr<Scatter> scatter( const Axes &axes, const std::vector<std::pair<double, double>> &points, const ScatterOptions &options = {} );

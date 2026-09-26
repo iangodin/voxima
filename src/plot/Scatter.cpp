@@ -44,26 +44,26 @@ std::unique_ptr<Path> strokes( Point a, Point b, Point c, Point d, const Color &
 	return path;
 }
 
-std::unique_ptr<Visual> make_marker( Marker kind, float size, const Color &color, float thickness )
+std::unique_ptr<Visual> make_marker( MarkerShape kind, float size, const Color &color, float thickness )
 {
 	switch ( kind )
 	{
-		case Marker::SQUARE:
+		case MarkerShape::SQUARE:
 		{
 			auto square = std::make_unique<Rectangle>();
 			square->half_width = square->half_height = size;
 			square->color = color;
 			return square;
 		}
-		case Marker::DIAMOND:
+		case MarkerShape::DIAMOND:
 			return polygon( { { 0.F, size * 1.3F }, { size * 1.3F, 0.F }, { 0.F, -size * 1.3F }, { -size * 1.3F, 0.F } }, color );
-		case Marker::TRIANGLE:
+		case MarkerShape::TRIANGLE:
 			return polygon( { { 0.F, size * 1.25F }, { size * 1.15F, -size * 0.85F }, { -size * 1.15F, -size * 0.85F } }, color );
-		case Marker::CROSS:
+		case MarkerShape::CROSS:
 			return strokes( { -size, -size }, { size, size }, { -size, size }, { size, -size }, color, thickness * 1.5F );
-		case Marker::PLUS:
+		case MarkerShape::PLUS:
 			return strokes( { -size, 0.F }, { size, 0.F }, { 0.F, -size }, { 0.F, size }, color, thickness * 1.5F );
-		case Marker::CIRCLE:
+		case MarkerShape::CIRCLE:
 			break;
 	}
 	auto circle = std::make_unique<Circle>();
