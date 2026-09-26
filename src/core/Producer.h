@@ -57,6 +57,11 @@ private:
 	// Going somewhere the producer has not got to yet waits for it.
 	bool preview( const std::string &language );
 
+	// The frame rate that suits the main display, for --preview without --fps: its refresh rate, or the nearest
+	// below that the audio can be divided by (audio_rate must be a whole number of samples for each frame).
+	// 0 if it cannot be found.
+	int display_frame_rate( size_t audio_rate );
+
 	bool tick()
 	{
 		++_current_frame;

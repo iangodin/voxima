@@ -42,7 +42,52 @@ std::runtime_error sdl_error( const std::string &what )
 	return std::runtime_error( what + ": " + SDL_GetError() );
 }
 
+// Prefer X11 (through XWayland on a Wayland desktop): the SDL from Conan has no libdecor, so a native Wayland
+// window has no border or title bar on GNOME. SDL_VIDEO_DRIVER in the environment still wins. Before SDL_Init.
+void prefer_x11()
+{
+#if defined( __linux__ )
+	SDL_SetHint( SDL_HINT_VIDEO_DRIVER, "x11,wayland" );
+#endif
+}
+
 } // namespace
+
+int Producer::display_frame_rate( size_t audio_rate )
+{
+	prefer_x11();
+	if ( !SDL_Init( SDL_INIT_VIDEO ) )
+	{
+		throw sdl_error( "SDL_Init" );
+	}
+	struct Quit
+	{
+		~Quit()
+		{
+			SDL_QuitSubSystem( SDL_INIT_VIDEO );
+		}
+	} quit;
+
+	// The window is not made yet, so it is the main display that counts
+	const SDL_DisplayID display = SDL_GetPrimaryDisplay();
+	const SDL_DisplayMode *mode = display ? SDL_GetDesktopDisplayMode( display ) : nullptr;
+	if ( !mode || mode->refresh_rate < 1.F )
+	{
+		std::cerr << "Could not find the display's refresh rate, so the frame rate stays at " << _stage.camera.frame_rate
+				  << " (--fps sets it)\n";
+		return 0;
+	}
+
+	// The sound is cut into a whole number of samples for each frame, so the rate must divide the audio rate
+	// (144 Hz does not, 128 does): the nearest one at or below the refresh rate
+	int rate = static_cast<int>( std::lround( mode->refresh_rate ) );
+	while ( rate > 1 && audio_rate % static_cast<size_t>( rate ) != 0 )
+	{
+		--rate;
+	}
+	std::cout << "Preview at " << rate << " fps (the display refreshes at " << mode->refresh_rate << " Hz; --fps sets it)\n";
+	return rate;
+}
 
 bool Producer::preview( const std::string &language )
 {
@@ -96,11 +141,7 @@ bool Producer::preview( const std::string &language )
 		}
 	} );
 
-#if defined( __linux__ )
-	// Prefer X11 (through XWayland on a Wayland desktop): the SDL from Conan has no libdecor, so a native
-	// Wayland window has no border or title bar on GNOME. SDL_VIDEO_DRIVER in the environment still wins.
-	SDL_SetHint( SDL_HINT_VIDEO_DRIVER, "x11,wayland" );
-#endif
+	prefer_x11();
 	if ( !SDL_Init( SDL_INIT_VIDEO | SDL_INIT_AUDIO ) )
 	{
 		throw sdl_error( "SDL_Init" );

@@ -347,7 +347,8 @@ bool Producer::produce( int argc, char *argv[] )
 
 	app.add_option( "--width", _stage.camera.width, "Camera width" );
 	app.add_option( "--height", _stage.camera.height, "Camera height" );
-	app.add_option( "--fps", _stage.camera.frame_rate, "Camera frame rate" );
+	auto *fps_option = app.add_option(
+		"--fps", _stage.camera.frame_rate, "Camera frame rate (24 by default; with --preview, the display's refresh rate)" );
 
 	std::vector<std::string> languages;
 	app.add_option( "--lang", languages, "Language to use (first one is master, multiple allowed)" );
@@ -482,10 +483,22 @@ bool Producer::produce( int argc, char *argv[] )
 		_stage.theme->set_font_path( *font_path );
 	}
 
+	constexpr size_t audio_rate = 48000;
+
+	// A preview goes at the speed of the screen it is on, unless told otherwise: the scenes are written in
+	// seconds, so they last as long at any rate
+	if ( live_preview && fps_option->count() == 0 )
+	{
+		if ( const int rate = display_frame_rate( audio_rate ); rate > 0 )
+		{
+			_stage.camera.frame_rate = rate;
+		}
+	}
+
 	_stage.audio.setup(
 		render_dir,
 		"flac",
-		48000,
+		audio_rate,
 		static_cast<size_t>( _stage.camera.frame_rate ),
 		tts_model,
 		tts_voice_dir,
