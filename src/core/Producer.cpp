@@ -156,6 +156,7 @@ bool Producer::render( const RenderJob &job )
 	// A fresh start: the tracks for these languages, the languages in use, an empty stage
 	_script.select_languages( job.languages );
 	_stage.visuals.clear();
+	_stage.updaters.clear();
 	_stage.audio.begin( job.render_dir, job.languages );
 	_current_frame = -1;
 

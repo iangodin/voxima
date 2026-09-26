@@ -30,6 +30,7 @@ add_executable( sonimation_unit_tests
 	TestPlot.cpp
 	TestCamera.cpp
 	TestPlacement.cpp
+	TestUpdaters.cpp
 	TestPanelListTable.cpp
 	TestPalette.cpp
 	TestFontStacks.cpp

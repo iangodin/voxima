@@ -72,6 +72,9 @@ private:
 			_screenplay.resume();
 		}
 
+		// What is tied to something else, made so as the scene left it this frame
+		_stage.updaters.run();
+
 		return !_screenplay.done();
 	}
 

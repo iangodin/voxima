@@ -64,6 +64,7 @@ Scene play( Stage &stage, Script &script, std::string name, PlayOptions options 
 	if ( options.clear_stage )
 	{
 		stage.visuals.clear();
+		stage.updaters.clear(); // (they refer to what was there)
 	}
 
 	if ( stage.scene_event )

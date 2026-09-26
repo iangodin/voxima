@@ -11,6 +11,7 @@
 #include <core/Theme.h>
 #include <core/Camera.h>
 #include <core/Palette.h>
+#include <core/Updaters.h>
 
 #include <functional>
 #include <iostream>
@@ -32,6 +33,10 @@ struct Stage
 		foreground = palette.text;
 	}
 	Group visuals;
+
+	// Things run every frame to keep one thing tied to another (see Updaters.h): after the scene has done its step, before the
+	// picture. Cleared, with the visuals, when a scene starts.
+	Updaters updaters;
 	DubbingStage audio;
 	Camera camera;
 

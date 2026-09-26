@@ -112,6 +112,7 @@ bool Producer::preview( const std::string &language )
 		{
 			_script.select_languages( languages );
 			_stage.visuals.clear();
+			_stage.updaters.clear();
 			_stage.audio.begin( scratch, languages, true );
 			_current_frame = -1;
 			_stage.scene_event = [&]( const std::string &name, bool started )
