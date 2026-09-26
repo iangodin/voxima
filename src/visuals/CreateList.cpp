@@ -2,6 +2,7 @@
 
 #include "visuals/CreateText.h"
 #include "visuals/Placement.h"
+#include "visuals/WrapText.h"
 
 #include <core/Theme.h>
 
@@ -40,12 +41,17 @@ std::unique_ptr<ItemList> make_list( Theme &theme, const std::vector<std::string
 		marker.position = marker.position + Point{ marker_left - marker_box.min.x(), 0.F };
 
 		// The text on the same baseline, after the markers
-		auto &text = row->add( make_text( theme, items[i], options.style ) );
+		std::string words = items[i];
+		if ( options.max_width > 0.F )
+		{
+			words = wrap_lines( theme, words, options.style, std::max( options.max_width - marker_width - options.marker_gap * em, em ) );
+		}
+		auto &text = row->add( make_text( theme, words, options.style ) );
 		text.position = text.position + Point{ marker_width + options.marker_gap * em - box_of( text ).min.x(), 0.F };
 
 		// Down by a fixed step: the lines of the items before, and the space between
 		row->position = { 0.F, -baseline };
-		const size_t lines = static_cast<size_t>( std::count( items[i].begin(), items[i].end(), '\n' ) ) + 1;
+		const size_t lines = static_cast<size_t>( std::count( words.begin(), words.end(), '\n' ) ) + 1;
 		baseline += ( static_cast<float>( lines ) * LINE + options.spacing ) * em;
 
 		list->add( std::move( row ) );

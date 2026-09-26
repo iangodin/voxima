@@ -226,3 +226,19 @@ TEST_CASE( "wrap_lines leaves a text that fits, and keeps a word too long on its
 	CHECK( wrap_lines( theme, "a extraordinarily b", style, 0.5F ) == "a\nextraordinarily\nb" );
 	CHECK( wrap_lines( theme, "one\ntwo", style, 100.F ) == "one\ntwo" );
 }
+
+TEST_CASE( "a list wraps its items to a maximum width", "[list][wrap]" )
+{
+	Theme theme = NewComputerModern::create_theme();
+	const std::vector<std::string> items = { "a fairly long first item that will not fit on one line", "short" };
+	auto loose = make_list( theme, items );
+	const AABB loose_box = box_of( *loose );
+	const float width = ( loose_box.max.x() - loose_box.min.x() ) / 2.F;
+
+	auto wrapped = make_list( theme, items, { .max_width = width } );
+	const AABB box = box_of( *wrapped );
+	CHECK( box.max.x() - box.min.x() <= width + 1e-3F );
+	CHECK( box.max.y() - box.min.y() > loose_box.max.y() - loose_box.min.y() ); // taller: more lines
+	// The second item starts lower than it did, the first now taking several lines
+	CHECK( wrapped->row( 1 ).position.y() < loose->row( 1 ).position.y() );
+}

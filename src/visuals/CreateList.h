@@ -26,6 +26,10 @@ struct ListOptions
 	// not by how tall each one's letters happen to be, so they are evenly spaced.
 	float spacing = 0.45F;
 	float marker_gap = 0.6F;
+
+	// The most the list may be wide (stage units, the markers and their gap included): an item longer than fits is wrapped
+	// onto more lines, each further line under the text, not the marker. 0 for no limit.
+	float max_width = 0.F;
 };
 
 // A list: one row for each item (a marker and its text, the text in a column of its own, the markers lined up), the rows one
