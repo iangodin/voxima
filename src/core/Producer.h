@@ -47,6 +47,14 @@ private:
 	// produce()) once for all the renders.
 	bool render( const RenderJob &job );
 
+	// Play the scene(s) live in a window, with sound, for one language, writing nothing. The narration is
+	// synthesised first (silently, so it is in the cache), then it plays in real time. What has been played is
+	// kept in memory (see FrameStore.h), so it can be played backwards and stepped through:
+	//   space: play/pause   L: play   J: play backwards   K: pause   left/right: one frame back/forward
+	//   up/down: 5 seconds forward/back (keeps playing)   home/end: the start/the end   escape: quit
+	// Going somewhere the producer has not got to yet waits for it.
+	bool preview( const std::string &language );
+
 	bool tick()
 	{
 		++_current_frame;

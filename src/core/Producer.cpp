@@ -336,6 +336,9 @@ bool Producer::produce( int argc, char *argv[] )
 	bool save_png = false;
 	app.add_flag( "--save-png", save_png, "Save PNG sequence" );
 
+	bool live_preview = false;
+	app.add_flag( "--preview", live_preview, "Play in a window with sound instead of rendering a video (first language only)" );
+
 	std::string script_path;
 	app.add_option( "--script-dir", script_path, "Directory containing scripts" );
 
@@ -490,6 +493,11 @@ bool Producer::produce( int argc, char *argv[] )
 		tts_threads,
 		aligner_model );
 	_stage.audio.set_max_speedup( max_speedup );
+
+	if ( live_preview )
+	{
+		return preview( languages.front() );
+	}
 
 	// A render for all the languages together (one container with a track for each), or with --separate one
 	// for each language, timed to that language's own narration
