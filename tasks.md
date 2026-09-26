@@ -49,7 +49,8 @@ A review of `math/Expr.h` against what a page of teaching math needs. What is li
   - [ ] Stretchy wide accents (`widehat`, `widetilde`) and arrows over a base (`overrightarrow`) that span their content
   - [ ] Stacked limits on several lines (`substack`), and continued fractions
   - [ ] Delimiters of a chosen size (`\big`, `\Big` ...), not only the ones that stretch to fit
-  - [ ] Symbols by name (Greek letters, arrows, relations: `sym::alpha`, `sym::leq`) so a formula need not contain Unicode; and shorter ways to build rows (operators for the common `a + b = c`)
+  - [x] Symbols by name (`math/Symbols.h`: `sym::alpha`, `sym::leq` ...)
+  - [ ] Shorter ways to build rows (operators for the common `a + b = c`)
 
 ## Composition and Diagrams
 The biggest gap: everything is placed by hand-typed coordinates. The building blocks of most teaching content:
