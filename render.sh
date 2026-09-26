@@ -21,5 +21,4 @@ build/Release/sonimation --width 1280 --height 720 \
 	--vcodec h264 \
 	--acodec opus \
 	--lang en \
-	--lang fr \
 	$@
