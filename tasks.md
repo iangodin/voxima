@@ -45,7 +45,7 @@ The biggest gap: everything is placed by hand-typed coordinates. The building bl
   - [x] Arrange: rows, columns and grids of visuals with a gap, aligned (start, center, end, baselines); next_to( a, b, side, gap )
   - [x] Anchors: the edges, corners and center of any visual (point_at, move_to), so things are placed relative to each other, not to the stage
   - [x] Panels: a rounded box that fits its contents (padding, radius, outline), in the text color's tint so it suits any palette
-  - [ ] Callouts: a panel with a pointer to what it is about; a shadow
+  - [x] Callouts: a panel with a pointer to what it is about (`make_callout`; open: a shadow)
   - [x] Lists (bullets, numbers; several lines an item) and tables (columns aligned left, center or right; header; rules), on a fixed line step so rows are evenly spaced
   - [x] Distribute (equal spaces between things of different sizes), and align a set of things to one edge
   - [x] Text wrapped to a width: `wrap_lines`, `make_paragraph` ; lists wrap with `ListOptions::max_width` (open: table cells)

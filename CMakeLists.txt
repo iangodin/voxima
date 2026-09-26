@@ -118,6 +118,7 @@ add_library( visuals STATIC
 	src/visuals/Placement.cpp
 	src/visuals/Panel.cpp
 	src/visuals/Connector.cpp
+	src/visuals/Callout.cpp
 	src/core/Animate.cpp
 	src/visuals/Trim.cpp
 	src/visuals/WrapText.cpp
