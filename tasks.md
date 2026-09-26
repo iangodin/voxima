@@ -20,8 +20,8 @@
   - [ ] Parametric curves ( x(t), y(t) ) and polar curves ( r(θ) ) with a polar grid
   - [ ] Shaded areas: under a curve between two x, between two curves; Riemann sums (left, right, midpoint, trapezoids) with the number of pieces animated
   - [ ] A point that rides a curve (by x, or by fraction of the way) with its tangent line; secant lines closing in on a tangent
-  - [ ] Values that change (a parameter, a slider): graphs and shapes that redraw as it moves, so `a` in `sin(a x)` can be animated
-  - [ ] Axes drawn on (the lines growing, then the ticks and numbers appearing one after another), and graphs morphing into other graphs (blend of two functions)
+  - [ ] Axes drawn on (the lines growing, then the ticks and numbers appearing one after another)
+  - [ ] Re-sampling a graph in place with a new function (so a value tweened over time, like the a in sin(a x), or a blend of two functions, can reshape a curve without rebuilding it each frame)
   - [ ] Axis features: log scales, a second y axis, a title and rotated axis names, custom tick lists and number formats (%, units, scientific), minor ticks
   - [ ] Import external SVG files
   - [x] Add support for images / photos
