@@ -36,6 +36,13 @@ enum class AxisPlacement
 	EDGE
 };
 
+// A tick with a text of its own in place of its number: the name of a category, a year, "π"
+struct TickLabel
+{
+	double value = 0.0;
+	std::string text;
+};
+
 struct AxesOptions
 {
 	AxisPlacement placement = AxisPlacement::ORIGIN;
@@ -50,6 +57,11 @@ struct AxesOptions
 	// tick a stage unit)
 	double x_step = 0.0;
 	double y_step = 0.0;
+
+	// Ticks at chosen places with chosen texts, in place of the ticks at even steps and their numbers (an axis with none of these
+	// has the numbers as before). The values are in data units.
+	std::vector<TickLabel> x_tick_labels;
+	std::vector<TickLabel> y_tick_labels;
 
 	// Numbers at the ticks, arrow tips at the positive ends, faint lines across at every tick
 	bool numbers = true;

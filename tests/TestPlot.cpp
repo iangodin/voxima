@@ -342,3 +342,34 @@ TEST_CASE( "an axis line stops at the base of its arrow tip, not the point", "[p
 	REQUIRE( first );
 	CHECK( first->end.x() == Approx( 3.F ) );
 }
+
+TEST_CASE( "ticks of your own replace the ones at even steps, with their own texts", "[plot]" )
+{
+	Theme theme = NewComputerModern::create_theme();
+	AxesOptions options;
+	options.x = { 0.0, 3.0 };
+	options.y = { 0.0, 4.0 };
+	options.width = 6.F;
+	options.height = 4.F;
+	options.placement = AxisPlacement::EDGE;
+	options.arrows = false;
+	options.x_label = "";
+	options.y_label = "";
+	options.x_tick_labels = { { 0.5, "one" }, { 1.5, "two" }, { 2.5, "three" } };
+
+	auto axes = make_axes( theme, options );
+	REQUIRE( axes->x_ticks().size() == 3 );
+	CHECK( axes->x_ticks()[1] == Approx( 1.5 ) );
+	CHECK( axes->y_ticks().size() == 5 ); // the y axis is as before: 0 .. 4
+
+	// A tick mark for each of the three, and each has its text (three words, plus the y axis' numbers)
+	size_t x_ticks = 0;
+	const auto &layer = dynamic_cast<const Group &>( **( axes->begin() + 1 ) );
+	for ( const auto &child: layer )
+	{
+		if ( const auto *line = dynamic_cast<const Line *>( child.get() ) )
+			if ( line->start.x() == line->end.x() && line->start.y() < axes->bottom() )
+				++x_ticks;
+	}
+	CHECK( x_ticks == 3 );
+}

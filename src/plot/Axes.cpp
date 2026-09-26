@@ -9,6 +9,7 @@
 #include <visuals/Path.h>
 
 #include <cmath>
+#include <map>
 #include <cstdio>
 
 double nice_step( double span, double count )
@@ -156,6 +157,27 @@ std::unique_ptr<Axes> make_axes( Theme &theme, const AxesOptions &options )
 	const double y_step = options.y_step > 0.0 ? options.y_step : nice_step( options.y.span(), options.height );
 	axes->_x_ticks = tick_values( options.x, x_step );
 	axes->_y_ticks = tick_values( options.y, y_step );
+	// Ticks of your own take the place of the ones at even steps, with their own texts (kept in step with the values)
+	std::map<double, std::string> x_texts;
+	std::map<double, std::string> y_texts;
+	if ( !options.x_tick_labels.empty() )
+	{
+		axes->_x_ticks.clear();
+		for ( const TickLabel &tick: options.x_tick_labels )
+		{
+			axes->_x_ticks.push_back( tick.value );
+			x_texts[tick.value] = tick.text;
+		}
+	}
+	if ( !options.y_tick_labels.empty() )
+	{
+		axes->_y_ticks.clear();
+		for ( const TickLabel &tick: options.y_tick_labels )
+		{
+			axes->_y_ticks.push_back( tick.value );
+			y_texts[tick.value] = tick.text;
+		}
+	}
 
 	const double xc = axes->x_crossing(); // where the y axis is
 	const double yc = axes->y_crossing(); // where the x axis is
@@ -236,7 +258,7 @@ std::unique_ptr<Axes> make_axes( Theme &theme, const AxesOptions &options )
 		if ( options.numbers )
 		{
 			// Centred under the tick
-			const std::string text = tick_text( x, x_step );
+			const std::string text = x_texts.empty() ? tick_text( x, x_step ) : x_texts[x];
 			const AABB box = text_of( theme, text, options.number_style, options.color ).box;
 			add_number( *axes, theme, options, text, { p.x() - ( box.min.x() + box.max.x() ) / 2.F, p.y() - tick / 2.F - gap - box.max.y() } );
 		}
@@ -252,7 +274,7 @@ std::unique_ptr<Axes> make_axes( Theme &theme, const AxesOptions &options )
 		if ( options.numbers )
 		{
 			// To the left of the tick, its middle level with it
-			const std::string text = tick_text( y, y_step );
+			const std::string text = y_texts.empty() ? tick_text( y, y_step ) : y_texts[y];
 			const AABB box = text_of( theme, text, options.number_style, options.color ).box;
 			add_number( *axes, theme, options, text, { p.x() - tick / 2.F - gap - box.max.x(), p.y() - ( box.min.y() + box.max.y() ) / 2.F } );
 		}
