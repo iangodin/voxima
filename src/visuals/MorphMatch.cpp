@@ -271,7 +271,7 @@ struct Analysis
 				continue;
 			}
 			const Point target = centroid + ( source.p - other.centroid ) / other.scale * scale;
-			const Position pos = nearest( target );
+			const Position pos = nearest( target, source.tangent );
 			const float s = fraction( pos.seg, pos.t );
 			const Point p = at( segs[pos.seg], pos.t );
 
@@ -314,22 +314,39 @@ struct Analysis
 	}
 
 private:
-	// The point of the contour nearest to q: sampled along every segment, then refined
-	Position nearest( Point q ) const
+	// The point of the contour nearest to q: sampled along every segment, then refined. Where the contour
+	// passes the same place twice (a stroke made into a loop out and back lies on top of itself), the
+	// pass going most nearly in direction `heading` wins: so the top of a circle goes to one pass and the bottom
+	// (travelling the other way) to the other, instead of both to whichever comes first.
+	Position nearest( Point q, Point heading ) const
 	{
 		constexpr int SAMPLES = 32;
-		Position best;
 		float best_d = std::numeric_limits<float>::max();
 		for ( size_t i = 0; i < segs.size(); ++i )
 		{
 			for ( int k = 0; k <= SAMPLES; ++k )
 			{
+				best_d = std::min( best_d, ( at( segs[i], static_cast<float>( k ) / SAMPLES ) - q ).lengthSquared() );
+			}
+		}
+
+		// Of the samples as near as that (to a hair, relative to the contour's size), the best heading
+		const float near_enough = best_d + 1e-8F * scale * scale;
+		Position best;
+		float best_heading = -std::numeric_limits<float>::max();
+		for ( size_t i = 0; i < segs.size(); ++i )
+		{
+			for ( int k = 0; k <= SAMPLES; ++k )
+			{
 				const float t = static_cast<float>( k ) / SAMPLES;
-				const float d = ( at( segs[i], t ) - q ).lengthSquared();
-				if ( d < best_d )
+				if ( ( at( segs[i], t ) - q ).lengthSquared() <= near_enough )
 				{
-					best_d = d;
-					best = { i, t };
+					const float h = dot( unit( derivative( segs[i], t ) ), heading );
+					if ( h > best_heading )
+					{
+						best_heading = h;
+						best = { i, t };
+					}
 				}
 			}
 		}

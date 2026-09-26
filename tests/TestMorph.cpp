@@ -1118,3 +1118,41 @@ TEST_CASE( "Morph draws the outlines as they are at its ends, not cut to match",
 	morph.set( 0.5F );
 	CHECK( segments( to_outline( morph.visual() ) ) > std::max( segments( outline_a ), segments( outline_e ) ) );
 }
+
+TEST_CASE( "A disc collapsing into a line does it evenly, top and bottom alike", "[morph]" )
+{
+	// As the demo does: a disc, and a line (off centre) that it becomes, with the line on the disc's middle
+	Circle disc;
+	disc.radius = 0.8F;
+	Line line;
+	line.start = { -1.5F, 0.F };
+	line.end = { 1.2F, 0.F };
+	line.stroke_thickness = 0.12F;
+
+	Morph morph( disc, line );
+	for ( float t: { 0.25F, 0.5F, 0.75F } )
+	{
+		morph.set( t );
+		// Its tips (leftmost and rightmost points) stay on the line's axis, as they would if the top and bottom
+		// halves came in alike; lopsided, the shape leans and a tip rises off it
+		Point left{ 1e9F, 0.F };
+		Point right{ -1e9F, 0.F };
+		for ( const auto &shape: to_outline( morph.visual() ) )
+		{
+			for ( const auto &c: shape.contours )
+			{
+				for ( Point p: trace( c, 64 ) )
+				{
+					if ( p.x() < left.x() )
+						left = p;
+					if ( p.x() > right.x() )
+						right = p;
+				}
+			}
+		}
+		const float height = bounds_of( morph.visual() ).height();
+		INFO( "t = " << t << ": left tip at y " << left.y() << ", right tip at y " << right.y() << ", height " << height );
+		CHECK( std::abs( left.y() ) < 0.05F * height + 1e-4F );
+		CHECK( std::abs( right.y() ) < 0.05F * height + 1e-4F );
+	}
+}
