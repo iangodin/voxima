@@ -1,16 +1,9 @@
 #include "CodePalette.h"
 
-namespace
-{
-Color rgb( int r, int g, int b )
-{
-	return { static_cast<float>( r ) / 255.F, static_cast<float>( g ) / 255.F, static_cast<float>( b ) / 255.F };
-}
-}
-
 CodePalette CodePalette::dark()
 {
 	CodePalette palette;
+	const auto rgb = Color::rgb;
 	palette.plain = { rgb( 171, 178, 191 ) };
 
 	palette.set( "comment", { rgb( 127, 132, 142 ), std::nullopt, Slant::ITALIC } );

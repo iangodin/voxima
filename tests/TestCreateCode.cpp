@@ -4,7 +4,11 @@
 #include <code/CodePalette.h>
 #include <code/CreateCode.h>
 #include <core/Theme.h>
+#include <themes/AcademicClassic.h>
+#include <themes/EngineeringBlueprint.h>
+#include <themes/ModernTechnical.h>
 #include <themes/NewComputerModern.h>
+#include <themes/PlayfulDiscovery.h>
 #include <visuals/Glyph.h>
 #include <visuals/TextLine.h>
 
@@ -101,4 +105,34 @@ int main()
 	CHECK( lines[2].front()->position.x() == Approx( lines[0][3]->position.x() ).margin( 1e-4 ) );
 	// and the lines go down
 	CHECK( ( *code->begin() )->baseline > ( *( code->begin() + 1 ) )->baseline );
+}
+
+TEST_CASE( "Every theme lays code out in columns, in colors of its own", "[code]" )
+{
+	std::vector<Theme> themes;
+	themes.push_back( NewComputerModern::create_theme() );
+	themes.push_back( AcademicClassic::create_theme() );
+	themes.push_back( EngineeringBlueprint::create_theme() );
+	themes.push_back( ModernTechnical::create_theme() );
+	themes.push_back( PlayfulDiscovery::create_theme() );
+
+	std::vector<Color> keywords;
+	for ( Theme &theme: themes )
+	{
+		INFO( theme.get_name() );
+		// A narrow letter and a wide one take the same room: "i" and "W" (and the characters after them line up)
+		auto code = make_code( theme, code::Language::CPP, "iiii x;\nWWWW y;" );
+		REQUIRE( code->size() == 2 );
+		const auto narrow = inked( **code->begin() );
+		const auto wide = inked( **( code->begin() + 1 ) );
+		REQUIRE( narrow.size() == wide.size() );
+		CHECK( narrow[4]->position.x() == Approx( wide[4]->position.x() ).margin( 1e-4 ) );
+
+		const Color keyword = theme.code_palette().style_for( "keyword" ).color;
+		for ( const Color &other: keywords )
+		{
+			CHECK_FALSE( other == keyword );
+		}
+		keywords.push_back( keyword );
+	}
 }

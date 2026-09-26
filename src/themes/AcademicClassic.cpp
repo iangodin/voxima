@@ -64,9 +64,29 @@ FontStack intent_caption( const FontStyle &style, Theme &theme )
 	return create_font_stack( style, theme, "NewCM" );
 }
 
+// A printed textbook's listing: warm, muted inks, keywords in bold and comments in italic
+CodePalette code_palette()
+{
+	const auto rgb = Color::rgb;
+	CodePalette palette;
+	palette.plain = { rgb( 232, 226, 208 ) };
+	palette.set( "comment", { rgb( 140, 133, 119 ), std::nullopt, Slant::ITALIC } );
+	palette.set( "keyword", { rgb( 215, 137, 127 ), Weight::BOLD } );
+	palette.set( "string", { rgb( 156, 191, 138 ) } );
+	palette.set( "number", { rgb( 214, 168, 108 ) } );
+	palette.set( "constant", { rgb( 214, 168, 108 ) } );
+	palette.set( "type", { rgb( 201, 179, 126 ) } );
+	palette.set( "function", { rgb( 157, 180, 208 ) } );
+	palette.set( "property", { rgb( 201, 160, 200 ) } );
+	palette.set( "variable.builtin", { rgb( 215, 137, 127 ) } );
+	palette.set( "label", { rgb( 201, 160, 200 ) } );
+	return palette;
+}
+
 Theme create_theme( void )
 {
 	Theme theme( "Academic Classic" );
+	theme.set_code_palette( code_palette() );
 	theme.register_factory( "prose", intent_prose );
 	theme.register_factory( "code", intent_code );
 	theme.register_factory( "math", intent_math );

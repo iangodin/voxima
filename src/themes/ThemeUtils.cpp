@@ -123,6 +123,25 @@ std::string get_ibmplexsansarabic_filename( const FontProperties &props )
 	return "IBMPlexSansArabic-Regular.ttf";
 }
 
+std::string get_dejavusansmono_filename( const FontProperties &props )
+{
+	const bool is_bold = props.weight == Weight::BOLD || props.weight == Weight::BLACK;
+	const bool is_italic = props.slant == Slant::ITALIC || props.slant == Slant::OBLIQUE;
+	if ( is_bold && is_italic )
+	{
+		return "DejaVuSansMono-BoldOblique.ttf";
+	}
+	if ( is_bold )
+	{
+		return "DejaVuSansMono-Bold.ttf";
+	}
+	if ( is_italic )
+	{
+		return "DejaVuSansMono-Oblique.ttf";
+	}
+	return "DejaVuSansMono.ttf";
+}
+
 std::string get_ibmplexmono_filename( const FontProperties &props )
 {
 	bool is_bold = props.weight == Weight::BOLD || props.weight == Weight::BLACK;
