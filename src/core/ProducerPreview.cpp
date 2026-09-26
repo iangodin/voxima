@@ -172,7 +172,7 @@ bool Producer::preview( const std::string &language )
 		throw sdl_error( "opening the audio device" );
 	}
 
-	std::vector<int16_t> reversed( static_cast<size_t>( block ) * 2 );
+	std::vector<int16_t> chunk; // sound about to be queued
 
 	constexpr int64_t bytes_per_frame = 2 * sizeof( int16_t );
 	const int64_t lookahead = std::max<int64_t>( 1, static_cast<int64_t>( 0.25 * fps ) ); // blocks of sound to keep queued
@@ -211,6 +211,22 @@ bool Producer::preview( const std::string &language )
 		return ( samples + block - 1 ) / block;
 	};
 
+	// A frame's sound put on the end of `to`: played backwards it is its sample frames in reverse order, left and
+	// right kept together
+	auto add_block = [&]( std::vector<int16_t> &to, const FrameStore::Frame &frame, bool backwards )
+	{
+		if ( !backwards )
+		{
+			to.insert( to.end(), frame.audio.begin(), frame.audio.end() );
+			return;
+		}
+		for ( int64_t i = block - 1; i >= 0; --i )
+		{
+			to.push_back( frame.audio[static_cast<size_t>( 2 * i )] );
+			to.push_back( frame.audio[static_cast<size_t>( 2 * i + 1 )] );
+		}
+	};
+
 	// Stop the sound and go to `frame` (waiting for it, if it has not been made yet)
 	auto seek = [&]( int64_t frame )
 	{
@@ -236,6 +252,43 @@ bool Producer::preview( const std::string &language )
 			running = false;
 		}
 	};
+	// Stepping a frame makes a short sound, so it can be heard as well as seen: a frame is too brief to make out
+	// (a fortieth of a second), so it is what would be heard playing on from here in that direction, for about
+	// a twelfth of a second, faded in and out so it does not click. Not for a frame that is not there yet.
+	auto play_snippet = [&]( int64_t frame, bool backwards )
+	{
+		const int64_t blocks = std::max<int64_t>( 1, static_cast<int64_t>( std::ceil( 0.08 * fps ) ) );
+		chunk.clear();
+		for ( int64_t i = 0; i < blocks; ++i )
+		{
+			const auto next = store.frame( backwards ? frame - i : frame + i );
+			if ( !next )
+				break;
+			add_block( chunk, *next, backwards );
+		}
+		if ( chunk.empty() )
+			return;
+
+		const int64_t samples = static_cast<int64_t>( chunk.size() ) / 2;
+		const int64_t fade = std::min<int64_t>( samples / 2, sample_rate * 3 / 1000 );
+		for ( int64_t i = 0; i < fade; ++i )
+		{
+			const float gain = static_cast<float>( i ) / static_cast<float>( fade );
+			for ( const int64_t at: { i, samples - 1 - i } )
+			{
+				for ( int64_t channel = 0; channel < 2; ++channel )
+				{
+					auto &value = chunk[static_cast<size_t>( 2 * at + channel )];
+					value = static_cast<int16_t>( static_cast<float>( value ) * gain );
+				}
+			}
+		}
+
+		SDL_PutAudioStreamData( sdl.audio, chunk.data(), static_cast<int>( chunk.size() * sizeof( int16_t ) ) );
+		SDL_ResumeAudioStreamDevice( sdl.audio );
+		running = true;
+	};
+
 	// Pausing stands where the sound has got to; starting (or changing direction) begins again from there
 	auto set_mode = [&]( Mode m )
 	{
@@ -338,10 +391,14 @@ bool Producer::preview( const std::string &language )
 					case SDLK_LEFT:
 						set_mode( Mode::paused );
 						seek( playhead - 1 );
+						if ( pending < 0 )
+							play_snippet( playhead, true );
 						break;
 					case SDLK_RIGHT:
 						set_mode( Mode::paused );
 						seek( playhead + 1 );
+						if ( pending < 0 )
+							play_snippet( playhead, false );
 						break;
 					case SDLK_HOME:
 						set_mode( Mode::paused );
@@ -401,21 +458,10 @@ bool Producer::preview( const std::string &language )
 				if ( !frame )
 					break;
 
-				if ( mode == Mode::forward )
-				{
-					SDL_PutAudioStreamData( sdl.audio, frame->audio.data(), static_cast<int>( block * bytes_per_frame ) );
-					++cursor;
-				}
-				else
-				{
-					for ( int64_t i = 0; i < block; ++i )
-					{
-						reversed[static_cast<size_t>( 2 * i )] = frame->audio[static_cast<size_t>( 2 * ( block - 1 - i ) )];
-						reversed[static_cast<size_t>( 2 * i + 1 )] = frame->audio[static_cast<size_t>( 2 * ( block - 1 - i ) + 1 )];
-					}
-					SDL_PutAudioStreamData( sdl.audio, reversed.data(), static_cast<int>( block * bytes_per_frame ) );
-					--cursor;
-				}
+				chunk.clear();
+				add_block( chunk, *frame, mode == Mode::reverse );
+				SDL_PutAudioStreamData( sdl.audio, chunk.data(), static_cast<int>( block * bytes_per_frame ) );
+				cursor += mode == Mode::forward ? 1 : -1;
 			}
 
 			const bool at_end = mode == Mode::forward ? ( store.complete() && cursor > last_frame() ) : cursor < 0;
