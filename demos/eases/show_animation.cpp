@@ -31,6 +31,7 @@
 #include <math/Expr.h>
 #include <visuals/Tags.h>
 #include <visuals/Circle.h>
+#include <plot/NumberLine.h>
 #include <visuals/Brace.h>
 #include <visuals/Callout.h>
 #include <visuals/Connector.h>
@@ -937,6 +938,12 @@ Scene show_diagram( Stage &stage, Script & )
 
 	// A brace along the list's left, with its label
 	stage.visuals.add( make_labeled_brace_beside( theme, list, Anchor::LEFT, "3 ideas", label, 0.25F, { .color = palette.muted } ) );
+
+	// A number line, with a mark and an interval
+	auto &numbers = stage.visuals.add( make_number_line( theme, { .range = { 0.0, 10.0 }, .length = 7.F } ) );
+	numbers.position = { 3.8F, 1.4F };
+	numbers.add_interval( theme, 6.0, 9.0, palette.blue, { .closed_to = false } );
+	numbers.add_mark( theme, 2.5, "x", palette.orange );
 
 	// Three things of different sizes, spread evenly along the top
 	auto &top = stage.visuals.add( std::make_unique<Group>() );
