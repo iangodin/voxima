@@ -5,6 +5,7 @@
 #include <plot/Axes.h>
 #include <plot/Graph.h>
 #include <themes/NewComputerModern.h>
+#include <visuals/ArrowTip.h>
 #include <visuals/Glyph.h>
 #include <visuals/Line.h>
 
@@ -301,4 +302,43 @@ TEST_CASE( "The grid is one stroked path, so its lines do not blend twice where 
 	}
 	CHECK( moves == 5 + 3 );
 	CHECK( lines == 5 + 3 );
+}
+
+TEST_CASE( "an axis line stops at the base of its arrow tip, not the point", "[plot]" )
+{
+	Theme theme = NewComputerModern::create_theme();
+	AxesOptions options;
+	options.x = { -3.0, 3.0 };
+	options.y = { -2.0, 2.0 };
+	options.width = 6.F;
+	options.height = 4.F;
+	options.numbers = false;
+	options.x_label = "";
+	options.y_label = "";
+	options.thickness = 0.04F;
+
+	auto axes = make_axes( theme, options );
+	const auto &layer = dynamic_cast<const Group &>( **( axes->begin() + 1 ) );
+	const Line *x_axis = nullptr;
+	const ArrowTip *x_tip = nullptr;
+	for ( const auto &child: layer )
+	{
+		if ( !x_axis )
+			x_axis = dynamic_cast<const Line *>( child.get() );
+		if ( const auto *arrow = dynamic_cast<const ArrowTip *>( child.get() ) )
+			if ( !x_tip )
+				x_tip = arrow;
+	}
+	REQUIRE( x_axis );
+	REQUIRE( x_tip );
+	CHECK( x_tip->end.x() == Approx( 3.F ) );                                // the point is at the end of the range
+	CHECK( x_axis->end.x() == Approx( 3.F - 2.F * x_tip->size ) );          // the line stops at the head's base
+
+	// Without arrows, the line goes to the end
+	options.arrows = false;
+	auto plain = make_axes( theme, options );
+	const auto &plain_layer = dynamic_cast<const Group &>( **( plain->begin() + 1 ) );
+	const Line *first = dynamic_cast<const Line *>( ( *plain_layer.begin() ).get() );
+	REQUIRE( first );
+	CHECK( first->end.x() == Approx( 3.F ) );
 }

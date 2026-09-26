@@ -189,8 +189,20 @@ std::unique_ptr<Axes> make_axes( Theme &theme, const AxesOptions &options )
 	const Point x_to = axes->at( options.x.max, yc );
 	const Point y_from = axes->at( xc, options.y.min );
 	const Point y_to = axes->at( xc, options.y.max );
-	add_line( *axes->_lines, x_from, x_to, options.thickness, options.color );
-	add_line( *axes->_lines, y_from, y_to, options.thickness, options.color );
+	// With an arrow tip the line stops at its base (the tip is twice its size long): a line that ran on to the point would
+	// stick out past the narrowing head
+	auto stop_at_tip = [&]( Point from, Point to )
+	{
+		if ( !options.arrows )
+		{
+			return to;
+		}
+		const Point along = to - from;
+		const float length = std::sqrt( along.lengthSquared() );
+		return length > 2.F * tip ? to - along * ( 2.F * tip / length ) : to;
+	};
+	add_line( *axes->_lines, x_from, stop_at_tip( x_from, x_to ), options.thickness, options.color );
+	add_line( *axes->_lines, y_from, stop_at_tip( y_from, y_to ), options.thickness, options.color );
 	if ( options.arrows )
 	{
 		for ( auto [from, to]: { std::pair{ x_from, x_to }, std::pair{ y_from, y_to } } )
