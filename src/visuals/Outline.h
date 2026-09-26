@@ -91,7 +91,10 @@ struct OutlineShape
 // filled outline. (A Line becomes an open contour with no fill, only a stroke; an ArrowTip is its triangle;
 // an Image is a shape with `image` set and no contours.) Left out, and counted in `skipped` if it is given:
 // an image placed with a shear, which an Image cannot be drawn as.
-std::vector<OutlineShape> to_outline( const Visual &visual, size_t *skipped = nullptr );
+//
+// Colors come out as they will be drawn: pure white, the color of what has none, is `foreground` (see Color::resolved), so a
+// morph between shapes blends between the colors they are seen in.
+std::vector<OutlineShape> to_outline( const Visual &visual, size_t *skipped = nullptr, const Color &foreground = { 1.F, 1.F, 1.F, 1.F } );
 
 // Area enclosed by the contour, positive for one winding and negative for the other (an open contour
 // encloses what it would with a straight line back to its start)

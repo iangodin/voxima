@@ -228,6 +228,7 @@ class OutlineBuilder : public VisualVisitor
 public:
 	std::vector<OutlineShape> shapes;
 	size_t skipped = 0;
+	Color foreground = { 1.F, 1.F, 1.F, 1.F }; // what white is drawn as (see Color::resolved)
 
 	void visit( const Circle &circle ) override
 	{
@@ -344,8 +345,8 @@ public:
 			std::atan2( m.b, m.a ) * 180.F / std::numbers::pi_v<float>,
 			sx,
 			sy };
-		shape.fill = _color * image.color;
-		shape.stroke = _stroke * image.stroke_color;
+		shape.fill = ( _color * image.color ).resolved( foreground );
+		shape.stroke = ( _stroke * image.stroke_color ).resolved( foreground );
 		shape.word = _word;
 		shape.tags = _tags;
 		shape.tags.insert( shape.tags.end(), image.tags.begin(), image.tags.end() );
@@ -431,12 +432,12 @@ private:
 		{
 			return;
 		}
-		shape.fill = _color * v.color;
+		shape.fill = ( _color * v.color ).resolved( foreground );
 		if ( stroke_only )
 		{
 			shape.fill.a = 0.F;
 		}
-		shape.stroke = _stroke * v.stroke_color;
+		shape.stroke = ( _stroke * v.stroke_color ).resolved( foreground );
 		shape.stroke_thickness = v.stroke_thickness * leaf_transform( v ).scale();
 		shape.word = _word;
 		shape.tags = _tags;
@@ -484,9 +485,10 @@ private:
 
 }
 
-std::vector<OutlineShape> to_outline( const Visual &visual, size_t *skipped )
+std::vector<OutlineShape> to_outline( const Visual &visual, size_t *skipped, const Color &foreground )
 {
 	OutlineBuilder builder;
+	builder.foreground = foreground;
 	visual.accept( builder );
 	if ( skipped )
 	{

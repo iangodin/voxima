@@ -28,7 +28,10 @@ public:
 	// many-piece copy of it differ at the edges, and flicker when one replaces the other. Curves are written cut
 	// into as many equal pieces as it takes for each to be within `flatness` of a straight line, which the
 	// rasteriser then draws as it is. Stage::save_svg gives a twenty-fifth of a pixel.
-	SVGWriter( std::ostream &out, int indent_level = 2, float flatness = 0.F );
+	//
+	// `foreground` is the color that pure white stands for (see Color::resolved): the text color of the theme. White,
+	// the default, changes nothing.
+	SVGWriter( std::ostream &out, int indent_level = 2, float flatness = 0.F, const Color &foreground = { 1.F, 1.F, 1.F, 1.F } );
 
 	void write_defs( std::ostream &out );
 
@@ -57,6 +60,7 @@ private:
 	std::ostream &_out;
 	int _indent;
 	float _flatness = 0.F;
+	Color _foreground = { 1.F, 1.F, 1.F, 1.F };
 	Color _current_color = { 1.F, 1.F, 1.F, 1.F };
 	Color _current_stroke_color = { 1.F, 1.F, 1.F, 1.F };
 	// Glyph outlines already written, keyed by the path data itself (which has the font size

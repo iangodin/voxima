@@ -111,6 +111,13 @@
 ## Language Support
   - [x] Handle BCP-47 / ISO 639 conversion
 
+## Themes and Colors
+  - [x] Palettes apart from fonts: roles (background, text, muted, eight accents), dark and light, chosen with --palette
+  - [x] Light backgrounds: pure white is the theme's text color, so a scene reads on either; code, plots and highlights from the palette
+  - [ ] Palettes from a file
+  - [ ] Scenes' own colors from the palette (the demos use fixed colors)
+  - [ ] A light background for the math (check every Expr part follows the text color)
+
 ## Camera
   - [x] Pan and zoom: Camera::center and zoom, and camera_to / camera_frame (zoom by ratio, the pan following so what is zoomed toward holds still on the screen)
   - [ ] Rotate the camera

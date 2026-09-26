@@ -71,32 +71,11 @@ FontStack intent_caption( const FontStyle &style, Theme &theme )
 	return create_font_stack( style, theme );
 }
 
-// A blueprint: cyan and white on the dark, with amber for literals like the notes on a drawing
-CodePalette code_palette()
-{
-	const auto rgb = Color::rgb;
-	CodePalette palette;
-	palette.line_highlight = Color::rgb( 79, 195, 247 );
-	palette.line_highlight.a = 0.16F;
-	palette.plain = { rgb( 214, 228, 240 ) };
-	palette.set( "comment", { rgb( 106, 139, 168 ), std::nullopt, Slant::ITALIC } );
-	palette.set( "keyword", { rgb( 79, 195, 247 ) } );
-	palette.set( "string", { rgb( 255, 213, 79 ) } );
-	palette.set( "number", { rgb( 255, 171, 64 ) } );
-	palette.set( "constant", { rgb( 255, 171, 64 ) } );
-	palette.set( "type", { rgb( 128, 203, 196 ) } );
-	palette.set( "function", { rgb( 255, 255, 255 ), Weight::BOLD } );
-	palette.set( "property", { rgb( 179, 229, 252 ) } );
-	palette.set( "operator", { rgb( 77, 208, 225 ) } );
-	palette.set( "variable.builtin", { rgb( 79, 195, 247 ) } );
-	palette.set( "label", { rgb( 255, 171, 64 ) } );
-	return palette;
-}
 
 Theme create_theme( void )
 {
 	Theme theme( "Engineering Blueprint" );
-	theme.set_code_palette( code_palette() );
+	theme.set_palette( Palette::house( "blueprint" ) );
 	theme.register_factory( "prose", intent_prose );
 	theme.register_factory( "code", intent_code );
 	theme.register_factory( "math", intent_math );

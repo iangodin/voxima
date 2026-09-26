@@ -21,7 +21,8 @@ struct GraphOptions
 	// How many times the function is worked out across it
 	size_t samples = 400;
 
-	Color color = Color::rgb( 97, 175, 239 );
+	// The curve's color; by default the next of the axes' series colors (the palette's blue, then orange, green ...)
+	std::optional<Color> color;
 	float thickness = 0.05F;
 };
 

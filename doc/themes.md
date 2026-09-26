@@ -47,5 +47,22 @@ A softer, more approachable theme for educational content aimed at a general aud
 
   - Code: New Computer Modern Mono, in the colors of One Dark (CodePalette::dark), italic comments.
 
-Each theme's code colors are its CodePalette (Theme::code_palette), set in its create_theme(); they are all for a
-dark background. A scene can change them with theme.set_code_palette().
+# Palettes
+
+A theme is fonts; the colors are a `Palette`, chosen apart from it: any palette works with any theme. Each theme starts with
+one of its own (on the plain black every video has had), and `--palette name` (or `theme.set_palette( Palette::get( name ) )`
+and `stage.use_palette( theme.palette() )` in a scene) changes it, background and text included.
+
+A palette names roles, not uses: `background`, `text`, `muted` (axes, grids, comments), and eight accents (`red orange yellow
+green cyan blue purple pink`). Code colors (`palette.code`), a plot's curve colors (the accents in turn: blue, orange, green ...)
+and the band behind pointed-out lines all come from them, so they suit the background whichever it is.
+
+  - Dark: one-dark, github-dark, catppuccin-mocha, academic, blueprint (the themes' own, in that order of theme:
+    New Computer Modern, Modern Technical, Playful Discovery, Academic Classic, Engineering Blueprint).
+  - Light: github-light, catppuccin-latte, solarized-light, paper.
+  - Your own: `Palette::add( palette )`, then by name.
+
+Text, axes and lines are drawn in the palette's text color where nothing else was chosen: **pure white means "the theme's text
+color"** (`Color::resolved`, `Stage::foreground`), so a scene written for a dark background reads on a light one. Anything given
+a color of its own keeps it: use the palette's accents for those (`stage.theme->palette().blue`), not fixed RGB, if the scene
+should work on both.

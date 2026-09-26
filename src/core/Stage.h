@@ -10,6 +10,7 @@
 
 #include <core/Theme.h>
 #include <core/Camera.h>
+#include <core/Palette.h>
 
 #include <functional>
 #include <iostream>
@@ -20,6 +21,16 @@ struct Stage
 {
 	Theme *theme = nullptr;
 	Color background = { 0.F, 0.F, 0.F, 1.F };
+
+	// What pure white is drawn as: the text color (see Color::resolved). White, the default, is as it has always been.
+	Color foreground = { 1.F, 1.F, 1.F, 1.F };
+
+	// The palette's background and text color, for the picture
+	void use_palette( const Palette &palette )
+	{
+		background = palette.background;
+		foreground = palette.text;
+	}
 	Group visuals;
 	DubbingStage audio;
 	Camera camera;
@@ -44,7 +55,7 @@ struct Stage
 		const float pixel = view_width / static_cast<float>( camera.width );
 
 		std::ostringstream body;
-		SVGWriter writer( body, 2, pixel / 25.F );
+		SVGWriter writer( body, 2, pixel / 25.F, foreground );
 		visuals.accept( writer );
 
 		file << "<svg width=\"" << camera.width << "\" height=\"" << camera.height << "\" "

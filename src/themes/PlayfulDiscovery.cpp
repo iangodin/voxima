@@ -71,32 +71,11 @@ FontStack intent_caption( const FontStyle &style, Theme &theme )
 	return create_font_stack( style, theme );
 }
 
-// Soft pastels, in the colors of Catppuccin (Mocha)
-CodePalette code_palette()
-{
-	const auto rgb = Color::rgb;
-	CodePalette palette;
-	palette.line_highlight = Color::rgb( 180, 190, 254 );
-	palette.line_highlight.a = 0.16F;
-	palette.plain = { rgb( 205, 214, 244 ) };
-	palette.set( "comment", { rgb( 147, 153, 178 ), std::nullopt, Slant::ITALIC } );
-	palette.set( "keyword", { rgb( 203, 166, 247 ) } );
-	palette.set( "string", { rgb( 166, 227, 161 ) } );
-	palette.set( "number", { rgb( 250, 179, 135 ) } );
-	palette.set( "constant", { rgb( 250, 179, 135 ) } );
-	palette.set( "type", { rgb( 249, 226, 175 ) } );
-	palette.set( "function", { rgb( 137, 180, 250 ) } );
-	palette.set( "property", { rgb( 245, 194, 231 ) } );
-	palette.set( "operator", { rgb( 148, 226, 213 ) } );
-	palette.set( "variable.builtin", { rgb( 243, 139, 168 ) } );
-	palette.set( "label", { rgb( 245, 194, 231 ) } );
-	return palette;
-}
 
 Theme create_theme( void )
 {
 	Theme theme( "Playful Discovery" );
-	theme.set_code_palette( code_palette() );
+	theme.set_palette( Palette::house( "catppuccin-mocha" ) );
 	theme.register_factory( "prose", intent_prose );
 	theme.register_factory( "code", intent_code );
 	theme.register_factory( "math", intent_math );

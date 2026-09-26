@@ -96,8 +96,8 @@ public:
 };
 }
 
-SVGWriter::SVGWriter( std::ostream &out, int indent_level, float flatness )
-    : _out( out ), _indent( indent_level ), _flatness( flatness )
+SVGWriter::SVGWriter( std::ostream &out, int indent_level, float flatness, const Color &foreground )
+    : _out( out ), _indent( indent_level ), _flatness( flatness ), _foreground( foreground )
 {
 	_out << std::fixed << std::setprecision( 4 );
 }
@@ -122,8 +122,8 @@ void SVGWriter::visit( const Circle &circle )
 		Color final_stroke_color = _current_stroke_color * circle.stroke_color;
 
 		_out << indent() << "<circle cx=\"0\" cy=\"0\" r=\"" << circle.radius << "\" "
-		     << color_attributes( final_color ) << " "
-		     << stroke_attributes( circle.stroke_thickness, final_stroke_color ) << " />\n";
+		     << color_attributes( final_color.resolved( _foreground ) ) << " "
+		     << stroke_attributes( circle.stroke_thickness, final_stroke_color.resolved( _foreground ) ) << " />\n";
 
 		close_g();
 	}
@@ -143,8 +143,8 @@ void SVGWriter::visit( const Rectangle &rectangle )
 		     << "\" y=\"" << -hh
 		     << "\" width=\"" << hw * 2.0f
 		     << "\" height=\"" << hh * 2.0f << "\" "
-		     << color_attributes( final_color ) << " "
-		     << stroke_attributes( rectangle.stroke_thickness, final_stroke_color ) << " />\n";
+		     << color_attributes( final_color.resolved( _foreground ) ) << " "
+		     << stroke_attributes( rectangle.stroke_thickness, final_stroke_color.resolved( _foreground ) ) << " />\n";
 
 		close_g();
 	}
@@ -168,8 +168,8 @@ void SVGWriter::visit( const RoundRectangle &rect )
 		{
 			_out << indent() << "<rect x=\"" << -hw << "\" y=\"" << -hh
 			     << "\" width=\"" << hw * 2.0f << "\" height=\"" << hh * 2.0f << "\" "
-			     << color_attributes( final_color ) << " "
-			     << stroke_attributes( rect.stroke_thickness, final_stroke_color ) << " />\n";
+			     << color_attributes( final_color.resolved( _foreground ) ) << " "
+			     << stroke_attributes( rect.stroke_thickness, final_stroke_color.resolved( _foreground ) ) << " />\n";
 		}
 		else
 		{
@@ -182,8 +182,8 @@ void SVGWriter::visit( const RoundRectangle &rect )
 			     << " A " << bl << "," << bl << " 0 0 0 " << -hw << "," << -hh + bl
 			     << " L " << -hw << "," << hh - tl
 			     << " A " << tl << "," << tl << " 0 0 0 " << -hw + tl << "," << hh
-			     << " Z\" " << color_attributes( final_color ) << " "
-			     << stroke_attributes( rect.stroke_thickness, final_stroke_color ) << " />\n";
+			     << " Z\" " << color_attributes( final_color.resolved( _foreground ) ) << " "
+			     << stroke_attributes( rect.stroke_thickness, final_stroke_color.resolved( _foreground ) ) << " />\n";
 		}
 
 		close_g();
@@ -199,8 +199,8 @@ void SVGWriter::visit( const Ellipse &ellipse )
 
 		_out << indent() << "<ellipse cx=\"0\" cy=\"0\" rx=\"" << ellipse.half_width
 		     << "\" ry=\"" << ellipse.half_height << "\" "
-		     << color_attributes( final_color ) << " "
-		     << stroke_attributes( ellipse.stroke_thickness, final_stroke_color ) << " />\n";
+		     << color_attributes( final_color.resolved( _foreground ) ) << " "
+		     << stroke_attributes( ellipse.stroke_thickness, final_stroke_color.resolved( _foreground ) ) << " />\n";
 
 		close_g();
 	}
@@ -215,8 +215,8 @@ void SVGWriter::visit( const Path &path )
 
 		_out << indent() << "<path d=\"";
 		emit_path_data( path.commands, _out );
-		_out << "\" " << color_attributes( final_color ) << " "
-		     << stroke_attributes( path.stroke_thickness, final_stroke_color );
+		_out << "\" " << color_attributes( final_color.resolved( _foreground ) ) << " "
+		     << stroke_attributes( path.stroke_thickness, final_stroke_color.resolved( _foreground ) );
 		if ( path.stroke_thickness > 0.F && path.join != LineJoin::MITER )
 		{
 			_out << " stroke-linejoin=\"" << ( path.join == LineJoin::BEVEL ? "bevel" : "round" ) << "\"";
@@ -244,8 +244,8 @@ void SVGWriter::visit( const Glyph &glyph )
 		Color final_stroke_color = _current_stroke_color * glyph.stroke_color;
 
 		_out << indent() << "<use href=\"#glyph_" << id << "\" "
-		     << color_attributes( final_color ) << " "
-		     << stroke_attributes( glyph.stroke_thickness, final_stroke_color ) << " />\n";
+		     << color_attributes( final_color.resolved( _foreground ) ) << " "
+		     << stroke_attributes( glyph.stroke_thickness, final_stroke_color.resolved( _foreground ) ) << " />\n";
 
 		close_g();
 	}
@@ -259,7 +259,7 @@ void SVGWriter::visit( const Line &line )
 
 		_out << indent() << "<line x1=\"" << line.start.x() << "\" y1=\"" << line.start.y()
 		     << "\" x2=\"" << line.end.x() << "\" y2=\"" << line.end.y() << "\" "
-		     << stroke_attributes( line.stroke_thickness, final_stroke_color ) << " />\n";
+		     << stroke_attributes( line.stroke_thickness, final_stroke_color.resolved( _foreground ) ) << " />\n";
 
 		close_g();
 	}
@@ -296,8 +296,8 @@ void SVGWriter::visit( const ArrowTip &arrow )
 			_out << indent() << "<path d=\"M " << p1x << "," << p1y
 			     << " L " << p2x << "," << p2y
 			     << " L " << p3x << "," << p3y << " Z\" "
-			     << color_attributes( final_color ) << " "
-			     << stroke_attributes( arrow.stroke_thickness, final_stroke_color ) << " />\n";
+			     << color_attributes( final_color.resolved( _foreground ) ) << " "
+			     << stroke_attributes( arrow.stroke_thickness, final_stroke_color.resolved( _foreground ) ) << " />\n";
 		}
 
 		close_g();
@@ -383,8 +383,8 @@ void SVGWriter::visit( const MathAssembly &assembly )
 			for ( size_t j = 1; j < path.size(); ++j ) _out << " L " << path[j].x << "," << path[j].y;
 			_out << " Z";
 		}
-		_out << "\" " << color_attributes( final_color ) << " "
-		     << stroke_attributes( assembly.stroke_thickness, final_stroke_color ) << " />\n";
+		_out << "\" " << color_attributes( final_color.resolved( _foreground ) ) << " "
+		     << stroke_attributes( assembly.stroke_thickness, final_stroke_color.resolved( _foreground ) ) << " />\n";
 		close_g();
 	}
 #else

@@ -91,7 +91,6 @@ add_library( visuals STATIC
 	src/core/Wait.cpp
 	src/core/CameraMove.cpp
 	src/code/Highlight.cpp
-	src/code/CodePalette.cpp
 	src/code/CreateCode.cpp
 	src/code/Typing.cpp
 	src/code/LineHighlight.cpp
@@ -99,6 +98,7 @@ add_library( visuals STATIC
 	src/plot/Graph.cpp
 	src/core/ProducerPreview.cpp
 	src/core/Theme.cpp
+	src/core/Palette.cpp
 	src/core/Narration.cpp
 	src/core/Narrator.cpp
 	src/core/SceneRegistry.cpp

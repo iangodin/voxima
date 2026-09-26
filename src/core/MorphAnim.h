@@ -29,7 +29,10 @@ Scene morph_to( const Stage &stage, Morph &morph, std::chrono::duration<double> 
 template<typename Drive>
 Scene morph_driven( Stage &stage, Visual &from, std::unique_ptr<Visual> to, MorphOptions options, Drive &&drive )
 {
-	Morph shape( from, *to, options );
+	// What has no color is blended as the color it is seen in (the stage's text color)
+	MorphOptions with_foreground = options;
+	with_foreground.foreground = stage.foreground;
+	Morph shape( from, *to, with_foreground );
 	std::unique_ptr<Visual> drawn = shape.release();
 	Visual *drawn_ptr = drawn.get();
 

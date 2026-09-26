@@ -310,6 +310,19 @@ bool Producer::render( const RenderJob &job )
 	return true;
 }
 
+namespace
+{
+std::string palette_names()
+{
+	std::string out;
+	for ( const std::string &name: Palette::names() )
+	{
+		out += ( out.empty() ? "" : ", " ) + name;
+	}
+	return out;
+}
+}
+
 bool Producer::produce( int argc, char *argv[] )
 {
 	CLI::App app{ "Sonimation" };
@@ -344,6 +357,12 @@ bool Producer::produce( int argc, char *argv[] )
 
 	std::optional<std::string> theme_name;
 	app.add_option( "--theme", theme_name, "Theme to use" );
+
+	std::optional<std::string> palette_name;
+	app.add_option(
+		"--palette",
+		palette_name,
+		"Colors to use, apart from the theme's fonts: " + palette_names() + ". Without it, the theme's own on the usual black" );
 
 	app.add_option( "--width", _stage.camera.width, "Camera width" );
 	app.add_option( "--height", _stage.camera.height, "Camera height" );
@@ -481,6 +500,14 @@ bool Producer::produce( int argc, char *argv[] )
 	if ( font_path )
 	{
 		_stage.theme->set_font_path( *font_path );
+	}
+
+	// A palette of its own choosing: its background and its text color for the picture (light or dark), and its colors
+	// for code, plots and what stands out. Otherwise the theme's palette gives only those last, on black as always.
+	if ( palette_name )
+	{
+		_stage.theme->set_palette( Palette::get( *palette_name ) );
+		_stage.use_palette( _stage.theme->palette() );
 	}
 
 	constexpr size_t audio_rate = 48000;

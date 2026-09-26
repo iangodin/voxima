@@ -17,8 +17,8 @@ struct CodeStyle
 };
 
 // The colors of syntax highlighting: a style for each kind of code the highlighter names (see
-// code::highlight: "keyword", "string", "function" ...), and one for plain code. A theme has one
-// (Theme::code_palette), and can change it.
+// code::highlight: "keyword", "string", "function" ...), and one for plain code. It is part of a Palette (the
+// theme's: Theme::code_palette), worked out from the palette's accents (derive_code_palette) and adjusted there.
 class CodePalette
 {
 public:
@@ -50,9 +50,6 @@ public:
 			name = name.substr( 0, dot );
 		}
 	}
-
-	// Light code on a dark background, in the colors of the One Dark editor theme
-	static CodePalette dark();
 
 private:
 	std::map<std::string, CodeStyle, std::less<>> _styles;

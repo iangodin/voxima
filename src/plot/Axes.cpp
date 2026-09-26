@@ -151,6 +151,7 @@ void add_number( Group &axes, Theme &theme, const AxesOptions &options, const st
 std::unique_ptr<Axes> make_axes( Theme &theme, const AxesOptions &options )
 {
 	auto axes = std::make_unique<Axes>( options );
+	axes->_series = theme.palette().series();
 	const double x_step = options.x_step > 0.0 ? options.x_step : nice_step( options.x.span(), options.width );
 	const double y_step = options.y_step > 0.0 ? options.y_step : nice_step( options.y.span(), options.height );
 	axes->_x_ticks = tick_values( options.x, x_step );

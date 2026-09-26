@@ -33,6 +33,10 @@ struct MorphOptions
 {
 	// How leaves are paired; see LeafMatch
 	LeafMatch leaves = LeafMatch::AUTO;
+
+	// What pure white is drawn as (Stage::foreground): what has no color is blended as the color it is seen in. morph() and
+	// morph_driven() set it from the stage.
+	Color foreground = { 1.F, 1.F, 1.F, 1.F };
 	AlignCosts costs;
 
 	// Spread the start of the parts over this fraction of the morph, in drawing order (so left to right

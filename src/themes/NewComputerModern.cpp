@@ -70,16 +70,11 @@ FontStack intent_caption( const FontStyle &style, Theme &theme )
 	return fonts;
 }
 
-// One Dark's colors (see CodePalette::dark)
-CodePalette code_palette()
-{
-	return CodePalette::dark();
-}
 
 Theme create_theme( void )
 {
 	Theme theme( "New Computer Modern" );
-	theme.set_code_palette( code_palette() );
+	theme.set_palette( Palette::house( "one-dark" ) );
 	theme.register_factory( "prose", intent_prose );
 	theme.register_factory( "title", intent_title );
 	theme.register_factory( "label", intent_label );

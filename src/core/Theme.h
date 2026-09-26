@@ -7,7 +7,7 @@
 
 #include <utils/NamedRegistered.h>
 
-#include <code/CodePalette.h>
+#include <core/Palette.h>
 
 #include <ft2build.h>
 #include FT_FREETYPE_H
@@ -89,15 +89,23 @@ public:
 		_font_path = path;
 	}
 
-	// The colors of highlighted source code (see make_code)
-	const CodePalette &code_palette() const
+	// The colors of the look (see Palette), apart from its fonts: each theme starts with one of its own (on black, as
+	// every video has been), and any palette can be used with any theme. Stage::use_palette makes the stage's background and
+	// text color the palette's.
+	const Palette &palette() const
 	{
-		return _code_palette;
+		return _palette;
 	}
 
-	void set_code_palette( CodePalette palette )
+	void set_palette( Palette palette )
 	{
-		_code_palette = std::move( palette );
+		_palette = std::move( palette );
+	}
+
+	// The colors of highlighted source code (see make_code): the palette's
+	const CodePalette &code_palette() const
+	{
+		return _palette.code;
 	}
 
 	constexpr static float FONT_SCALE = 120.F;
@@ -111,5 +119,5 @@ private:
 	std::map<std::string, FontFactory> _factories;
 
 	std::filesystem::path _font_path = "assets/fonts";
-	CodePalette _code_palette = CodePalette::dark();
+	Palette _palette = Palette::house( "one-dark" );
 };

@@ -60,8 +60,10 @@ struct AxesOptions
 	std::string x_label = "x";
 	std::string y_label = "y";
 
-	Color color = { 0.8F, 0.8F, 0.8F, 1.F };
-	Color grid_color = { 0.8F, 0.8F, 0.8F, 0.18F };
+	// White is the theme's text color (see Color::resolved): the axes, their ticks and numbers, and the faint grid,
+	// are dark on a light background and light on a dark one, whatever the palette
+	Color color = { 1.F, 1.F, 1.F, 1.F };
+	Color grid_color = { 1.F, 1.F, 1.F, 0.18F };
 	float thickness = 0.03F;
 	float tick_length = 0.12F;
 	FontStyle number_style = FontStyle{ Intent::LABEL }.small();
@@ -115,6 +117,17 @@ public:
 		return _options.height / 2.F;
 	}
 
+	// The next color for a curve, from the palette's accents (blue, orange, green ...): each plot without a color of its
+	// own gets the next, so curves on the same axes are told apart, in the same colors in every palette
+	Color next_series_color() const
+	{
+		if ( _series.empty() )
+		{
+			return { 1.F, 1.F, 1.F, 1.F };
+		}
+		return _series[_next_series++ % _series.size()];
+	}
+
 	// The data values ticked on each axis
 	const std::vector<double> &x_ticks() const
 	{
@@ -137,6 +150,8 @@ private:
 	Group *_grid = nullptr;  // the bottom layer
 	Group *_lines = nullptr; // the axes, ticks and arrow tips
 	Group *_plots = nullptr; // the layer for add_plot
+	std::vector<Color> _series;
+	mutable size_t _next_series = 0;
 	std::vector<double> _x_ticks;
 	std::vector<double> _y_ticks;
 };

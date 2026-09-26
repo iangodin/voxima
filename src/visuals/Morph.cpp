@@ -146,8 +146,8 @@ Morph::Morph( const Visual &from, const Visual &to, const MorphOptions &options 
 	_stagger( std::clamp( options.stagger, 0.F, 0.95F ) ),
 	_part_ease( options.part_ease )
 {
-	const auto shapes_a = to_outline( from );
-	const auto shapes_b = to_outline( to );
+	const auto shapes_a = to_outline( from, nullptr, options.foreground );
+	const auto shapes_b = to_outline( to, nullptr, options.foreground );
 
 	_pairs = match_leaves( shapes_a, shapes_b, options.leaves );
 	for ( const LeafPair &pair: _pairs )
