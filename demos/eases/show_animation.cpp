@@ -15,6 +15,7 @@
 
 
 
+#include <core/Animate.h>
 #include <core/Coroutine.h>
 #include <core/Director.h>
 #include <core/EaseBack.h>
@@ -30,6 +31,7 @@
 #include <math/Expr.h>
 #include <visuals/Tags.h>
 #include <visuals/Circle.h>
+#include <visuals/Connector.h>
 #include <visuals/CreateStyledText.h>
 #include <visuals/CreateText.h>
 #include <visuals/StyledText.h>
@@ -811,6 +813,44 @@ Scene show_layout( Stage &stage, Script & )
 	co_await wait_for( stage, 3s );
 }
 
+// The animation verbs: things fade, slide and grow in, a connector follows them as they move, one is pointed out, and they leave
+Scene show_verbs( Stage &stage, Script & )
+{
+	Theme &theme = *stage.theme;
+	const Palette &palette = theme.palette();
+
+	auto node = [&]( Color color )
+	{
+		auto circle = std::make_unique<Circle>();
+		circle->radius = 0.7F;
+		circle->color = color;
+		auto &shape = stage.visuals.add( std::move( circle ) );
+		return &shape;
+	};
+	auto *a = node( palette.blue );
+	auto *b = node( palette.green );
+	auto *c = node( palette.orange );
+	a->position = { -4.F, 0.F };
+	b->position = { 0.F, 0.F };
+	c->position = { 4.F, 0.F };
+	auto &ab = stage.visuals.add( make_connector( *a, *b, { .gap = 0.1F } ) );
+	auto &bc = stage.visuals.add( make_connector( *b, *c, { .gap = 0.1F } ) );
+	auto tie_ab = follow( stage, ab );
+	auto tie_bc = follow( stage, bc );
+
+	auto &caption = stage.visuals.add( make_text( theme, "Fade, slide, grow, indicate", FontStyle{ Intent::TITLE } ) );
+	move_to( caption, { 0.F, 3.5F }, Anchor::TOP );
+
+	co_await choreograph( fade_in( stage, *a, 0.5s ), slide_in( stage, *b, { 0.F, -3.F }, 0.8s ), grow_in( stage, *c, 0.6s ), fade_in( stage, ab, 0.8s ), fade_in( stage, bc, 0.8s ) );
+	co_await wait_for( stage, 0.3s );
+	co_await indicate( stage, *b );
+	co_await move_by( stage, *b, { 0.F, 2.5F }, 0.8s, ease_cubic_in_out ); // the connectors bend with it
+	co_await move_by( stage, *b, { 0.F, -2.5F }, 0.8s, ease_cubic_in_out );
+	co_await wait_for( stage, 0.3s );
+	co_await choreograph( fade_out( stage, *a, 0.5s ), slide_out( stage, *b, { 0.F, 3.F }, 0.8s ), shrink_out( stage, *c, 0.6s ), fade_out( stage, ab, 0.5s ), fade_out( stage, bc, 0.5s ) );
+	co_await wait_for( stage, 0.5s );
+}
+
 // Music under the demo movie. Music is not in the repository (assets/ is not): without the file the movie
 // plays silent, and says so.
 constexpr const char *MOVIE_MUSIC = "assets/music/Alexander Ehlers - Spacetime.mp3";
@@ -839,6 +879,7 @@ SONIMATION_SCENE( "eases", "The ease functions, as circles racing across the scr
 SONIMATION_SCENE( "formulas", "A page of laid-out math formulas", show_formulas );
 SONIMATION_SCENE( "code", "Syntax-highlighted C++, typed, with lines pointed out", show_code );
 SONIMATION_SCENE( "layout", "Panels, a list and a table, and a row of shapes, placed against each other", show_layout );
+SONIMATION_SCENE( "verbs", "Fade, slide, grow and indicate, with connectors following the moving circles", show_verbs );
 SONIMATION_SCENE( "camera", "Zooming in on a graph, and panning along it", show_camera );
 SONIMATION_SCENE( "plot", "Axes crossing in the middle, and graphs drawn on them", show_plot );
 SONIMATION_SCENE( "plot-edge", "The same, with the axes along the left and bottom", show_plot_edge );

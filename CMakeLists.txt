@@ -118,6 +118,7 @@ add_library( visuals STATIC
 	src/visuals/Placement.cpp
 	src/visuals/Panel.cpp
 	src/visuals/Connector.cpp
+	src/core/Animate.cpp
 	src/visuals/CreateList.cpp
 	src/visuals/CreateTable.cpp
 	src/visuals/MissingGlyph.cpp
