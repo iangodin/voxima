@@ -772,7 +772,9 @@ Scene show_layout( Stage &stage, Script & )
 	move_to( title, { 0.F, 4.1F }, Anchor::TOP );
 
 	// A list in a panel, and a table in another, side by side
-	auto list_panel = make_panel( make_list( theme, { "Rows and columns", "Grids of any size", "Panels that fit", "Numbered lists too" } ) );
+	// (a panel with a shadow has an opaque fill: the background lifted a little toward the text color)
+	const Color lifted{ palette.background.r * 0.88F + palette.text.r * 0.12F, palette.background.g * 0.88F + palette.text.g * 0.12F, palette.background.b * 0.88F + palette.text.b * 0.12F, 1.F };
+	auto list_panel = make_panel( make_list( theme, { "Rows and columns", "Grids of any size", "Panels that fit", "Numbered lists too" } ), { .fill = lifted, .shadow = ShadowOptions{} } );
 	auto table_panel = make_panel( make_table(
 		theme,
 		{ { "Palette", "Type", "Background" },

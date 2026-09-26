@@ -242,3 +242,30 @@ TEST_CASE( "a list wraps its items to a maximum width", "[list][wrap]" )
 	// The second item starts lower than it did, the first now taking several lines
 	CHECK( wrapped->row( 1 ).position.y() < loose->row( 1 ).position.y() );
 }
+
+TEST_CASE( "a panel's shadow is behind everything, offset, and fades out past the edge", "[panel]" )
+{
+	auto plain = make_panel( box( 4.F, 2.F ) );
+	CHECK( plain->size() == 2 ); // no shadow: as it always was
+
+	auto panel = make_panel( box( 4.F, 2.F ), { .padding = 0.5F, .shadow = ShadowOptions{ .offset = { 0.1F, -0.2F }, .blur = 0.4F, .layers = 4 } } );
+	REQUIRE( panel->size() == 3 );
+	const auto &shadow = dynamic_cast<const Group &>( **panel->begin() ); // first: at the back
+	REQUIRE( shadow.size() == 4 );
+
+	const RoundRectangle &bg = panel->background();
+	float previous = 0.F;
+	for ( const auto &child: shadow )
+	{
+		const auto &layer = dynamic_cast<const RoundRectangle &>( *child );
+		CHECK( layer.position.x() == Approx( bg.position.x() + 0.1F ) );
+		CHECK( layer.position.y() == Approx( bg.position.y() - 0.2F ) );
+		CHECK( layer.half_width > previous ); // each a little bigger than the last
+		previous = layer.half_width;
+		CHECK( layer.color.a == Approx( 0.45F / 4.F ) ); // so together they are as dark as asked at the middle
+	}
+	// The biggest reaches half the blur past the panel's edge; the smallest is inside it
+	const auto &biggest = dynamic_cast<const RoundRectangle &>( **( shadow.begin() + 3 ) );
+	CHECK( biggest.half_width == Approx( bg.half_width + 0.4F * ( 3.5F / 4.F - 0.5F ) ) );
+	CHECK( dynamic_cast<const RoundRectangle &>( **shadow.begin() ).half_width < bg.half_width );
+}
