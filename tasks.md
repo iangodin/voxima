@@ -14,7 +14,7 @@
   - [x] Graphs of functions: smooth, clipped to the plot, broken at asymptotes, drawn on along their length (plot, draw)
   - [x] Axes along the edges or crossing in the middle (AxesOptions::placement), the grid as one path (no bright spots at crossings)
   - [x] Curve colors from the palette (the accents in turn)
-  - [ ] Points and scatter plots: markers (circle, square, triangle, cross), data given as pairs, optionally joined by a line (straight or smooth)
+  - [x] Points and scatter plots: `scatter( axes, points, { .marker, .line } )`, six markers, a line straight or smooth
   - [ ] Bar charts (vertical, horizontal; grouped, stacked) on a category axis with labels, and histograms
   - [ ] A legend: swatch or marker and a name for each series, in a panel in a corner; series named when they are plotted
   - [ ] Parametric curves ( x(t), y(t) ) and polar curves ( r(θ) ) with a polar grid

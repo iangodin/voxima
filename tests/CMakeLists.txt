@@ -34,6 +34,7 @@ add_executable( sonimation_unit_tests
 	TestConnector.cpp
 	TestCallout.cpp
 	TestBrace.cpp
+	TestScatter.cpp
 	TestOperators.cpp
 	TestSymbols.cpp
 	TestGeometry.cpp
