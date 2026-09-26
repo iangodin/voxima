@@ -55,6 +55,7 @@
 #include <core/MorphAnim.h>
 #include <core/Tween.h>
 #include <code/CreateCode.h>
+#include <code/Typing.h>
 #include <visuals/ArrowTip.h>
 #include <visuals/Image.h>
 #include <visuals/Line.h>
@@ -634,7 +635,7 @@ Scene show_formulas( Stage &stage, Script & )
 	co_await wait_for( stage, 3s );
 }
 
-// Syntax-highlighted source code, in the theme's code font and colors
+// Syntax-highlighted source code, in the theme's code font and colors, typed
 Scene show_code( Stage &stage, Script & )
 {
 	auto listing = make_code( *stage.theme, code::Language::CPP, R"cpp(
@@ -654,8 +655,12 @@ T sum_of_squares( const std::vector<T> &values )
 }
 )cpp" );
 	center_group( *listing );
-	stage.visuals.add( std::move( listing ) );
-	co_await wait_for( stage, 3s );
+	auto &shown = stage.visuals.add( std::move( listing ) );
+
+	// Typed, like a person would
+	Typewriter typer( shown );
+	co_await typer.type( stage );
+	co_await wait_for( stage, 2s );
 }
 
 // Music under the demo movie. Music is not in the repository (assets/ is not): without the file the movie
@@ -684,7 +689,7 @@ Scene movie( Stage &stage, Script &script )
 SONIMATION_SCENE( "missing-glyphs", "Characters that cannot be drawn, shown as magenta boxes (and reported)", show_missing_glyphs );
 SONIMATION_SCENE( "eases", "The ease functions, as circles racing across the screen (with narration)", show_eases );
 SONIMATION_SCENE( "formulas", "A page of laid-out math formulas", show_formulas );
-SONIMATION_SCENE( "code", "Syntax-highlighted C++", show_code );
+SONIMATION_SCENE( "code", "Syntax-highlighted C++, typed", show_code );
 SONIMATION_SCENE( "morph-shapes", "A circle turning into a square and letters, with holes opening and closing", show_morph );
 SONIMATION_SCENE( "morph-formula", "(a+b)^2 rewritten step by step, matching parts by tag and glyph", show_formula_morph );
 SONIMATION_SCENE( "morph-text", "A sentence edited word by word", show_text_morph );

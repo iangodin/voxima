@@ -84,6 +84,13 @@ struct PlacedGlyph
 std::unique_ptr<Group> make_styled_text( Theme &theme, const StyledText &text, const TextLayout &layout )
 {
 	auto root = std::make_unique<Group>();
+	make_styled_text( *root, theme, text, layout, nullptr );
+	return root;
+}
+
+void make_styled_text( Group &root_group, Theme &theme, const StyledText &text, const TextLayout &layout, std::vector<PlacedGlyphInfo> *glyphs )
+{
+	Group *root = &root_group;
 
 	HbFontCache font_cache;
 	hb_buffer_t *buffer = hb_buffer_create();
@@ -292,6 +299,10 @@ std::unique_ptr<Group> make_styled_text( Theme &theme, const StyledText &text, c
 		std::vector<Group *> word_groups( spans.size(), nullptr );
 		for ( auto &item: placed )
 		{
+			if ( glyphs )
+			{
+				glyphs->push_back( { item.offset, item.glyph.get() } );
+			}
 			const size_t local = item.offset - line_start;
 			auto it = std::upper_bound(
 				spans.begin(), spans.end(), local, []( size_t value, const WordSpan &span ) { return value < span.begin; } );
@@ -338,6 +349,4 @@ std::unique_ptr<Group> make_styled_text( Theme &theme, const StyledText &text, c
 			line_groups[i]->position = { shift, 0.0f };
 		}
 	}
-
-	return root;
 }

@@ -4,6 +4,8 @@
 #include <visuals/CreateStyledText.h>
 #include <visuals/StyledText.h>
 
+#include <algorithm>
+
 std::string prepare_code( std::string_view source, size_t tab_width )
 {
 	if ( source.starts_with( '\n' ) )
@@ -50,7 +52,7 @@ std::string prepare_code( std::string_view source, size_t tab_width )
 	return out;
 }
 
-std::unique_ptr<Group> make_code( Theme &theme, code::Language language, std::string_view source, const CodeLayout &layout )
+std::unique_ptr<CodeListing> make_code( Theme &theme, code::Language language, std::string_view source, const CodeLayout &layout )
 {
 	const std::string text = prepare_code( source, layout.tab_width );
 	const CodePalette &palette = theme.code_palette();
@@ -78,5 +80,32 @@ std::unique_ptr<Group> make_code( Theme &theme, code::Language language, std::st
 
 	TextLayout text_layout;
 	text_layout.line_spacing = layout.line_spacing;
-	return make_styled_text( theme, styled, text_layout );
+	auto listing = std::make_unique<CodeListing>();
+	std::vector<PlacedGlyphInfo> placed;
+	make_styled_text( *listing, theme, styled, text_layout, &placed );
+
+	// In the order of the source, each with its line and column (columns in characters: a UTF-8 continuation byte
+	// is not one)
+	std::stable_sort( placed.begin(), placed.end(), []( const PlacedGlyphInfo &a, const PlacedGlyphInfo &b ) { return a.offset < b.offset; } );
+	size_t line = 0;
+	size_t column = 0;
+	size_t at = 0;
+	for ( const PlacedGlyphInfo &p: placed )
+	{
+		for ( ; at < p.offset; ++at )
+		{
+			if ( text[at] == '\n' )
+			{
+				++line;
+				column = 0;
+			}
+			else if ( ( static_cast<unsigned char>( text[at] ) & 0xC0 ) != 0x80 )
+			{
+				++column;
+			}
+		}
+		listing->glyphs.push_back( { p.offset, line, column, p.glyph } );
+	}
+	listing->text = text;
+	return listing;
 }
