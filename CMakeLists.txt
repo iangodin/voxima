@@ -119,6 +119,7 @@ add_library( visuals STATIC
 	src/visuals/Panel.cpp
 	src/visuals/Connector.cpp
 	src/visuals/Callout.cpp
+	src/visuals/Brace.cpp
 	src/visuals/Diagram.cpp
 	src/core/Animate.cpp
 	src/visuals/Trim.cpp

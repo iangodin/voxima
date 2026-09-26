@@ -31,6 +31,7 @@
 #include <math/Expr.h>
 #include <visuals/Tags.h>
 #include <visuals/Circle.h>
+#include <visuals/Brace.h>
 #include <visuals/Callout.h>
 #include <visuals/Connector.h>
 #include <visuals/Diagram.h>
@@ -933,6 +934,9 @@ Scene show_diagram( Stage &stage, Script & )
 
 	auto &list = stage.visuals.add( make_list( theme, { "Each step is a node", "Arrows say what waits for what", "The layers are worked out for you" }, { .max_width = 5.2F } ) );
 	move_to( list, { 4.2F, -2.6F }, Anchor::CENTER );
+
+	// A brace along the list's left, with its label
+	stage.visuals.add( make_labeled_brace_beside( theme, list, Anchor::LEFT, "3 ideas", label, 0.25F, { .color = palette.muted } ) );
 
 	// Three things of different sizes, spread evenly along the top
 	auto &top = stage.visuals.add( std::make_unique<Group>() );
