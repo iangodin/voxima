@@ -10,7 +10,12 @@
   - [x] Highlight missing glyphs (0xFFFD and characters no font has) as magenta boxes with their code, listed at the end of the render
 
 ## Visuals
-  - [ ] Render plots and charts
+  - [x] Axes: ticks at nice steps, numbers (with a halo), arrow tips, axis names, a grid (make_axes)
+  - [x] Graphs of functions: smooth, clipped to the plot, broken at asymptotes, drawn on along their length (plot, draw)
+  - [x] Axes along the edges or crossing in the middle (AxesOptions::placement), the grid as one path (no bright spots at crossings)
+  - [ ] Points and scatter plots, bar charts, a legend
+  - [ ] Plot colors from the theme (as the code palettes are)
+  - [ ] Axes drawn on (growing, ticks and numbers appearing), and graphs morphing into other graphs
   - [ ] Import external SVG files
   - [x] Add support for images / photos
 

@@ -56,6 +56,8 @@
 #include <core/Tween.h>
 #include <code/CreateCode.h>
 #include <code/Typing.h>
+#include <plot/Axes.h>
+#include <plot/Graph.h>
 #include <visuals/ArrowTip.h>
 #include <visuals/Image.h>
 #include <visuals/Line.h>
@@ -663,6 +665,41 @@ T sum_of_squares( const std::vector<T> &values )
 	co_await wait_for( stage, 2s );
 }
 
+// Axes with a grid, and two graphs drawn on them: a sine wave, then 1/x (in two pieces, either side of 0)
+Scene show_plot_with( Stage &stage, AxisPlacement placement )
+{
+	AxesOptions options;
+	options.placement = placement;
+	options.x = { -6.0, 6.0 };
+	options.y = { -2.5, 2.5 };
+	options.width = 12.F;
+	options.height = 5.F;
+	options.grid = true;
+	auto &axes = stage.visuals.add( make_axes( *stage.theme, options ) );
+	co_await wait_for( stage, 0.5s );
+
+	auto &wave = axes.add_plot( plot( axes, []( double x ) { return std::sin( x ); } ) );
+	co_await draw( stage, wave, 2s );
+
+	GraphOptions orange;
+	orange.color = Color::rgb( 229, 160, 90 );
+	auto &inverse = axes.add_plot( plot( axes, []( double x ) { return 1.0 / x; }, orange ) );
+	co_await draw( stage, inverse, 2s );
+	co_await wait_for( stage, 2s );
+}
+
+// ... with the axes crossing in the middle
+Scene show_plot( Stage &stage, Script & )
+{
+	co_await show_plot_with( stage, AxisPlacement::ORIGIN );
+}
+
+// ... and along the left and bottom edges
+Scene show_plot_edge( Stage &stage, Script & )
+{
+	co_await show_plot_with( stage, AxisPlacement::EDGE );
+}
+
 // Music under the demo movie. Music is not in the repository (assets/ is not): without the file the movie
 // plays silent, and says so.
 constexpr const char *MOVIE_MUSIC = "assets/music/Alexander Ehlers - Spacetime.mp3";
@@ -690,6 +727,8 @@ SONIMATION_SCENE( "missing-glyphs", "Characters that cannot be drawn, shown as m
 SONIMATION_SCENE( "eases", "The ease functions, as circles racing across the screen (with narration)", show_eases );
 SONIMATION_SCENE( "formulas", "A page of laid-out math formulas", show_formulas );
 SONIMATION_SCENE( "code", "Syntax-highlighted C++, typed", show_code );
+SONIMATION_SCENE( "plot", "Axes crossing in the middle, and graphs drawn on them", show_plot );
+SONIMATION_SCENE( "plot-edge", "The same, with the axes along the left and bottom", show_plot_edge );
 SONIMATION_SCENE( "morph-shapes", "A circle turning into a square and letters, with holes opening and closing", show_morph );
 SONIMATION_SCENE( "morph-formula", "(a+b)^2 rewritten step by step, matching parts by tag and glyph", show_formula_morph );
 SONIMATION_SCENE( "morph-text", "A sentence edited word by word", show_text_morph );
