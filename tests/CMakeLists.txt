@@ -30,6 +30,7 @@ add_executable( sonimation_unit_tests
 	TestPlot.cpp
 	TestCamera.cpp
 	TestPalette.cpp
+	TestFontStacks.cpp
 	TestVolume.cpp
 	TestLanguage.cpp
 	TestScriptLanguageFallback.cpp
@@ -51,5 +52,7 @@ target_link_libraries( sonimation_unit_tests
 	Catch2::Catch2WithMain
 	visuals
 )
+
+target_compile_definitions( sonimation_unit_tests PRIVATE SONIMATION_TEST_DATA="${CMAKE_CURRENT_SOURCE_DIR}/data" )
 
 add_test( NAME unit_tests COMMAND sonimation_unit_tests WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}" )

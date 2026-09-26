@@ -149,10 +149,12 @@ FontFace Theme::load_emoji_font(
 
 FontFace Theme::load_font_internal( const FontKey &key, float scale )
 {
+	const std::string source = std::format( "{}#{} w{} wd{} sl{} o{}/{}", key.name, key.face_index, key.weight, key.width, key.slant, key.style1, key.style2 );
+
 	auto it = _faces.find( key );
 	if ( it != _faces.end() )
 	{
-		return { it->second, scale };
+		return { it->second, scale, false, source };
 	}
 
 	FT_Face face = nullptr;
@@ -181,7 +183,7 @@ FontFace Theme::load_font_internal( const FontKey &key, float scale )
 
 	FontFacePtr ptr( face, FT_Done_Face );
 	_faces[key] = ptr;
-	return { ptr, scale };
+	return { ptr, scale, false, source };
 }
 
 FontStack Theme::get_stack( const FontStyle &style )
