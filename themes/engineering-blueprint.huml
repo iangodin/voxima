@@ -1,0 +1,40 @@
+# High contrast and technical, like a drawing: IBM Plex Sans, Plex Mono for code, STIX Two Math for math, Plex Sans Arabic
+# and JP. The stack has no notdef font: a character no font has is left to the missing-glyph marker.
+meta::
+  name: "Engineering Blueprint"
+  inherit: null
+
+palette: "blueprint"
+
+fonts::
+  plex_sans:: variable: "IBMPlexSans-Variable.ttf"
+  plex_arabic::
+    light: "IBMPlexSansArabic-Light.ttf"
+    regular: "IBMPlexSansArabic-Regular.ttf"
+    bold: "IBMPlexSansArabic-Bold.ttf"
+  noto_emoji:: variable: "NotoEmoji-Variable.ttf"
+  plex_jp::
+    light: "IBMPlexSansJP-Light.ttf"
+    regular: "IBMPlexSansJP-Regular.ttf"
+    bold: "IBMPlexSansJP-Bold.ttf"
+  plex_mono::
+    regular: "IBMPlexMono-Regular.ttf"
+    italic: "IBMPlexMono-Italic.ttf"
+    bold: "IBMPlexMono-Bold.ttf"
+    bold_italic: "IBMPlexMono-BoldItalic.ttf"
+  stix_math:: regular: "STIX2Math.otf"
+
+stacks::
+  prose:: "plex_sans", "plex_arabic", "noto_emoji", "plex_jp", "plex_mono"
+  # The monospaced font first, so code lines up in columns; the rest for what it lacks
+  code:: "plex_mono", "...prose"
+  math:: "stix_math", "...prose"
+
+intents::
+  prose: "prose"
+  code: "code"
+  math: "math"
+  title: "prose"
+  label: "prose"
+  annotation: "prose"
+  caption: "prose"

@@ -12,6 +12,7 @@
 #include <exporters/PngRender.h>
 #include <exporters/SubtitleWriter.h>
 #include <optional>
+#include <core/ThemeFile.h>
 #include <utils/Language.h>
 #include <utils/ParseSequenceName.h>
 #include <utils/Timer.h>
@@ -356,7 +357,10 @@ bool Producer::produce( int argc, char *argv[] )
 	app.add_option( "--script-dir", script_path, "Directory containing scripts" );
 
 	std::optional<std::string> theme_name;
-	app.add_option( "--theme", theme_name, "Theme to use" );
+	app.add_option( "--theme", theme_name, "Theme to use: a built-in one by name, or a theme file (a path, or <name>.huml in a --theme-dir). Without it, theme.huml in the script directory, if there is one" );
+
+	std::vector<std::string> theme_dirs;
+	app.add_option( "--theme-dir", theme_dirs, "Directory to look in for theme files, and for the themes they inherit (repeatable; the script directory is always searched)" );
 
 	std::optional<std::string> palette_name;
 	app.add_option(
@@ -482,19 +486,33 @@ bool Producer::produce( int argc, char *argv[] )
 		}
 	}
 
+	// The theme: a built-in one, or one from a file (see ThemeFile.h): by name in a theme directory, or a path; without --theme,
+	// theme.huml next to the scripts
+	std::vector<std::filesystem::path> theme_directories( theme_dirs.begin(), theme_dirs.end() );
+	theme_directories.push_back( script_path );
 	if ( theme_name )
 	{
 		_stage.theme = Theme::get_by_name( *theme_name );
+		if ( _stage.theme == nullptr )
+		{
+			_loaded_theme.emplace( themes::load( *theme_name, theme_directories ) );
+			_stage.theme = &*_loaded_theme;
+		}
+	}
+	else if ( const auto file = std::filesystem::path( script_path ) / "theme.huml"; std::filesystem::exists( file ) )
+	{
+		_loaded_theme.emplace( themes::load( file.string(), theme_directories ) );
+		_stage.theme = &*_loaded_theme;
 	}
 
 	if ( _stage.theme == nullptr )
 	{
-		std::cout << "Available themes:\n";
+		std::string known;
 		for ( const auto &theme: Theme::get_registry() )
 		{
-			std::cout << "  " << theme.first << '\n';
+			known += "\n  " + theme.first;
 		}
-		throw std::runtime_error( "missing theme: " + *theme_name );
+		throw std::runtime_error( "no theme: give --theme with a built-in one's name, or a theme file (or put theme.huml with the scripts). The themes:" + known );
 	}
 
 	if ( font_path )

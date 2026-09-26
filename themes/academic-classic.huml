@@ -1,0 +1,22 @@
+# The look of a textbook: New Computer Modern's fonts (inherited, so they are not written again), with its own fallbacks:
+# Amiri for Arabic, Symbola for emoji, Source Han Serif (its first face, whatever the weight) for CJK, and New Computer
+# Modern Mono for what is left. Everything is set in New Computer Modern, the title and labels too.
+meta::
+  name: "Academic Classic"
+  inherit: "New Computer Modern"
+
+palette: "academic"
+
+fonts::
+  source_han_face0:: regular: "SourceHanSerif.ttc"
+  newcm_mono_regular:: regular: "NewCMMono10-Regular.otf"
+
+stacks::
+  fallbacks:: "amiri", "symbola", "source_han_face0", "newcm_mono_regular", "notdef"
+  prose:: "newcm", "...fallbacks"
+  code:: "newcm_mono", "...fallbacks"
+  math:: "newcm_math", "...fallbacks"
+
+intents::
+  title: "prose"
+  label: "prose"

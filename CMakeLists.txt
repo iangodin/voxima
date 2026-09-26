@@ -73,6 +73,16 @@ find_package( tree-sitter 0.26 REQUIRED SYSTEM )
 find_package( tree-sitter-c REQUIRED SYSTEM )
 find_package( tree-sitter-cpp REQUIRED SYSTEM )
 
+# The built-in themes (themes/*.huml), compiled in (see doc/themes.md)
+file( GLOB THEME_FILES CONFIGURE_DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/themes/*.huml )
+set( BUILTIN_THEME_SOURCES "" )
+foreach( theme_file ${THEME_FILES} )
+	file( READ ${theme_file} theme_text )
+	string( APPEND BUILTIN_THEME_SOURCES "R\"huml(${theme_text})huml\",\n" )
+	set_property( DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS ${theme_file} )
+endforeach()
+configure_file( src/core/BuiltinThemes.h.in ${CMAKE_CURRENT_BINARY_DIR}/core/BuiltinThemes.h @ONLY )
+
 # The grammars' highlight queries, compiled in (see extern/tree-sitter-queries/README.md)
 file( READ extern/tree-sitter-queries/c/highlights.scm TS_C_HIGHLIGHTS )
 file( READ extern/tree-sitter-queries/cpp/highlights.scm TS_CPP_HIGHLIGHTS )
@@ -99,6 +109,7 @@ add_library( visuals STATIC
 	src/core/ProducerPreview.cpp
 	src/core/Theme.cpp
 	src/core/Palette.cpp
+	src/core/ThemeFile.cpp
 	src/core/Narration.cpp
 	src/core/Narrator.cpp
 	src/core/SceneRegistry.cpp
@@ -113,6 +124,7 @@ add_library( visuals STATIC
 	src/exporters/FfmpegRender.cpp
 	src/exporters/SubtitleWriter.cpp
 	src/fonts/FontStack.cpp
+	src/fonts/FontFamily.cpp
 	src/fonts/MathFont.cpp
 	src/fonts/MathAlphabet.cpp
 	src/themes/NewComputerModern.cpp

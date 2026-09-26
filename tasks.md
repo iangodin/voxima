@@ -114,7 +114,9 @@
 ## Themes and Colors
   - [x] Palettes apart from fonts: roles (background, text, muted, eight accents), dark and light, chosen with --palette
   - [x] Light backgrounds: pure white is the theme's text color, so a scene reads on either; code, plots and highlights from the palette
-  - [ ] Palettes from a file
+  - [x] Themes as files (themes/*.huml): fonts as families in stacks, a palette, and inherit; the five built-in themes converted, checked against a record of every font they load
+  - [x] --theme takes a file, --theme-dir, and theme.huml next to the scripts is used by default
+  - [ ] Palettes from a file (a palette section in a theme file)
   - [ ] Scenes' own colors from the palette (the demos use fixed colors)
   - [ ] A light background for the math (check every Expr part follows the text color)
 

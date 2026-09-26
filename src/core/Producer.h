@@ -7,6 +7,7 @@
 #include "Script.h"
 
 #include <cstdint>
+#include <optional>
 #include <string>
 #include <vector>
 
@@ -77,6 +78,7 @@ private:
 	Director _director;
 	Screenplay _screenplay;
 	Stage _stage = {};
+	std::optional<Theme> _loaded_theme; // one from a file, which the stage points at
 	Script _script = {};
 	int64_t _current_frame = -1;
 };

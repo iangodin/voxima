@@ -1,89 +1,14 @@
-#include <core/Theme.h>
 #include <themes/EngineeringBlueprint.h>
-#include <themes/ThemeUtils.h>
 
-#include <fonts/FontStack.h>
-#include <fonts/FontStyle.h>
+#include <core/ThemeFile.h>
 
 namespace EngineeringBlueprint
 {
 
-namespace
-{
-	FontStack create_font_stack( const FontStyle &style, Theme &theme )
-	{
-		auto properties = style.properties();
-		const float font_size = ThemeUtils::get_theme_font_size( properties );
-		auto params = ThemeUtils::get_font_params( properties );
-
-		FontStack fonts;
-		fonts.append( theme.load_variable_font(
-			"IBMPlexSans-Variable.ttf", 0, font_size, params.weight, params.width, params.slant ) );
-		fonts.append( theme.load_font( ThemeUtils::get_ibmplexsansarabic_filename( properties ), 0, font_size ) );
-		fonts.append( theme.load_variable_font(
-			"NotoEmoji-Variable.ttf", 0, font_size, params.weight, params.width, params.slant ) );
-		fonts.append( theme.load_font( ThemeUtils::get_ibmplexsansjp_filename( properties ), 0, font_size ) );
-		fonts.append( theme.load_font( ThemeUtils::get_ibmplexmono_filename( properties ), 0, font_size ) );
-		return fonts;
-	}
-}
-
-FontStack intent_prose( const FontStyle &style, Theme &theme )
-{
-	return create_font_stack( style, theme );
-}
-FontStack intent_code( const FontStyle &style, Theme &theme )
-{
-	// The monospaced font first, so code lines up in columns; the rest for what it lacks
-	const auto properties = style.properties();
-	FontStack fonts = create_font_stack( style, theme );
-	fonts.prepend( theme.load_font( ThemeUtils::get_ibmplexmono_filename( properties ), 0, ThemeUtils::get_theme_font_size( properties ) ) );
-	return fonts;
-}
-
-FontStack intent_math( const FontStyle &style, Theme &theme )
-{
-	auto properties = style.properties();
-	const float font_size = ThemeUtils::get_theme_font_size( properties );
-
-	FontStack fonts = create_font_stack( style, theme );
-	fonts.prepend( theme.load_font( "STIX2Math.otf", 0, font_size ) );
-	return fonts;
-}
-
-FontStack intent_title( const FontStyle &style, Theme &theme )
-{
-	return create_font_stack( style, theme );
-}
-
-FontStack intent_label( const FontStyle &style, Theme &theme )
-{
-	return create_font_stack( style, theme );
-}
-
-FontStack intent_annotation( const FontStyle &style, Theme &theme )
-{
-	return create_font_stack( style, theme );
-}
-
-FontStack intent_caption( const FontStyle &style, Theme &theme )
-{
-	return create_font_stack( style, theme );
-}
-
-
+// Its fonts and palette are in themes/engineering-blueprint.huml
 Theme create_theme( void )
 {
-	Theme theme( "Engineering Blueprint" );
-	theme.set_palette( Palette::house( "blueprint" ) );
-	theme.register_factory( "prose", intent_prose );
-	theme.register_factory( "code", intent_code );
-	theme.register_factory( "math", intent_math );
-	theme.register_factory( "title", intent_title );
-	theme.register_factory( "label", intent_label );
-	theme.register_factory( "annotation", intent_annotation );
-	theme.register_factory( "caption", intent_caption );
-	return theme;
+	return themes::load( "Engineering Blueprint" );
 }
 
 }

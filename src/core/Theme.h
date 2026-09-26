@@ -65,6 +65,9 @@ public:
 	// so that a character only it has is shown as a missing glyph
 	FontFace load_notdef_font( float scale );
 
+	// The same, from another file than the usual one
+	FontFace load_notdef_font( const std::string &name, float scale );
+
 	FontFace load_variable_font(
 		const std::string &name,
 		size_t face_index,

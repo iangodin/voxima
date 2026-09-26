@@ -1,0 +1,87 @@
+meta::
+  name: "New Computer Modern"
+  inherit: null
+
+# One Dark's colors, on the black every video has had
+palette: "one-dark"
+
+# Families: the files a style is drawn from. Small text (tiny and small) has an optical size of its own, NewCM08, which
+# has no bold; a style with no file is the nearest that has one (see FontFamily).
+fonts::
+  newcm::
+    regular: "NewCM10-Regular.otf"
+    italic: "NewCM10-Italic.otf"
+    bold: "NewCM10-Bold.otf"
+    bold_italic: "NewCM10-BoldItalic.otf"
+    light: "NewCM10-Book.otf"
+    light_italic: "NewCM10-BookItalic.otf"
+    small::
+      regular: "NewCM08-Regular.otf"
+      italic: "NewCM08-Italic.otf"
+      light: "NewCM08-Book.otf"
+      light_italic: "NewCM08-BookItalic.otf"
+  newcm_mono::
+    regular: "NewCMMono10-Regular.otf"
+    italic: "NewCMMono10-Italic.otf"
+    bold: "NewCMMono10-Bold.otf"
+    bold_italic: "NewCMMono10-BoldOblique.otf"
+    light: "NewCMMono10-Book.otf"
+    light_italic: "NewCMMono10-BookItalic.otf"
+  newcm_sans::
+    regular: "NewCMSans10-Regular.otf"
+    italic: "NewCMSans10-Oblique.otf"
+    bold: "NewCMSans10-Bold.otf"
+    bold_italic: "NewCMSans10-BoldOblique.otf"
+    light: "NewCMSans10-Book.otf"
+    light_italic: "NewCMSans10-BookOblique.otf"
+    small::
+      regular: "NewCMSans08-Regular.otf"
+      italic: "NewCMSans08-Oblique.otf"
+      light: "NewCMSans08-Book.otf"
+      light_italic: "NewCMSans08-BookOblique.otf"
+  newcm_uncial::
+    regular: "NewCMUncial10-Regular.otf"
+    bold: "NewCMUncial10-Bold.otf"
+    light: "NewCMUncial10-Book.otf"
+    small::
+      regular: "NewCMUncial08-Regular.otf"
+      bold: "NewCMUncial08-Bold.otf"
+      light: "NewCMUncial08-Book.otf"
+  newcm_math::
+    regular: "NewCMMath-Regular.otf"
+    bold: "NewCMMath-Bold.otf"
+    light: "NewCMMath-Book.otf"
+  devanagari::
+    regular: "NewCM10Devanagari-Regular.otf"
+    light: "NewCM10Devanagari-Book.otf"
+    small::
+      regular: "NewCM08Devanagari-Regular.otf"
+      light: "NewCM08Devanagari-Book.otf"
+  amiri::
+    regular: "Amiri-Regular.ttf"
+    bold: "Amiri-Bold.ttf"
+    italic: "Amiri-Italic.ttf"
+    bold_italic: "Amiri-BoldItalic.ttf"
+  source_han::
+    collection: "SourceHanSerif.ttc"
+    faces:: light: 5, regular: 10, bold: 25, black: 30
+  symbola:: regular: "Symbola-Emoji.ttf"
+  notdef:: notdef: "AND-Regular.otf"
+
+# Stacks: what the first has no glyph for, the next may
+stacks::
+  fallbacks:: "devanagari", "amiri", "source_han", "symbola", "notdef"
+  prose:: "newcm", "...fallbacks"
+  code:: "newcm_mono", "...fallbacks"
+  title:: "newcm_uncial", "...fallbacks"
+  label:: "newcm_sans", "...fallbacks"
+  math:: "newcm_math", "...fallbacks"
+
+intents::
+  prose: "prose"
+  code: "code"
+  title: "title"
+  label: "label"
+  annotation: "prose"
+  caption: "prose"
+  math: "math"
