@@ -4,6 +4,8 @@ CodePalette CodePalette::dark()
 {
 	CodePalette palette;
 	const auto rgb = Color::rgb;
+	palette.line_highlight = rgb( 97, 175, 239 );
+	palette.line_highlight.a = 0.16F;
 	palette.plain = { rgb( 171, 178, 191 ) };
 
 	palette.set( "comment", { rgb( 127, 132, 142 ), std::nullopt, Slant::ITALIC } );

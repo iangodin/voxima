@@ -56,6 +56,7 @@
 #include <core/CameraMove.h>
 #include <core/Tween.h>
 #include <code/CreateCode.h>
+#include <code/LineHighlight.h>
 #include <code/Typing.h>
 #include <plot/Axes.h>
 #include <plot/Graph.h>
@@ -639,7 +640,7 @@ Scene show_formulas( Stage &stage, Script & )
 	co_await wait_for( stage, 3s );
 }
 
-// Syntax-highlighted source code, in the theme's code font and colors, typed
+// Syntax-highlighted source code, in the theme's code font and colors, typed, and then some lines pointed out
 Scene show_code( Stage &stage, Script & )
 {
 	auto listing = make_code( *stage.theme, code::Language::CPP, R"cpp(
@@ -664,7 +665,18 @@ T sum_of_squares( const std::vector<T> &values )
 	// Typed, like a person would
 	Typewriter typer( shown );
 	co_await typer.type( stage );
-	co_await wait_for( stage, 2s );
+	co_await wait_for( stage, 1s );
+
+	// Then pointed out, as narration would: a line, a range of lines, and two separate places, and away again
+	LineHighlight pointer( shown, *stage.theme );
+	co_await pointer.to( stage, Lines( 5 ), 0.4s );                        // the signature
+	co_await wait_for( stage, 1.5s );
+	co_await pointer.to( stage, Lines( 9, 12 ), 0.5s );                    // the loop
+	co_await wait_for( stage, 1.5s );
+	co_await pointer.to( stage, Lines{ { 7, 8 }, { 13, 13 } }, 0.5s );     // where it starts, and what it gives back
+	co_await wait_for( stage, 1.5s );
+	co_await pointer.to( stage, Lines(), 0.4s );
+	co_await wait_for( stage, 1s );
 }
 
 // Axes with a grid, and two graphs drawn on them: a sine wave, then 1/x (in two pieces, either side of 0)
@@ -753,7 +765,7 @@ Scene movie( Stage &stage, Script &script )
 SONIMATION_SCENE( "missing-glyphs", "Characters that cannot be drawn, shown as magenta boxes (and reported)", show_missing_glyphs );
 SONIMATION_SCENE( "eases", "The ease functions, as circles racing across the screen (with narration)", show_eases );
 SONIMATION_SCENE( "formulas", "A page of laid-out math formulas", show_formulas );
-SONIMATION_SCENE( "code", "Syntax-highlighted C++, typed", show_code );
+SONIMATION_SCENE( "code", "Syntax-highlighted C++, typed, with lines pointed out", show_code );
 SONIMATION_SCENE( "camera", "Zooming in on a graph, and panning along it", show_camera );
 SONIMATION_SCENE( "plot", "Axes crossing in the middle, and graphs drawn on them", show_plot );
 SONIMATION_SCENE( "plot-edge", "The same, with the axes along the left and bottom", show_plot_edge );

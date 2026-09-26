@@ -2,6 +2,7 @@
 
 #include <core/Theme.h>
 #include <visuals/CreateStyledText.h>
+#include <visuals/Bounds.h>
 #include <visuals/StyledText.h>
 
 #include <algorithm>
@@ -52,6 +53,16 @@ std::string prepare_code( std::string_view source, size_t tab_width )
 	return out;
 }
 
+size_t CodeListing::line_count() const
+{
+	return size() - 1; // all but the background
+}
+
+TextLine &CodeListing::line( size_t index ) const
+{
+	return dynamic_cast<TextLine &>( **( begin() + 1 + static_cast<std::ptrdiff_t>( index ) ) );
+}
+
 std::unique_ptr<CodeListing> make_code( Theme &theme, code::Language language, std::string_view source, const CodeLayout &layout )
 {
 	const std::string text = prepare_code( source, layout.tab_width );
@@ -81,8 +92,20 @@ std::unique_ptr<CodeListing> make_code( Theme &theme, code::Language language, s
 	TextLayout text_layout;
 	text_layout.line_spacing = layout.line_spacing;
 	auto listing = std::make_unique<CodeListing>();
+	listing->background = &listing->add( std::make_unique<Group>() ); // first: behind the text
 	std::vector<PlacedGlyphInfo> placed;
 	make_styled_text( *listing, theme, styled, text_layout, &placed );
+
+	// How the lines sit: the font's size, the distance between lines, and how wide the text is
+	listing->em = theme.get_stack( layout.style ).font( 0 ).scale;
+	listing->line_pitch = listing->em * layout.line_spacing;
+	BoundingBoxVisitor ink;
+	listing->accept( ink );
+	if ( !ink.bounds.empty() )
+	{
+		listing->left = ink.bounds.min.x();
+		listing->right = ink.bounds.max.x();
+	}
 
 	// In the order of the source, each with its line and column (columns in characters: a UTF-8 continuation byte
 	// is not one)

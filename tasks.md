@@ -43,7 +43,8 @@
   - [x] Syntax highlighting of C and C++ with tree-sitter (code::highlight)
   - [x] make_code: highlighted code in the theme's monospaced font, a code palette per theme
   - [x] Typing: a character at a time, with a person's rhythm (Typewriter)
-  - [ ] Highlight lines or parts (dim the rest, a bar behind a line), for narration
+  - [x] Highlight one line, a range, or several places (LineHighlight): the rest dimmed, a band behind them, sliding from one to the next
+  - [ ] Highlight parts of a line (a word, a range of columns)
   - [ ] Morph one version of some code into the next (an edit), lines moving to make room
   - [ ] A panel behind the code, and line numbers
   - [ ] Tags for parts and lines that the morph ignores (as it does word tags)

@@ -78,6 +78,8 @@ CodePalette code_palette()
 {
 	const auto rgb = Color::rgb;
 	CodePalette palette;
+	palette.line_highlight = Color::rgb( 56, 139, 253 );
+	palette.line_highlight.a = 0.18F;
 	palette.plain = { rgb( 230, 237, 243 ) };
 	palette.set( "comment", { rgb( 139, 148, 158 ) } );
 	palette.set( "keyword", { rgb( 255, 123, 114 ) } );

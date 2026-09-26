@@ -4,6 +4,7 @@
 
 #include <fonts/FontStyle.h>
 #include <visuals/Group.h>
+#include <visuals/TextLine.h>
 
 #include <memory>
 #include <string>
@@ -37,11 +38,28 @@ struct CodeGlyph
 
 // Laid-out source code (make_code): a Group of TextLines, one to a line of the source, that also knows which glyph is
 // which character, for animating it a character at a time (see Typewriter)
+//
+// The first child is a background layer (empty until LineHighlight draws bands in it), behind the text; the lines
+// come after it: use line( i ) and line_count(), not child numbers.
 class CodeListing : public Group
 {
 public:
 	// The source as it was laid out (see prepare_code)
 	std::string text;
+
+	// Behind the text: what LineHighlight draws. It moves with the listing.
+	Group *background = nullptr;
+
+	// The lines of the source, counting from 0 (an empty line is there too, with nothing on it)
+	size_t line_count() const;
+	TextLine &line( size_t index ) const;
+
+	// How the lines sit, in the listing's own coordinates (before anything moves it): the size of the font, how far
+	// apart the lines are, and the left and right of the text
+	float em = 1.F;
+	float line_pitch = 1.F;
+	float left = 0.F;
+	float right = 0.F;
 
 	// Every glyph, spaces too, in the order of the source. They belong to the listing: the pointers stay good for as
 	// long as it does.

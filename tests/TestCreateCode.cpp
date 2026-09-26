@@ -85,12 +85,11 @@ int main()
 }
 )cpp" );
 
-	REQUIRE( code->size() == 4 );
+	REQUIRE( code->line_count() == 4 );
 	std::vector<std::vector<const Glyph *>> lines;
-	for ( const auto &line: *code )
+	for ( size_t i = 0; i < code->line_count(); ++i )
 	{
-		REQUIRE( dynamic_cast<const TextLine *>( line.get() ) );
-		lines.push_back( inked( *line ) );
+		lines.push_back( inked( code->line( i ) ) );
 	}
 
 	// Each part in its palette color
@@ -104,7 +103,7 @@ int main()
 	// The tab is four spaces, so "return" starts in the column of "main" (after "int ")
 	CHECK( lines[2].front()->position.x() == Approx( lines[0][3]->position.x() ).margin( 1e-4 ) );
 	// and the lines go down
-	CHECK( ( *code->begin() )->baseline > ( *( code->begin() + 1 ) )->baseline );
+	CHECK( code->line( 0 ).baseline > code->line( 1 ).baseline );
 }
 
 TEST_CASE( "Every theme lays code out in columns, in colors of its own", "[code]" )
@@ -122,9 +121,9 @@ TEST_CASE( "Every theme lays code out in columns, in colors of its own", "[code]
 		INFO( theme.get_name() );
 		// A narrow letter and a wide one take the same room: "i" and "W" (and the characters after them line up)
 		auto code = make_code( theme, code::Language::CPP, "iiii x;\nWWWW y;" );
-		REQUIRE( code->size() == 2 );
-		const auto narrow = inked( **code->begin() );
-		const auto wide = inked( **( code->begin() + 1 ) );
+		REQUIRE( code->line_count() == 2 );
+		const auto narrow = inked( code->line( 0 ) );
+		const auto wide = inked( code->line( 1 ) );
 		REQUIRE( narrow.size() == wide.size() );
 		CHECK( narrow[4]->position.x() == Approx( wide[4]->position.x() ).margin( 1e-4 ) );
 

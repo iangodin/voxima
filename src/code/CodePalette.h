@@ -24,6 +24,9 @@ class CodePalette
 public:
 	CodeStyle plain;
 
+	// The band behind the lines being pointed out (see LineHighlight); see-through, so the text shows over it
+	Color line_highlight = { 1.F, 1.F, 1.F, 0.12F };
+
 	void set( std::string name, CodeStyle style )
 	{
 		_styles[std::move( name )] = style;

@@ -94,6 +94,7 @@ add_library( visuals STATIC
 	src/code/CodePalette.cpp
 	src/code/CreateCode.cpp
 	src/code/Typing.cpp
+	src/code/LineHighlight.cpp
 	src/plot/Axes.cpp
 	src/plot/Graph.cpp
 	src/core/ProducerPreview.cpp
