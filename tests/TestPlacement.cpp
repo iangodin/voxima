@@ -225,3 +225,34 @@ TEST_CASE( "align_edges lines things up on one edge of their combined box", "[pl
 	align_edges( group, Anchor::BOTTOM );
 	CHECK( box_of( a ).min.y() == Approx( box_of( b ).min.y() ) );
 }
+
+TEST_CASE( "safe_area is the frame pulled in by a margin, whatever the camera does", "[placement]" )
+{
+	Camera camera; // 1280 x 720: 16 x 9 units
+	camera.center = { 5.F, 5.F };
+	camera.zoom = 2.F;
+	const AABB area = safe_area( camera, 0.5F );
+	CHECK( area.min.x() == Approx( -7.5F ) );
+	CHECK( area.max.x() == Approx( 7.5F ) );
+	CHECK( area.min.y() == Approx( -4.F ) );
+	CHECK( area.max.y() == Approx( 4.F ) );
+}
+
+TEST_CASE( "keep_inside moves a visual in, and fit_inside shrinks one that is too big", "[placement]" )
+{
+	Camera camera;
+	const AABB area = safe_area( camera );
+
+	Group group;
+	auto &out = add_box( group, 2.F, 2.F, 9.F, 0.F ); // sticks out on the right
+	keep_inside( out, area );
+	CHECK( box_of( out ).max.x() == Approx( area.max.x() ) );
+	CHECK( box_of( out ).max.y() == Approx( 1.F ) ); // not moved across
+
+	auto &big = add_box( group, 30.F, 4.F, 3.F, 0.F ); // wider than the frame
+	fit_inside( big, area );
+	const float width = 15.F;
+	CHECK( big.scale_x == Approx( width / 30.F ) );
+	CHECK( big.scale_y == Approx( width / 30.F ) );
+	CHECK( big.position.x() == Approx( 0.F ).margin( 1e-3 ) );
+}

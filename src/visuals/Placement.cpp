@@ -375,3 +375,71 @@ void align_edges( Group &group, Anchor edge )
 		p.visual->position = p.visual->position + Point{ dx, dy };
 	}
 }
+
+namespace
+{
+// The box a visual is drawn in, in its parent's frame: its box scaled about its origin, then moved
+AABB drawn_box( const Visual &visual )
+{
+	const AABB box = box_of( visual );
+	if ( box.empty() )
+	{
+		return box;
+	}
+	// (box_of has the position in it already: scale what is left, about the origin)
+	const Point low = box.min - visual.position;
+	const Point high = box.max - visual.position;
+	AABB drawn;
+	drawn.add( visual.position + Point{ low.x() * visual.scale_x, low.y() * visual.scale_y } );
+	drawn.add( visual.position + Point{ high.x() * visual.scale_x, high.y() * visual.scale_y } );
+	return drawn;
+}
+}
+
+AABB safe_area( const Camera &camera, float margin )
+{
+	Camera frame = camera;
+	frame.center = { 0.F, 0.F };
+	frame.zoom = 1.F;
+	AABB area = frame.visible();
+	area.min = area.min + Point{ margin, margin };
+	area.max = area.max - Point{ margin, margin };
+	return area;
+}
+
+void keep_inside( Visual &visual, const AABB &area )
+{
+	const AABB box = drawn_box( visual );
+	if ( box.empty() || area.empty() )
+	{
+		return;
+	}
+	float dx = 0.F;
+	float dy = 0.F;
+	if ( box.max.x() > area.max.x() ) dx = area.max.x() - box.max.x();
+	if ( box.min.x() + dx < area.min.x() ) dx = area.min.x() - box.min.x();
+	if ( box.max.y() > area.max.y() ) dy = area.max.y() - box.max.y();
+	if ( box.min.y() + dy < area.min.y() ) dy = area.max.y() - box.max.y(); // (too tall: the top kept)
+	visual.position = visual.position + Point{ dx, dy };
+}
+
+void fit_inside( Visual &visual, const AABB &area )
+{
+	const AABB box = drawn_box( visual );
+	if ( box.empty() || area.empty() )
+	{
+		return;
+	}
+	const float width = box.max.x() - box.min.x();
+	const float height = box.max.y() - box.min.y();
+	const float factor = std::min( { 1.F, ( area.max.x() - area.min.x() ) / width, ( area.max.y() - area.min.y() ) / height } );
+	if ( factor < 1.F )
+	{
+		// Scaled about the box's center, which stays put
+		const Point center = { ( box.min.x() + box.max.x() ) / 2.F, ( box.min.y() + box.max.y() ) / 2.F };
+		visual.scale_x *= factor;
+		visual.scale_y *= factor;
+		visual.position = center + ( visual.position - center ) * factor;
+	}
+	keep_inside( visual, area );
+}

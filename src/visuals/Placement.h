@@ -1,5 +1,6 @@
 #pragma once
 
+#include "core/Camera.h"
 #include "visuals/AABB.h"
 #include "visuals/Group.h"
 #include "visuals/Point.h"
@@ -93,3 +94,14 @@ void distribute_column( Group &group );
 // Line all the children of a group up on one edge of their combined box: LEFT, RIGHT, TOP or BOTTOM (CENTER lines up the
 // middles of a column, on x, and TOP_LEFT... are not edges: they do nothing)
 void align_edges( Group &group, Anchor edge );
+
+// The frame of the picture at zoom 1 (the stage as it is before any camera move), pulled in by `margin` on every side: the
+// area to lay things out in so nothing is at the very edge. 16 units wide, its height from the picture's shape.
+AABB safe_area( const Camera &camera, float margin = 0.5F );
+
+// Move a visual the least it takes to be inside `area`, as it is drawn (its scale applied, unlike box_of; its rotation not).
+// If it is bigger than the area, its top left corner is kept.
+void keep_inside( Visual &visual, const AABB &area );
+
+// As keep_inside, but a visual too big for the area is first scaled down, its aspect kept, to fit
+void fit_inside( Visual &visual, const AABB &area );

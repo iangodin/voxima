@@ -51,7 +51,7 @@ The biggest gap: everything is placed by hand-typed coordinates. The building bl
   - [ ] Text wrapped to a width (a list item or a table cell that is a paragraph)
   - [x] Connectors: arrows and lines that join two visuals and follow them when they move (open: braces, labels attached to a part)
   - [ ] Diagrams: nodes and edges (flowcharts, trees, graphs), number lines, geometry (points, angles, polygons with labeled vertices)
-  - [ ] Safe areas and a grid to lay out on; stay inside the frame
+  - [x] Safe areas: `safe_area`, `keep_inside`, `fit_inside` (open: a visible grid to lay out on)
 
 ## Animation Vocabulary
 The stock verbs, so a scene says what it means. We have tween, morph, choreograph and the word effects; missing:
