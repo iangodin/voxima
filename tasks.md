@@ -14,9 +14,15 @@
   - [x] Graphs of functions: smooth, clipped to the plot, broken at asymptotes, drawn on along their length (plot, draw)
   - [x] Axes along the edges or crossing in the middle (AxesOptions::placement), the grid as one path (no bright spots at crossings)
   - [x] Curve colors from the palette (the accents in turn)
-  - [ ] Points and scatter plots, bar charts, a legend
-  - [ ] Parametric and polar curves; a point moving along a curve with its tangent; shaded areas (Riemann sums)
-  - [ ] Axes drawn on (growing, ticks and numbers appearing), and graphs morphing into other graphs
+  - [ ] Points and scatter plots: markers (circle, square, triangle, cross), data given as pairs, optionally joined by a line (straight or smooth)
+  - [ ] Bar charts (vertical, horizontal; grouped, stacked) on a category axis with labels, and histograms
+  - [ ] A legend: swatch or marker and a name for each series, in a panel in a corner; series named when they are plotted
+  - [ ] Parametric curves ( x(t), y(t) ) and polar curves ( r(θ) ) with a polar grid
+  - [ ] Shaded areas: under a curve between two x, between two curves; Riemann sums (left, right, midpoint, trapezoids) with the number of pieces animated
+  - [ ] A point that rides a curve (by x, or by fraction of the way) with its tangent line; secant lines closing in on a tangent
+  - [ ] Values that change (a parameter, a slider): graphs and shapes that redraw as it moves, so `a` in `sin(a x)` can be animated
+  - [ ] Axes drawn on (the lines growing, then the ticks and numbers appearing one after another), and graphs morphing into other graphs (blend of two functions)
+  - [ ] Axis features: log scales, a second y axis, a title and rotated axis names, custom tick lists and number formats (%, units, scientific), minor ticks
   - [ ] Import external SVG files
   - [x] Add support for images / photos
 
