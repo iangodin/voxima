@@ -68,6 +68,7 @@ find_package( SndFile 1.2.2 REQUIRED SYSTEM )
 find_package( soxr 0.1.3 REQUIRED SYSTEM )
 find_package( fribidi 1.0.13 REQUIRED SYSTEM )
 find_package( clipper2 2 REQUIRED SYSTEM )
+find_package( SDL3 REQUIRED SYSTEM )
 
 add_library( visuals STATIC
 	src/core/EaseCubic.cpp
@@ -147,6 +148,7 @@ target_link_libraries( visuals PUBLIC
 	soxr::soxr
 	fribidi::fribidi
 	clipper2::clipper2
+	SDL3::SDL3
 )
 if ( NOT MSVC )
 	# audiocpp.h has a "/*" inside a doc comment that -Wcomment flags; not our header to fix.

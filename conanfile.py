@@ -26,6 +26,7 @@ class MyProjectConan(ConanFile):
     self.requires("pixman/0.43.4")
     self.requires("fontconfig/2.17.1")
     self.requires("clipper2/2.0.1")
+    self.requires("sdl/3.4.14")
 
   def layout(self):
     cmake_layout(self, generator="Ninja Multi-Config")
