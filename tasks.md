@@ -34,6 +34,16 @@
   - [x] Stacked relations (stackrel)
   - [x] Phantom / invisible spacing placeholder
 
+## Source Code
+  - [x] Syntax highlighting of C and C++ with tree-sitter (code::highlight)
+  - [x] make_code: highlighted code in the theme's monospaced font, a code palette per theme
+  - [x] Typing: a character at a time, with a person's rhythm (Typewriter)
+  - [ ] Highlight lines or parts (dim the rest, a bar behind a line), for narration
+  - [ ] Morph one version of some code into the next (an edit), lines moving to make room
+  - [ ] A panel behind the code, and line numbers
+  - [ ] Tags for parts and lines that the morph ignores (as it does word tags)
+  - [ ] More languages (Python, JavaScript ...: grammars vendored, not in Conan)
+
 ## Geometry Processing
   - [x] Flatten any visual to cubic outlines (Outline: circles, rectangles, paths, glyphs, groups with transforms)
   - [x] Morph between shapes and glyphs (feature-aware contour alignment, holes open/close, color/stroke blend)
@@ -41,9 +51,11 @@
   - [x] Morph groups: match parts by tag / identical glyph / proximity, fade the rest (formulas, x^2 -> x^3)
   - [x] Text and narration: word-aware text morphs, and morphs driven by the narration (track_words)
   - [x] Morph lines and arrow tips (open stroke contours; a line can inflate into a disc)
+  - [x] A shape only turned or moved is carried round whole (an arrow turning keeps its head)
   - [x] Image cross-fade (same picture moves, different pictures fade) - needs opacity in the SVG writer
   - [x] Stagger (parts start one after another) and per-part ease
   - [x] Cap on anchors tried for very dense outlines
+  - [ ] A stroke turning into a fill as its filled outline (a line looks half a pixel bolder while it starts to inflate)
 
 ## Audio System
   - [x] Need a AudioMixer that mixes everything and generates the final audio to a WAV file
