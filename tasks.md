@@ -50,7 +50,7 @@ The biggest gap: everything is placed by hand-typed coordinates. The building bl
   - [x] Distribute (equal spaces between things of different sizes), and align a set of things to one edge
   - [x] Text wrapped to a width: `wrap_lines`, `make_paragraph` ; lists wrap with `ListOptions::max_width` (open: table cells)
   - [x] Connectors: arrows and lines that join two visuals and follow them when they move (open: braces, labels attached to a part)
-  - [ ] Diagrams: nodes and edges (flowcharts, trees, graphs), number lines, geometry (points, angles, polygons with labeled vertices)
+  - [x] Diagrams: nodes and edges with a layered layout (`Diagram`; flowcharts, trees). Open: number lines, geometry (points, angles, polygons with labeled vertices)
   - [x] Safe areas: `safe_area`, `keep_inside`, `fit_inside` (open: a visible grid to lay out on)
 
 ## Animation Vocabulary
