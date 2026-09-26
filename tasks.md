@@ -42,7 +42,7 @@
 
 ### Math Expressions: not there yet
 A review of `math/Expr.h` against what a page of teaching math needs. What is listed above is all done, and complete for the TeX constructs it covers; these are the gaps:
-  - [ ] Aligned multi-line equations (`align`: lines lined up on the relation, or on any marker), with optional equation numbers
+  - [x] Aligned multi-line equations: `aligned( rows, { .numbered = true } )` (pairs of cells right/left, equation numbers or tags)
   - [x] Text inside math: `words( "for all" )` (upright, spaces kept)
   - [x] Marking a part: `cancel`, `boxed`, `colored`
   - [x] Primes after a symbol: `primed( f, 2 )`

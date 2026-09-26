@@ -7,6 +7,7 @@
 #include <themes/NewComputerModern.h>
 #include <visuals/Layout.h>
 #include <visuals/MissingGlyph.h>
+#include <visuals/Placement.h>
 
 #include <fstream>
 #include <regex>
@@ -118,4 +119,41 @@ TEST_CASE( "cancel takes no room, boxed takes the padding, colored colors", "[ma
 	CHECK_FALSE( cancel( Expr() ) );
 	CHECK_FALSE( boxed( Expr() ) );
 	CHECK_FALSE( colored( Color{}, Expr() ) );
+}
+
+TEST_CASE( "aligned lines its cells up where the first and second meet", "[math][aligned]" )
+{
+	Theme theme = NewComputerModern::create_theme();
+	Context context{ theme };
+	auto grid = aligned( { { text( "x" ), row( { rel( "=" ), ord( "a + b + c" ) } ) },
+						   { text( "long name" ), row( { rel( "=" ), ord( "d" ) } ) } } )
+					.build( context );
+	const auto &group = dynamic_cast<const Group &>( *grid );
+	std::vector<AABB> cells;
+	for ( const auto &child: group )
+	{
+		cells.push_back( box_of( *child ) );
+	}
+	REQUIRE( cells.size() == 4 ); // two rows of a pair
+
+	// The first cells end on one line, the second cells begin on one line
+	CHECK( cells[0].max.x() == Approx( cells[2].max.x() ).margin( 0.01 ) );
+	CHECK( cells[1].min.x() == Approx( cells[3].min.x() ).margin( 0.01 ) );
+	// with the second right after the first
+	CHECK( cells[1].min.x() == Approx( cells[0].max.x() ).margin( 0.01 ) );
+	// and the second row is below
+	CHECK( cells[2].max.y() < cells[0].max.y() );
+}
+
+TEST_CASE( "aligned numbers its lines, or uses the tags given", "[math][aligned]" )
+{
+	Theme theme = NewComputerModern::create_theme();
+	Context context{ theme };
+	auto count = [&]( AlignedOptions options ) {
+		auto grid = aligned( { { text( "a" ), text( "b" ) }, { text( "c" ), text( "d" ) } }, options ).build( context );
+		return dynamic_cast<const Group &>( *grid ).size();
+	};
+	const size_t plain = count( {} );
+	CHECK( count( { .numbered = true } ) == plain + 4 ); // a gap and a number in each row
+	CHECK( count( { .tags = { "(*)", "" } } ) == plain + 4 );
 }

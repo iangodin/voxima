@@ -215,6 +215,32 @@ Expr vmatrix( std::vector<std::vector<Expr>> rows, MatrixOptions options = {} );
 // Left-aligned columns after a left brace
 Expr cases( std::vector<std::vector<Expr>> rows, MatrixOptions options = {} );
 
+// Equations on several lines, lined up as TeX's `align` does. Each row is a list of cells: the first is set flush right, the
+// second flush left, the third flush right and so on, so the cells that meet are lined up where they meet (the `&` of a TeX
+// align goes between the first and second):
+//
+//     aligned( { { text( "x" ), row( { rel( "=" ), ord( "a + b" ) } ) },
+//                { {},           row( { rel( "=" ), ord( "c" ) } ) } } )
+//
+// Formulas are set in display style, as `align` sets them; pairs of cells after the first are `pair_gap_em` apart.
+struct AlignedOptions
+{
+	float pair_gap_em = 2.F;
+	float baseline_skip_em = 1.5F;
+
+	// A thick space at the start of each second cell (and fourth ...): a cell that begins with a relation, as they nearly all do
+	// (= or ≤ ...), has room to its left as it would after an empty term in TeX (`{}&=`)
+	bool relation_space = true;
+
+	// A number at the right of each line, "(1)", "(2)" ... (numbered), or the text given for it, one for each row, in `tags`:
+	// a row whose tag is empty has none. Tags override the numbering for their rows.
+	bool numbered = false;
+	std::vector<std::string> tags;
+	float number_gap_em = 3.F;
+};
+
+Expr aligned( std::vector<std::vector<Expr>> rows, AlignedOptions options = {} );
+
 // ---- Tags --------------------------------------------------------------------------------
 
 // Name a part, so the visual built from it can be found again after build() (to animate it,

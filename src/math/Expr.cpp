@@ -653,6 +653,107 @@ Expr cases( std::vector<std::vector<Expr>> rows, MatrixOptions options )
 	return fenced( U'{', matrix( std::move( rows ), std::move( options ) ), 0 );
 }
 
+namespace
+{
+// A cell that is only room, `width` wide
+std::unique_ptr<Visual> spacer_cell( float width )
+{
+	auto empty = std::make_unique<Group>();
+	AABB box;
+	box.add( { 0.F, 0.F } );
+	box.add( { width, 0.F } );
+	empty->extent = box;
+	return empty;
+}
+}
+
+Expr aligned( std::vector<std::vector<Expr>> rows, AlignedOptions options )
+{
+	return Expr::from(
+		[rows = std::move( rows ), options = std::move( options )]( const Context &context, MathStyle style ) -> std::unique_ptr<Visual>
+		{
+			const auto &m = context.metrics( style );
+			const float em = m.glyph_scale * static_cast<float>( m.font.face().face->units_per_EM );
+
+			size_t pairs = 1;
+			for ( const auto &row: rows )
+			{
+				pairs = std::max( pairs, ( row.size() + 1 ) / 2 );
+			}
+			const bool numbers = options.numbered || !options.tags.empty();
+
+			// Columns: right, left, [gap, right, left]..., then (if numbered) a gap and the number at the right
+			MatrixOptions grid_options;
+			grid_options.column_sep_em = 0.F;
+			grid_options.baseline_skip_em = options.baseline_skip_em;
+			for ( size_t p = 0; p < pairs; ++p )
+			{
+				if ( p > 0 )
+				{
+					grid_options.align.push_back( ColumnAlign::LEFT ); // (the gap)
+				}
+				grid_options.align.push_back( ColumnAlign::RIGHT );
+				grid_options.align.push_back( ColumnAlign::LEFT );
+			}
+			if ( numbers )
+			{
+				grid_options.align.push_back( ColumnAlign::LEFT ); // (the gap)
+				grid_options.align.push_back( ColumnAlign::RIGHT );
+			}
+
+			auto grid = std::make_unique<Matrix>( m.font, m.glyph_scale, grid_options );
+			int number = 0;
+			for ( size_t r = 0; r < rows.size(); ++r )
+			{
+				std::vector<std::unique_ptr<Visual>> cells;
+				auto add_cell = [&]( const Expr &cell )
+				{
+					cells.push_back( cell ? cell.build( context, style ) : spacer_cell( 0.F ) );
+				};
+				for ( size_t p = 0; p < pairs; ++p )
+				{
+					if ( p > 0 )
+					{
+						cells.push_back( spacer_cell( options.pair_gap_em * em ) );
+					}
+					for ( size_t k = 0; k < 2; ++k )
+					{
+						const size_t i = p * 2 + k;
+						Expr cell = i < rows[r].size() ? rows[r][i] : Expr();
+						if ( k == 1 && cell && options.relation_space )
+						{
+							cell = row( { space( Row::THICK ), ord( std::move( cell ) ) } );
+						}
+						add_cell( cell );
+					}
+				}
+				if ( numbers )
+				{
+					std::string label;
+					if ( r < options.tags.size() )
+					{
+						label = options.tags[r];
+					}
+					else if ( options.numbered )
+					{
+						label = "(" + std::to_string( ++number ) + ")";
+					}
+					cells.push_back( spacer_cell( options.number_gap_em * em ) );
+					if ( label.empty() )
+					{
+						cells.push_back( spacer_cell( 0.F ) );
+					}
+					else
+					{
+						cells.push_back( upright( label ).build( context, style ) );
+					}
+				}
+				grid->append_row( std::move( cells ) );
+			}
+			return std::unique_ptr<Visual>( std::move( grid ) );
+		} );
+}
+
 // ---- Tags --------------------------------------------------------------------------------
 
 Expr tag( std::string name, Expr content )

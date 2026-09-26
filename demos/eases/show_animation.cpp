@@ -412,6 +412,15 @@ Scene show_math_marks( Stage &stage, Script & )
 	place( row( { ord( text( "x" ) ), rel( sym::in ), ord( text( "S" ) ), space( Row::QUAD ), ord( words( "for all" ) ), space( Row::QUAD ), ord( text( sym::alpha ) ), rel( sym::geq ), ord( "0" ) } ), -2.5F );
 
 	co_await wait_for( stage, 2s );
+
+	// Lines lined up on the equals sign, numbered
+	stage.visuals.clear();
+	place( aligned( { { text( "f(x)" ), row( { rel( "=" ), ord( "(x + 1)(x − 1)" ) } ) },
+					  { {}, row( { rel( "=" ), ord( superscript( text( "x" ), text( "2" ) ) ), bin( "−" ), ord( "1" ) } ) },
+					  { row( { ord( primed( text( "f" ) ) ), ord( "(x)" ) } ), row( { rel( "=" ), ord( "2x" ) } ) } },
+					{ .numbered = true } ),
+		0.F );
+	co_await wait_for( stage, 2s );
 }
 
 // A sentence that is edited: words that stay put only slide into place, words that go away fade out, new
