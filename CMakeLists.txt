@@ -177,6 +177,7 @@ add_library( visuals STATIC
 	src/visuals/Matrix.cpp
 	src/math/Context.cpp
 	src/math/Expr.cpp
+	src/math/Operators.cpp
 	src/visuals/LargeOperator.cpp
 )
 

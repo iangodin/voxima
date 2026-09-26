@@ -50,7 +50,7 @@ A review of `math/Expr.h` against what a page of teaching math needs. What is li
   - [x] Limits on several lines (`substack`), and continued fractions (`continued_fraction`)
   - [x] Delimiters of a chosen size: `big( U'(', 1..4 )`
   - [x] Symbols by name (`math/Symbols.h`: `sym::alpha`, `sym::leq` ...)
-  - [ ] Shorter ways to build rows (operators for the common `a + b = c`)
+  - [x] Shorter ways to build rows: `math/Operators.h` (`"a"_m + "b"_m`, `/`, `*`, `eq`, `leq` ...)
 
 ## Composition and Diagrams
 The biggest gap: everything is placed by hand-typed coordinates. The building blocks of most teaching content:
