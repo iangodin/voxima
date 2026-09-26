@@ -7,6 +7,7 @@
 #include <audio/DubbingStage.h>
 #include <audio/Microphone.h>
 #include <audio/TimedWord.h>
+#include <audio/Timeline.h>
 
 #include <utils/ObserverPtr.h>
 
@@ -47,6 +48,23 @@ public:
 		return _markers;
 	}
 
+	// The batch divided at its markers and line starts (see Timeline.h), for keeping languages in step
+	const Timeline &timeline() const
+	{
+		return _timeline;
+	}
+
+	// How long the batch's audio is, in seconds
+	double duration() const
+	{
+		return _duration;
+	}
+
+	// Move this narration onto a timeline shared with other languages (see Timeline.h): each segment starts
+	// at starts[i], and what it does not fill is silence. The audio, the words, the markers and the subtitle
+	// cues are all moved. `starts` has one entry more than there are segments (the last is the total length).
+	void retime( const std::vector<double> &starts );
+
 	// Seconds of this batch's audio consumed by speak() so far. Compare
 	// against TimedWord times to know which word is currently being spoken.
 	double position() const
@@ -76,6 +94,8 @@ private:
 	std::vector<PendingCue> _pending_cues;
 	std::vector<TimedWord> _words;
 	std::vector<TimedMarker> _markers;
+	Timeline _timeline;
+	double _duration = 0.0;
 	size_t _position_frames = 0;
 	bool _cues_emitted = true;
 	size_t _audio_rate = 0;

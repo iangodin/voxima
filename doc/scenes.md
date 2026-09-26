@@ -65,9 +65,12 @@ sonimation ... --lang en --lang fr              # one container with an audio an
 sonimation ... --lang en --lang fr --separate   # one container per language, in <render-dir>/en/ and <render-dir>/fr/
 ```
 
-- **Together** (the default): the visuals are timed to the first language (the master), and the other languages'
-  audio and subtitles are laid alongside. Their narration takes its own time, so they are not synchronised with
-  the visuals (see the plans for one timeline per marker segment in `tasks.md`).
+- **Together** (the default): one video, timed to the first language (the master), with an audio and a
+  subtitle track for each language. The languages are **kept in step**: the narration is divided at its markers and
+  at the start of each line, and each segment is given the length the slowest language takes, so a marker falls
+  at the same time in every language's audio (within 40 ms, under a frame). The faster languages get silence at the
+  end of a segment; nobody is speeded up or cut off. A language whose markers or lines differ from the master's
+  cannot be kept in step: it is warned about and left as it is.
 - **`--separate`:** each language is a complete render of its own: its narration and its subtitles, the script's
   text for that language on screen, and animation timed to *its* narration, through the markers in the script
   (`{name}`, see `tts.md`). Each folder holds `final.<container>` and the pieces it was made from. The models are

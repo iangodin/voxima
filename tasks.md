@@ -77,7 +77,7 @@
 
   - [x] Markers: cue points ({name}) in the script text, the same in every language, with a time in each language's narration (marker_time / until_marker / track_markers)
   - [x] One container per language, each timed to its own narration (--separate)
-  - [ ] Single video with several audio tracks: one timeline per marker segment, shorter languages padded (main language never accelerated)
+  - [x] Single video with several audio tracks: one timeline per marker segment, shorter languages padded with silence
   - [ ] Accelerate other languages up to --max-speedup (ffmpeg atempo, shortening pauses first)
   - [ ] Effects over a span between two markers (progress across the glyphs), and subtitles that break at markers
 

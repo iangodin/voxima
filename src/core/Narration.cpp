@@ -252,3 +252,38 @@ void Narration::check_markers() const
 		std::cerr << "warning: " << problem << '\n';
 	}
 }
+
+void Narration::synchronise()
+{
+	const Narrator *main = master();
+	if ( _narrators.size() < 2 || !main )
+	{
+		return;
+	}
+
+	std::vector<Narrator *> together;
+	std::vector<const Timeline *> timelines;
+	for ( auto &narrator: _narrators )
+	{
+		if ( same_structure( narrator.timeline(), main->timeline() ) )
+		{
+			together.push_back( &narrator );
+			timelines.push_back( &narrator.timeline() );
+		}
+		else
+		{
+			std::cerr << "warning: " << narrator.language() << " has different lines or markers from " << main->language()
+					  << ", so it is not kept in step with it\n";
+		}
+	}
+	if ( together.size() < 2 )
+	{
+		return;
+	}
+
+	const auto starts = segment_starts( barrier_lengths( timelines ) );
+	for ( Narrator *narrator: together )
+	{
+		narrator->retime( starts );
+	}
+}

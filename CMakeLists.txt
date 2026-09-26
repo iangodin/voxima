@@ -102,6 +102,7 @@ add_library( visuals STATIC
 	src/tts/TTSClient.cpp
 	src/audio/DubbingStage.cpp
 	src/audio/Resample.cpp
+	src/audio/Retime.cpp
 	src/audio/AudioMixer.cpp
 	src/audio/Microphone.cpp
 	src/audio/Silence.cpp

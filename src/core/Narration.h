@@ -24,14 +24,20 @@ public:
 	template<typename ...Keys>
 	double speech( Keys &&...keys )
 	{
-		double duration = 0.0;
 		for ( auto &narrator: _narrators )
 		{
 			auto text = _script->fetch( narrator.language(), std::forward<Keys>( keys )... ).as_multiline();
-			duration = std::max( duration, narrator.speech( text ) );
+			narrator.speech( text );
 		}
 
 		check_markers();
+		synchronise();
+
+		double duration = 0.0;
+		for ( const auto &narrator: _narrators )
+		{
+			duration = std::max( duration, narrator.duration() );
+		}
 		return duration;
 	}
 
@@ -120,6 +126,12 @@ public:
 private:
 	// Warns (on stderr) if a language does not have the same markers as the main one
 	void check_markers() const;
+
+	// Keeps the languages in step: the narration is divided at its markers and line starts, every language
+	// is given the same segment starts (the slowest language sets how long each segment takes), and the
+	// others are padded with silence at the end of a segment. A language whose markers or lines differ from the
+	// main one's cannot be, and is left as it is.
+	void synchronise();
 
 	const Narrator *master() const;
 

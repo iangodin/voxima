@@ -669,6 +669,19 @@ the main language: `marker_time( name | index )`, `until_marker`, `track_markers
 language's (missing, extra, or in another order). Verified on real renders: a shape driven by `{a}`..`{b}` starts
 and ends at the same offsets from the markers in English and French, although the markers fall at different times.
 
+**Keeping languages in step (one video, several audio tracks).** Each language's narration is a `Timeline`
+(`audio/Timeline.h`): cut at every marker and at the start of every line after the first (the cut for a marker is up
+to 40 ms ahead of the word, no more than half the pause before it, so the first sound is not clipped). Every
+language then has the same segments, each a different length. `Narration::synchronise()` gives each segment the length of the
+slowest language, starts the segments at the same moments, and `Narrator::retime()` rebuilds each language's audio
+with silence at the end of every shorter segment (`retime_audio`, with a 2 ms fade only where silence is added
+next to speech) and moves its words, markers and subtitle cues the same way. A marker then falls at the same time
+in every language (a language's own lead before the word, at most 40 ms, is the only difference). Languages whose
+markers or lines differ from the main one's cannot be kept in step and are left as they are (with a warning).
+Nobody is accelerated yet (that is stage 3, with `atempo`). Verified on a real render: every segment of each
+retimed track equals its natural audio to within 16-bit rounding, sits at the shared start, and the padding is exactly
+silent; the animation follows the main language's markers.
+
 **Text side.** `make_styled_text()` groups each word's glyphs into a `Group` tagged
 `"word<N>"` inside its `TextLine` (N counts through the whole text, across lines);
 `find_word( root, N )` looks it up. Glyphs are assigned by HarfBuzz cluster, so RTL words

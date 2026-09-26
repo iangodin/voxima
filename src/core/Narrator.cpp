@@ -3,6 +3,7 @@
 
 #include <algorithm>
 #include <audio/Resample.h>
+#include <audio/Retime.h>
 #include <core/Stage.h>
 #include <cstring>
 #include <utils/Language.h>
@@ -34,6 +35,8 @@ double Narrator::speech( const std::vector<std::string> &text )
 	_pending_cues.clear();
 	_words.clear();
 	_markers.clear();
+	_timeline = {};
+	_timeline.cuts.push_back( { "\nstart", 0.0 } );
 	_position_frames = 0;
 	_cues_emitted = false;
 
@@ -43,6 +46,12 @@ double Narrator::speech( const std::vector<std::string> &text )
 		// Markers are cue points, not words: they are taken out before anything is spoken, aligned or shown
 		const MarkedText marked = parse_markers( raw );
 		const std::string &t = marked.text;
+
+		// Each line after the first is a place the languages are kept in step at (see Timeline.h)
+		if ( !_pending_cues.empty() )
+		{
+			_timeline.cuts.push_back( { "\nline" + std::to_string( _pending_cues.size() ), cumulative } );
+		}
 
 		auto result = _tts->synthesize( t, _voice_ref, _tts_language );
 		if ( !result.success || !result.audio.has_value() )
@@ -93,7 +102,9 @@ double Narrator::speech( const std::vector<std::string> &text )
 		_words.insert( _words.end(), line_words.begin(), line_words.end() );
 		for ( const auto &marker: marked.markers )
 		{
-			_markers.push_back( TimedMarker{ marker.name, time_at_offset( line_words, marker.offset, cumulative ), _pending_cues.size() } );
+			const double seconds = time_at_offset( line_words, marker.offset, cumulative );
+			_markers.push_back( TimedMarker{ marker.name, seconds, _pending_cues.size() } );
+			_timeline.cuts.push_back( { marker.name, std::max( marker_cut( line_words, marker.offset, seconds, cumulative ), _timeline.cuts.back().seconds ) } );
 		}
 		_pending_cues.push_back( PendingCue{ local_start, local_end, t } );
 		cumulative += line_duration;
@@ -102,8 +113,72 @@ double Narrator::speech( const std::vector<std::string> &text )
 	}
 	_current_result_index = 0;
 	_offset = 0;
+	_timeline.end = cumulative;
+	_duration = cumulative;
 
 	return duration;
+}
+
+void Narrator::retime( const std::vector<double> &starts )
+{
+	if ( _results.empty() || starts.size() != _timeline.segments() + 1 )
+	{
+		return;
+	}
+
+	// The batch's audio as one buffer, as it was made (a line after another)
+	size_t frames = 0;
+	size_t channels = 1;
+	for ( const auto &result: _results )
+	{
+		frames += result.audio->frames();
+		channels = result.audio->channels();
+	}
+	AudioBuffer natural( frames, _audio_rate, channels );
+	size_t at = 0;
+	for ( const auto &result: _results )
+	{
+		const AudioBuffer &line = result.audio.value();
+		if ( line.frames() > 0 )
+		{
+			std::memcpy( natural.frame( at ), line.data(), line.frames() * channels * sizeof( float ) );
+		}
+		at += line.frames();
+	}
+
+	// ... and again with each segment where it goes and silence in what it does not fill
+	AudioBuffer out = retime_audio( natural, _timeline, starts );
+
+	// Everything with a time moves the same way
+	for ( auto &word: _words )
+	{
+		word.start_seconds = retimed( _timeline, starts, word.start_seconds );
+		word.end_seconds = retimed( _timeline, starts, word.end_seconds );
+	}
+	for ( auto &marker: _markers )
+	{
+		marker.seconds = retimed( _timeline, starts, marker.seconds );
+	}
+	for ( auto &cue: _pending_cues )
+	{
+		cue.local_start = retimed( _timeline, starts, cue.local_start );
+		cue.local_end = retimed( _timeline, starts, cue.local_end );
+	}
+	for ( size_t i = 0; i < _timeline.cuts.size(); ++i )
+	{
+		_timeline.cuts[i].seconds = starts[i];
+	}
+	_timeline.end = starts.back();
+	_duration = starts.back();
+
+	tts::SynthesisResult combined;
+	combined.success = true;
+	combined.status = "ok";
+	combined.audio = std::move( out );
+	_results.clear();
+	_results.push_back( std::move( combined ) );
+	_current_result_index = 0;
+	_offset = 0;
 }
 
 void Narrator::speak( size_t )

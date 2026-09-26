@@ -25,6 +25,8 @@ add_executable( sonimation_unit_tests
 	TestScriptLanguageFallback.cpp
 	TestTimedWord.cpp
 	TestMarkers.cpp
+	TestTimeline.cpp
+	TestRetime.cpp
 	TestWords.cpp
 	TestOutline.cpp
 	TestMorph.cpp
