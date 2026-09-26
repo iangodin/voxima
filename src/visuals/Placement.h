@@ -83,3 +83,13 @@ struct GridOptions
 // The children of a group in rows of `columns`, in order, a column as wide as its widest child and a row as tall as its
 // tallest
 void arrange_grid( Group &group, size_t columns, const GridOptions &options = {} );
+
+// The children of a group spread so the spaces between them are equal, the outermost two staying where they are (a row
+// left to right, or a column bottom to top). The children are taken in the order they lie in along the row, whatever their
+// order in the group, and keep their place across it. Fewer than three children are left as they are.
+void distribute_row( Group &group );
+void distribute_column( Group &group );
+
+// Line all the children of a group up on one edge of their combined box: LEFT, RIGHT, TOP or BOTTOM (CENTER lines up the
+// middles of a column, on x, and TOP_LEFT... are not edges: they do nothing)
+void align_edges( Group &group, Anchor edge );

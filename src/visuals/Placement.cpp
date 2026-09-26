@@ -278,3 +278,100 @@ void arrange_grid( Group &group, size_t columns, const GridOptions &options )
 		shift_items( items, moves );
 	}
 }
+
+namespace
+{
+
+// Children's boxes, with the children that take no room left out
+struct Placed
+{
+	Visual *visual;
+	AABB box;
+};
+
+std::vector<Placed> placed_children( Group &group )
+{
+	std::vector<Placed> placed;
+	for ( const auto &child: group )
+	{
+		const AABB box = box_of( *child );
+		if ( !box.empty() )
+		{
+			placed.push_back( { child.get(), box } );
+		}
+	}
+	return placed;
+}
+
+// Spread along one axis (0 for x, 1 for y): equal gaps between the boxes, the first and last kept
+void distribute( Group &group, bool horizontal )
+{
+	std::vector<Placed> placed = placed_children( group );
+	if ( placed.size() < 3 )
+	{
+		return;
+	}
+	auto low = [&]( const Placed &p ) { return horizontal ? p.box.min.x() : p.box.min.y(); };
+	auto high = [&]( const Placed &p ) { return horizontal ? p.box.max.x() : p.box.max.y(); };
+
+	// In order along the axis (the first and last of the group's order are the ends, whichever way it runs)
+	std::stable_sort( placed.begin(), placed.end(), [&]( const Placed &a, const Placed &b ) { return low( a ) + high( a ) < low( b ) + high( b ); } );
+
+	float sizes = 0.F;
+	for ( const Placed &p: placed )
+	{
+		sizes += high( p ) - low( p );
+	}
+	const float span = high( placed.back() ) - low( placed.front() );
+	const float gap = ( span - sizes ) / static_cast<float>( placed.size() - 1 );
+
+	float at = low( placed.front() );
+	for ( const Placed &p: placed )
+	{
+		const float move = at - low( p );
+		p.visual->position = p.visual->position + ( horizontal ? Point{ move, 0.F } : Point{ 0.F, move } );
+		at += high( p ) - low( p ) + gap;
+	}
+}
+
+}
+
+void distribute_row( Group &group )
+{
+	distribute( group, true );
+}
+
+void distribute_column( Group &group )
+{
+	distribute( group, false );
+}
+
+void align_edges( Group &group, Anchor edge )
+{
+	const std::vector<Placed> placed = placed_children( group );
+	if ( placed.empty() )
+	{
+		return;
+	}
+	AABB all;
+	for ( const Placed &p: placed )
+	{
+		all.add( p.box.min );
+		all.add( p.box.max );
+	}
+	for ( const Placed &p: placed )
+	{
+		float dx = 0.F;
+		float dy = 0.F;
+		switch ( edge )
+		{
+			case Anchor::LEFT: dx = all.min.x() - p.box.min.x(); break;
+			case Anchor::RIGHT: dx = all.max.x() - p.box.max.x(); break;
+			case Anchor::TOP: dy = all.max.y() - p.box.max.y(); break;
+			case Anchor::BOTTOM: dy = all.min.y() - p.box.min.y(); break;
+			case Anchor::CENTER: dx = ( all.min.x() + all.max.x() - p.box.min.x() - p.box.max.x() ) / 2.F; break;
+			default: break;
+		}
+		p.visual->position = p.visual->position + Point{ dx, dy };
+	}
+}

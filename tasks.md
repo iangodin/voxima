@@ -47,7 +47,7 @@ The biggest gap: everything is placed by hand-typed coordinates. The building bl
   - [x] Panels: a rounded box that fits its contents (padding, radius, outline), in the text color's tint so it suits any palette
   - [ ] Callouts: a panel with a pointer to what it is about; a shadow
   - [x] Lists (bullets, numbers; several lines an item) and tables (columns aligned left, center or right; header; rules), on a fixed line step so rows are evenly spaced
-  - [ ] Distribute (equal spaces between things of different sizes), and align a set of things to one edge
+  - [x] Distribute (equal spaces between things of different sizes), and align a set of things to one edge
   - [ ] Text wrapped to a width (a list item or a table cell that is a paragraph)
   - [x] Connectors: arrows and lines that join two visuals and follow them when they move (open: braces, labels attached to a part)
   - [ ] Diagrams: nodes and edges (flowcharts, trees, graphs), number lines, geometry (points, angles, polygons with labeled vertices)

@@ -194,3 +194,34 @@ TEST_CASE( "Arranging skips children with nothing to draw", "[placement]" )
 	arrange_grid( none, 3 );
 	arrange_grid( group, 0 );
 }
+
+TEST_CASE( "distribute_row makes the gaps between things of different sizes equal", "[placement]" )
+{
+	Group group;
+	add_box( group, 2.F, 1.F, 0.F, 0.F );  // -1 .. 1
+	add_box( group, 4.F, 1.F, 3.F, 0.F );  // 1 .. 5
+	auto &c = add_box( group, 1.F, 1.F, 6.F, 0.F ); // 5.5 .. 6.5
+	add_box( group, 2.F, 1.F, 20.F, 0.F ); // 19 .. 21
+
+	distribute_row( group );
+
+	// 22 wide in all, 9 taken by the boxes: three gaps of 13/3
+	const float gap = 13.F / 3.F;
+	CHECK( box_of( c ).min.x() == Approx( 1.F + 4.F + 2.F * gap ).margin( 1e-3 ) );
+	CHECK( box_of( c ).max.x() == Approx( box_of( c ).min.x() + 1.F ) );
+	CHECK( point_at( c, Anchor::CENTER ).y() == Approx( 0.F ) );
+}
+
+TEST_CASE( "align_edges lines things up on one edge of their combined box", "[placement]" )
+{
+	Group group;
+	auto &a = add_box( group, 2.F, 1.F, 0.F, 0.F );
+	auto &b = add_box( group, 6.F, 1.F, 10.F, 3.F );
+
+	align_edges( group, Anchor::LEFT );
+	CHECK( box_of( a ).min.x() == Approx( box_of( b ).min.x() ) );
+	CHECK( box_of( a ).min.x() == Approx( -1.F ) );
+
+	align_edges( group, Anchor::BOTTOM );
+	CHECK( box_of( a ).min.y() == Approx( box_of( b ).min.y() ) );
+}
