@@ -59,7 +59,7 @@ The biggest gap: everything is placed by hand-typed coordinates. The building bl
   - [x] Callouts: a panel with a pointer to what it is about (`make_callout`); panels can have a shadow (`PanelOptions::shadow`)
   - [x] Lists (bullets, numbers; several lines an item) and tables (columns aligned left, center or right; header; rules), on a fixed line step so rows are evenly spaced
   - [x] Distribute (equal spaces between things of different sizes), and align a set of things to one edge
-  - [x] Text wrapped to a width: `wrap_lines`, `make_paragraph` ; lists wrap with `ListOptions::max_width` (open: table cells)
+  - [x] Text wrapped to a width: `wrap_lines`, `make_paragraph` ; lists wrap with `ListOptions::max_width` ; tables wrap with `TableOptions::max_width`, take any visuals as cells, and can tint rows (`striped`, `header_fill`)
   - [x] Connectors: arrows and lines that join two visuals and follow them when they move ; braces with labels: `make_brace`, `make_labeled_brace_beside`
   - [x] Diagrams: nodes and edges with a layered layout (`Diagram`; flowcharts, trees). Number lines: `make_number_line` (marks, intervals). Geometry: `make_polygon`, `make_angle`.
   - [x] Safe areas: `safe_area`, `keep_inside`, `fit_inside` (open: a visible grid to lay out on)

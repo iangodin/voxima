@@ -781,7 +781,7 @@ Scene show_layout( Stage &stage, Script & )
 		  { "paper", "light", "warm white" },
 		  { "one-dark", "dark", "slate" },
 		  { "blueprint", "dark", "navy" } },
-		{ .alignment = { Align::START, Align::CENTER, Align::END } } ) );
+		{ .striped = true, .alignment = { Align::START, Align::CENTER, Align::END } } ) );
 	auto &left = stage.visuals.add( std::move( list_panel ) );
 	auto &right = stage.visuals.add( std::move( table_panel ) );
 	move_to( left, { -3.6F, 1.2F }, Anchor::CENTER );

@@ -269,3 +269,74 @@ TEST_CASE( "a panel's shadow is behind everything, offset, and fades out past th
 	CHECK( biggest.half_width == Approx( bg.half_width + 0.4F * ( 3.5F / 4.F - 0.5F ) ) );
 	CHECK( dynamic_cast<const RoundRectangle &>( **shadow.begin() ).half_width < bg.half_width );
 }
+
+TEST_CASE( "a table wraps its widest columns to fit a maximum width", "[table][wrap]" )
+{
+	Theme theme = NewComputerModern::create_theme();
+	const std::vector<std::vector<std::string>> rows = {
+		{ "Name", "Notes" },
+		{ "one", "a long note that goes on and on for quite a while" },
+		{ "two", "short" } };
+	auto loose = make_table( theme, rows );
+	const AABB loose_box = box_of( *loose );
+	const float width = ( loose_box.max.x() - loose_box.min.x() ) * 0.6F;
+
+	auto tight = make_table( theme, rows, { .max_width = width } );
+	const AABB box = box_of( *tight );
+	{
+		AABB cells;
+		for ( size_t r = 0; r < 3; ++r )
+			for ( size_t c = 0; c < 2; ++c )
+				cells.add( box_of( tight->cell( r, c ) ).min ), cells.add( box_of( tight->cell( r, c ) ).max );
+		// (the cells: the rule under the header reaches half a gap past them each side)
+		CHECK( cells.max.x() - cells.min.x() <= width + 1e-3F );
+	}
+	CHECK( box.max.y() - box.min.y() > loose_box.max.y() - loose_box.min.y() ); // taller: the note took more lines
+	// The row after the wrapped one is lower than it was, and the short column was left alone
+	CHECK( tight->cell( 2, 0 ).position.y() < loose->cell( 2, 0 ).position.y() );
+
+	// A table that already fits is not changed
+	auto same = make_table( theme, rows, { .max_width = 1000.F } );
+	CHECK( box_of( *same ).max.x() - box_of( *same ).min.x() == Approx( loose_box.max.x() - loose_box.min.x() ) );
+}
+
+TEST_CASE( "a table's cells can be any visuals", "[table]" )
+{
+	Theme theme = NewComputerModern::create_theme();
+	std::vector<std::vector<std::unique_ptr<Visual>>> cells( 2 );
+	cells[0].push_back( box( 1.F, 0.5F ) );
+	cells[0].push_back( box( 3.F, 0.5F ) );
+	cells[1].push_back( box( 2.F, 0.5F ) );
+	cells[1].push_back( box( 1.F, 0.5F ) );
+	auto table = make_table( theme, std::move( cells ), { .header = false } );
+
+	CHECK( table->rows() == 2 );
+	CHECK( table->columns() == 2 );
+	// Column 0 is as wide as its widest cell, column 1 begins after it and the gap
+	const AABB a = box_of( table->cell( 0, 0 ) );
+	const AABB b = box_of( table->cell( 0, 1 ) );
+	const AABB c = box_of( table->cell( 1, 0 ) );
+	CHECK( b.min.x() > c.max.x() ); // (the second column is past the widest of the first)
+	CHECK( a.min.x() == Approx( c.min.x() ) ); // left aligned
+}
+
+TEST_CASE( "a table can tint its rows, behind everything", "[table]" )
+{
+	Theme theme = NewComputerModern::create_theme();
+	const std::vector<std::vector<std::string>> rows = { { "h" }, { "a" }, { "b" }, { "c" } };
+	auto plain = make_table( theme, rows );
+	const auto &plain_rules = dynamic_cast<const Group &>( **plain->begin() );
+	CHECK( plain_rules.size() == 1 ); // just the rule under the header
+
+	auto striped = make_table( theme, rows, { .striped = true, .header_fill = Color{ 1.F, 0.F, 0.F, 0.2F } } );
+	const auto &rules = dynamic_cast<const Group &>( **striped->begin() );
+	// The header's band, the second body row's, then the rule
+	REQUIRE( rules.size() == 3 );
+	const auto &header_band = dynamic_cast<const Rectangle &>( **rules.begin() );
+	const auto &stripe = dynamic_cast<const Rectangle &>( **( rules.begin() + 1 ) );
+	CHECK( header_band.color.r == Approx( 1.F ) );
+	CHECK( stripe.position.y() < header_band.position.y() );
+	// Each band is as tall as the row's step, and the same width
+	CHECK( stripe.half_width == Approx( header_band.half_width ) );
+	CHECK( stripe.half_height > 0.2F );
+}
