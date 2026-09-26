@@ -60,7 +60,7 @@ The stock verbs, so a scene says what it means. We have tween, morph, choreograp
   - [x] Fade in and out, grow and shrink from a point, slide in from an edge, for any visual
   - [x] Indicate (`indicate`), flash and circumscribe: draw the eye to something (open: highlighting a part of a visual)
   - [ ] Move along a path, and turn about a point
-  - [ ] Transitions between scenes (cross-fade, wipe, slide): a scene now just clears the stage
+  - [x] Transitions between scenes: fade out, fade in (`PlayOptions`; the movie uses them). Open: cross-fade, wipe, slide
   - [ ] Spring and other physics-like eases; staggered groups (each part starting a little after the last)
 
 ## Math Authoring

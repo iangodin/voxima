@@ -1,5 +1,7 @@
 #pragma once
 
+#include <chrono>
+
 #include "Director.h"
 #include "Scene.h"
 
@@ -68,6 +70,11 @@ struct PlayOptions
 	// Start the scene on an empty stage, so it looks the same on its own as in a movie. Turn it off for a
 	// scene that carries on from what the one before left.
 	bool clear_stage = true;
+
+	// A transition between scenes: what was on the stage fades out before it is cleared (the new scene starts when it has gone),
+	// and the new scene fades in over its first moments, as it goes on. Both 0 is a cut, as it has been.
+	std::chrono::duration<double> fade_out{ 0.0 };
+	std::chrono::duration<double> fade_in{ 0.0 };
 };
 
 // Play the registered scene called `name`, and finish when it does. An unknown name is a mistake in the

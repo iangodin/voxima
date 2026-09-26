@@ -1,9 +1,11 @@
 #include "SceneRegistry.h"
 
 #include "Stage.h"
+#include "Tween.h"
 
 #include <algorithm>
 #include <iostream>
+#include <memory>
 #include <sstream>
 #include <stdexcept>
 
@@ -63,8 +65,28 @@ Scene play( Stage &stage, Script &script, std::string name, PlayOptions options 
 
 	if ( options.clear_stage )
 	{
+		if ( options.fade_out.count() > 0.0 && stage.visuals.size() > 0 )
+		{
+			co_await tween( stage, options.fade_out, []( float t ) { return t; }, [&stage]( float t ) { stage.visuals.color.a = 1.F - t; } );
+		}
 		stage.visuals.clear();
 		stage.updaters.clear(); // (they refer to what was there)
+		stage.visuals.color.a = 1.F;
+	}
+
+	// The new scene coming in: its visuals more visible with every frame, for as long as it takes
+	Updaters::Handle fading_in;
+	if ( options.fade_in.count() > 0.0 )
+	{
+		const int64_t frames = std::max<int64_t>( 1, stage.camera.frames( options.fade_in ) );
+		auto frame = std::make_shared<int64_t>( 0 );
+		stage.visuals.color.a = 0.F;
+		fading_in = stage.updaters.add(
+			[&stage, frames, frame]
+			{
+				++*frame;
+				stage.visuals.color.a = std::min( 1.F, static_cast<float>( *frame ) / static_cast<float>( frames ) );
+			} );
 	}
 
 	if ( stage.scene_event )
@@ -72,6 +94,7 @@ Scene play( Stage &stage, Script &script, std::string name, PlayOptions options 
 		stage.scene_event( name, true );
 	}
 	co_await entry->run( stage, script );
+	stage.visuals.color.a = 1.F;
 	if ( stage.scene_event )
 	{
 		stage.scene_event( name, false );

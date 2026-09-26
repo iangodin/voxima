@@ -199,3 +199,44 @@ TEST_CASE( "a movie is a scene that plays other scenes", "[scenes]" )
 	CHECK( scene.done() );
 	CHECK( log == std::vector<std::string>{ "b starts with 0 visuals", "b ends", "a starts with 0 visuals", "a ends" } );
 }
+
+namespace
+{
+Scene long_scene( Stage &stage, Script & )
+{
+	stage.visuals.add( std::make_unique<Circle>() );
+	for ( int i = 0; i < 30; ++i )
+	{
+		co_await next_frame();
+	}
+}
+}
+
+SONIMATION_SCENE( "test-long", "A scene of thirty frames", long_scene );
+
+TEST_CASE( "play fades the old scene out and the new one in", "[scenes]" )
+{
+	using namespace std::chrono_literals;
+	Stage stage; // (24 frames a second)
+	Script script;
+
+	Scene scene = sequence( stage, script, { "test-long", "test-long" }, { .fade_out = 0.5s, .fade_in = 0.5s } );
+	float lowest = 1.F;
+	float first = -1.F;
+	int frames = 0;
+	while ( !scene.done() && frames < 1000 )
+	{
+		scene.resume();
+		stage.updaters.run();
+		if ( first < 0.F )
+		{
+			first = stage.visuals.color.a;
+		}
+		lowest = std::min( lowest, stage.visuals.color.a );
+		++frames;
+	}
+	CHECK( first < 0.2F );                    // the first scene comes in from nothing
+	CHECK( lowest < 0.1F );
+	CHECK( stage.visuals.color.a == 1.F );    // and it ends at full
+	CHECK( stage.updaters.size() == 0 );
+}

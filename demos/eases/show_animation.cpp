@@ -883,7 +883,8 @@ Scene movie( Stage &stage, Script &script )
 	co_await sequence(
 		stage,
 		script,
-		{ "morph-shapes", "morph-formula", "morph-text", "morph-strokes", "karaoke" } );
+		{ "morph-shapes", "morph-formula", "morph-text", "morph-strokes", "karaoke" },
+		{ .fade_out = 0.4s, .fade_in = 0.4s } );
 
 	music.fade_out( 3s );
 	co_await wait_for( stage, 3s );
