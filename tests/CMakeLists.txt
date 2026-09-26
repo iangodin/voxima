@@ -21,6 +21,7 @@ add_executable( sonimation_unit_tests
 	TestTags.cpp
 	TestSilence.cpp
 	TestWait.cpp
+	TestEase.cpp
 	TestVolume.cpp
 	TestLanguage.cpp
 	TestScriptLanguageFallback.cpp

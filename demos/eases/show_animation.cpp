@@ -53,6 +53,7 @@
 #include <utils/Words.h>
 #include <core/SceneRegistry.h>
 #include <core/MorphAnim.h>
+#include <core/Tween.h>
 #include <visuals/ArrowTip.h>
 #include <visuals/Image.h>
 #include <visuals/Line.h>
@@ -243,13 +244,8 @@ Scene show_ease(
 	auto &label = stage.visuals.add( make_text( *stage.theme, name, FontStyle{ Intent::LABEL }, lang ) );
 	label.position = { -6.F, y };
 
-	auto anim = ease( x1, x2, stage.camera.frames( duration ) );
-	while ( anim.next() )
-	{
-		circle.position = { anim.value(), circle.position.y() };
-		co_await next_frame();
-	}
-
+	co_await tween(
+		stage, duration, ease, [&]( float t ) { circle.position = { x1 + ( x2 - x1 ) * t, circle.position.y() }; } );
 }
 
 std::unique_ptr<Circle> demo_circle( Point at )

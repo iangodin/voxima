@@ -1,11 +1,12 @@
-
 #pragma once
-
-#include "Animation.h"
 
 #include <cmath>
 
-Animation ease_cubic_in( float start, float end, int64_t total_frames );
-Animation ease_cubic_out( float start, float end, int64_t total_frames );
-Animation ease_cubic_in_out( float start, float end, int64_t total_frames );
+// t cubed: slow at first, then fast
+float ease_cubic_in( float t );
 
+// Fast at first, then slow
+float ease_cubic_out( float t );
+
+// Slow, fast, slow
+float ease_cubic_in_out( float t );

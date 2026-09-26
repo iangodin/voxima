@@ -2,6 +2,7 @@
 
 #include "Scene.h"
 #include "Stage.h"
+#include "Tween.h"
 #include "Wait.h"
 
 #include <visuals/Morph.h>
@@ -12,17 +13,12 @@
 #include <stdexcept>
 
 // Play an existing Morph from t = 0 to t = 1 over a length of time (1.5s ...), shaped by an ease function
-// (ease_cubic_in_out, ...). The morph's visual must already be on the stage. The time is turned into whole frames
-// at the stage's frame rate, and is never less than two (the ease needs a first and a last).
+// (ease_cubic_in_out, ...). The morph's visual must already be on the stage. See tween() for how the time becomes
+// frames.
 template<typename Ease>
 Scene morph_to( const Stage &stage, Morph &morph, std::chrono::duration<double> duration, Ease &&ease )
 {
-	auto anim = ease( 0.F, 1.F, std::max<int64_t>( 2, stage.camera.frames( duration ) ) );
-	while ( anim.next() )
-	{
-		morph.set( anim.value() );
-		co_await next_frame();
-	}
+	co_await tween( stage, duration, ease, [&]( float t ) { morph.set( t ); } );
 	morph.set( 1.F );
 }
 
