@@ -69,6 +69,17 @@ find_package( soxr 0.1.3 REQUIRED SYSTEM )
 find_package( fribidi 1.0.13 REQUIRED SYSTEM )
 find_package( clipper2 2 REQUIRED SYSTEM )
 find_package( SDL3 REQUIRED SYSTEM )
+find_package( tree-sitter 0.26 REQUIRED SYSTEM )
+find_package( tree-sitter-c REQUIRED SYSTEM )
+find_package( tree-sitter-cpp REQUIRED SYSTEM )
+
+# The grammars' highlight queries, compiled in (see extern/tree-sitter-queries/README.md)
+file( READ extern/tree-sitter-queries/c/highlights.scm TS_C_HIGHLIGHTS )
+file( READ extern/tree-sitter-queries/cpp/highlights.scm TS_CPP_HIGHLIGHTS )
+configure_file( src/code/Queries.h.in ${CMAKE_CURRENT_BINARY_DIR}/code/Queries.h @ONLY )
+set_property( DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS
+	extern/tree-sitter-queries/c/highlights.scm
+	extern/tree-sitter-queries/cpp/highlights.scm )
 
 add_library( visuals STATIC
 	src/core/EaseCubic.cpp
@@ -78,6 +89,7 @@ add_library( visuals STATIC
 	src/core/Script.cpp
 	src/core/Producer.cpp
 	src/core/Wait.cpp
+	src/code/Highlight.cpp
 	src/core/ProducerPreview.cpp
 	src/core/Theme.cpp
 	src/core/Narration.cpp
@@ -153,6 +165,9 @@ target_link_libraries( visuals PUBLIC
 	fribidi::fribidi
 	clipper2::clipper2
 	SDL3::SDL3
+	tree-sitter::tree-sitter
+	tree-sitter-c::tree-sitter-c
+	tree-sitter-cpp::tree-sitter-cpp
 )
 if ( NOT MSVC )
 	# audiocpp.h has a "/*" inside a doc comment that -Wcomment flags; not our header to fix.

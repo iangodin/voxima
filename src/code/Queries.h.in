@@ -1,0 +1,11 @@
+#pragma once
+
+// Made by CMake from extern/tree-sitter-queries/ (see the README there): the grammars' highlight queries
+
+#include <string_view>
+
+namespace code::queries
+{
+inline constexpr std::string_view C_HIGHLIGHTS = R"scm(@TS_C_HIGHLIGHTS@)scm";
+inline constexpr std::string_view CPP_HIGHLIGHTS = R"scm(@TS_CPP_HIGHLIGHTS@)scm";
+}
