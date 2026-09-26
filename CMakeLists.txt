@@ -120,6 +120,7 @@ add_library( visuals STATIC
 	src/visuals/Connector.cpp
 	src/core/Animate.cpp
 	src/visuals/Trim.cpp
+	src/visuals/WrapText.cpp
 	src/visuals/CreateList.cpp
 	src/visuals/CreateTable.cpp
 	src/visuals/MissingGlyph.cpp

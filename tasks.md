@@ -48,7 +48,7 @@ The biggest gap: everything is placed by hand-typed coordinates. The building bl
   - [ ] Callouts: a panel with a pointer to what it is about; a shadow
   - [x] Lists (bullets, numbers; several lines an item) and tables (columns aligned left, center or right; header; rules), on a fixed line step so rows are evenly spaced
   - [x] Distribute (equal spaces between things of different sizes), and align a set of things to one edge
-  - [ ] Text wrapped to a width (a list item or a table cell that is a paragraph)
+  - [x] Text wrapped to a width: `wrap_lines`, `make_paragraph` (open: list items and table cells that wrap)
   - [x] Connectors: arrows and lines that join two visuals and follow them when they move (open: braces, labels attached to a part)
   - [ ] Diagrams: nodes and edges (flowcharts, trees, graphs), number lines, geometry (points, angles, polygons with labeled vertices)
   - [x] Safe areas: `safe_area`, `keep_inside`, `fit_inside` (open: a visible grid to lay out on)

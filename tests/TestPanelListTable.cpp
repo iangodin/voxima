@@ -1,6 +1,7 @@
 #include <catch2/catch_approx.hpp>
 #include <catch2/catch_test_macros.hpp>
 
+#include <algorithm>
 #include <core/Theme.h>
 #include <themes/NewComputerModern.h>
 #include <visuals/CreateList.h>
@@ -179,4 +180,49 @@ TEST_CASE( "A table's rules are one path, drawn behind the text", "[table]" )
 			covered.add( box_of( table->cell( r, c ) ) );
 	CHECK( ( covered.min.x() + covered.max.x() ) / 2.F == Approx( 0.F ).margin( 1e-3 ) );
 	CHECK( ( covered.min.y() + covered.max.y() ) / 2.F == Approx( 0.F ).margin( 1e-3 ) );
+}
+
+#include <visuals/Layout.h>
+#include <visuals/WrapText.h>
+
+TEST_CASE( "wrap_lines breaks text at spaces so no line is wider than asked", "[wrap]" )
+{
+	Theme theme = NewComputerModern::create_theme();
+	const std::string text = "the quick brown fox jumps over the lazy dog and keeps running";
+	const FontStyle style{ Intent::PROSE };
+
+	const float natural = layout_extent( *make_text( theme, text, style ) ).max.x() - layout_extent( *make_text( theme, text, style ) ).min.x();
+	const float limit = natural / 3.F;
+	const std::string wrapped = wrap_lines( theme, text, style, limit );
+
+	CHECK( wrapped.find( '\n' ) != std::string::npos );
+	size_t start = 0;
+	int lines = 0;
+	while ( start <= wrapped.size() )
+	{
+		size_t end = wrapped.find( '\n', start );
+		if ( end == std::string::npos )
+		{
+			end = wrapped.size();
+		}
+		const AABB box = layout_extent( *make_text( theme, wrapped.substr( start, end - start ), style ) );
+		CHECK( box.max.x() - box.min.x() <= limit + 1e-3F );
+		++lines;
+		start = end + 1;
+	}
+	CHECK( lines >= 3 );
+
+	// Nothing lost but the spaces where the lines break
+	std::string joined = wrapped;
+	std::replace( joined.begin(), joined.end(), '\n', ' ' );
+	CHECK( joined == text );
+}
+
+TEST_CASE( "wrap_lines leaves a text that fits, and keeps a word too long on its own line", "[wrap]" )
+{
+	Theme theme = NewComputerModern::create_theme();
+	const FontStyle style{ Intent::PROSE };
+	CHECK( wrap_lines( theme, "short text", style, 100.F ) == "short text" );
+	CHECK( wrap_lines( theme, "a extraordinarily b", style, 0.5F ) == "a\nextraordinarily\nb" );
+	CHECK( wrap_lines( theme, "one\ntwo", style, 100.F ) == "one\ntwo" );
 }
