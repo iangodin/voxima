@@ -6,6 +6,7 @@
 #include <sndfile.h>
 #include <string>
 #include <string_view>
+#include <vector>
 
 class AudioMixer
 {
@@ -14,6 +15,11 @@ public:
 	~AudioMixer();
 
 	bool open( const std::string &filename, size_t rate, size_t block_size );
+
+	// Keep the mixed audio in memory instead of writing a file (for a live preview): write_audio() appends
+	// each block, and take_memory() hands over what has been written since the last call.
+	void open_memory( size_t rate, size_t block_size );
+	std::vector<float> take_memory();
 
 	void close();
 
@@ -40,5 +46,7 @@ public:
 private:
 	SNDFILE *_sndfile = nullptr;
 	AudioBuffer _buffer;
+	bool _in_memory = false;
+	std::vector<float> _memory;
 	size_t _frames_written = 0;
 };

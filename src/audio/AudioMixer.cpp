@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <iostream>
+#include <utility>
 
 AudioMixer::AudioMixer()
 {
@@ -15,6 +16,7 @@ AudioMixer::~AudioMixer()
 bool AudioMixer::open( const std::string &filename, size_t rate, size_t block_size )
 {
 	close();
+	_in_memory = false;
 
 	SF_INFO sfinfo = {};
 	sfinfo.channels = 2;
@@ -63,6 +65,20 @@ bool AudioMixer::open( const std::string &filename, size_t rate, size_t block_si
 	return true;
 }
 
+void AudioMixer::open_memory( size_t rate, size_t block_size )
+{
+	close();
+	_in_memory = true;
+	_memory.clear();
+	_frames_written = 0;
+	_buffer = AudioBuffer( block_size, rate, 2 );
+}
+
+std::vector<float> AudioMixer::take_memory()
+{
+	return std::exchange( _memory, {} );
+}
+
 void AudioMixer::close()
 {
 	if ( _sndfile )
@@ -86,6 +102,14 @@ void AudioMixer::add_audio( const AudioBuffer &buffer )
 
 void AudioMixer::write_audio( void )
 {
+	if ( _in_memory )
+	{
+		_memory.insert( _memory.end(), _buffer.begin(), _buffer.end() );
+		_frames_written += _buffer.frames();
+		std::fill( _buffer.begin(), _buffer.end(), 0.F );
+		return;
+	}
+
 	if ( !_sndfile )
 	{
 		return;

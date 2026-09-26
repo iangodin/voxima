@@ -32,7 +32,7 @@ void DubbingStage::setup(
 	_tts->setup( _render_dir );
 }
 
-void DubbingStage::begin( const std::filesystem::path &render_dir, const std::vector<std::string> &languages )
+void DubbingStage::begin( const std::filesystem::path &render_dir, const std::vector<std::string> &languages, bool in_memory )
 {
 	_mixers.clear();
 	_mics.clear();
@@ -43,13 +43,29 @@ void DubbingStage::begin( const std::filesystem::path &render_dir, const std::ve
 	std::filesystem::create_directories( _render_dir );
 	for ( const auto &lang: languages )
 	{
-		add_language( lang );
+		add_language( lang, in_memory );
 	}
 }
 
-void DubbingStage::add_language( std::string_view lang )
+std::vector<float> DubbingStage::take_audio( std::string_view lang )
+{
+	auto m = _mixers.find( lang );
+	if ( m == _mixers.end() )
+	{
+		throw std::runtime_error( "unable to find audio for language " + std::string( lang ) );
+	}
+	return m->second.take_memory();
+}
+
+void DubbingStage::add_language( std::string_view lang, bool in_memory )
 {
 	AudioMixer &mixer = _mixers[std::string( lang )];
+	if ( in_memory )
+	{
+		mixer.open_memory( _audio_rate, _block_size );
+		_mics[std::string( lang )] = Microphone( mixer );
+		return;
+	}
 	auto audio_file = _render_dir / ( "audio." + std::string( lang ) + "." + _codec );
 	mixer.open( audio_file.string(), _audio_rate, _block_size );
 
