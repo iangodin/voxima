@@ -32,8 +32,12 @@ struct Stage
 	{
 		if ( !file ) return;
 
-		float aspect = static_cast<float>( camera.height ) / static_cast<float>( camera.width );
-		float view_width = 16.f;
+		// What the camera sees: its zoom sets how many stage units the picture is across, and its center which part
+		// (the picture is drawn upside down, so y flips in the view: see the scale(1, -1) below)
+		const float view_width = camera.view_width();
+		const float view_height = camera.view_height();
+		const float left = camera.center.x() - view_width / 2.F;
+		const float top = -camera.center.y() - view_height / 2.F;
 
 		// Curves drawn to within a twenty-fifth of a pixel (see SVGWriter), so a shape looks the same however its
 		// outline is cut up: a glyph, and the morph that turns into it
@@ -42,16 +46,15 @@ struct Stage
 		std::ostringstream body;
 		SVGWriter writer( body, 2, pixel / 25.F );
 		visuals.accept( writer );
-		float view_height = view_width * aspect;
 
 		file << "<svg width=\"" << camera.width << "\" height=\"" << camera.height << "\" "
-		     << "viewBox=\"" << -view_width/2 << " " << -view_height/2 << " " << view_width << " " << view_height << "\" "
+		     << "viewBox=\"" << left << " " << top << " " << view_width << " " << view_height << "\" "
 		     << "xmlns=\"http://www.w3.org/2000/svg\">\n";
 
 		writer.write_defs( file );
 
-		// Background
-		file << "  <rect x=\"" << -view_width/2 << "\" y=\"" << -view_height/2 << "\" width=\"" << view_width << "\" height=\"" << view_height << "\" "
+		// Background, over all that is seen
+		file << "  <rect x=\"" << left << "\" y=\"" << top << "\" width=\"" << view_width << "\" height=\"" << view_height << "\" "
 		     << SVGWriter::color_attributes( background ) << " />\n";
 
 		// Flip the Y-axis for all visuals

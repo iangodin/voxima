@@ -89,6 +89,7 @@ add_library( visuals STATIC
 	src/core/Script.cpp
 	src/core/Producer.cpp
 	src/core/Wait.cpp
+	src/core/CameraMove.cpp
 	src/code/Highlight.cpp
 	src/code/CodePalette.cpp
 	src/code/CreateCode.cpp

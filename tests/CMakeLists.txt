@@ -27,6 +27,7 @@ add_executable( sonimation_unit_tests
 	TestCreateCode.cpp
 	TestTyping.cpp
 	TestPlot.cpp
+	TestCamera.cpp
 	TestVolume.cpp
 	TestLanguage.cpp
 	TestScriptLanguageFallback.cpp

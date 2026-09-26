@@ -53,6 +53,7 @@
 #include <utils/Words.h>
 #include <core/SceneRegistry.h>
 #include <core/MorphAnim.h>
+#include <core/CameraMove.h>
 #include <core/Tween.h>
 #include <code/CreateCode.h>
 #include <code/Typing.h>
@@ -64,6 +65,7 @@
 #include <visuals/Rectangle.h>
 
 #include <chrono>
+#include <numbers>
 #include <cmath>
 #include <filesystem>
 #include <iostream>
@@ -688,6 +690,31 @@ Scene show_plot_with( Stage &stage, AxisPlacement placement )
 	co_await wait_for( stage, 2s );
 }
 
+// A sine wave, and the camera zooming in on its peaks and panning along, then back out
+Scene show_camera( Stage &stage, Script & )
+{
+	AxesOptions options;
+	options.x = { -6.0, 6.0 };
+	options.y = { -2.0, 2.0 };
+	options.width = 12.F;
+	options.height = 4.F;
+	options.grid = true;
+	options.placement = AxisPlacement::EDGE;
+	auto &axes = stage.visuals.add( make_axes( *stage.theme, options ) );
+	axes.add_plot( plot( axes, []( double x ) { return std::sin( x ); } ) );
+	co_await wait_for( stage, 1s );
+
+	const double pi = std::numbers::pi;
+	// In on the first peak, (pi / 2, 1): a look at 3 times the size, moving on to the next peak, and out again
+	const Point peak = axes.at( pi / 2, 1.0 );
+	co_await camera_to( stage, { peak, 3.F }, 1.5s );
+	co_await wait_for( stage, 1s );
+	co_await camera_to( stage, { axes.at( 3 * pi / 2, -1.0 ), 3.F }, 2s ); // then the trough after it
+	co_await wait_for( stage, 1s );
+	co_await camera_to( stage, { { 0.F, 0.F }, 1.F }, 1.5s );
+	co_await wait_for( stage, 1s );
+}
+
 // ... with the axes crossing in the middle
 Scene show_plot( Stage &stage, Script & )
 {
@@ -727,6 +754,7 @@ SONIMATION_SCENE( "missing-glyphs", "Characters that cannot be drawn, shown as m
 SONIMATION_SCENE( "eases", "The ease functions, as circles racing across the screen (with narration)", show_eases );
 SONIMATION_SCENE( "formulas", "A page of laid-out math formulas", show_formulas );
 SONIMATION_SCENE( "code", "Syntax-highlighted C++, typed", show_code );
+SONIMATION_SCENE( "camera", "Zooming in on a graph, and panning along it", show_camera );
 SONIMATION_SCENE( "plot", "Axes crossing in the middle, and graphs drawn on them", show_plot );
 SONIMATION_SCENE( "plot-edge", "The same, with the axes along the left and bottom", show_plot_edge );
 SONIMATION_SCENE( "morph-shapes", "A circle turning into a square and letters, with holes opening and closing", show_morph );

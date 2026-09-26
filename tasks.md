@@ -110,6 +110,12 @@
 ## Language Support
   - [x] Handle BCP-47 / ISO 639 conversion
 
+## Camera
+  - [x] Pan and zoom: Camera::center and zoom, and camera_to / camera_frame (zoom by ratio, the pan following so what is zoomed toward holds still on the screen)
+  - [ ] Rotate the camera
+  - [ ] Keep line widths on screen when zoomed (hairlines), as an option
+  - [ ] Follow a moving visual
+
 ## Rendering
   - [ ] Add support for motion blur
   - [x] Add registry of "Scenes" (SONIMATION_SCENE, play/sequence for movies; see doc/scenes.md)
