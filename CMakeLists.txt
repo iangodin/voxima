@@ -90,6 +90,8 @@ add_library( visuals STATIC
 	src/core/Producer.cpp
 	src/core/Wait.cpp
 	src/code/Highlight.cpp
+	src/code/CodePalette.cpp
+	src/code/CreateCode.cpp
 	src/core/ProducerPreview.cpp
 	src/core/Theme.cpp
 	src/core/Narration.cpp

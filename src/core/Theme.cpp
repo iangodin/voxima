@@ -92,7 +92,9 @@ Theme::Theme( Theme &&other ) :
 	_library( other._library ),
 	_faces( std::move( other._faces ) ),
 	_cache( std::move( other._cache ) ),
-	_factories( std::move( other._factories ) )
+	_factories( std::move( other._factories ) ),
+	_font_path( std::move( other._font_path ) ),
+	_code_palette( std::move( other._code_palette ) )
 {
 	other._library = nullptr;
 }
@@ -109,6 +111,8 @@ Theme &Theme::operator=( Theme &&other )
 		_faces = std::move( other._faces );
 		_cache = std::move( other._cache );
 		_factories = std::move( other._factories );
+		_font_path = std::move( other._font_path );
+		_code_palette = std::move( other._code_palette );
 		other._library = nullptr;
 	}
 	return *this;

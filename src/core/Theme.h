@@ -7,6 +7,8 @@
 
 #include <utils/NamedRegistered.h>
 
+#include <code/CodePalette.h>
+
 #include <ft2build.h>
 #include FT_FREETYPE_H
 
@@ -87,6 +89,17 @@ public:
 		_font_path = path;
 	}
 
+	// The colors of highlighted source code (see make_code)
+	const CodePalette &code_palette() const
+	{
+		return _code_palette;
+	}
+
+	void set_code_palette( CodePalette palette )
+	{
+		_code_palette = std::move( palette );
+	}
+
 	constexpr static float FONT_SCALE = 120.F;
 
 private:
@@ -98,4 +111,5 @@ private:
 	std::map<std::string, FontFactory> _factories;
 
 	std::filesystem::path _font_path = "assets/fonts";
+	CodePalette _code_palette = CodePalette::dark();
 };
