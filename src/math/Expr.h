@@ -86,6 +86,14 @@ Expr overset( Expr label, Expr base );
 Expr underset( Expr label, Expr base );
 Expr stackrel( Expr label, Expr base );
 
+// Lines stacked and centered, at script size as limits are: a limit that needs several lines (TeX's \substack)
+//     sum( substack( { text( "0 < i < n" ), text( "j != i" ) } ) )
+Expr substack( std::vector<Expr> lines );
+
+// A continued fraction, 1/(a1 + 1/(a2 + ...)), each level in display size (TeX's \cfrac): give it the terms after the whole part
+//     row( { ord( "a0" ), bin( "+" ), ord( continued_fraction( { a1, a2, a3 } ) ) } )
+Expr continued_fraction( std::vector<Expr> terms );
+
 // A large operator (∑ ∏ ∫ ...) and its limits, either of which may be empty. In display style
 // sums and products put them above and below, integrals at the side.
 Expr large_operator(
@@ -135,6 +143,9 @@ Expr arg( Expr sub = {} );
 
 // Delimiters that stretch to fit the content; pass 0 for none
 Expr fenced( char32_t open, Expr content, char32_t close );
+// A delimiter of a chosen size, for putting round something yourself (\big, \Big, \bigg, \Bigg: sizes 1 to 4, as LaTeX's
+// amsmath makes them, 1.2, 1.8, 2.4 and 3 ems tall). Used as an atom: opening( big( U'(', 2 ) ), closing( big( U')', 2 ) ).
+Expr big( char32_t delimiter, int size = 1 );
 Expr parens( Expr content );
 Expr brackets( Expr content );
 Expr braces( Expr content );
@@ -153,6 +164,11 @@ Expr tilde( Expr base );
 Expr bar( Expr base );
 Expr dot( Expr base );
 Expr vec( Expr base );
+// Accents that stretch to the width of what they are over (\widehat, \widetilde, \overrightarrow, \overleftarrow)
+Expr widehat( Expr base );
+Expr widetilde( Expr base );
+Expr overrightarrow( Expr base );
+Expr overleftarrow( Expr base );
 
 // ---- Dots ----------------------------------------------------------------------------------
 

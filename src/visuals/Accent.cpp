@@ -1,5 +1,6 @@
 #include "visuals/Accent.h"
 #include "visuals/Tags.h"
+#include "visuals/CreateMathLargeOperation.h"
 #include "visuals/CreateText.h"
 #include "visuals/MathMetrics.h"
 #include <algorithm>
@@ -29,6 +30,30 @@ Accent::Accent( const MathFont &font, float s, std::unique_ptr<Visual> &&base, c
 	math_axis = font.axis_height() * s;
 
 	// Like TeX, the box is as wide as the base; the accent may overhang it
+	AABB box = layout_extent( *this );
+	box.min = { 0.F, box.min.y() };
+	box.max = { b.box.width(), box.max.y() };
+	extent = box;
+}
+
+WideAccent::WideAccent( const MathFont &font, float s, std::unique_ptr<Visual> &&base, char32_t accent )
+{
+	const ScriptBox b = measure_box( *base );
+	const float dx = -b.box.min.x();
+	base->position = base->position.movedBy( dx, -b.baseline );
+
+	// The stretched accent, from the font's variants (in font units, then scaled like everything else)
+	auto glyph = create_math_large_op_horizontal( font, accent, b.box.width() / s );
+	*glyph *= s;
+
+	const float raise = std::max( 0.F, b.height() - font.accent_base_height() * s );
+	glyph->position = glyph->position.movedBy( 0.F, raise );
+
+	tag_visual( add( std::move( base ) ), "base" );
+	tag_visual( add( std::move( glyph ) ), "accent" );
+
+	math_axis = font.axis_height() * s;
+
 	AABB box = layout_extent( *this );
 	box.min = { 0.F, box.min.y() };
 	box.max = { b.box.width(), box.max.y() };

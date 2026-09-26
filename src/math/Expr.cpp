@@ -1,6 +1,7 @@
 #include "math/Expr.h"
 #include "visuals/Accent.h"
 #include "visuals/Bars.h"
+#include "visuals/CreateMathLargeOperation.h"
 #include "visuals/CreateText.h"
 #include "visuals/Delimited.h"
 #include "visuals/Fraction.h"
@@ -250,6 +251,37 @@ Expr stackrel( Expr label, Expr base )
 	return overset( std::move( label ), std::move( base ) );
 }
 
+Expr substack( std::vector<Expr> lines )
+{
+	std::vector<std::vector<Expr>> rows;
+	for ( Expr &line: lines )
+	{
+		rows.push_back( { std::move( line ) } );
+	}
+	MatrixOptions options;
+	options.align = { ColumnAlign::CENTER };
+	options.baseline_skip_em = 1.0F;
+	return matrix( std::move( rows ), options );
+}
+
+Expr continued_fraction( std::vector<Expr> terms )
+{
+	if ( terms.empty() )
+	{
+		return Expr();
+	}
+	// From the last term outward: 1/a_n, then 1/(a_(n-1) + that) ...
+	Expr tail = std::move( terms.back() );
+	terms.pop_back();
+	Expr inner = with_style( MathStyle::display(), fraction( text( "1" ), tail ) );
+	for ( size_t i = terms.size(); i-- > 0; )
+	{
+		inner = with_style( MathStyle::display(),
+			fraction( text( "1" ), row( { ord( terms[i] ), bin( "+" ), ord( inner ) } ) ) );
+	}
+	return inner;
+}
+
 Expr large_operator( char32_t symbol, Expr lower, Expr upper, std::optional<LimitPlacement> placement )
 {
 	return Expr::from(
@@ -375,6 +407,21 @@ Expr fenced( char32_t left, Expr content, char32_t right )
 		} );
 }
 
+Expr big( char32_t delimiter, int size )
+{
+	static constexpr float SIZES[] = { 1.2F, 1.8F, 2.4F, 3.0F };
+	const float em_tall = SIZES[std::clamp( size, 1, 4 ) - 1];
+	return Expr::from(
+		[delimiter, em_tall]( const Context &context, MathStyle style ) -> std::unique_ptr<Visual>
+		{
+			const auto &m = context.metrics( style );
+			const float em = m.glyph_scale * static_cast<float>( m.font.face().face->units_per_EM );
+			auto glyph = create_math_large_op( m.font, delimiter, em_tall * em / m.glyph_scale );
+			*glyph *= m.glyph_scale;
+			return glyph;
+		} );
+}
+
 Expr parens( Expr content )
 {
 	return fenced( U'(', std::move( content ), U')' );
@@ -433,6 +480,39 @@ Expr underbrace( Expr content )
 			const auto &m = context.metrics( style );
 			return std::make_unique<Underbrace>( m.font, m.glyph_scale, content.build( context, style ) );
 		} );
+}
+
+namespace
+{
+Expr wide_accent( Expr base, char32_t accent_glyph )
+{
+	return Expr::from(
+		[base = std::move( base ), accent_glyph]( const Context &context, MathStyle style ) -> std::unique_ptr<Visual>
+		{
+			const auto &m = context.metrics( style );
+			return std::make_unique<WideAccent>( m.font, m.glyph_scale, base.build( context, style.cramp() ), accent_glyph );
+		} );
+}
+}
+
+Expr widehat( Expr base )
+{
+	return wide_accent( std::move( base ), U'\u0302' );
+}
+
+Expr widetilde( Expr base )
+{
+	return wide_accent( std::move( base ), U'\u0303' );
+}
+
+Expr overrightarrow( Expr base )
+{
+	return wide_accent( std::move( base ), U'\u20D7' );
+}
+
+Expr overleftarrow( Expr base )
+{
+	return wide_accent( std::move( base ), U'\u20D6' );
 }
 
 Expr accent( Expr base, char32_t accent_glyph )

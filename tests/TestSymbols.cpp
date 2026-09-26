@@ -157,3 +157,68 @@ TEST_CASE( "aligned numbers its lines, or uses the tags given", "[math][aligned]
 	CHECK( count( { .numbered = true } ) == plain + 4 ); // a gap and a number in each row
 	CHECK( count( { .tags = { "(*)", "" } } ) == plain + 4 );
 }
+
+TEST_CASE( "wide accents are as wide as what they are over, and stretch for a longer base", "[math][accents]" )
+{
+	Theme theme = NewComputerModern::create_theme();
+	Context context{ theme };
+	auto width = [&]( const Expr &e ) {
+		const AABB box = layout_extent( *e.build( context ) );
+		return box.max.x() - box.min.x();
+	};
+	for ( auto make: { widehat, widetilde, overrightarrow, overleftarrow } )
+	{
+		CHECK( width( make( text( "ABC" ) ) ) == Approx( width( text( "ABC" ) ) ).margin( 0.01 ) );
+		// (the accent is above the base)
+		CHECK( layout_extent( *make( text( "A" ) ).build( context ) ).max.y() > layout_extent( *text( "A" ).build( context ) ).max.y() );
+	}
+
+	// The accent over a long base is wider than over a short one
+	auto accent_width = [&]( const Expr &base ) {
+		auto built = widehat( base ).build( context );
+		const auto &group = dynamic_cast<const Group &>( *built );
+		AABB ink;
+		for ( const auto &child: group )
+		{
+			for ( const std::string &t: child->tags )
+				if ( t == "accent" )
+					ink = layout_extent( *child );
+		}
+		return ink.max.x() - ink.min.x();
+	};
+	CHECK( accent_width( text( "ABCDEF" ) ) > accent_width( text( "A" ) ) * 2.F );
+}
+
+TEST_CASE( "big delimiters have the size asked for, growing with the level", "[math][delimiters]" )
+{
+	Theme theme = NewComputerModern::create_theme();
+	Context context{ theme };
+	auto height = [&]( int level ) {
+		const AABB box = layout_extent( *big( U'(', level ).build( context ) );
+		return box.max.y() - box.min.y();
+	};
+	CHECK( height( 2 ) > height( 1 ) );
+	CHECK( height( 3 ) > height( 2 ) );
+	CHECK( height( 4 ) > height( 3 ) );
+	CHECK( height( 0 ) == height( 1 ) ); // (clamped)
+	CHECK( height( 9 ) == height( 4 ) );
+}
+
+TEST_CASE( "substack stacks lines, and a continued fraction nests", "[math][stacks]" )
+{
+	Theme theme = NewComputerModern::create_theme();
+	Context context{ theme };
+	auto size = [&]( const Expr &e ) {
+		const AABB box = layout_extent( *e.build( context ) );
+		return std::pair{ box.max.x() - box.min.x(), box.max.y() - box.min.y() };
+	};
+	const auto one = size( substack( { text( "i" ) } ) );
+	const auto three = size( substack( { text( "i" ), text( "j" ), text( "k" ) } ) );
+	CHECK( three.second > one.second * 2.F );
+
+	const auto shallow = size( continued_fraction( { text( "1" ), text( "x" ) } ) );
+	const auto deep = size( continued_fraction( { text( "1" ), text( "1" ), text( "1" ), text( "x" ) } ) );
+	CHECK( deep.second > shallow.second );
+	CHECK( deep.first > shallow.first );
+	CHECK_FALSE( continued_fraction( {} ) );
+}

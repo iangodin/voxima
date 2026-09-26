@@ -18,3 +18,13 @@ class Accent : public Group
 public:
 	Accent( const MathFont &font, float glyph_scale, std::unique_ptr<Visual> &&base, char32_t accent );
 };
+
+// An accent that stretches to be as wide as its base (TeX's \widehat, \widetilde, \overrightarrow): the widest of the font's
+// variants of the accent that is no wider than the base, or the font's assembly of pieces when it is wider than all of them.
+// `accent` is a combining code point (U+0302 hat, U+0303 tilde, U+20D7 right arrow, U+20D6 left arrow ...). Placed like Accent
+// otherwise, and as wide as the base.
+class WideAccent : public Group
+{
+public:
+	WideAccent( const MathFont &font, float glyph_scale, std::unique_ptr<Visual> &&base, char32_t accent );
+};

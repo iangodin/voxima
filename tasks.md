@@ -46,9 +46,9 @@ A review of `math/Expr.h` against what a page of teaching math needs. What is li
   - [x] Text inside math: `words( "for all" )` (upright, spaces kept)
   - [x] Marking a part: `cancel`, `boxed`, `colored`
   - [x] Primes after a symbol: `primed( f, 2 )`
-  - [ ] Stretchy wide accents (`widehat`, `widetilde`) and arrows over a base (`overrightarrow`) that span their content
-  - [ ] Stacked limits on several lines (`substack`), and continued fractions
-  - [ ] Delimiters of a chosen size (`\big`, `\Big` ...), not only the ones that stretch to fit
+  - [x] Stretchy wide accents: `widehat`, `widetilde`, `overrightarrow`, `overleftarrow`
+  - [x] Limits on several lines (`substack`), and continued fractions (`continued_fraction`)
+  - [x] Delimiters of a chosen size: `big( U'(', 1..4 )`
   - [x] Symbols by name (`math/Symbols.h`: `sym::alpha`, `sym::leq` ...)
   - [ ] Shorter ways to build rows (operators for the common `a + b = c`)
 

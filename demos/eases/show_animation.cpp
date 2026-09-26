@@ -421,6 +421,17 @@ Scene show_math_marks( Stage &stage, Script & )
 					{ .numbered = true } ),
 		0.F );
 	co_await wait_for( stage, 2s );
+
+	// Wide accents, a several-line limit, a continued fraction and delimiters of chosen sizes
+	stage.visuals.clear();
+	place( row( { ord( widehat( text( "ABC" ) ) ), bin( "+" ), ord( widetilde( text( "xyz" ) ) ), bin( "+" ), ord( overrightarrow( text( "PQ" ) ) ) } ), 2.6F );
+	place( row( { ord( sum( substack( { text( "0 < i < n" ), text( "i ≠ j" ) } ), text( "n" ) ) ), ord( text( "a" ) ) } ), 0.4F );
+	place( row( { opening( big( U'(', 1 ) ), ord( "a" ), closing( big( U')', 1 ) ), space( Row::QUAD ), opening( big( U'[', 3 ) ), ord( "b" ), closing( big( U']', 3 ) ) } ), -3.2F );
+	co_await wait_for( stage, 2s );
+
+	stage.visuals.clear();
+	place( row( { ord( "φ" ), rel( "=" ), ord( "1" ), bin( "+" ), ord( continued_fraction( { text( "1" ), text( "1" ), text( "1" ), text( "x" ) } ) ) } ), 1.0F );
+	co_await wait_for( stage, 2s );
 }
 
 // A sentence that is edited: words that stay put only slide into place, words that go away fade out, new
