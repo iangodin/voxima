@@ -117,6 +117,7 @@
   - [x] Themes as files (themes/*.huml): fonts as families in stacks, a palette, and inherit; the five built-in themes converted, checked against a record of every font they load
   - [x] --theme takes a file, --theme-dir, and theme.huml next to the scripts is used by default
   - [ ] Palettes from a file (a palette section in a theme file)
+  - [x] The missing-glyph marker cannot be lost to a background or neighbour of its own color (a keyline in the text color), and the preview reports missing glyphs too
   - [x] The demo scenes use the palette's accents, not fixed colors, so they read on light and dark (a scene of your own: theme->palette().blue)
   - [x] Math on a light background: every part of an Expr follows the text color (fraction bars, radicals, brackets, big operators, accents, braces), checked on the formulas scene
 

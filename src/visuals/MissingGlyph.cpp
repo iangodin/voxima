@@ -12,6 +12,9 @@ namespace
 
 const Color MAGENTA{ 1.F, 0.F, 1.F, 1.F };
 
+// The keyline round a marker, as a fraction of the font's size
+constexpr float KEYLINE = 0.03F;
+
 std::string hex_code( char32_t codepoint )
 {
 	char buffer[16];
@@ -123,6 +126,13 @@ std::unique_ptr<Glyph> create_missing_glyph( char32_t codepoint, const FontFace 
 	auto glyph = std::make_unique<Glyph>();
 	glyph->font_face = &font;
 	glyph->color = MAGENTA;
+
+	// A keyline in "white", which is the theme's text color (see Color::resolved): the color every palette has to show against
+	// its background. So the marker stands out from a magenta background as much as a white one, and from any neighbour
+	// that is magenta, and is never lost because of what it is drawn on. (Its thickness is in stage units: a glyph's
+	// stroke is not scaled with it.)
+	glyph->stroke_color = Color{ 1.F, 1.F, 1.F, 1.F };
+	glyph->stroke_thickness = KEYLINE * font.scale;
 	tag_visual( *glyph, MISSING_GLYPH_TAG );
 
 	// The frame is a box with a box cut out. The two wind opposite ways, which is what makes a hole; the

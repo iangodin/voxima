@@ -289,3 +289,23 @@ TEST_CASE( "the record counts repeats and lists each place once", "[glyphs]" )
 	clear_missing_glyph_reports();
 	CHECK( missing_glyph_reports().empty() );
 }
+
+TEST_CASE( "the marker has a keyline in the text color, so a background or a neighbour of its own color cannot hide it", "[glyphs]" )
+{
+	Fixture f;
+	const FontFace &font = f.stack.font( 0 );
+	const auto marker = create_missing_glyph( REPLACEMENT_CHARACTER, font );
+
+	// "White": what the theme draws in its text color, which every palette makes show against its background
+	CHECK( marker->stroke_color == Color{ 1.F, 1.F, 1.F, 1.F } );
+	CHECK( marker->stroke_thickness > 0.F );
+
+	// A keyline that is a few hundredths of the font's size: enough to see, not to swamp the code inside
+	CHECK( marker->stroke_thickness == Approx( 0.03F * font.scale ) );
+	CHECK( marker->stroke_thickness < 0.06F * font.scale );
+
+	// Its color is the text color under a palette, and unaffected by the marker's own color
+	CHECK( marker->color == Color{ 1.F, 0.F, 1.F, 1.F } );
+	const Color dark = Color::hex( 0x1f2328 );
+	CHECK( marker->stroke_color.resolved( dark ) == dark );
+}

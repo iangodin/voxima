@@ -552,9 +552,29 @@ bool Producer::produce( int argc, char *argv[] )
 		aligner_model );
 	_stage.audio.set_max_speedup( max_speedup );
 
+	// Text that could not be drawn was shown as magenta boxes; say what and where, so it can be fixed. This does not depend
+	// on seeing the boxes: they cannot be told apart from a background or a text of the same color, and a preview has no
+	// end-of-render to look at.
+	auto report_missing_glyphs = [&]()
+	{
+		const std::string missing = describe_missing_glyphs();
+		if ( missing.empty() )
+		{
+			return true;
+		}
+		std::cerr << '\n' << missing;
+		if ( strict_glyphs )
+		{
+			std::cerr << "Failing because of --strict-glyphs.\n";
+			return false;
+		}
+		return true;
+	};
+
 	if ( live_preview )
 	{
-		return preview( languages.front() );
+		const bool ok = preview( languages.front() );
+		return report_missing_glyphs() && ok;
 	}
 
 	// A render for all the languages together (one container with a track for each), or with --separate one
@@ -572,16 +592,9 @@ bool Producer::produce( int argc, char *argv[] )
 		ok = render( { languages, render_dir, container, vcodec, acodec, scodec, subtitle_ext, save_png, save_svg } );
 	}
 
-	// Text that could not be drawn was shown as magenta boxes; say what and where, so it can be fixed
-	const std::string missing = describe_missing_glyphs();
-	if ( !missing.empty() )
+	if ( !report_missing_glyphs() )
 	{
-		std::cerr << '\n' << missing;
-		if ( strict_glyphs )
-		{
-			std::cerr << "Failing because of --strict-glyphs.\n";
-			return false;
-		}
+		return false;
 	}
 
 	return ok;

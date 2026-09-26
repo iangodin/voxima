@@ -27,6 +27,8 @@ inline constexpr const char *MISSING_GLYPH_TAG = "missing-glyph";
 // Whether the character is drawn as a marker: no real font has it, or it is the replacement character
 bool needs_marker( const FontStack &stack, char32_t codepoint );
 
+// (The marker is magenta with a keyline in the text color, so it cannot be lost against any background, or beside any color:
+// the report at the end of a render, and --strict-glyphs, do not depend on seeing it at all.)
 // The marker for a character, in the units of the font (like create_glyph, so it is laid out, scaled and
 // moved the same way): a magenta frame the height of a letter with the code (FFFD, 1F600 ...) in small
 // type inside, or an empty frame if the font lacks the digits.
