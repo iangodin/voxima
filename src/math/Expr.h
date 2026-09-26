@@ -226,6 +226,17 @@ Expr cases( std::vector<std::vector<Expr>> rows, MatrixOptions options = {} );
 // several names. Tagging an empty expression gives an empty expression.
 Expr tag( std::string name, Expr content );
 
+// ---- Marking a part ------------------------------------------------------------------------
+
+// A color for a part (white is the theme's text color; the palette's accents suit any background: theme.palette().red)
+Expr colored( Color color, Expr content );
+
+// A line struck through a part, corner to corner (TeX's \cancel), as terms that cancel are shown; it does not take any room
+Expr cancel( Expr content );
+
+// A box round a part (TeX's \boxed), `padding` (in ems of the body text) between it and the part, its line in the text color
+Expr boxed( Expr content, float padding = 0.25F );
+
 // ---- Style -------------------------------------------------------------------------------
 
 // Force a style for a part, whatever it would have been (TeX's \textstyle, \displaystyle ...)

@@ -1,3 +1,4 @@
+#include <catch2/catch_approx.hpp>
 #include <catch2/catch_test_macros.hpp>
 
 #include <core/Theme.h>
@@ -12,6 +13,7 @@
 #include <string>
 #include <vector>
 
+using Catch::Approx;
 using namespace math;
 
 // Every symbol in Symbols.h is read back from the file, so a new one is checked without being listed here as well
@@ -89,4 +91,31 @@ TEST_CASE( "words is upright text", "[math][symbols]" )
 	const AABB a = layout_extent( *words( "if x" ).build( context ) );
 	const AABB b = layout_extent( *upright( "if x" ).build( context ) );
 	CHECK( a.max.x() == b.max.x() );
+}
+
+TEST_CASE( "cancel takes no room, boxed takes the padding, colored colors", "[math][marks]" )
+{
+	Theme theme = NewComputerModern::create_theme();
+	Context context{ theme };
+	const AABB plain = layout_extent( *text( "xy" ).build( context ) );
+
+	const AABB cancelled = layout_extent( *cancel( text( "xy" ) ).build( context ) );
+	CHECK( cancelled.max.x() == Approx( plain.max.x() ) );
+	CHECK( cancelled.min.y() == Approx( plain.min.y() ) );
+	CHECK( cancelled.max.y() == Approx( plain.max.y() ) );
+
+	const AABB framed = layout_extent( *boxed( text( "xy" ), 0.5F ).build( context ) );
+	CHECK( framed.max.x() > plain.max.x() );
+	CHECK( framed.min.y() < plain.min.y() );
+	// The frame is the same amount past the content on every side
+	CHECK( plain.min.x() - framed.min.x() == Approx( framed.max.x() - plain.max.x() ) );
+	CHECK( plain.min.y() - framed.min.y() == Approx( framed.max.y() - plain.max.y() ) );
+
+	auto red = colored( Color{ 1.F, 0.F, 0.F, 1.F }, text( "x" ) ).build( context );
+	CHECK( red->color.r == 1.F );
+	CHECK( red->color.g == 0.F );
+
+	CHECK_FALSE( cancel( Expr() ) );
+	CHECK_FALSE( boxed( Expr() ) );
+	CHECK_FALSE( colored( Color{}, Expr() ) );
 }

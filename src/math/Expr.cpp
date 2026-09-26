@@ -7,6 +7,8 @@
 #include "visuals/Group.h"
 #include "visuals/Layout.h"
 #include "visuals/Limits.h"
+#include "visuals/Line.h"
+#include "visuals/Rectangle.h"
 #include "visuals/Radical.h"
 #include "visuals/Scripts.h"
 
@@ -665,6 +667,97 @@ Expr tag( std::string name, Expr content )
 			auto visual = content.build( context, style );
 			visual->tags.push_back( name );
 			return visual;
+		} );
+}
+
+// ---- Marking a part ------------------------------------------------------------------------
+
+namespace
+{
+// A group that takes the room, and has the baseline and axis, of what it holds, whatever is drawn round it
+std::unique_ptr<Group> wrap_like( std::unique_ptr<Visual> content, std::unique_ptr<Visual> &&mark_or_null, AABB extent )
+{
+	auto group = std::make_unique<Group>();
+	group->baseline = content->baseline;
+	group->math_axis = content->math_axis;
+	group->extent = extent;
+	group->add( std::move( content ) );
+	if ( mark_or_null )
+	{
+		group->add( std::move( mark_or_null ) );
+	}
+	return group;
+}
+
+// A line as thick as body text's rules are: a twentieth of an em
+float rule_thickness( const Context &context, MathStyle style )
+{
+	return 0.05F * context.theme().get_stack( context.font_style( style ) ).font( 0 ).scale;
+}
+}
+
+Expr colored( Color color, Expr content )
+{
+	if ( !content )
+	{
+		return Expr();
+	}
+	return Expr::from(
+		[color, content = std::move( content )]( const Context &context, MathStyle style ) -> std::unique_ptr<Visual>
+		{
+			auto visual = content.build( context, style );
+			visual->color = color;
+			visual->stroke_color = color;
+			return visual;
+		} );
+}
+
+Expr cancel( Expr content )
+{
+	if ( !content )
+	{
+		return Expr();
+	}
+	return Expr::from(
+		[content = std::move( content )]( const Context &context, MathStyle style ) -> std::unique_ptr<Visual>
+		{
+			auto built = content.build( context, style );
+			const AABB box = layout_extent( *built );
+			auto line = std::make_unique<Line>();
+			line->start = box.min;
+			line->end = box.max;
+			line->stroke_thickness = rule_thickness( context, style );
+			return wrap_like( std::move( built ), std::move( line ), box );
+		} );
+}
+
+Expr boxed( Expr content, float padding )
+{
+	if ( !content )
+	{
+		return Expr();
+	}
+	return Expr::from(
+		[padding, content = std::move( content )]( const Context &context, MathStyle style ) -> std::unique_ptr<Visual>
+		{
+			auto built = content.build( context, style );
+			const AABB box = layout_extent( *built );
+			const float pad = padding * context.theme().get_stack( context.font_style( style ) ).font( 0 ).scale;
+			AABB outer{ { box.min.x() - pad, box.min.y() - pad }, { box.max.x() + pad, box.max.y() + pad } };
+			auto frame = std::make_unique<Rectangle>();
+			frame->half_width = ( outer.max.x() - outer.min.x() ) / 2.F;
+			frame->half_height = ( outer.max.y() - outer.min.y() ) / 2.F;
+			frame->position = { ( outer.min.x() + outer.max.x() ) / 2.F, ( outer.min.y() + outer.max.y() ) / 2.F };
+			frame->color = { 1.F, 1.F, 1.F, 0.F }; // an outline, not a filled box
+			frame->stroke_thickness = rule_thickness( context, style );
+			// The frame first: it does not cover what it is round
+			auto group = std::make_unique<Group>();
+			group->baseline = built->baseline;
+			group->math_axis = built->math_axis;
+			group->extent = outer;
+			group->add( std::move( frame ) );
+			group->add( std::move( built ) );
+			return group;
 		} );
 }
 

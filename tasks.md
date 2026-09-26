@@ -44,7 +44,7 @@
 A review of `math/Expr.h` against what a page of teaching math needs. What is listed above is all done, and complete for the TeX constructs it covers; these are the gaps:
   - [ ] Aligned multi-line equations (`align`: lines lined up on the relation, or on any marker), with optional equation numbers
   - [x] Text inside math: `words( "for all" )` (upright, spaces kept)
-  - [ ] Marking a part: strike-through (`cancel`), a box round it (`boxed`), a color for a part (by tag, and in the palette's accents)
+  - [x] Marking a part: `cancel`, `boxed`, `colored`
   - [x] Primes after a symbol: `primed( f, 2 )`
   - [ ] Stretchy wide accents (`widehat`, `widetilde`) and arrows over a base (`overrightarrow`) that span their content
   - [ ] Stacked limits on several lines (`substack`), and continued fractions

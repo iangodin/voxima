@@ -29,6 +29,7 @@
 #include <core/Wait.h>
 
 #include <math/Expr.h>
+#include <math/Symbols.h>
 #include <visuals/Tags.h>
 #include <visuals/Circle.h>
 #include <plot/NumberLine.h>
@@ -388,6 +389,29 @@ Scene show_formula_morph( Stage &stage, Script & )
 		shown = next;
 		co_await wait_for( stage, 0.5s );
 	}
+}
+
+// Marking parts of a formula: a term cancelled, a result boxed, a part in a palette color, words between the math
+Scene show_math_marks( Stage &stage, Script & )
+{
+	using namespace math;
+	Context context( *stage.theme );
+	const Palette &palette = stage.theme->palette();
+
+	auto place = [&]( const Expr &formula, float y )
+	{
+		auto visual = formula.build( context );
+		const AABB box = layout_extent( *visual );
+		visual->position = { -( box.min.x() + box.max.x() ) / 2.F, y };
+		stage.visuals.add( std::move( visual ) );
+	};
+
+	place( row( { ord( "x" ), bin( "+" ), ord( cancel( text( "3y" ) ) ), bin( "−" ), ord( cancel( text( "3y" ) ) ), rel( "=" ), ord( "x" ) } ), 2.5F );
+	place( row( { ord( text( "E" ) ), rel( "=" ), ord( boxed( row( { ord( "m" ), ord( superscript( text( "c" ), text( "2" ) ) ) } ) ) ) } ), 0.8F );
+	place( row( { ord( colored( palette.red, text( "a" ) ) ), bin( "+" ), ord( colored( palette.blue, text( "b" ) ) ), rel( sym::leq ), ord( primed( text( "f" ), 2 ) ) } ), -0.8F );
+	place( row( { ord( text( "x" ) ), rel( sym::in ), ord( text( "S" ) ), space( Row::QUAD ), ord( words( "for all" ) ), space( Row::QUAD ), ord( text( sym::alpha ) ), rel( sym::geq ), ord( "0" ) } ), -2.5F );
+
+	co_await wait_for( stage, 2s );
 }
 
 // A sentence that is edited: words that stay put only slide into place, words that go away fade out, new
@@ -1019,6 +1043,7 @@ SONIMATION_SCENE( "layout", "Panels, a list and a table, and a row of shapes, pl
 SONIMATION_SCENE( "verbs", "Fade, slide, grow and indicate, with connectors following the moving circles", show_verbs );
 SONIMATION_SCENE( "diagram", "A diagram laid out in layers, a callout, a wrapped list, and evenly spread headings", show_diagram );
 SONIMATION_SCENE( "geometry", "A triangle with named corners and marked angles", show_geometry );
+SONIMATION_SCENE( "math-marks", "Cancelled and boxed parts, colors, primes, and words between math", show_math_marks );
 SONIMATION_SCENE( "camera", "Zooming in on a graph, and panning along it", show_camera );
 SONIMATION_SCENE( "plot", "Axes crossing in the middle, and graphs drawn on them", show_plot );
 SONIMATION_SCENE( "plot-edge", "The same, with the axes along the left and bottom", show_plot_edge );
