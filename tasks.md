@@ -40,6 +40,17 @@
   - [x] Stacked relations (stackrel)
   - [x] Phantom / invisible spacing placeholder
 
+### Math Expressions: not there yet
+A review of `math/Expr.h` against what a page of teaching math needs. What is listed above is all done, and complete for the TeX constructs it covers; these are the gaps:
+  - [ ] Aligned multi-line equations (`align`: lines lined up on the relation, or on any marker), with optional equation numbers
+  - [ ] Text inside math (`\text{if}`, `\text{for all}`): words in the body font, spaces kept, between math
+  - [ ] Marking a part: strike-through (`cancel`), a box round it (`boxed`), a color for a part (by tag, and in the palette's accents)
+  - [ ] Primes and other marks after a symbol (f', f'', x*)
+  - [ ] Stretchy wide accents (`widehat`, `widetilde`) and arrows over a base (`overrightarrow`) that span their content
+  - [ ] Stacked limits on several lines (`substack`), and continued fractions
+  - [ ] Delimiters of a chosen size (`\big`, `\Big` ...), not only the ones that stretch to fit
+  - [ ] Symbols by name (Greek letters, arrows, relations: `sym::alpha`, `sym::leq`) so a formula need not contain Unicode; and shorter ways to build rows (operators for the common `a + b = c`)
+
 ## Composition and Diagrams
 The biggest gap: everything is placed by hand-typed coordinates. The building blocks of most teaching content:
   - [x] Arrange: rows, columns and grids of visuals with a gap, aligned (start, center, end, baselines); next_to( a, b, side, gap )
@@ -64,7 +75,7 @@ The stock verbs, so a scene says what it means. We have tween, morph, choreograp
   - [x] Staggered groups (`stagger`, `children_of`). Open: spring and other physics-like eases
 
 ## Math Authoring
-  - Math is written as C++ expressions building the Expr tree directly (`math/Expr.h`); there is no string parser, and none is planned. Anything that makes those expressions shorter to write belongs here instead (helpers, operators).
+  - Math is written as C++ expressions building the Expr tree directly (`math/Expr.h`); there is no string parser, and none is planned. Anything that makes those expressions shorter to write belongs in the gaps listed under Math Expressions instead.
   - [ ] Step-by-step transformations of an equation (one line to the next, showing which parts move), on top of the morph
   - [ ] Highlight a part of a formula in narration (by tag, as words are)
 
