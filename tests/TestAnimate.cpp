@@ -2,6 +2,7 @@
 #include <catch2/catch_test_macros.hpp>
 
 #include <core/Animate.h>
+#include <core/EaseLinear.h>
 #include <core/Stage.h>
 #include <visuals/Rectangle.h>
 
@@ -108,4 +109,63 @@ TEST_CASE( "circumscribe and flash leave the stage as it was", "[animate]" )
 
 	run( flash( stage, r, {}, 0.2s ) );
 	CHECK( stage.visuals.size() == before );
+}
+
+TEST_CASE( "move_along goes from the start of a path to its end", "[animate]" )
+{
+	Stage stage;
+	Rectangle r = box();
+	Path path;
+	path.commands = { MoveTo{ { 0.F, 0.F } }, LineTo{ { 4.F, 0.F } }, LineTo{ { 4.F, 4.F } } };
+
+	Scene scene = move_along( stage, r, path, 0.5s, ease_linear, true );
+	scene.resume();
+	CHECK( r.position.x() == Approx( 0.F ) );
+	CHECK( r.rotation == Approx( 0.F ) );
+	bool turned = false;
+	while ( !scene.done() )
+	{
+		turned = turned || r.rotation > 80.F;
+		scene.resume();
+	}
+	CHECK( turned );
+	CHECK( r.position.x() == Approx( 4.F ) );
+	CHECK( r.position.y() == Approx( 4.F ) );
+	CHECK( r.rotation == Approx( 90.F ) );
+}
+
+TEST_CASE( "turn_about takes a visual round a point", "[animate]" )
+{
+	Stage stage;
+	Rectangle r = box(); // at (3, 1)
+	run( turn_about( stage, r, { 3.F, 0.F }, 180.F, 0.5s, ease_linear ) );
+	CHECK( r.position.x() == Approx( 3.F ) );
+	CHECK( r.position.y() == Approx( -1.F ) );
+	CHECK( r.rotation == Approx( 180.F ) );
+}
+
+TEST_CASE( "stagger starts each one a little after the last", "[animate]" )
+{
+	Stage stage; // 24 frames a second
+	Rectangle a = box();
+	Rectangle b = box();
+	Rectangle c = box();
+	std::vector<Visual *> all{ &a, &b, &c };
+	Scene scene = stagger( stage, all, 0.25s, [&]( Visual &v ) { return fade_in( stage, v, 0.5s, ease_linear ); } );
+
+	int frame = 0;
+	int b_starts = -1;
+	int c_starts = -1;
+	scene.resume();
+	while ( !scene.done() )
+	{
+		++frame;
+		if ( b_starts < 0 && b.color.a > 0.F ) b_starts = frame;
+		if ( c_starts < 0 && c.color.a > 0.F ) c_starts = frame;
+		scene.resume();
+	}
+	CHECK( b_starts >= 6 );
+	CHECK( c_starts >= b_starts + 5 );
+	CHECK( a.color.a == Approx( 1.F ) );
+	CHECK( c.color.a == Approx( 1.F ) );
 }

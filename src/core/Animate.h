@@ -4,10 +4,13 @@
 #include "core/Scene.h"
 #include "core/Stage.h"
 #include "visuals/Group.h"
+#include "visuals/Path.h"
 #include "visuals/Point.h"
 #include "visuals/Visual.h"
 
 #include <chrono>
+#include <functional>
+#include <vector>
 #include <optional>
 
 // The common things to do to a visual, each a scene to `co_await` (so it is over when they are, or run several at once with
@@ -63,3 +66,19 @@ Scene circumscribe( Stage &stage, Visual &visual, const PointOutOptions &options
 
 // A ring round a visual that spreads out from its edge and fades: a flash to say "here"
 Scene flash( Stage &stage, Visual &visual, const PointOutOptions &options = {}, std::chrono::duration<double> duration = std::chrono::milliseconds( 600 ), Group *parent = nullptr );
+
+// Move along a path (its points in the visual's parent's frame), from its start to its end, the visual's own origin on it.
+// With `turn` the visual is turned to face the way it is going (its own +x forward), else it keeps its rotation.
+Scene move_along( const Stage &stage, Visual &visual, const Path &path, std::chrono::duration<double> duration = std::chrono::milliseconds( 1000 ), EaseFunction ease = {}, bool turn = false );
+
+// Turn about a point (in the visual's parent's frame) by `degrees`, counterclockwise on the screen if positive: the visual
+// goes round the point and turns with it
+Scene turn_about( const Stage &stage, Visual &visual, Point center, float degrees, std::chrono::duration<double> duration = std::chrono::milliseconds( 1000 ), EaseFunction ease = {} );
+
+// Run a verb on each of the visuals, each starting `delay` after the one before, and finish when the last does:
+//
+//     co_await stagger( stage, children_of( row ), 0.15s, [&]( Visual &v ) { return fade_in( stage, v, 0.4s ); } );
+Scene stagger( const Stage &stage, std::vector<Visual *> visuals, std::chrono::duration<double> delay, std::function<Scene( Visual & )> verb );
+
+// The direct children of a group, to stagger over
+std::vector<Visual *> children_of( const Group &group );

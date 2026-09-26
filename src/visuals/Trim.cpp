@@ -76,3 +76,86 @@ std::vector<PathCommand> trimmed_commands( const Contour &contour, float fractio
 	}
 	return commands;
 }
+
+Contour contour_of( const Path &path )
+{
+	Contour contour;
+	contour.closed = false;
+	Point current{ 0.F, 0.F };
+	bool started = false;
+	for ( const PathCommand &command: path.commands )
+	{
+		if ( const auto *move = std::get_if<MoveTo>( &command ) )
+		{
+			if ( started )
+			{
+				break; // (the first sub-path only)
+			}
+			contour.start = current = move->to;
+			started = true;
+		}
+		else if ( const auto *line = std::get_if<LineTo>( &command ) )
+		{
+			contour.segs.push_back( { lerp( current, line->to, 1.F / 3.F ), lerp( current, line->to, 2.F / 3.F ), line->to } );
+			current = line->to;
+		}
+		else if ( const auto *quad = std::get_if<QuadTo>( &command ) )
+		{
+			contour.segs.push_back( { lerp( current, quad->ctrl1, 2.F / 3.F ), lerp( quad->to, quad->ctrl1, 2.F / 3.F ), quad->to } );
+			current = quad->to;
+		}
+		else if ( const auto *cubic = std::get_if<CubicTo>( &command ) )
+		{
+			contour.segs.push_back( { cubic->ctrl1, cubic->ctrl2, cubic->to } );
+			current = cubic->to;
+		}
+		else if ( std::holds_alternative<Close>( command ) )
+		{
+			if ( distance( current, contour.start ) > 1e-6F )
+			{
+				contour.segs.push_back( { lerp( current, contour.start, 1.F / 3.F ), lerp( current, contour.start, 2.F / 3.F ), contour.start } );
+			}
+			contour.closed = true;
+			break;
+		}
+	}
+	return contour;
+}
+
+Point point_along( const Contour &contour, float fraction, Point *heading )
+{
+	fraction = std::clamp( fraction, 0.F, 1.F );
+	const float target = contour_length( contour ) * fraction;
+	float done = 0.F;
+	Point from = contour.start;
+	for ( size_t i = 0; i < contour.segs.size(); ++i )
+	{
+		const CubicSeg &seg = contour.segs[i];
+		const float length = segment_length( from, seg );
+		if ( done + length >= target || i + 1 == contour.segs.size() )
+		{
+			const float u = length > 0.F ? std::clamp( ( target - done ) / length, 0.F, 1.F ) : 0.F;
+			const float v = 1.F - u;
+			if ( heading )
+			{
+				// The derivative of the cubic
+				Point d = ( seg.c1 - from ) * ( 3.F * v * v ) + ( seg.c2 - seg.c1 ) * ( 6.F * v * u ) + ( seg.to - seg.c2 ) * ( 3.F * u * u );
+				float size = std::sqrt( d.lengthSquared() );
+				if ( size < 1e-6F )
+				{
+					d = seg.to - from; // (a stopped point: the chord)
+					size = std::sqrt( d.lengthSquared() );
+				}
+				*heading = size > 1e-6F ? d / size : Point{ 1.F, 0.F };
+			}
+			return from * ( v * v * v ) + seg.c1 * ( 3.F * v * v * u ) + seg.c2 * ( 3.F * v * u * u ) + seg.to * ( u * u * u );
+		}
+		done += length;
+		from = seg.to;
+	}
+	if ( heading )
+	{
+		*heading = { 1.F, 0.F };
+	}
+	return contour.start;
+}

@@ -864,6 +864,31 @@ Scene show_verbs( Stage &stage, Script & )
 	co_await circumscribe( stage, words );
 	co_await flash( stage, ring );
 	co_await wait_for( stage, 0.5s );
+
+	// Staggered: a row of squares, each coming in a little after the last; then a bar along a curve, turning to face its way
+	stage.visuals.clear();
+	stage.updaters.clear();
+	auto &row = stage.visuals.add( std::make_unique<Group>() );
+	for ( int i = 0; i < 6; ++i )
+	{
+		auto square = std::make_unique<Rectangle>();
+		square->half_width = square->half_height = 0.4F;
+		square->color = palette.series()[static_cast<size_t>( i ) % palette.series().size()];
+		square->position = { -4.F + 1.2F * static_cast<float>( i ), 2.2F };
+		row.add( std::move( square ) );
+	}
+	co_await stagger( stage, children_of( row ), 0.12s, [&]( Visual &v ) { return slide_in( stage, v, { 0.F, 1.5F }, 0.5s ); } );
+
+	auto &dart = stage.visuals.add( std::make_unique<Rectangle>() );
+	dart.half_width = 0.4F;
+	dart.half_height = 0.12F;
+	dart.color = palette.orange;
+	Path path;
+	path.commands = { MoveTo{ { -4.5F, -2.F } }, CubicTo{ { 0.F, 0.F }, { -3.F, 2.F }, { 3.F, -2.5F } }, CubicTo{ { 4.5F, 0.F }, { 3.5F, 1.F }, { 4.5F, -0.5F } } };
+	dart.position = { -4.5F, -2.F };
+	co_await move_along( stage, dart, path, 2.5s, ease_cubic_in_out, true );
+	co_await turn_about( stage, dart, { 4.5F, -0.5F }, 360.F, 1.5s, ease_cubic_in_out );
+	co_await wait_for( stage, 0.5s );
 }
 
 // Music under the demo movie. Music is not in the repository (assets/ is not): without the file the movie

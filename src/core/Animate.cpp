@@ -1,7 +1,9 @@
 #include "core/Animate.h"
 
 #include "core/EaseCubic.h"
+#include "core/Director.h"
 #include "core/Tween.h"
+#include "core/Wait.h"
 #include "visuals/Outline.h"
 #include "visuals/Path.h"
 #include "visuals/Placement.h"
@@ -294,4 +296,72 @@ Scene flash( Stage &stage, Visual &visual, const PointOutOptions &options, std::
 			ring.stroke_color.a = base * ( 1.F - t );
 		} );
 	into.remove( &ring );
+}
+
+Scene move_along( const Stage &stage, Visual &visual, const Path &path, std::chrono::duration<double> duration, EaseFunction ease, bool turn )
+{
+	const Contour contour = contour_of( path );
+	if ( contour.segs.empty() )
+	{
+		co_return;
+	}
+	co_await tween( stage, duration, [&]( float t ) { return eased( ease, t ); },
+		[&]( float t )
+		{
+			Point heading;
+			visual.position = point_along( contour, t, &heading );
+			if ( turn )
+			{
+				visual.rotation = std::atan2( heading.y(), heading.x() ) * 180.F / std::numbers::pi_v<float>;
+			}
+		} );
+}
+
+Scene turn_about( const Stage &stage, Visual &visual, Point center, float degrees, std::chrono::duration<double> duration, EaseFunction ease )
+{
+	const Point start = visual.position - center;
+	const float rotation = visual.rotation;
+	co_await tween( stage, duration, [&]( float t ) { return eased( ease, t ); },
+		[&]( float t )
+		{
+			const float angle = degrees * t * std::numbers::pi_v<float> / 180.F;
+			const float c = std::cos( angle );
+			const float s = std::sin( angle );
+			visual.position = center + Point{ start.x() * c - start.y() * s, start.x() * s + start.y() * c };
+			visual.rotation = rotation + degrees * t;
+		} );
+}
+
+namespace
+{
+Scene after( const Stage &stage, std::chrono::duration<double> delay, Scene scene )
+{
+	// Its first frame now: a verb that brings something in starts it hidden, so it is not seen before its turn
+	if ( !scene.done() )
+	{
+		scene.resume();
+	}
+	co_await wait_for( stage, delay );
+	co_await std::move( scene );
+}
+}
+
+Scene stagger( const Stage &stage, std::vector<Visual *> visuals, std::chrono::duration<double> delay, std::function<Scene( Visual & )> verb )
+{
+	std::vector<Coroutine> running;
+	for ( size_t i = 0; i < visuals.size(); ++i )
+	{
+		running.push_back( after( stage, delay * static_cast<double>( i ), verb( *visuals[i] ) ) );
+	}
+	co_await choreograph_all( std::move( running ) );
+}
+
+std::vector<Visual *> children_of( const Group &group )
+{
+	std::vector<Visual *> children;
+	for ( const auto &child: group )
+	{
+		children.push_back( child.get() );
+	}
+	return children;
 }
