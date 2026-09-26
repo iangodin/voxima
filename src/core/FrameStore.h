@@ -26,6 +26,15 @@ public:
 		std::vector<int16_t> audio; // interleaved stereo, exactly one block
 	};
 
+	// A scene that was played (see SceneRegistry.h): it spans frames start up to, not including, end
+	struct SceneSpan
+	{
+		std::string name;
+		int depth = 0;       // 0 for the outermost; a scene played from inside another is one deeper
+		int64_t start = 0;
+		int64_t end = -1;    // -1 while it is still running
+	};
+
 	// block_frames: the stereo sample frames of sound that go with one video frame
 	explicit FrameStore( size_t block_frames ) :
 		_block_frames( block_frames )
@@ -64,6 +73,33 @@ public:
 		return _frames[static_cast<size_t>( index )];
 	}
 
+	// The producer notes scenes as it plays them; `frame` is the index of the frame the current tick makes,
+	// which is the scene's first, and (for an end) one past its last. Scenes nest, so an end is that of the
+	// innermost scene still running.
+	void scene_started( std::string name, int64_t frame )
+	{
+		std::lock_guard lock( _mutex );
+		_scenes.push_back( { std::move( name ), static_cast<int>( _open.size() ), frame, -1 } );
+		_open.push_back( _scenes.size() - 1 );
+	}
+
+	void scene_ended( int64_t frame )
+	{
+		std::lock_guard lock( _mutex );
+		if ( !_open.empty() )
+		{
+			_scenes[_open.back()].end = frame;
+			_open.pop_back();
+		}
+	}
+
+	// The scenes so far, in the order they started
+	std::vector<SceneSpan> scenes() const
+	{
+		std::lock_guard lock( _mutex );
+		return _scenes;
+	}
+
 	// The last frame there will be has been appended
 	bool complete() const
 	{
@@ -95,6 +131,8 @@ private:
 	size_t _block_frames;
 	mutable std::mutex _mutex;
 	std::vector<std::shared_ptr<const Frame>> _frames;
+	std::vector<SceneSpan> _scenes;
+	std::vector<size_t> _open; // the scenes still running, outermost first
 	bool _complete = false;
 	std::exception_ptr _error;
 };

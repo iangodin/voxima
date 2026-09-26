@@ -52,6 +52,7 @@ private:
 	// kept in memory (see FrameStore.h), so it can be played backwards and stepped through:
 	//   space: play/pause   L: play   J: play backwards   K: pause   left/right: one frame back/forward
 	//   up/down: 1 second forward/back (keeps playing)   home/end: the start/the end   escape: quit
+	//   [ and ]: the previous scene (or the start of this one, if a second or more in) and the next
 	// Going somewhere the producer has not got to yet waits for it.
 	bool preview( const std::string &language );
 

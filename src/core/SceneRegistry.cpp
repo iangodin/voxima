@@ -66,7 +66,15 @@ Scene play( Stage &stage, Script &script, std::string name, PlayOptions options 
 		stage.visuals.clear();
 	}
 
+	if ( stage.scene_event )
+	{
+		stage.scene_event( name, true );
+	}
 	co_await entry->run( stage, script );
+	if ( stage.scene_event )
+	{
+		stage.scene_event( name, false );
+	}
 }
 
 Scene sequence( Stage &stage, Script &script, std::vector<std::string> names, PlayOptions options )

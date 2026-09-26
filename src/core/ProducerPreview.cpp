@@ -69,6 +69,13 @@ bool Producer::preview( const std::string &language )
 			_stage.visuals.clear();
 			_stage.audio.begin( scratch, languages, true );
 			_current_frame = -1;
+			_stage.scene_event = [&]( const std::string &name, bool started )
+			{
+				if ( started )
+					store.scene_started( name, _current_frame );
+				else
+					store.scene_ended( _current_frame );
+			};
 			_screenplay = _director( _stage, _script );
 			_screenplay.handle.promise().producer_ptr = this;
 
@@ -79,10 +86,12 @@ bool Producer::preview( const std::string &language )
 				_stage.audio.write_audio();
 				store.append( svg.str(), _stage.audio.take_audio( language ) );
 			}
+			_stage.scene_event = nullptr;
 			store.finish();
 		}
 		catch ( ... )
 		{
+			_stage.scene_event = nullptr;
 			store.fail( std::current_exception() );
 		}
 	} );
@@ -190,6 +199,51 @@ bool Producer::preview( const std::string &language )
 	const int64_t skip = static_cast<int64_t>( 1.0 * fps );
 	auto skip_by = [&]( int64_t frames ) { seek( std::min( pending >= 0 ? pending : playhead, the_end ) + frames ); };
 
+	// Scenes: [ and ] go to the previous and next start of one (a scene played from inside another starts
+	// at a frame of its own, or at the same as the one around it: either way, just frames). A scene the
+	// producer has not got to yet is waited for.
+	int64_t next_after = -1; // asked for the next scene after this frame, and it has not appeared yet
+	auto resolve_next = [&]()
+	{
+		if ( next_after < 0 )
+			return;
+		int64_t best = -1;
+		for ( const auto &scene: store.scenes() )
+		{
+			if ( scene.start > next_after && ( best < 0 || scene.start < best ) )
+				best = scene.start;
+		}
+		if ( best >= 0 )
+		{
+			next_after = -1;
+			seek( best );
+		}
+		else if ( store.complete() )
+		{
+			next_after = -1;
+		}
+	};
+	auto previous_scene = [&]()
+	{
+		const int64_t here = pending >= 0 ? pending : playhead;
+		int64_t start = 0;  // the start of the scene we are in
+		int64_t before = 0; // the start of the one before it
+		for ( const auto &scene: store.scenes() )
+		{
+			if ( scene.start <= here && scene.start > start )
+			{
+				before = start;
+				start = scene.start;
+			}
+			else if ( scene.start < start && scene.start > before )
+			{
+				before = scene.start;
+			}
+		}
+		// Like a music player: a little way in, it starts this one again; at the start, it goes to the one before
+		seek( here - start > skip ? start : before );
+	};
+
 	Uint64 title_time = 0;
 	std::string title_text;
 
@@ -230,12 +284,19 @@ bool Producer::preview( const std::string &language )
 						set_mode( Mode::paused );
 						seek( the_end );
 						break;
+					case SDLK_LEFTBRACKET: next_after = -1; previous_scene(); break;
+					case SDLK_RIGHTBRACKET:
+						next_after = pending >= 0 ? pending : playhead;
+						resolve_next();
+						break;
 					case SDLK_UP: skip_by( skip ); break;
 					case SDLK_DOWN: skip_by( -skip ); break;
 					default: break;
 				}
 			}
 		}
+
+		resolve_next();
 
 		// A frame that was asked for has been made (or turned out never to be)
 		if ( pending >= 0 )
@@ -332,13 +393,32 @@ bool Producer::preview( const std::string &language )
 		{
 			title_time = now;
 			std::ostringstream title;
-			title << "Sonimation preview - " << std::fixed << std::setprecision( 2 ) << static_cast<double>( shown ) / fps << " s, frame " << shown;
+			// The innermost scene at the frame shown
+			std::string scene_name;
+			int scene_depth = -1;
+			for ( const auto &scene: store.scenes() )
+			{
+				if ( scene.start <= shown && ( scene.end < 0 || shown < scene.end ) && scene.depth > scene_depth )
+				{
+					scene_name = scene.name;
+					scene_depth = scene.depth;
+				}
+			}
+
+			title << "Sonimation preview - ";
+			if ( !scene_name.empty() )
+				title << scene_name << ", ";
+			title << std::fixed << std::setprecision( 2 ) << static_cast<double>( shown ) / fps << " s, frame " << shown;
 			if ( store.complete() )
 				title << " of " << store.size();
 			else
 				title << " (" << store.size() << " made so far)";
 			const bool waiting = pending >= 0 || ( mode != Mode::paused && !store.complete() && cursor > last_frame() );
-			if ( waiting )
+			if ( next_after >= 0 )
+			{
+				title << " - waiting for the next scene";
+			}
+			else if ( waiting )
 			{
 				if ( std::max( pending, cursor ) >= the_end )
 					title << " - waiting for the end";

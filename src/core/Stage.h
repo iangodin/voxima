@@ -11,8 +11,10 @@
 #include <core/Theme.h>
 #include <core/Camera.h>
 
+#include <functional>
 #include <iostream>
 #include <sstream>
+#include <string>
 
 struct Stage
 {
@@ -21,6 +23,10 @@ struct Stage
 	Group visuals;
 	DubbingStage audio;
 	Camera camera;
+
+	// Told when a scene played with play() (see SceneRegistry.h) starts (true) and ends (false), each in the
+	// tick that does it, so the producer can note the frames it spans. Left empty, nothing is told.
+	std::function<void( const std::string &name, bool started )> scene_event;
 
 	void save_svg( std::ostream &file ) const
 	{
