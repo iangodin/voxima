@@ -8,7 +8,26 @@
 
 #include <functional>
 #include <memory>
+#include <optional>
 #include <vector>
+
+// A move that keeps a shape's form: turned by `angle` (radians) and scaled by `scale` about `pivot` (the point
+// that stays where it is), or, with no turn or scale, just shifted
+struct Similarity
+{
+	bool shift_only = true;
+	Point shift;
+	Point pivot;
+	float angle = 0.F;
+	float log_scale = 0.F;
+
+	// Where p is when a fraction t of the way: the turn and the scale go on evenly (a spiral about the pivot)
+	Point apply( Point p, float t ) const;
+
+	// The similarity that takes the points of `a` onto those of `b` (same contours, point for point), if one
+	// does to within a hair of their size
+	static std::optional<Similarity> between( const std::vector<Contour> &a, const std::vector<Contour> &b );
+};
 
 struct MorphOptions
 {
@@ -36,7 +55,9 @@ struct MorphOptions
 //
 // Leaves of the two visuals (each glyph, each shape) are paired up by MorphOptions::leaves: by default
 // with the same tags first, then identical glyphs in reading order, then the closest. Paired leaves
-// morph into each other (an identical pair just moves); a leaf with no partner fades out or in.
+// morph into each other; a leaf with no partner fades out or in. A pair that is the same shape, only moved,
+// turned or scaled (the head of an arrow that turns) is carried there whole, turning about the point that stays
+// put, so leaves that turn together (the whole arrow) keep together and keep their form.
 //
 // The morph draws itself as a Group of Paths in the coordinate frame of the visuals' parent (see
 // to_outline()). Put visual() on the stage, or take it with release() and add it yourself; it must stay
@@ -84,6 +105,9 @@ private:
 		// back, and the rasteriser draws the same curves the same way)
 		std::vector<Contour> original_a;
 		std::vector<Contour> original_b;
+		// The same shape on both sides, only moved, turned or scaled (an arrow head when the arrow turns): it is
+		// carried there whole instead of point by point, which would cut across the turn and squash it
+		std::optional<Similarity> carry;
 		Color fill_a, fill_b;
 		Color stroke_a, stroke_b;
 		float thickness_a = 0.F;

@@ -1185,3 +1185,107 @@ TEST_CASE( "A stroke morphing into a fill is bevelled in between, so its sharpen
 	Morph fills( disc, square );
 	CHECK( join_at( fills, 0.5F ) == LineJoin::MITER );
 }
+
+namespace
+{
+// The demo's arrow: a shaft and a head, turned `degrees` about `spot`
+std::unique_ptr<Group> demo_arrow( float degrees )
+{
+	auto group = std::make_unique<Group>();
+	auto shaft = std::make_unique<Line>();
+	shaft->start = { -1.5F, 0.F };
+	shaft->end = { 1.2F, 0.F };
+	shaft->stroke_thickness = 0.12F;
+	auto tip = std::make_unique<ArrowTip>();
+	tip->start = { -1.5F, 0.F };
+	tip->end = { 1.6F, 0.F };
+	tip->size = 0.3F;
+	group->add( std::move( shaft ) );
+	group->add( std::move( tip ) );
+	group->position = { 0.F, 1.F };
+	group->rotation = degrees;
+	return group;
+}
+
+// Corners (segment ends) of the drawn head: the second leaf of a morph of the arrow
+std::vector<Point> head_corners( Morph &morph )
+{
+	std::vector<Point> out;
+	const auto shapes = to_outline( morph.visual() );
+	for ( const auto &c: shapes[1].contours )
+	{
+		for ( const auto &s: c.segs )
+		{
+			out.push_back( s.to );
+		}
+	}
+	return out;
+}
+}
+
+TEST_CASE( "A shape that is only turned is carried round whole, not squashed", "[morph]" )
+{
+	auto before = demo_arrow( 0.F );
+	auto after = demo_arrow( 60.F );
+	Morph morph( *before, *after );
+
+	morph.set( 0.F );
+	const auto start = head_corners( morph );
+	REQUIRE( start.size() == 3 );
+
+	for ( float t: { 0.25F, 0.5F, 0.75F } )
+	{
+		morph.set( t );
+		const auto now = head_corners( morph );
+		INFO( "t = " << t );
+		REQUIRE( now.size() == 3 ); // still a triangle, not cut into more
+		// the same triangle: its sides keep their lengths
+		for ( size_t i = 0; i < 3; ++i )
+		{
+			const Point e0 = start[( i + 1 ) % 3] - start[i];
+			const Point e1 = now[( i + 1 ) % 3] - now[i];
+			CHECK( std::sqrt( e1.lengthSquared() ) == Approx( std::sqrt( e0.lengthSquared() ) ).epsilon( 1e-3 ) );
+		}
+		// and the head stays at the shaft's end: both turn about the arrow's pivot, together
+		const auto shaft = to_outline( morph.visual() )[0].contours[0];
+		const Point shaft_end = shaft.segs.front().to; // (the outline of the drawn path closes back to its start after)
+		const Point spot{ 0.F, 1.F };
+		const float a = std::atan2( shaft_end.y() - spot.y(), shaft_end.x() - spot.x() );
+		CHECK( a == Approx( t * 60.F * std::numbers::pi_v<float> / 180.F ).margin( 1e-3 ) );
+		CHECK( std::sqrt( ( shaft_end - spot ).lengthSquared() ) == Approx( 1.2F ).epsilon( 1e-3 ) ); // not shortened
+	}
+}
+
+TEST_CASE( "Similarity::between finds a shift, a turn, or nothing", "[morph]" )
+{
+	const Contour square = rect_contour( 1.F, 1.F );
+	auto moved = [&]( float dx, float degrees, float scale )
+	{
+		Contour c = square;
+		const float r = degrees * std::numbers::pi_v<float> / 180.F;
+		auto f = [&]( Point p ) { return Point{ scale * ( std::cos( r ) * p.x() - std::sin( r ) * p.y() ) + dx, scale * ( std::sin( r ) * p.x() + std::cos( r ) * p.y() ) }; };
+		c.start = f( c.start );
+		for ( auto &s: c.segs )
+		{
+			s.c1 = f( s.c1 );
+			s.c2 = f( s.c2 );
+			s.to = f( s.to );
+		}
+		return c;
+	};
+
+	auto shifted = Similarity::between( { square }, { moved( 3.F, 0.F, 1.F ) } );
+	REQUIRE( shifted );
+	CHECK( shifted->shift_only );
+	CHECK( shifted->apply( { 1.F, 1.F }, 0.5F ).x() == Approx( 2.5F ) );
+
+	auto turned = Similarity::between( { square }, { moved( 3.F, 90.F, 2.F ) } );
+	REQUIRE( turned );
+	CHECK_FALSE( turned->shift_only );
+	CHECK( turned->angle == Approx( std::numbers::pi_v<float> / 2.F ) );
+	const Point end = turned->apply( square.start, 1.F );
+	CHECK( same_point( end, moved( 3.F, 90.F, 2.F ).start ) );
+
+	// A different shape (squashed) is not a similarity
+	CHECK_FALSE( Similarity::between( { square }, { rect_contour( 2.F, 1.F ) } ) );
+}

@@ -1,6 +1,7 @@
 #include "visuals/Morph.h"
 
 #include <algorithm>
+#include <cmath>
 
 namespace
 {
@@ -32,6 +33,111 @@ Color transparent( Color c )
 	return c;
 }
 
+}
+
+Point Similarity::apply( Point p, float t ) const
+{
+	if ( shift_only )
+	{
+		return p + shift * t;
+	}
+	const float s = std::exp( log_scale * t );
+	const float c = std::cos( angle * t ) * s;
+	const float n = std::sin( angle * t ) * s;
+	const Point d = p - pivot;
+	return pivot + Point{ c * d.x() - n * d.y(), n * d.x() + c * d.y() };
+}
+
+std::optional<Similarity> Similarity::between( const std::vector<Contour> &a, const std::vector<Contour> &b )
+{
+	std::vector<Point> pa;
+	std::vector<Point> pb;
+	if ( a.size() != b.size() )
+	{
+		return std::nullopt;
+	}
+	for ( size_t i = 0; i < a.size(); ++i )
+	{
+		if ( a[i].segs.size() != b[i].segs.size() || a[i].closed != b[i].closed )
+		{
+			return std::nullopt;
+		}
+		pa.push_back( a[i].start );
+		pb.push_back( b[i].start );
+		for ( size_t k = 0; k < a[i].segs.size(); ++k )
+		{
+			for ( auto [x, y]: { std::pair{ a[i].segs[k].c1, b[i].segs[k].c1 }, std::pair{ a[i].segs[k].c2, b[i].segs[k].c2 }, std::pair{ a[i].segs[k].to, b[i].segs[k].to } } )
+			{
+				pa.push_back( x );
+				pb.push_back( y );
+			}
+		}
+	}
+	if ( pa.size() < 2 )
+	{
+		return std::nullopt;
+	}
+
+	// Least squares: centre both, then the turn and scale that best carry one onto the other
+	Point ca;
+	Point cb;
+	for ( size_t i = 0; i < pa.size(); ++i )
+	{
+		ca += pa[i];
+		cb += pb[i];
+	}
+	ca = ca / static_cast<float>( pa.size() );
+	cb = cb / static_cast<float>( pb.size() );
+	double dot = 0.0;
+	double cross = 0.0;
+	double norm = 0.0;
+	for ( size_t i = 0; i < pa.size(); ++i )
+	{
+		const Point x = pa[i] - ca;
+		const Point y = pb[i] - cb;
+		dot += x.x() * y.x() + x.y() * y.y();
+		cross += x.x() * y.y() - x.y() * y.x();
+		norm += x.lengthSquared();
+	}
+	if ( norm <= 0.0 )
+	{
+		return std::nullopt;
+	}
+	const double angle = std::atan2( cross, dot );
+	const double scale = std::hypot( dot, cross ) / norm;
+	if ( scale <= 0.0 )
+	{
+		return std::nullopt;
+	}
+
+	// Only if it really is the same shape: every point lands (to a hair of the size) where it should
+	const float c = static_cast<float>( std::cos( angle ) * scale );
+	const float n = static_cast<float>( std::sin( angle ) * scale );
+	const float size = static_cast<float>( std::sqrt( norm / static_cast<double>( pa.size() ) ) );
+	for ( size_t i = 0; i < pa.size(); ++i )
+	{
+		const Point x = pa[i] - ca;
+		const Point landed = cb + Point{ c * x.x() - n * x.y(), n * x.x() + c * x.y() };
+		if ( ( landed - pb[i] ).lengthSquared() > 1e-8F * size * size )
+		{
+			return std::nullopt;
+		}
+	}
+
+	Similarity out;
+	if ( std::abs( angle ) < 1e-5 && std::abs( scale - 1.0 ) < 1e-5 )
+	{
+		out.shift = cb - ca;
+		return out;
+	}
+	// The point that stays put: p = M p + T, where M turns and scales and T = cb - M ca
+	const Point t = cb - Point{ c * ca.x() - n * ca.y(), n * ca.x() + c * ca.y() };
+	const float det = ( 1.F - c ) * ( 1.F - c ) + n * n;
+	out.shift_only = false;
+	out.pivot = Point{ ( 1.F - c ) * t.x() - n * t.y(), n * t.x() + ( 1.F - c ) * t.y() } / det;
+	out.angle = static_cast<float>( angle );
+	out.log_scale = static_cast<float>( std::log( scale ) );
+	return out;
 }
 
 Morph::Morph( const Visual &from, const Visual &to, const MorphOptions &options ) :
@@ -69,9 +175,16 @@ Morph::Morph( const Visual &from, const Visual &to, const MorphOptions &options 
 		{
 			const auto &a = shapes_a[static_cast<size_t>( pair.a )];
 			const auto &b = shapes_b[static_cast<size_t>( pair.b )];
-			part.contours = match_contours( a, b, options.costs );
 			part.original_a = a.contours;
 			part.original_b = b.contours;
+			if ( a.key == b.key )
+			{
+				part.carry = Similarity::between( a.contours, b.contours );
+			}
+			if ( !part.carry )
+			{
+				part.contours = match_contours( a, b, options.costs );
+			}
 			part.fill_a = a.fill;
 			part.fill_b = b.fill;
 			part.stroke_a = a.stroke;
@@ -183,6 +296,24 @@ void Morph::set( float t )
 				for ( const auto &seg: contour.segs )
 				{
 					path.commands.push_back( CubicTo{ seg.to, seg.c1, seg.c2 } );
+				}
+				if ( contour.closed )
+				{
+					path.commands.push_back( Close{} );
+				}
+			}
+			continue;
+		}
+
+		if ( part.carry )
+		{
+			for ( const auto &contour: part.original_a )
+			{
+				path.commands.push_back( MoveTo{ part.carry->apply( contour.start, progress ) } );
+				for ( const auto &seg: contour.segs )
+				{
+					const Similarity &m = *part.carry;
+					path.commands.push_back( CubicTo{ m.apply( seg.to, progress ), m.apply( seg.c1, progress ), m.apply( seg.c2, progress ) } );
 				}
 				if ( contour.closed )
 				{
