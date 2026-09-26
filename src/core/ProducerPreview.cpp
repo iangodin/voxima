@@ -87,6 +87,11 @@ bool Producer::preview( const std::string &language )
 		}
 	} );
 
+#if defined( __linux__ )
+	// Prefer X11 (through XWayland on a Wayland desktop): the SDL from Conan has no libdecor, so a native
+	// Wayland window has no border or title bar on GNOME. SDL_VIDEO_DRIVER in the environment still wins.
+	SDL_SetHint( SDL_HINT_VIDEO_DRIVER, "x11,wayland" );
+#endif
 	if ( !SDL_Init( SDL_INIT_VIDEO | SDL_INIT_AUDIO ) )
 	{
 		throw sdl_error( "SDL_Init" );
@@ -182,7 +187,7 @@ bool Producer::preview( const std::string &language )
 
 	// Where a skip starts from: where we are going, if we are still waiting to get there
 	constexpr int64_t the_end = std::numeric_limits<int64_t>::max() / 2; // "the last frame", whenever that is known
-	const int64_t skip = static_cast<int64_t>( 5.0 * fps );
+	const int64_t skip = static_cast<int64_t>( 1.0 * fps );
 	auto skip_by = [&]( int64_t frames ) { seek( std::min( pending >= 0 ? pending : playhead, the_end ) + frames ); };
 
 	Uint64 title_time = 0;
