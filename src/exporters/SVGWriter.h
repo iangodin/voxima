@@ -22,7 +22,13 @@
 class SVGWriter : public VisualVisitor
 {
 public:
-	SVGWriter( std::ostream &out, int indent_level = 2 );
+	// `flatness` (in the drawing's units; 0 for none): how close to its true shape a curve must be drawn. The
+	// rasteriser (plutovg, FreeType's) only gets a curve to within about an eighth of a pixel, and where it lands
+	// depends on how the curve happens to be cut into pieces, so the same shape drawn as a glyph and as a morph's
+	// many-piece copy of it differ at the edges, and flicker when one replaces the other. Curves are written cut
+	// into as many equal pieces as it takes for each to be within `flatness` of a straight line, which the
+	// rasteriser then draws as it is. Stage::save_svg gives a twenty-fifth of a pixel.
+	SVGWriter( std::ostream &out, int indent_level = 2, float flatness = 0.F );
 
 	void write_defs( std::ostream &out );
 
@@ -50,6 +56,7 @@ private:
 
 	std::ostream &_out;
 	int _indent;
+	float _flatness = 0.F;
 	Color _current_color = { 1.F, 1.F, 1.F, 1.F };
 	Color _current_stroke_color = { 1.F, 1.F, 1.F, 1.F };
 	// Glyph outlines already written, keyed by the path data itself (which has the font size

@@ -3,6 +3,10 @@
 #include <visuals/Glyph.h>
 #include <visuals/Group.h>
 #include <visuals/Image.h>
+#include <visuals/Path.h>
+
+#include <cmath>
+#include <vector>
 
 #include <memory>
 #include <sstream>
@@ -152,4 +156,88 @@ TEST_CASE( "SVGWriter fades an image by its color's alpha", "[exporters]" )
 	{
 		CHECK( contains( write( 0.5F, 0.5F ), "opacity=\"0.2500\"" ) );
 	}
+}
+
+namespace
+{
+// The numbers after each "C" of a path's d="...", as its end points
+std::vector<std::pair<float, float>> cubic_ends( const std::string &svg )
+{
+	std::vector<std::pair<float, float>> ends;
+	std::istringstream in( svg.substr( svg.find( "d=\"" ) + 3 ) );
+	std::string token;
+	while ( in >> token && token.find( '"' ) == std::string::npos )
+	{
+		if ( token == "C" )
+		{
+			std::string c1, c2, to;
+			in >> c1 >> c2 >> to;
+			const auto comma = to.find( ',' );
+			ends.push_back( { std::stof( to.substr( 0, comma ) ), std::stof( to.substr( comma + 1 ) ) } );
+		}
+	}
+	return ends;
+}
+}
+
+TEST_CASE( "SVGWriter cuts curves up to draw them within the flatness", "[exporters]" )
+{
+	// A quarter circle of radius 1 as one cubic (it bulges about 0.3 away from its chord)
+	constexpr float k = 0.5523F;
+	Path arc;
+	arc.commands = { MoveTo{ Point( 1.F, 0.F ) }, CubicTo{ Point( 0.F, 1.F ), Point( 1.F, k ), Point( k, 1.F ) } };
+
+	auto write = [&]( float flatness )
+	{
+		std::ostringstream body;
+		SVGWriter writer( body, 2, flatness );
+		arc.accept( writer );
+		return body.str();
+	};
+
+	CHECK( cubic_ends( write( 0.F ) ).size() == 1 ); // as it is
+
+	const auto ends = cubic_ends( write( 0.001F ) );
+	CHECK( ends.size() > 4 );
+	CHECK( ends.size() <= 64 );
+	for ( const auto &[x, y]: ends )
+	{
+		// Every piece ends on the curve, which is (to within 0.03 %) the circle
+		CHECK( std::abs( std::hypot( x, y ) - 1.F ) < 0.001F );
+	}
+	CHECK( ends.back().first == 0.F );
+	CHECK( ends.back().second == 1.F );
+
+	// A straight line is never cut
+	Path line;
+	line.commands = { MoveTo{ Point( 0.F, 0.F ) }, CubicTo{ Point( 3.F, 0.F ), Point( 1.F, 0.F ), Point( 2.F, 0.F ) } };
+	std::ostringstream body;
+	SVGWriter writer( body, 2, 0.001F );
+	line.accept( writer );
+	CHECK( cubic_ends( body.str() ).size() == 1 );
+}
+
+TEST_CASE( "SVGWriter leaves out a transform or an opacity too small to see", "[exporters]" )
+{
+	auto write = []( float scale, float rotation, float alpha )
+	{
+		auto image = std::make_unique<Image>();
+		image->path = "picture.png";
+		image->scale_x = image->scale_y = scale;
+		image->rotation = rotation;
+		image->color = { 1.F, 1.F, 1.F, alpha };
+		std::ostringstream body;
+		SVGWriter writer( body );
+		image->accept( writer );
+		return body.str();
+	};
+
+	// A picture is drawn a pixel off under any transform, or with any opacity, so a hair from none is none
+	CHECK_FALSE( contains( write( 0.99998F, 0.F, 1.F ), "scale(0." ) ); // (every picture has its own scale(1, -1))
+	CHECK_FALSE( contains( write( 1.F, 0.0002F, 1.F ), "rotate(" ) );
+	CHECK_FALSE( contains( write( 1.F, 0.F, 0.9999F ), "opacity=" ) );
+
+	CHECK( contains( write( 0.99F, 0.F, 1.F ), "scale(0." ) );
+	CHECK( contains( write( 1.F, 0.5F, 1.F ), "rotate(" ) );
+	CHECK( contains( write( 1.F, 0.F, 0.99F ), "opacity=" ) );
 }

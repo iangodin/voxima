@@ -32,12 +32,16 @@ struct Stage
 	{
 		if ( !file ) return;
 
-		std::ostringstream body;
-		SVGWriter writer( body );
-		visuals.accept( writer );
-
 		float aspect = static_cast<float>( camera.height ) / static_cast<float>( camera.width );
 		float view_width = 16.f;
+
+		// Curves drawn to within a twenty-fifth of a pixel (see SVGWriter), so a shape looks the same however its
+		// outline is cut up: a glyph, and the morph that turns into it
+		const float pixel = view_width / static_cast<float>( camera.width );
+
+		std::ostringstream body;
+		SVGWriter writer( body, 2, pixel / 25.F );
+		visuals.accept( writer );
 		float view_height = view_width * aspect;
 
 		file << "<svg width=\"" << camera.width << "\" height=\"" << camera.height << "\" "

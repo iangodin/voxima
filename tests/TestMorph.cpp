@@ -15,7 +15,9 @@
 #include <visuals/Path.h>
 #include <visuals/Rectangle.h>
 
+#include <algorithm>
 #include <cmath>
+#include <limits>
 #include <numbers>
 #include <variant>
 
@@ -965,4 +967,154 @@ TEST_CASE( "Morph moves the same picture and cross-fades different ones", "[morp
 			CHECK( image_part( morph, 0 ).color.a <= 1.F );
 		}
 	}
+}
+
+namespace
+{
+// Points along a contour, `per_seg` to a segment
+std::vector<Point> trace( const Contour &c, int per_seg = 24 )
+{
+	std::vector<Point> out;
+	Point p0 = c.start;
+	for ( const auto &s: c.segs )
+	{
+		for ( int k = 0; k < per_seg; ++k )
+		{
+			const float t = static_cast<float>( k ) / static_cast<float>( per_seg );
+			const float u = 1.F - t;
+			out.push_back( p0 * ( u * u * u ) + s.c1 * ( 3.F * u * u * t ) + s.c2 * ( 3.F * u * t * t ) + s.to * ( t * t * t ) );
+		}
+		p0 = s.to;
+	}
+	return out;
+}
+
+// How far the furthest point of one contour is from the other (both ways): 0 if they are the same curve
+float distance_between( const Contour &x, const Contour &y )
+{
+	const auto px = trace( x, 48 );
+	const auto py = trace( y, 48 );
+	// Distance from each point of one to the other traced as a closed polyline (its chords are far finer than
+	// the error being looked for)
+	auto one_way = [&]( const std::vector<Point> &from, const std::vector<Point> &to )
+	{
+		float worst = 0.F;
+		for ( Point p: from )
+		{
+			float best = std::numeric_limits<float>::max();
+			for ( size_t i = 0; i < to.size(); ++i )
+			{
+				const Point a = to[i];
+				const Point b = to[( i + 1 ) % to.size()];
+				const Point ab = b - a;
+				const float len2 = ab.lengthSquared();
+				const float t = len2 > 0.F ? std::clamp( ( ( p - a ).x() * ab.x() + ( p - a ).y() * ab.y() ) / len2, 0.F, 1.F ) : 0.F;
+				best = std::min( best, ( p - ( a + ab * t ) ).lengthSquared() );
+			}
+			worst = std::max( worst, best );
+		}
+		return std::sqrt( worst );
+	};
+	return std::max( one_way( px, py ), one_way( py, px ) );
+}
+
+// The contour of `pairs` that traces `original` best (cut contours come out in another order)
+float closest( const Contour &original, const std::vector<ContourPair> &pairs, bool second )
+{
+	float best = std::numeric_limits<float>::max();
+	for ( const auto &pair: pairs )
+	{
+		best = std::min( best, distance_between( original, second ? pair.b : pair.a ) );
+	}
+	return best;
+}
+}
+
+TEST_CASE( "match_contours cuts glyphs without changing their shape", "[morph]" )
+{
+	auto theme = AcademicClassic::create_theme();
+	const FontStyle style = FontStyle{ Intent::PROSE }.huge();
+
+	const char *letters[] = { "a", "e", "8", "x", "g", "S" };
+	for ( const char *from: letters )
+	{
+		for ( const char *to: letters )
+		{
+			auto a = to_outline( *make_text( theme, from, style ) );
+			auto b = to_outline( *make_text( theme, to, style ) );
+			REQUIRE( a.size() == 1 );
+			REQUIRE( b.size() == 1 );
+			const float size = std::hypot( bounds_of( *make_text( theme, from, style ) ).width(), bounds_of( *make_text( theme, from, style ) ).height() );
+
+			const auto pairs = match_contours( a[0], b[0] );
+			INFO( from << " -> " << to );
+			for ( const auto &c: a[0].contours )
+			{
+				CHECK( closest( c, pairs, false ) < 1e-4F * size );
+			}
+			for ( const auto &c: b[0].contours )
+			{
+				CHECK( closest( c, pairs, true ) < 1e-4F * size );
+			}
+		}
+	}
+}
+
+TEST_CASE( "Morph with stagger goes on smoothly past its ends (for eases that overshoot)", "[morph]" )
+{
+	MorphOptions options;
+	options.stagger = 0.5F;
+	auto a = discs();
+	auto b = boxes();
+	Morph morph( *a, *b, options );
+
+	// Just past either end, nothing jumps: every part is within a hair of where it was at the end
+	for ( const auto &[end, past]: { std::pair{ 1.F, 1.001F }, std::pair{ 0.F, -0.001F } } )
+	{
+		morph.set( end );
+		std::vector<double> at_end;
+		for ( size_t k = 0; k < 3; ++k )
+		{
+			at_end.push_back( part_area( morph, k ) );
+		}
+		const AABB box_end = bounds_of( morph.visual() );
+
+		morph.set( past );
+		for ( size_t k = 0; k < 3; ++k )
+		{
+			INFO( "part " << k << " at t = " << past );
+			CHECK( part_area( morph, k ) == Approx( at_end[k] ).epsilon( 0.01 ) );
+		}
+		const AABB box_past = bounds_of( morph.visual() );
+		CHECK( box_past.width() == Approx( box_end.width() ).epsilon( 0.01 ) );
+	}
+}
+
+TEST_CASE( "Morph draws the outlines as they are at its ends, not cut to match", "[morph]" )
+{
+	auto theme = AcademicClassic::create_theme();
+	const FontStyle style{ Intent::PROSE };
+	auto a = make_text( theme, "a", style );
+	auto e = make_text( theme, "e", style );
+	const auto outline_a = to_outline( *a );
+	const auto outline_e = to_outline( *e );
+
+	auto segments = []( const std::vector<OutlineShape> &shapes )
+	{
+		size_t n = 0;
+		for ( const auto &shape: shapes )
+			for ( const auto &c: shape.contours )
+				n += c.segs.size();
+		return n;
+	};
+
+	Morph morph( *a, *e );
+	morph.set( 0.F );
+	CHECK( segments( to_outline( morph.visual() ) ) == segments( outline_a ) );
+	morph.set( 1.F );
+	CHECK( segments( to_outline( morph.visual() ) ) == segments( outline_e ) );
+
+	// In between, both cut to the same number of pieces (more than either has)
+	morph.set( 0.5F );
+	CHECK( segments( to_outline( morph.visual() ) ) > std::max( segments( outline_a ), segments( outline_e ) ) );
 }

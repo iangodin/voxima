@@ -79,6 +79,11 @@ private:
 		ImageInfo image_a;
 		ImageInfo image_b;
 		std::vector<ContourPair> contours;
+		// The outlines as they are, not cut to match: drawn when the part is exactly at its start or end, so
+		// it looks just like the visual it came from or becomes (a stroke stays a stroke, not a loop out and
+		// back, and the rasteriser draws the same curves the same way)
+		std::vector<Contour> original_a;
+		std::vector<Contour> original_b;
 		Color fill_a, fill_b;
 		Color stroke_a, stroke_b;
 		float thickness_a = 0.F;

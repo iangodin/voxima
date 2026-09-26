@@ -70,6 +70,8 @@ Morph::Morph( const Visual &from, const Visual &to, const MorphOptions &options 
 			const auto &a = shapes_a[static_cast<size_t>( pair.a )];
 			const auto &b = shapes_b[static_cast<size_t>( pair.b )];
 			part.contours = match_contours( a, b, options.costs );
+			part.original_a = a.contours;
+			part.original_b = b.contours;
 			part.fill_a = a.fill;
 			part.fill_b = b.fill;
 			part.stroke_a = a.stroke;
@@ -124,11 +126,17 @@ void Morph::set( float t )
 	{
 		// This part's own progress: it starts at its delay and takes what is left of the morph. Inside the
 		// morph it stays between 0 and 1 (so it has finished before the end); outside, as when an ease
-		// overshoots, it carries on past.
-		float progress = ( _t - part.delay ) / ( 1.F - _stagger );
-		if ( _t >= 0.F && _t <= 1.F )
+		// overshoots, it carries on past, from where it was at the end and at the same rate (not from its own
+		// line, which with a stagger would jump: a part that finished early would leap ahead).
+		const float rate = 1.F / ( 1.F - _stagger );
+		float progress = std::clamp( ( _t - part.delay ) * rate, 0.F, 1.F );
+		if ( _t > 1.F )
 		{
-			progress = std::clamp( progress, 0.F, 1.F );
+			progress += ( _t - 1.F ) * rate;
+		}
+		else if ( _t < 0.F )
+		{
+			progress += _t * rate;
 		}
 		if ( _part_ease && progress >= 0.F && progress <= 1.F )
 		{
@@ -152,6 +160,26 @@ void Morph::set( float t )
 		path.stroke_thickness = std::max( 0.F, lerp( part.thickness_a, part.thickness_b, progress ) );
 
 		path.commands.clear();
+
+		// Exactly at an end, the outline as it is drawn there
+		const std::vector<Contour> *original = progress == 0.F ? &part.original_a : progress == 1.F ? &part.original_b : nullptr;
+		if ( original && !original->empty() )
+		{
+			for ( const auto &contour: *original )
+			{
+				path.commands.push_back( MoveTo{ contour.start } );
+				for ( const auto &seg: contour.segs )
+				{
+					path.commands.push_back( CubicTo{ seg.to, seg.c1, seg.c2 } );
+				}
+				if ( contour.closed )
+				{
+					path.commands.push_back( Close{} );
+				}
+			}
+			continue;
+		}
+
 		for ( const auto &pair: part.contours )
 		{
 			path.commands.push_back( MoveTo{ lerp( pair.a.start, pair.b.start, progress ) } );
