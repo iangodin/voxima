@@ -36,6 +36,7 @@
 #include <visuals/Callout.h>
 #include <visuals/Connector.h>
 #include <visuals/Diagram.h>
+#include <visuals/Geometry.h>
 #include <visuals/WrapText.h>
 #include <visuals/CreateStyledText.h>
 #include <visuals/CreateText.h>
@@ -967,6 +968,23 @@ Scene show_diagram( Stage &stage, Script & )
 	co_await wait_for( stage, 3s );
 }
 
+// A triangle with named corners, a right angle and another marked
+Scene show_geometry( Stage &stage, Script & )
+{
+	Theme &theme = *stage.theme;
+	const Palette &palette = theme.palette();
+	const Point a{ -4.F, -2.F };
+	const Point b{ 2.F, -2.F };
+	const Point c{ 2.F, 2.F };
+
+	stage.visuals.add( make_polygon( theme, { a, b, c }, { .fill = Color{ palette.blue.r, palette.blue.g, palette.blue.b, 0.2F }, .labels = { "A", "B", "C" }, .dots = true } ) );
+	stage.visuals.add( make_angle( theme, b, a, c, { .radius = 0.5F } ) );
+	stage.visuals.add( make_angle( theme, a, b, c, { .radius = 1.2F, .color = palette.orange, .label = "θ" } ) );
+	stage.visuals.add( make_labeled_brace( theme, a, b, "adjacent", FontStyle{ Intent::LABEL }, { .color = palette.muted, .left = false } ) );
+
+	co_await wait_for( stage, 2s );
+}
+
 // Music under the demo movie. Music is not in the repository (assets/ is not): without the file the movie
 // plays silent, and says so.
 constexpr const char *MOVIE_MUSIC = "assets/music/Alexander Ehlers - Spacetime.mp3";
@@ -998,6 +1016,7 @@ SONIMATION_SCENE( "code", "Syntax-highlighted C++, typed, with lines pointed out
 SONIMATION_SCENE( "layout", "Panels, a list and a table, and a row of shapes, placed against each other", show_layout );
 SONIMATION_SCENE( "verbs", "Fade, slide, grow and indicate, with connectors following the moving circles", show_verbs );
 SONIMATION_SCENE( "diagram", "A diagram laid out in layers, a callout, a wrapped list, and evenly spread headings", show_diagram );
+SONIMATION_SCENE( "geometry", "A triangle with named corners and marked angles", show_geometry );
 SONIMATION_SCENE( "camera", "Zooming in on a graph, and panning along it", show_camera );
 SONIMATION_SCENE( "plot", "Axes crossing in the middle, and graphs drawn on them", show_plot );
 SONIMATION_SCENE( "plot-edge", "The same, with the axes along the left and bottom", show_plot_edge );
