@@ -43,9 +43,9 @@
 ### Math Expressions: not there yet
 A review of `math/Expr.h` against what a page of teaching math needs. What is listed above is all done, and complete for the TeX constructs it covers; these are the gaps:
   - [ ] Aligned multi-line equations (`align`: lines lined up on the relation, or on any marker), with optional equation numbers
-  - [ ] Text inside math (`\text{if}`, `\text{for all}`): words in the body font, spaces kept, between math
+  - [x] Text inside math: `words( "for all" )` (upright, spaces kept)
   - [ ] Marking a part: strike-through (`cancel`), a box round it (`boxed`), a color for a part (by tag, and in the palette's accents)
-  - [ ] Primes and other marks after a symbol (f', f'', x*)
+  - [x] Primes after a symbol: `primed( f, 2 )`
   - [ ] Stretchy wide accents (`widehat`, `widetilde`) and arrows over a base (`overrightarrow`) that span their content
   - [ ] Stacked limits on several lines (`substack`), and continued fractions
   - [ ] Delimiters of a chosen size (`\big`, `\Big` ...), not only the ones that stretch to fit

@@ -10,6 +10,7 @@
 #include "visuals/Radical.h"
 #include "visuals/Scripts.h"
 
+#include <algorithm>
 #include <stdexcept>
 
 namespace math
@@ -58,6 +59,11 @@ Expr upright( std::string characters )
 			font_style.upright();
 			return make_text( context.theme(), characters, font_style );
 		} );
+}
+
+Expr words( std::string characters )
+{
+	return upright( std::move( characters ) );
 }
 
 Expr bold( std::string characters )
@@ -168,6 +174,16 @@ Expr root( Expr index, Expr radicand )
 				radicand.build( context, style.radicand() ),
 				style );
 		} );
+}
+
+Expr primed( Expr base, int count )
+{
+	std::string marks;
+	for ( int i = 0; i < std::max( 1, count ); ++i )
+	{
+		marks += "′";
+	}
+	return superscript( std::move( base ), upright( std::move( marks ) ) );
 }
 
 Expr scripts( Expr base, Expr superscript_, Expr subscript_ )

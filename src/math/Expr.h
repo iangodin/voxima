@@ -51,6 +51,9 @@ Expr text( std::string characters );
 // No italic: function names, units, the d of dx
 Expr upright( std::string characters );
 Expr bold( std::string characters );
+// Words between the math (TeX's \text{if}, \text{for all}): upright, the spaces kept. Put it in a row as an atom of its own
+// class, e.g. ord( words( "if" ) ), with space( Row::QUAD ) round it as TeX's authors do.
+Expr words( std::string characters );
 // The rest of the Unicode math alphabets (\mathcal, \mathfrak, \mathbb, \mathsf, \mathtt),
 // each set upright, as text() sets math italic
 Expr script( std::string characters );
@@ -70,6 +73,8 @@ Expr root( Expr index, Expr radicand );
 Expr superscript( Expr base, Expr script );
 Expr subscript( Expr base, Expr script );
 // Either script may be empty
+// Primes after a symbol: f', f'' (one prime mark for each of `count`, as a superscript)
+Expr primed( Expr base, int count = 1 );
 Expr scripts( Expr base, Expr superscript_, Expr subscript_ );
 
 // A label stacked over (or under) a base, centered on it and at script size, always -

@@ -4,6 +4,7 @@
 #include <math/Expr.h>
 #include <math/Symbols.h>
 #include <themes/NewComputerModern.h>
+#include <visuals/Layout.h>
 #include <visuals/MissingGlyph.h>
 
 #include <fstream>
@@ -52,4 +53,40 @@ TEST_CASE( "named symbols are the characters they say", "[math][symbols]" )
 	CHECK( std::string( sym::leq ) == "≤" );
 	CHECK( std::string( sym::infty ) == "∞" );
 	CHECK( std::string( sym::Rightarrow ) == "⇒" );
+}
+
+TEST_CASE( "upright text with spaces keeps its spaces (words in a formula)", "[math][symbols]" )
+{
+	Theme theme = NewComputerModern::create_theme();
+	Context context{ theme };
+	auto width = [&]( const Expr &e ) {
+		const AABB box = layout_extent( *e.build( context ) );
+		return box.max.x() - box.min.x();
+	};
+	CHECK( width( upright( "for all" ) ) > width( upright( "forall" ) ) + 0.05F );
+}
+
+TEST_CASE( "primed puts prime marks up after its base, one for each", "[math][symbols]" )
+{
+	Theme theme = NewComputerModern::create_theme();
+	Context context{ theme };
+	auto width = [&]( const Expr &e ) {
+		const AABB box = layout_extent( *e.build( context ) );
+		return box.max.x() - box.min.x();
+	};
+	const float plain = width( text( "f" ) );
+	const float one = width( primed( text( "f" ) ) );
+	const float two = width( primed( text( "f" ), 2 ) );
+	CHECK( one > plain );
+	CHECK( two > one );
+	CHECK( width( primed( text( "f" ), 0 ) ) == one ); // (at least one)
+}
+
+TEST_CASE( "words is upright text", "[math][symbols]" )
+{
+	Theme theme = NewComputerModern::create_theme();
+	Context context{ theme };
+	const AABB a = layout_extent( *words( "if x" ).build( context ) );
+	const AABB b = layout_extent( *upright( "if x" ).build( context ) );
+	CHECK( a.max.x() == b.max.x() );
 }
