@@ -1,6 +1,11 @@
 
 #include "DubbingStage.h"
 
+#include "Resample.h"
+#include "SoundFile.h"
+
+#include <algorithm>
+
 void DubbingStage::setup(
 	const std::filesystem::path &render_dir,
 	std::string_view codec,
@@ -36,6 +41,7 @@ void DubbingStage::begin( const std::filesystem::path &render_dir, const std::ve
 {
 	_mixers.clear();
 	_mics.clear();
+	_playing.clear();
 	_outputs.clear();
 	_subtitles.clear();
 
@@ -115,8 +121,60 @@ const std::vector<SubtitleCue> &DubbingStage::subtitles( std::string_view lang )
 	return s == _subtitles.end() ? empty : s->second;
 }
 
+Sound DubbingStage::play( const std::filesystem::path &file, const SoundOptions &options )
+{
+	const std::string key = std::filesystem::absolute( file ).lexically_normal().string();
+	auto found = _sound_files.find( key );
+	if ( found == _sound_files.end() )
+	{
+		found = _sound_files.emplace( key, std::make_shared<const AudioBuffer>( load_sound( file, _audio_rate ) ) ).first;
+	}
+	return start( found->second, options );
+}
+
+Sound DubbingStage::play( const AudioBuffer &audio, const SoundOptions &options )
+{
+	return start( std::make_shared<const AudioBuffer>( resample( to_stereo( audio ), _audio_rate ) ), options );
+}
+
+Sound DubbingStage::start( std::shared_ptr<const AudioBuffer> audio, const SoundOptions &options )
+{
+	auto playing = std::make_shared<PlayingSound>( std::move( audio ), options );
+	_playing.push_back( playing );
+	return Sound( std::move( playing ) );
+}
+
+void DubbingStage::stop_sounds()
+{
+	for ( auto &playing: _playing )
+	{
+		playing->stop();
+	}
+	_playing.clear();
+}
+
 void DubbingStage::write_audio( void )
 {
+	// The sounds' next block, the same in every language
+	if ( !_playing.empty() )
+	{
+		if ( !_sound_block.same( AudioBuffer( _block_size, _audio_rate, 2 ) ) )
+		{
+			_sound_block = AudioBuffer( _block_size, _audio_rate, 2 );
+		}
+		std::fill( _sound_block.begin(), _sound_block.end(), 0.F );
+		for ( auto &playing: _playing )
+		{
+			playing->mix_into( _sound_block );
+		}
+		std::erase_if( _playing, []( const auto &playing ) { return playing->done(); } );
+
+		for ( auto &[lang, mixer]: _mixers )
+		{
+			mixer.add_audio( _sound_block );
+		}
+	}
+
 	for ( auto &[lang, mixer]: _mixers )
 	{
 		mixer.write_audio();

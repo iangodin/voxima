@@ -102,6 +102,9 @@ void AudioMixer::add_audio( const AudioBuffer &buffer )
 
 void AudioMixer::write_audio( void )
 {
+	// Voice and music together can go past full scale; clip there, rather than let the 16 bit output wrap around
+	std::transform( _buffer.begin(), _buffer.end(), _buffer.begin(), []( float sample ) { return std::clamp( sample, -1.F, 1.F ); } );
+
 	if ( _in_memory )
 	{
 		_memory.insert( _memory.end(), _buffer.begin(), _buffer.end() );

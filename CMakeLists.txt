@@ -112,6 +112,8 @@ add_library( visuals STATIC
 	src/audio/Microphone.cpp
 	src/audio/Silence.cpp
 	src/audio/Volume.cpp
+	src/audio/Sound.cpp
+	src/audio/SoundFile.cpp
 	src/utils/FreetypeError.cpp
 	src/utils/Huml.cpp
 	src/utils/Language.cpp

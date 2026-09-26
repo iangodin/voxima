@@ -60,6 +60,9 @@
 #include <visuals/Rectangle.h>
 
 #include <chrono>
+#include <cmath>
+#include <filesystem>
+#include <iostream>
 
 // Times in the scenes are written in seconds (0.5s, 1.7s), so they last as long at any --fps
 using namespace std::chrono_literals;
@@ -275,8 +278,23 @@ std::unique_ptr<Group> demo_letter( Stage &stage, const char *s, const Color &co
 	return text;
 }
 
+// A plucked note, made rather than read from a file: a sine that dies away over `seconds`
+AudioBuffer pluck( float frequency, float seconds = 2.F )
+{
+	constexpr size_t rate = 48000;
+	AudioBuffer note( static_cast<size_t>( seconds * rate ), rate, 1 );
+	for ( size_t f = 0; f < note.frames(); ++f )
+	{
+		const float t = static_cast<float>( f ) / rate;
+		const float attack = std::min( 1.F, t / 0.005F ); // no click at the start
+		note.frame( f )[0] = attack * std::exp( -3.F * t / seconds * 2.F ) * std::sin( 2.F * 3.14159265F * frequency * t );
+	}
+	return note;
+}
+
 // A shape that turns into other shapes and letters, one after the other: circle, square, then glyphs
-// (with holes that open and close) and back to the circle.
+// (with holes that open and close) and back to the circle. Each change sounds a two-note chord (sound effects
+// play together, and ring on into the next).
 Scene show_morph( Stage &stage, Script & )
 {
 	const Point home = { 0.F, 2.5F };
@@ -295,9 +313,14 @@ Scene show_morph( Stage &stage, Script & )
 	targets.push_back( letter( "x", Color{ 0.4F, 0.7F, 1.F, 1.F } ) );
 	targets.push_back( circle() );
 
+	const float notes[] = { 261.6F, 293.7F, 329.6F, 392.0F, 440.0F, 523.3F }; // C D E G A C
+	size_t note = 0;
 	for ( auto &target: targets )
 	{
 		Visual *next = target.get();
+		const float root = notes[note++ % std::size( notes )];
+		stage.audio.play( pluck( root ), { .volume = -14.0 } );
+		stage.audio.play( pluck( root * 1.5F ), { .volume = -18.0 } ); // and a fifth above
 		co_await morph( stage, *shown, std::move( target ), 1.5s, ease_cubic_in_out );
 		shown = next;
 		co_await wait_for( stage, 0.5s );
@@ -610,13 +633,27 @@ Scene show_formulas( Stage &stage, Script & )
 	co_await wait_for( stage, 3s );
 }
 
-// The whole demo: the scenes above one after another, each on a fresh stage
+// Music under the demo movie. Music is not in the repository (assets/ is not): without the file the movie
+// plays silent, and says so.
+constexpr const char *MOVIE_MUSIC = "assets/music/Alexander Ehlers - Spacetime.mp3";
+
+// The whole demo: the scenes above one after another, each on a fresh stage, with music under them that fades
+// in, and out at the end
 Scene movie( Stage &stage, Script &script )
 {
+	Sound music;
+	if ( std::filesystem::exists( MOVIE_MUSIC ) )
+		music = stage.audio.play( MOVIE_MUSIC, { .volume = -22.0, .loop = true, .fade_in = 2s } );
+	else
+		std::cerr << "No music: " << MOVIE_MUSIC << " is not there\n";
+
 	co_await sequence(
 		stage,
 		script,
 		{ "morph-shapes", "morph-formula", "morph-text", "morph-strokes", "karaoke" } );
+
+	music.fade_out( 3s );
+	co_await wait_for( stage, 3s );
 }
 
 SONIMATION_SCENE( "missing-glyphs", "Characters that cannot be drawn, shown as magenta boxes (and reported)", show_missing_glyphs );

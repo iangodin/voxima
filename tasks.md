@@ -59,8 +59,12 @@
   - [x] Implement simple multi channel mixer
 
 ## Music
-  - [ ] Add music file format reading
-  - [ ] Need a music player to support playinglooping
+  - [x] Add music file format reading (WAV, FLAC, Ogg, MP3 through libsndfile; made stereo and resampled)
+  - [x] Need a music player to support playing/looping (stage.audio.play: volume in dB, loop, fade in/out, start offset)
+  - [x] Sound effects: any number of sounds at once, from files or made in the program
+  - [ ] Ducking: music quieter while the narrator speaks (per language, keyed by that language's voice)
+  - [ ] Loop points inside a track (loop a section, not the whole file)
+  - [ ] A proper limiter at the end of the chain (a hard clip for now)
 
 ## Text-To-Speech
   - [x] Create python Edge-TTS bridge server

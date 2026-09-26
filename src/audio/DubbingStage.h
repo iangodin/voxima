@@ -3,12 +3,14 @@
 
 #include "AudioMixer.h"
 #include "Microphone.h"
+#include "Sound.h"
 #include "SubtitleCue.h"
 
 #include <tts/TTSClient.h>
 
 #include <filesystem>
 #include <map>
+#include <memory>
 #include <optional>
 #include <string>
 #include <vector>
@@ -44,6 +46,24 @@ public:
 	std::vector<float> take_audio( std::string_view lang );
 
 	void add_audio( const AudioBuffer &buffer );
+
+	// ---- Music and sound effects ----
+	//
+	// Play a sound file (WAV, FLAC, Ogg, MP3) into every language's track, starting with the frame being made, and
+	// carrying on by itself (across scenes) until its end, or until it is stopped or faded out through what is
+	// returned. Any number play at once. A file is read once however often it is played.
+	//
+	//   Sound music = stage.audio.play( "assets/music/theme.mp3", { .volume = -18, .loop = true, .fade_in = 2s } );
+	//   stage.audio.play( "assets/sfx/pop.wav", { .volume = -6 } );
+	//   ...
+	//   music.fade_out( 3s );
+	Sound play( const std::filesystem::path &file, const SoundOptions &options = {} );
+
+	// A sound made in the program (any rate and channels: it is made stereo at the track's rate)
+	Sound play( const AudioBuffer &audio, const SoundOptions &options = {} );
+
+	// Stop every sound at once
+	void stop_sounds();
 
 	Microphone &mic( std::string_view lang );
 
@@ -110,4 +130,10 @@ private:
 	std::map<std::string, std::vector<SubtitleCue>, std::less<>> _subtitles;
 	std::string _codec;
 	double _max_speedup = 1.0;
+
+	std::map<std::string, std::shared_ptr<const AudioBuffer>> _sound_files; // read, stereo, at the audio rate
+	std::vector<std::shared_ptr<PlayingSound>> _playing;
+	AudioBuffer _sound_block; // what the sounds add to one frame
+
+	Sound start( std::shared_ptr<const AudioBuffer> audio, const SoundOptions &options );
 };
