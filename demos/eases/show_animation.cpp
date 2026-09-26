@@ -31,7 +31,10 @@
 #include <math/Expr.h>
 #include <visuals/Tags.h>
 #include <visuals/Circle.h>
+#include <visuals/Callout.h>
 #include <visuals/Connector.h>
+#include <visuals/Diagram.h>
+#include <visuals/WrapText.h>
 #include <visuals/CreateStyledText.h>
 #include <visuals/CreateText.h>
 #include <visuals/StyledText.h>
@@ -891,6 +894,68 @@ Scene show_verbs( Stage &stage, Script & )
 	co_await wait_for( stage, 0.5s );
 }
 
+// A diagram laid out in layers, a callout pointing into it, a wrapped list, and things spread out evenly
+Scene show_diagram( Stage &stage, Script & )
+{
+	Theme &theme = *stage.theme;
+	const Palette &palette = theme.palette();
+	const FontStyle label{ Intent::LABEL };
+
+	auto tinted = [&]( Color accent )
+	{
+		return PanelOptions{ .fill = { accent.r, accent.g, accent.b, 0.25F }, .outline = accent, .outline_width = 0.04F };
+	};
+
+	auto &flow = stage.visuals.add( make_diagram() );
+	flow.add_text_node( theme, "read", "Read input", label, {}, tinted( palette.blue ) );
+	flow.add_text_node( theme, "parse", "Parse", label, {}, tinted( palette.green ) );
+	flow.add_text_node( theme, "check", "Validate", label, {}, tinted( palette.green ) );
+	flow.add_text_node( theme, "run", "Run", label, {}, tinted( palette.orange ) );
+	flow.add_text_node( theme, "log", "Write a log", label, {}, tinted( palette.purple ) );
+	flow.add_edge( "read", "parse" );
+	flow.add_edge( "read", "check" );
+	flow.add_edge( "parse", "run" );
+	flow.add_edge( "check", "run" );
+	flow.add_edge( "run", "log" );
+	flow.layout_layers( { .layer_gap = 0.9F } );
+	// Off to the left: the nodes moved (not the diagram, so the callout, in the stage's frame, finds them where they are)
+	for ( const char *id: { "read", "parse", "check", "run", "log" } )
+	{
+		flow.node( id ).position = flow.node( id ).position + Point{ -3.5F, 0.F };
+	}
+	flow.update();
+
+	auto &note = stage.visuals.add( make_callout(
+		make_paragraph( theme, "Both checks must finish before anything runs", label, 3.6F ),
+		flow.node( "run" ) ) );
+	next_to( note.panel(), flow.node( "run" ), Anchor::RIGHT, 1.6F );
+	note.update();
+
+	auto &list = stage.visuals.add( make_list( theme, { "Each step is a node", "Arrows say what waits for what", "The layers are worked out for you" }, { .max_width = 5.2F } ) );
+	move_to( list, { 4.2F, -2.6F }, Anchor::CENTER );
+
+	// Three things of different sizes, spread evenly along the top
+	auto &top = stage.visuals.add( std::make_unique<Group>() );
+	for ( const char *word: { "Short", "A longer heading", "Mid" } )
+	{
+		top.add( make_text( theme, word, FontStyle{ Intent::TITLE } ) );
+	}
+	arrange_row( top, { .gap = 0.F } );
+	{
+		int i = 0;
+		for ( const auto &child: top )
+		{
+			child->position = child->position + Point{ i == 0 ? -5.F : ( i == 1 ? 0.F : 5.F ), 0.F };
+			++i;
+		}
+	}
+	distribute_row( top );
+	move_to( top, { top.position.x(), 4.0F }, Anchor::TOP );
+	keep_inside( top, safe_area( stage.camera ) );
+
+	co_await wait_for( stage, 3s );
+}
+
 // Music under the demo movie. Music is not in the repository (assets/ is not): without the file the movie
 // plays silent, and says so.
 constexpr const char *MOVIE_MUSIC = "assets/music/Alexander Ehlers - Spacetime.mp3";
@@ -921,6 +986,7 @@ SONIMATION_SCENE( "formulas", "A page of laid-out math formulas", show_formulas 
 SONIMATION_SCENE( "code", "Syntax-highlighted C++, typed, with lines pointed out", show_code );
 SONIMATION_SCENE( "layout", "Panels, a list and a table, and a row of shapes, placed against each other", show_layout );
 SONIMATION_SCENE( "verbs", "Fade, slide, grow and indicate, with connectors following the moving circles", show_verbs );
+SONIMATION_SCENE( "diagram", "A diagram laid out in layers, a callout, a wrapped list, and evenly spread headings", show_diagram );
 SONIMATION_SCENE( "camera", "Zooming in on a graph, and panning along it", show_camera );
 SONIMATION_SCENE( "plot", "Axes crossing in the middle, and graphs drawn on them", show_plot );
 SONIMATION_SCENE( "plot-edge", "The same, with the axes along the left and bottom", show_plot_edge );
