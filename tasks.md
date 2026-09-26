@@ -49,13 +49,13 @@ The biggest gap: everything is placed by hand-typed coordinates. The building bl
   - [x] Lists (bullets, numbers; several lines an item) and tables (columns aligned left, center or right; header; rules), on a fixed line step so rows are evenly spaced
   - [ ] Distribute (equal spaces between things of different sizes), and align a set of things to one edge
   - [ ] Text wrapped to a width (a list item or a table cell that is a paragraph)
-  - [ ] Connectors: arrows and lines that join two visuals and follow them when they move; braces and labels attached to a part
+  - [x] Connectors: arrows and lines that join two visuals and follow them when they move (open: braces, labels attached to a part)
   - [ ] Diagrams: nodes and edges (flowcharts, trees, graphs), number lines, geometry (points, angles, polygons with labeled vertices)
   - [ ] Safe areas and a grid to lay out on; stay inside the frame
 
 ## Animation Vocabulary
 The stock verbs, so a scene says what it means. We have tween, morph, choreograph and the word effects; missing:
-  - [ ] Updaters: something run every frame that keeps one thing tied to another (a label that follows a moving point, a connector between two moving boxes)
+  - [x] Updaters: something run every frame that keeps one thing tied to another (a label that follows a moving point, a connector between two moving boxes)
   - [ ] Draw-on (Create) and Write for any visual: strokes drawn along their length, text written; the reverse (Uncreate)
   - [ ] Fade in and out, grow and shrink from a point, slide in from an edge, for any visual
   - [ ] Indicate, flash, circumscribe, highlight a part: draw the eye to something
