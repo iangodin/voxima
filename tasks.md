@@ -37,7 +37,7 @@
 ## Geometry Processing
   - [x] Flatten any visual to cubic outlines (Outline: circles, rectangles, paths, glyphs, groups with transforms)
   - [x] Morph between shapes and glyphs (feature-aware contour alignment, holes open/close, color/stroke blend)
-  - [x] co_await morph( stage, from, to, frames, ease ) and a scrubbable Morph object
+  - [x] co_await morph( stage, from, to, duration, ease ) and a scrubbable Morph object
   - [x] Morph groups: match parts by tag / identical glyph / proximity, fade the rest (formulas, x^2 -> x^3)
   - [x] Text and narration: word-aware text morphs, and morphs driven by the narration (track_words)
   - [x] Morph lines and arrow tips (open stroke contours; a line can inflate into a disc)
@@ -94,11 +94,27 @@
   - [x] Add registry of "Scenes" (SONIMATION_SCENE, play/sequence for movies; see doc/scenes.md)
   - [x] Add command line option to select a scene to render (--scene, repeatable; --list-scenes)
 
+## Animation Timing
+  - [x] Times in seconds, not frames (wait_for( stage, 0.5s ), morph( ..., 1.5s, ... )), so --fps does not change how long things take
+  - [x] Eases as plain functions of t (ease_cubic_in_out( t ) ...), and tween( stage, duration, ease, callback )
+  - [ ] Frame rates that do not divide the audio rate, and fractional ones (29.97, 23.976)
+  - [ ] Keep chained waits from drifting by a frame or two (rounding each duration to whole frames)
+
 ## Final Muxing
   - [x] Need to use ffmpeg to mix the audio and video (simple proof of concept)
   - [x] Need to use ffmpeg to mix the multiple audio tracks
   - [x] Need to use ffmpeg to mix the multiple subtitle tracks
 
 ## Preview
-  - [ ] Use SDL to present video/audio as it renders
+  - [x] Use SDL to present video/audio as it renders (--preview, first --lang only)
+  - [x] Producer thread renders ahead into an in-memory frame store (SVG and 16 bit audio per frame)
+  - [x] Play forward/backward (audio reversed too), pause, step frames with a short sound, skip 1 second, start/end
+  - [x] Scene start/end recorded; previous/next scene ([ and ]) and repeat the current scene (r)
+  - [x] Frame rate from the display's refresh rate when --fps is not given
+  - [x] Prefer X11 on Linux (the Conan SDL has no libdecor, so Wayland windows have no title bar on GNOME)
+  - [ ] Timeline bar: click to seek, scenes marked, produced part filled in
+  - [ ] On-screen overlay (scene, time, frame, waiting) instead of only the window title
+  - [ ] Switch language while previewing
+  - [ ] Smooth the audio clock if frames are skipped on real devices
+  - [ ] Suppress audio.cpp's OpenMP false positives in make tsan
 
