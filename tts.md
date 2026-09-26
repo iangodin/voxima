@@ -678,7 +678,15 @@ with silence at the end of every shorter segment (`retime_audio`, with a 2 ms fa
 next to speech) and moves its words, markers and subtitle cues the same way. A marker then falls at the same time
 in every language (a language's own lead before the word, at most 40 ms, is the only difference). Languages whose
 markers or lines differ from the main one's cannot be kept in step and are left as they are (with a warning).
-Nobody is accelerated yet (that is stage 3, with `atempo`). Verified on a real render: every segment of each
+With `--max-speedup S` (default 1.0) the other languages may be speeded up: a segment is as long as the main
+language takes, or the others take at their fastest (`length / S`), whichever is more, and the main language is never
+speeded up (`barrier_lengths( timelines, main, S )`). A segment given less time than a language needs goes through
+`compress_segment` (`audio/Compress.h`): each pause is shortened, down to 80 ms, in proportion to what it can spare,
+before anything else; only the little still missing is taken from the speech, by `stretch_with_ffmpeg` (ffmpeg's
+`atempo`, which keeps the pitch; a `Stretcher` so tests use a fake). A `TimeMap` per segment moves the words, markers
+and subtitle cues through the shortened segment. Verified on a real render at `--max-speedup 1.25`: the timeline
+went from 6.88 s to 5.88 s, English (main) stayed identical to its natural audio in every segment, and French's
+shortened segments kept their pitch (240 to 239 Hz, 207 to 209, 169 to 169, 198 to 198). Verified on a real render: every segment of each
 retimed track equals its natural audio to within 16-bit rounding, sits at the shared start, and the padding is exactly
 silent; the animation follows the main language's markers.
 

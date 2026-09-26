@@ -129,13 +129,16 @@ private:
 
 	// Keeps the languages in step: the narration is divided at its markers and line starts, every language
 	// is given the same segment starts (the slowest language sets how long each segment takes), and the
-	// others are padded with silence at the end of a segment. A language whose markers or lines differ from the
-	// main one's cannot be, and is left as it is.
+	// others are padded with silence at the end of a segment. If speeding up is allowed (DubbingStage::max_speedup),
+	// a language that takes longer than the main one is made shorter first, by up to that much (its pauses, then a
+	// little of its speech), and the main language never is. A language whose markers or lines differ from the
+	// main one's cannot be kept in step, and is left as it is.
 	void synchronise();
 
 	const Narrator *master() const;
 
 	size_t _audio_block = 0;
+	double _max_speedup = 1.0;
 	ObserverPtr<Script> _script;
 	std::vector<Narrator> _narrators;
 };

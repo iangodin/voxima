@@ -4,6 +4,7 @@
 #include <algorithm>
 #include <audio/Resample.h>
 #include <audio/Retime.h>
+#include <audio/Stretch.h>
 #include <core/Stage.h>
 #include <cstring>
 #include <utils/Language.h>
@@ -146,23 +147,48 @@ void Narrator::retime( const std::vector<double> &starts )
 		at += line.frames();
 	}
 
-	// ... and again with each segment where it goes and silence in what it does not fill
-	AudioBuffer out = retime_audio( natural, _timeline, starts );
+	// Where the words are in each segment: what is not a word is a pause, which is what gives first if a segment
+	// has to be made shorter
+	std::vector<std::vector<SpeechSpan>> speech( _timeline.segments() );
+	for ( const auto &word: _words )
+	{
+		for ( size_t i = 0; i < _timeline.segments(); ++i )
+		{
+			const double from = std::max( word.start_seconds, _timeline.segment_start( i ) );
+			const double to = std::min( word.end_seconds, _timeline.segment_end( i ) );
+			if ( to > from )
+			{
+				speech[i].push_back( { from - _timeline.segment_start( i ), to - _timeline.segment_start( i ) } );
+			}
+		}
+	}
+
+	// ... and again with each segment where it goes, silence in what it does not fill, and any that is given less
+	// time than it takes made shorter
+	Retimed placed = retime_audio( natural, _timeline, starts, speech, stretch_with_ffmpeg );
+	AudioBuffer out = std::move( placed.audio );
+	_shortened_segments = 0;
+	_largest_speedup = 1.0;
+	for ( size_t i = 0; i < placed.maps.size(); ++i )
+	{
+		_shortened_segments += placed.maps[i].identity() ? 0 : 1;
+		_largest_speedup = std::max( _largest_speedup, placed.tempos[i] );
+	}
 
 	// Everything with a time moves the same way
 	for ( auto &word: _words )
 	{
-		word.start_seconds = retimed( _timeline, starts, word.start_seconds );
-		word.end_seconds = retimed( _timeline, starts, word.end_seconds );
+		word.start_seconds = retimed( _timeline, starts, placed.maps, word.start_seconds );
+		word.end_seconds = retimed( _timeline, starts, placed.maps, word.end_seconds );
 	}
 	for ( auto &marker: _markers )
 	{
-		marker.seconds = retimed( _timeline, starts, marker.seconds );
+		marker.seconds = retimed( _timeline, starts, placed.maps, marker.seconds );
 	}
 	for ( auto &cue: _pending_cues )
 	{
-		cue.local_start = retimed( _timeline, starts, cue.local_start );
-		cue.local_end = retimed( _timeline, starts, cue.local_end );
+		cue.local_start = retimed( _timeline, starts, placed.maps, cue.local_start );
+		cue.local_end = retimed( _timeline, starts, placed.maps, cue.local_end );
 	}
 	for ( size_t i = 0; i < _timeline.cuts.size(); ++i )
 	{

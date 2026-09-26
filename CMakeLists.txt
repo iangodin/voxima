@@ -103,6 +103,8 @@ add_library( visuals STATIC
 	src/audio/DubbingStage.cpp
 	src/audio/Resample.cpp
 	src/audio/Retime.cpp
+	src/audio/Stretch.cpp
+	src/audio/Compress.cpp
 	src/audio/AudioMixer.cpp
 	src/audio/Microphone.cpp
 	src/audio/Silence.cpp

@@ -71,6 +71,11 @@ sonimation ... --lang en --lang fr --separate   # one container per language, in
   at the same time in every language's audio (within 40 ms, under a frame). The faster languages get silence at the
   end of a segment; nobody is speeded up or cut off. A language whose markers or lines differ from the master's
   cannot be kept in step: it is warned about and left as it is.
+  **`--max-speedup 1.15`** lets the other languages be speeded up by up to 15% (default 1.0: not at all) so that
+  the shared timeline is shorter and they need less silence. The master language is never speeded up. A segment
+  that has to be made shorter loses its pauses first (each is shortened, down to 80 ms, before anything else
+  changes), and only if that is not enough is the speech itself speeded up by what is left, with ffmpeg's
+  `atempo`, which keeps the pitch (so ffmpeg must be installed for this; without `--max-speedup` it is not used).
 - **`--separate`:** each language is a complete render of its own: its narration and its subtitles, the script's
   text for that language on screen, and animation timed to *its* narration, through the markers in the script
   (`{name}`, see `tts.md`). Each folder holds `final.<container>` and the pieces it was made from. The models are

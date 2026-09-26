@@ -203,3 +203,91 @@ TEST_CASE( "marker_cut cuts a little before the word a marker comes in front of"
 		CHECK( marker_cut( at_once, 0, 2.0, 2.0 ) >= 2.0 );
 	}
 }
+
+TEST_CASE( "a speed-up limit shortens what the other languages need, never the main one", "[timeline]" )
+{
+	const Timeline en = english(); // 1.0, 2.0, 0.5, 2.5
+	const Timeline fr = french();  // 0.8, 2.7, 1.0, 2.0
+
+	SECTION( "no speed-up is the same as the slowest language setting the length" )
+	{
+		const auto lengths = barrier_lengths( { &en, &fr }, 0, 1.0 );
+		CHECK( lengths == barrier_lengths( { &en, &fr } ) );
+		CHECK( lengths[1] == Approx( 2.7 ) );
+	}
+
+	SECTION( "French may be speeded up by 20%: it needs 2.7 / 1.2 where English takes 2.0" )
+	{
+		const auto lengths = barrier_lengths( { &en, &fr }, 0, 1.2 );
+		CHECK( lengths[0] == Approx( 1.0 ) );        // English's own length: it is the longer
+		CHECK( lengths[1] == Approx( 2.7 / 1.2 ) );  // French at its fastest is longer than English
+		CHECK( lengths[2] == Approx( 1.0 / 1.2 ) );  // French at its fastest 0.83, English 0.5
+		CHECK( lengths[3] == Approx( 2.5 ) );        // English is the slowest: no one is speeded up for it
+	}
+
+	SECTION( "the main language is never speeded up, whichever it is" )
+	{
+		// French as the main language: its own lengths are the floor, English is the one that may be speeded up
+		const auto lengths = barrier_lengths( { &en, &fr }, 1, 1.2 );
+		CHECK( lengths[0] == Approx( 1.0 / 1.2 ) ); // English at its fastest (0.83) is longer than French's 0.8
+		CHECK( lengths[1] == Approx( 2.7 ) );       // French's own
+		CHECK( lengths[2] == Approx( 1.0 ) );       // French's own
+		CHECK( lengths[3] == Approx( 2.5 / 1.2 ) ); // English at its fastest (2.08) is longer than French's 2.0
+	}
+
+	SECTION( "less than 1 is no speed-up" )
+	{
+		CHECK( barrier_lengths( { &en, &fr }, 0, 0.5 ) == barrier_lengths( { &en, &fr }, 0, 1.0 ) );
+	}
+}
+
+TEST_CASE( "TimeMap moves times inside a shortened segment", "[timeline]" )
+{
+	SECTION( "no knots is the identity" )
+	{
+		const TimeMap none;
+		CHECK( none.identity() );
+		CHECK( none( 1.5 ) == 1.5 );
+	}
+
+	// a pause of 1.0 (from 1.0 to 2.0) was shortened to 0.25
+	const TimeMap map( { { 0.0, 0.0 }, { 1.0, 1.0 }, { 2.0, 1.25 }, { 3.0, 2.25 } } );
+
+	SECTION( "at the knots, and between them in proportion" )
+	{
+		CHECK( map( 0.0 ) == 0.0 );
+		CHECK( map( 1.0 ) == Approx( 1.0 ) );
+		CHECK( map( 1.5 ) == Approx( 1.125 ) ); // half way through the shortened pause
+		CHECK( map( 2.0 ) == Approx( 1.25 ) );
+		CHECK( map( 2.5 ) == Approx( 1.75 ) );
+	}
+
+	SECTION( "past the last knot it goes on at the speed of time" )
+	{
+		CHECK( map( 3.5 ) == Approx( 2.75 ) );
+	}
+
+	SECTION( "it never goes backwards" )
+	{
+		double last = -1.0;
+		for ( double t = 0.0; t <= 3.0; t += 0.01 )
+		{
+			CHECK( map( t ) >= last );
+			last = map( t );
+		}
+	}
+}
+
+TEST_CASE( "retimed can move a time through its segment's map", "[timeline]" )
+{
+	const Timeline en = english();
+	const auto starts = segment_starts( { 1.0, 2.0, 0.5, 2.5 } );
+	// segment 1 (1.0 to 3.0) was made 1.0 long instead of 2.0: half speed-up everywhere in it
+	std::vector<TimeMap> maps( 4 );
+	maps[1] = TimeMap( { { 0.0, 0.0 }, { 2.0, 1.0 } } );
+
+	CHECK( retimed( en, starts, maps, 1.0 ) == Approx( starts[1] ) );
+	CHECK( retimed( en, starts, maps, 2.0 ) == Approx( starts[1] + 0.5 ) );
+	CHECK( retimed( en, starts, maps, 3.0 ) == Approx( starts[2] ) ); // the next segment starts where its own start is
+	CHECK( retimed( en, starts, maps, 3.25 ) == Approx( starts[2] + 0.25 ) );
+}

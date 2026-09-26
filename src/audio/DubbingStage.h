@@ -79,6 +79,19 @@ public:
 	// zh/ja synthesis - see tts.md's accepted-gap notes).
 	const std::vector<SubtitleCue> &subtitles( std::string_view lang ) const;
 
+	// How much the other languages' narration may be speeded up to keep them in step with the main one (see
+	// Narration::synchronise): 1.0, the default, not at all, the slowest language sets the pace and the others
+	// are padded with silence. Speeding up needs ffmpeg.
+	void set_max_speedup( double speedup )
+	{
+		_max_speedup = speedup;
+	}
+
+	double max_speedup() const
+	{
+		return _max_speedup;
+	}
+
 	void close();
 
 private:
@@ -92,4 +105,5 @@ private:
 	std::map<std::string, std::string, std::less<>> _outputs;
 	std::map<std::string, std::vector<SubtitleCue>, std::less<>> _subtitles;
 	std::string _codec;
+	double _max_speedup = 1.0;
 };

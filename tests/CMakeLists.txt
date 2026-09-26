@@ -27,6 +27,7 @@ add_executable( sonimation_unit_tests
 	TestMarkers.cpp
 	TestTimeline.cpp
 	TestRetime.cpp
+	TestCompress.cpp
 	TestWords.cpp
 	TestOutline.cpp
 	TestMorph.cpp

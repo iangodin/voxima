@@ -61,9 +61,22 @@ public:
 	}
 
 	// Move this narration onto a timeline shared with other languages (see Timeline.h): each segment starts
-	// at starts[i], and what it does not fill is silence. The audio, the words, the markers and the subtitle
+	// at starts[i], and what it does not fill is silence. A segment that is given less time than it takes is made
+	// shorter: its pauses first, then its speech is speeded up by the little that is left (ffmpeg's atempo). The audio, the words, the markers and the subtitle
 	// cues are all moved. `starts` has one entry more than there are segments (the last is the total length).
 	void retime( const std::vector<double> &starts );
+
+	// What retime() had to do to fit this narration into the shared timeline: how many of its segments were made
+	// shorter (0 if it only had silence added), and the most its speech was speeded up (1.0 if only pauses were)
+	size_t shortened_segments() const
+	{
+		return _shortened_segments;
+	}
+
+	double largest_speedup() const
+	{
+		return _largest_speedup;
+	}
 
 	// Seconds of this batch's audio consumed by speak() so far. Compare
 	// against TimedWord times to know which word is currently being spoken.
@@ -96,6 +109,8 @@ private:
 	std::vector<TimedMarker> _markers;
 	Timeline _timeline;
 	double _duration = 0.0;
+	size_t _shortened_segments = 0;
+	double _largest_speedup = 1.0;
 	size_t _position_frames = 0;
 	bool _cues_emitted = true;
 	size_t _audio_rate = 0;

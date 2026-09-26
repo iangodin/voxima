@@ -5,6 +5,7 @@
 #include <algorithm>
 #include <cstddef>
 #include <string>
+#include <utility>
 #include <vector>
 
 // Keeping several languages' narration in step. Each language says the same script in a different time, but the
@@ -90,6 +91,30 @@ inline std::vector<double> barrier_lengths( const std::vector<const Timeline *> 
 	return lengths;
 }
 
+// The same, when the other languages may be speeded up: a language's segment can be made shorter by up to
+// `max_speedup` (1.0: not at all), and the main language never is. A segment is as long as the main language
+// takes, or as long as it takes the others at their fastest, whichever is more. `main_index` says which of the
+// timelines is the main language's.
+inline std::vector<double> barrier_lengths( const std::vector<const Timeline *> &timelines, size_t main_index, double max_speedup )
+{
+	std::vector<double> lengths;
+	if ( timelines.empty() )
+	{
+		return lengths;
+	}
+	const double speedup = std::max( 1.0, max_speedup );
+	lengths.assign( timelines.front()->segments(), 0.0 );
+	for ( size_t t = 0; t < timelines.size(); ++t )
+	{
+		for ( size_t i = 0; i < lengths.size(); ++i )
+		{
+			const double length = timelines[t]->segment_length( i );
+			lengths[i] = std::max( lengths[i], t == main_index ? length : length / speedup );
+		}
+	}
+	return lengths;
+}
+
 // Where each segment starts on the shared timeline; one more entry than there are segments, the last the total
 inline std::vector<double> segment_starts( const std::vector<double> &lengths )
 {
@@ -111,6 +136,68 @@ inline double retimed( const Timeline &timeline, const std::vector<double> &star
 		++i;
 	}
 	return starts[i] + ( seconds - timeline.segment_start( i ) );
+}
+
+// How a time inside a segment moves when the segment is shortened: a piecewise linear map from time in the
+// segment as it was (from its start) to time in it as it is now (also from its start). A segment that is only
+// moved has none (the identity).
+class TimeMap
+{
+public:
+	TimeMap() = default;
+
+	// Pairs of (was, is), in increasing order. Before the first and after the last the map goes on at the same
+	// speed as time.
+	explicit TimeMap( std::vector<std::pair<double, double>> knots ) :
+		_knots( std::move( knots ) )
+	{
+	}
+
+	bool identity() const
+	{
+		return _knots.empty();
+	}
+
+	double operator()( double was ) const
+	{
+		if ( _knots.empty() )
+		{
+			return was;
+		}
+		if ( was <= _knots.front().first )
+		{
+			return _knots.front().second + ( was - _knots.front().first );
+		}
+		for ( size_t i = 1; i < _knots.size(); ++i )
+		{
+			if ( was <= _knots[i].first )
+			{
+				const double span = _knots[i].first - _knots[i - 1].first;
+				if ( span <= 0.0 )
+				{
+					return _knots[i].second;
+				}
+				const double along = ( was - _knots[i - 1].first ) / span;
+				return _knots[i - 1].second + along * ( _knots[i].second - _knots[i - 1].second );
+			}
+		}
+		return _knots.back().second + ( was - _knots.back().first );
+	}
+
+private:
+	std::vector<std::pair<double, double>> _knots;
+};
+
+// Where a time in the language's own narration falls on the shared timeline when its segments may have been
+// shortened: its place in its segment, moved through that segment's map, from the segment's new start
+inline double retimed( const Timeline &timeline, const std::vector<double> &starts, const std::vector<TimeMap> &maps, double seconds )
+{
+	size_t i = 0;
+	while ( i + 1 < timeline.segments() && timeline.segment_start( i + 1 ) <= seconds )
+	{
+		++i;
+	}
+	return starts[i] + maps[i]( seconds - timeline.segment_start( i ) );
 }
 
 // One segment's audio: copied from `from` to `to` in the language's own narration to `dest` on the shared timeline

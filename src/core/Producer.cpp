@@ -369,6 +369,12 @@ bool Producer::produce( int argc, char *argv[] )
 	std::vector<std::string> scene_names;
 	app.add_option( "--scene", scene_names, "Scene to render; repeat it to play several in order (default: \"movie\")" );
 
+	double max_speedup = 1.0;
+	app.add_option(
+		"--max-speedup",
+		max_speedup,
+		"How much the other languages may be speeded up to keep in step with the first, in one video (1.0: not at all, they are padded with silence; 1.15: up to 15%; needs ffmpeg)" );
+
 	bool separate = false;
 	app.add_flag(
 		"--separate",
@@ -422,6 +428,11 @@ bool Producer::produce( int argc, char *argv[] )
 			const std::string only = scenes.front()->get_name();
 			_director = [only]( Stage &stage, Script &script ) { return play( stage, script, only ); };
 		}
+	}
+
+	if ( max_speedup < 1.0 )
+	{
+		throw std::runtime_error( "--max-speedup must be at least 1.0 (1.0: no speeding up)" );
 	}
 
 	std::string scodec;
@@ -478,6 +489,8 @@ bool Producer::produce( int argc, char *argv[] )
 		tts_backend,
 		tts_threads,
 		aligner_model );
+	_stage.audio.set_max_speedup( max_speedup );
+
 	// A render for all the languages together (one container with a track for each), or with --separate one
 	// for each language, timed to that language's own narration
 	bool ok = true;

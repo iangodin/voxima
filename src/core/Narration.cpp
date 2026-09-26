@@ -21,6 +21,7 @@ void Narration::setup( std::string_view name, Script &script, DubbingStage &stag
 	}
 
 	_audio_block = stage.audio_block();
+	_max_speedup = stage.max_speedup();
 }
 
 void Narration::speak( void )
@@ -263,10 +264,15 @@ void Narration::synchronise()
 
 	std::vector<Narrator *> together;
 	std::vector<const Timeline *> timelines;
+	size_t main_index = 0;
 	for ( auto &narrator: _narrators )
 	{
 		if ( same_structure( narrator.timeline(), main->timeline() ) )
 		{
+			if ( &narrator == main )
+			{
+				main_index = together.size();
+			}
 			together.push_back( &narrator );
 			timelines.push_back( &narrator.timeline() );
 		}
@@ -281,9 +287,15 @@ void Narration::synchronise()
 		return;
 	}
 
-	const auto starts = segment_starts( barrier_lengths( timelines ) );
+	const auto starts = segment_starts( barrier_lengths( timelines, main_index, _max_speedup ) );
 	for ( Narrator *narrator: together )
 	{
 		narrator->retime( starts );
+		if ( narrator->shortened_segments() > 0 )
+		{
+			std::cout << narrator->language() << ": made shorter to keep in step with " << main->language() << " in "
+					  << narrator->shortened_segments() << " of " << narrator->timeline().segments() << " parts (speech speeded up by up to "
+					  << narrator->largest_speedup() << "x; pauses shortened first)\n";
+		}
 	}
 }
