@@ -71,7 +71,9 @@ WordEffect all( std::vector<WordEffect> effects );
 // The word is invisible until it is said, and fades in as it is
 WordEffect reveal();
 
-// The word is `before` until it is said, becomes `during` (quickly) as it is, and eases to `after` once it has been
+// The word is `before` until it is said, becomes `during` (quickly) as it is, and eases to `after` once it has been. The
+// colors are blended, so give the colors it is to be seen in: for "the text color" use stage.foreground, not white (which
+// would pass through a pale gray on the way, on a light background)
 WordEffect color( Color before, Color during, Color after );
 
 // The word grows to `scale` times its size and back while it is said, about its own centre

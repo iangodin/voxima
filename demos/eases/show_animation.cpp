@@ -243,12 +243,13 @@ void show_math( Stage &stage )
 
 template<typename Ease>
 Scene show_ease(
-	Stage &stage, const std::string &name, const std::string &lang, Ease &&ease, float y, std::chrono::duration<double> duration )
+	Stage &stage, const std::string &name, const std::string &lang, Ease &&ease, float y, std::chrono::duration<double> duration, const Color &color )
 {
 	float x1 = -4.F;
 	float x2 = 7.F;
 	auto &circle = stage.visuals.add( std::make_unique<Circle>() );
 	circle.radius = 0.1F;
+	circle.color = color;
 	circle.position = { x1, y };
 
 	auto &label = stage.visuals.add( make_text( *stage.theme, name, FontStyle{ Intent::LABEL }, lang ) );
@@ -536,16 +537,20 @@ Scene follow_speech( Stage &stage, Narration &narration )
 }
 
 // Narrated text with an effect on every word as it is said. The first line is dim until its words are spoken:
-// each lights up yellow, pops, and settles to white. The second line is invisible until its words are spoken:
+// each lights up yellow, pops, and settles to the text color. The second line is invisible until its words are spoken:
 // each fades in, flashes yellow, and is underlined as it is said. Beside them a shape changes on the words.
 Scene show_karaoke( Stage &stage, Script &script )
 {
 	using namespace word_effects;
 
 	const std::string lang = script.master_language();
-	const Color dim{ 0.45F, 0.45F, 0.45F, 1.F };
-	const Color white{ 1.F, 1.F, 1.F, 1.F };
-	const Color yellow{ 1.F, 0.85F, 0.3F, 1.F };
+	// The colors of the palette, so the words show on a light background as on a dark one: not yet said (muted), said
+	// (the palette's yellow: a dark gold on a light palette), and said before (the text color itself: what the effect
+	// blends to has to be a color, not "white", or a word passes through a pale gray on its way to dark text)
+	const Palette &palette = stage.theme->palette();
+	const Color dim = palette.muted;
+	const Color white = stage.foreground;
+	const Color yellow = palette.yellow;
 
 	Narration narration;
 	narration.setup( "narrator", script, stage.audio );
@@ -620,17 +625,21 @@ Scene show_eases( Stage &stage, Script &script )
 	narration.setup( "narrator", script, stage.audio );
 	narration.speech( "intro" );
 
+	// Each curve in a color of the palette, in turn: the lanes can be told apart
+	const auto series = stage.theme->palette().series();
+	auto accent = [&series]( size_t i ) { return series[i % series.size()]; };
+
 	co_await choreograph(
-		show_ease( stage, label( "ease_cubic_in" ), lang, ease_cubic_in, 3.F, duration ),
-		show_ease( stage, label( "ease_cubic_out" ), lang, ease_cubic_out, 2.5F, duration ),
-		show_ease( stage, label( "ease_cubic_in_out" ), lang, ease_cubic_in_out, 2.0F, duration ),
-		show_ease( stage, label( "ease_elastic_in" ), lang, ease_elastic_in, 1.5F, duration ),
-		show_ease( stage, label( "ease_elastic_out" ), lang, ease_elastic_out, 1.0F, duration ),
-		show_ease( stage, label( "ease_elastic_in_out" ), lang, ease_elastic_in_out, 0.5F, duration ),
-		show_ease( stage, label( "ease_back_in" ), lang, ease_back_in, 0.F, duration ),
-		show_ease( stage, label( "ease_back_out" ), lang, ease_back_out, -0.5F, duration ),
-		show_ease( stage, label( "ease_back_in_out" ), lang, ease_back_in_out, -1.0F, duration ),
-		show_ease( stage, label( "ease_linear" ), lang, ease_linear, -1.5F, duration ),
+		show_ease( stage, label( "ease_cubic_in" ), lang, ease_cubic_in, 3.F, duration, accent( 0 ) ),
+		show_ease( stage, label( "ease_cubic_out" ), lang, ease_cubic_out, 2.5F, duration, accent( 1 ) ),
+		show_ease( stage, label( "ease_cubic_in_out" ), lang, ease_cubic_in_out, 2.0F, duration, accent( 2 ) ),
+		show_ease( stage, label( "ease_elastic_in" ), lang, ease_elastic_in, 1.5F, duration, accent( 3 ) ),
+		show_ease( stage, label( "ease_elastic_out" ), lang, ease_elastic_out, 1.0F, duration, accent( 4 ) ),
+		show_ease( stage, label( "ease_elastic_in_out" ), lang, ease_elastic_in_out, 0.5F, duration, accent( 5 ) ),
+		show_ease( stage, label( "ease_back_in" ), lang, ease_back_in, 0.F, duration, accent( 6 ) ),
+		show_ease( stage, label( "ease_back_out" ), lang, ease_back_out, -0.5F, duration, accent( 7 ) ),
+		show_ease( stage, label( "ease_back_in_out" ), lang, ease_back_in_out, -1.0F, duration, accent( 8 ) ),
+		show_ease( stage, label( "ease_linear" ), lang, ease_linear, -1.5F, duration, accent( 9 ) ),
 		narrate( narration ) );
 }
 
