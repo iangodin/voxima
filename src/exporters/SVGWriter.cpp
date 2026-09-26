@@ -216,7 +216,12 @@ void SVGWriter::visit( const Path &path )
 		_out << indent() << "<path d=\"";
 		emit_path_data( path.commands, _out );
 		_out << "\" " << color_attributes( final_color ) << " "
-		     << stroke_attributes( path.stroke_thickness, final_stroke_color ) << " />\n";
+		     << stroke_attributes( path.stroke_thickness, final_stroke_color );
+		if ( path.stroke_thickness > 0.F && path.join != LineJoin::MITER )
+		{
+			_out << " stroke-linejoin=\"" << ( path.join == LineJoin::BEVEL ? "bevel" : "round" ) << "\"";
+		}
+		_out << " />\n";
 
 		close_g();
 	}

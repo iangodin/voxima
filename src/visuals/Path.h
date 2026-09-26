@@ -15,9 +15,20 @@ struct Close { };
 
 using PathCommand = std::variant<MoveTo, LineTo, QuadTo, CubicTo, Close>;
 
+// How the stroke turns a corner. A mitre (the SVG default) is a point, but only up to a limit: a corner
+// sharper than about 29 degrees is drawn bevelled instead, so a corner that sharpens while it moves switches
+// suddenly. A bevel never switches.
+enum class LineJoin
+{
+	MITER,
+	BEVEL,
+	ROUND
+};
+
 struct Path : public Visual
 {
 	std::vector<PathCommand> commands;
+	LineJoin join = LineJoin::MITER;
 
 	void accept( VisualVisitor &visitor ) const override
 	{

@@ -1156,3 +1156,32 @@ TEST_CASE( "A disc collapsing into a line does it evenly, top and bottom alike",
 		CHECK( std::abs( right.y() ) < 0.05F * height + 1e-4F );
 	}
 }
+
+TEST_CASE( "A stroke morphing into a fill is bevelled in between, so its sharpening ends never snap", "[morph]" )
+{
+	Circle disc;
+	disc.radius = 0.8F;
+	Line line;
+	line.start = { -1.5F, 0.F };
+	line.end = { 1.2F, 0.F };
+	line.stroke_thickness = 0.12F;
+
+	auto join_at = [&]( Morph &morph, float t )
+	{
+		morph.set( t );
+		return static_cast<const Path &>( *morph.visual().begin()->get() ).join;
+	};
+
+	Morph morph( disc, line );
+	CHECK( join_at( morph, 0.3F ) == LineJoin::BEVEL );
+	CHECK( join_at( morph, 0.97F ) == LineJoin::BEVEL );
+	// At the ends it is drawn as the visuals themselves are
+	CHECK( join_at( morph, 0.F ) == LineJoin::MITER );
+	CHECK( join_at( morph, 1.F ) == LineJoin::MITER );
+
+	// Two filled shapes keep their mitres
+	Rectangle square;
+	square.half_width = square.half_height = 0.5F;
+	Morph fills( disc, square );
+	CHECK( join_at( fills, 0.5F ) == LineJoin::MITER );
+}

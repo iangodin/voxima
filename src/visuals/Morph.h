@@ -89,6 +89,7 @@ private:
 		float thickness_a = 0.F;
 		float thickness_b = 0.F;
 		float delay = 0.F; // when the part starts, as a fraction of the whole morph
+		bool bevel = false; // a stroke becoming a fill, or the other way: bevelled joins in between (see Morph())
 	};
 
 	std::unique_ptr<Group> _owned;

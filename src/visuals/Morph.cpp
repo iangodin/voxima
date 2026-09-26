@@ -106,7 +106,17 @@ Morph::Morph( const Visual &from, const Visual &to, const MorphOptions &options 
 			part.stroke_b = b.stroke;
 			part.thickness_a = part.thickness_b = b.stroke_thickness;
 		}
-		part.path = &_root->add( std::make_unique<Path>() );
+		auto path = std::make_unique<Path>();
+		// A stroke (a Line, an open path) turning into or out of a filled shape is drawn as a loop out and back,
+		// whose ends are corners that sharpen until they turn right round. Mitred, they would snap from points to
+		// flat ends as they pass the mitre limit; bevelled, they are flat all along, which is also what the
+		// stroke's own ends look like (a bevel on a turn right round is a butt cap).
+		auto has_stroke = []( const OutlineShape *shape )
+		{
+			return shape && std::any_of( shape->contours.begin(), shape->contours.end(), []( const Contour &c ) { return !c.closed; } );
+		};
+		part.bevel = has_stroke( sa ) || has_stroke( sb );
+		part.path = &_root->add( std::move( path ) );
 		_parts.push_back( std::move( part ) );
 	}
 
@@ -163,6 +173,8 @@ void Morph::set( float t )
 
 		// Exactly at an end, the outline as it is drawn there
 		const std::vector<Contour> *original = progress == 0.F ? &part.original_a : progress == 1.F ? &part.original_b : nullptr;
+		// (the outlines at the ends are drawn as their own visuals are, with the default join)
+		path.join = part.bevel && !( original && !original->empty() ) ? LineJoin::BEVEL : LineJoin::MITER;
 		if ( original && !original->empty() )
 		{
 			for ( const auto &contour: *original )
