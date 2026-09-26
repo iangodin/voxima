@@ -8,6 +8,7 @@
 #include "visuals/Visual.h"
 
 #include <chrono>
+#include <optional>
 
 // The common things to do to a visual, each a scene to `co_await` (so it is over when they are, or run several at once with
 // choreograph). Each takes the visual as it is now as its resting state and leaves it there, except the ones that take it
@@ -45,3 +46,20 @@ Scene indicate( const Stage &stage, Visual &visual, float factor = 1.2F, std::ch
 // The outlines are drawn in `parent` (the group the visual is a child of; the stage's visuals if it is not given), which is
 // also where the visual has to be a direct child of, so that they line up.
 Scene draw_on( Stage &stage, Visual &visual, std::chrono::duration<double> duration = std::chrono::milliseconds( 1500 ), float trace = 0.7F, Group *parent = nullptr );
+
+struct PointOutOptions
+{
+	// Room between the visual's box and the line round it (stage units), and how rounded its corners are
+	float padding = 0.2F;
+	float radius = 0.2F;
+	float thickness = 0.06F;
+
+	// Default: the palette's yellow
+	std::optional<Color> color;
+};
+
+// Draw a line round a visual, as if with a pen, and let it fade; the visual is left as it was. `parent` is as for draw_on.
+Scene circumscribe( Stage &stage, Visual &visual, const PointOutOptions &options = {}, std::chrono::duration<double> duration = std::chrono::milliseconds( 1200 ), Group *parent = nullptr );
+
+// A ring round a visual that spreads out from its edge and fades: a flash to say "here"
+Scene flash( Stage &stage, Visual &visual, const PointOutOptions &options = {}, std::chrono::duration<double> duration = std::chrono::milliseconds( 600 ), Group *parent = nullptr );

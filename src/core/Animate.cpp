@@ -65,6 +65,57 @@ struct CenteredScale
 	}
 };
 
+
+// A rounded rectangle as a closed contour, starting at the top of its left side and going round (clockwise on screen)
+Contour rounded_box( const AABB &box, float radius )
+{
+	const float r = std::min( { radius, ( box.max.x() - box.min.x() ) / 2.F, ( box.max.y() - box.min.y() ) / 2.F } );
+	const float x0 = box.min.x();
+	const float x1 = box.max.x();
+	const float y0 = box.min.y();
+	const float y1 = box.max.y();
+
+	Contour c;
+	c.start = { x0, y1 - r };
+	Point from = c.start;
+	auto line = [&]( Point to )
+	{
+		c.segs.push_back( { from, to, to } );
+		from = to;
+	};
+	// A quarter circle to `to`, round the corner: its control points are most of the way to the corner
+	auto corner = [&]( Point corner_point, Point to )
+	{
+		constexpr float K = 0.5523F;
+		c.segs.push_back( { from + ( corner_point - from ) * K, to + ( corner_point - to ) * K, to } );
+		from = to;
+	};
+	corner( { x0, y1 }, { x0 + r, y1 } );
+	line( { x1 - r, y1 } );
+	corner( { x1, y1 }, { x1, y1 - r } );
+	line( { x1, y0 + r } );
+	corner( { x1, y0 }, { x1 - r, y0 } );
+	line( { x0 + r, y0 } );
+	corner( { x0, y0 }, { x0, y0 + r } );
+	line( { x0, y1 - r } );
+	return c;
+}
+
+// The color asked for, else the palette's yellow (a stage with no theme has the plain one)
+Color pointing_color( const Stage &stage, const PointOutOptions &options )
+{
+	if ( options.color )
+	{
+		return *options.color;
+	}
+	return stage.theme ? stage.theme->palette().yellow : Color{ 1.F, 0.85F, 0.2F, 1.F };
+}
+
+AABB padded( const AABB &box, float by )
+{
+	return AABB{ { box.min.x() - by, box.min.y() - by }, { box.max.x() + by, box.max.y() + by } };
+}
+
 }
 
 Scene fade_in( const Stage &stage, Visual &visual, std::chrono::duration<double> duration, EaseFunction ease )
@@ -192,4 +243,55 @@ Scene draw_on( Stage &stage, Visual &visual, std::chrono::duration<double> durat
 			overlay.stroke_color.a = 1.F - fade;
 		} );
 	into.remove( &overlay );
+}
+
+Scene circumscribe( Stage &stage, Visual &visual, const PointOutOptions &options, std::chrono::duration<double> duration, Group *parent )
+{
+	Group &into = parent ? *parent : stage.visuals;
+	const AABB box = box_of( visual );
+	if ( box.empty() )
+	{
+		co_return;
+	}
+	const Contour outline = rounded_box( padded( box, options.padding ), options.radius );
+	auto &pen = into.add( std::make_unique<Path>() );
+	pen.color = { 1.F, 1.F, 1.F, 0.F };
+	pen.stroke_color = pointing_color( stage, options );
+	pen.stroke_thickness = options.thickness;
+	pen.join = LineJoin::ROUND;
+	const float base = pen.stroke_color.a;
+
+	co_await tween( stage, duration, []( float t ) { return t; },
+		[&]( float t )
+		{
+			const float along = std::min( t / 0.6F, 1.F );
+			pen.commands = trimmed_commands( outline, ease_cubic_in_out( along ) );
+			pen.stroke_color.a = base * ( 1.F - std::clamp( ( t - 0.6F ) / 0.4F, 0.F, 1.F ) );
+		} );
+	into.remove( &pen );
+}
+
+Scene flash( Stage &stage, Visual &visual, const PointOutOptions &options, std::chrono::duration<double> duration, Group *parent )
+{
+	Group &into = parent ? *parent : stage.visuals;
+	const AABB box = box_of( visual );
+	if ( box.empty() )
+	{
+		co_return;
+	}
+	auto &ring = into.add( std::make_unique<Path>() );
+	ring.color = { 1.F, 1.F, 1.F, 0.F };
+	ring.stroke_color = pointing_color( stage, options );
+	ring.stroke_thickness = options.thickness;
+	ring.join = LineJoin::ROUND;
+	const float base = ring.stroke_color.a;
+
+	co_await tween( stage, duration, []( float t ) { return t; },
+		[&]( float t )
+		{
+			const float spread = options.padding * ( 0.5F + 2.5F * ease_cubic_out( t ) );
+			ring.commands = trimmed_commands( rounded_box( padded( box, spread ), options.radius + spread - options.padding ), 1.F );
+			ring.stroke_color.a = base * ( 1.F - t );
+		} );
+	into.remove( &ring );
 }

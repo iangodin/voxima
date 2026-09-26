@@ -58,7 +58,7 @@ The stock verbs, so a scene says what it means. We have tween, morph, choreograp
   - [x] Updaters: something run every frame that keeps one thing tied to another (a label that follows a moving point, a connector between two moving boxes)
   - [x] Draw-on (Create) and Write for any visual: strokes drawn along their length, text written; `draw_on` does both; open: the reverse (Uncreate)
   - [x] Fade in and out, grow and shrink from a point, slide in from an edge, for any visual
-  - [ ] Indicate (a pulse is done: `indicate`; open: flash, circumscribe, highlight a part, circumscribe)
+  - [x] Indicate (`indicate`), flash and circumscribe: draw the eye to something (open: highlighting a part of a visual)
   - [ ] Move along a path, and turn about a point
   - [ ] Transitions between scenes (cross-fade, wipe, slide): a scene now just clears the stage
   - [ ] Spring and other physics-like eases; staggered groups (each part starting a little after the last)

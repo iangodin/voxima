@@ -93,3 +93,19 @@ TEST_CASE( "grow_in and shrink_out", "[animate]" )
 	CHECK( r.scale_x < 0.01F );
 	CHECK( r.color.a == Approx( 0.F ) );
 }
+
+TEST_CASE( "circumscribe and flash leave the stage as it was", "[animate]" )
+{
+	Stage stage;
+	auto &r = stage.visuals.add( std::make_unique<Rectangle>( box() ) );
+	const size_t before = stage.visuals.size();
+
+	Scene scene = circumscribe( stage, r, {}, 0.2s );
+	scene.resume();
+	CHECK( stage.visuals.size() == before + 1 ); // the line being drawn
+	run( std::move( scene ) );
+	CHECK( stage.visuals.size() == before );
+
+	run( flash( stage, r, {}, 0.2s ) );
+	CHECK( stage.visuals.size() == before );
+}

@@ -858,7 +858,12 @@ Scene show_verbs( Stage &stage, Script & )
 	auto &words = stage.visuals.add( make_text( theme, "Draw me", FontStyle{ Intent::TITLE }.large() ) );
 	move_to( words, { 2.5F, -0.5F }, Anchor::CENTER );
 	co_await choreograph( draw_on( stage, ring, 1.6s ), draw_on( stage, words, 1.6s ) );
-	co_await wait_for( stage, 1s );
+	co_await wait_for( stage, 0.5s );
+
+	// Pointing out
+	co_await circumscribe( stage, words );
+	co_await flash( stage, ring );
+	co_await wait_for( stage, 0.5s );
 }
 
 // Music under the demo movie. Music is not in the repository (assets/ is not): without the file the movie
