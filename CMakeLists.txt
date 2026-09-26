@@ -77,6 +77,7 @@ add_library( visuals STATIC
 	src/core/EaseLinear.cpp
 	src/core/Script.cpp
 	src/core/Producer.cpp
+	src/core/Wait.cpp
 	src/core/ProducerPreview.cpp
 	src/core/Theme.cpp
 	src/core/Narration.cpp

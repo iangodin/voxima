@@ -58,6 +58,11 @@
 #include <visuals/Line.h>
 #include <visuals/Rectangle.h>
 
+#include <chrono>
+
+// Times in the scenes are written in seconds (0.5s, 1.7s), so they last as long at any --fps
+using namespace std::chrono_literals;
+
 void show_title( Stage &stage )
 {
 	StyledText text( "Hello\nالعالم" );
@@ -227,7 +232,7 @@ void show_math( Stage &stage )
 
 template<typename Ease>
 Scene show_ease(
-	Stage &stage, const std::string &name, const std::string &lang, Ease &&ease, float y, int64_t frames )
+	Stage &stage, const std::string &name, const std::string &lang, Ease &&ease, float y, std::chrono::duration<double> duration )
 {
 	float x1 = -4.F;
 	float x2 = 7.F;
@@ -238,7 +243,7 @@ Scene show_ease(
 	auto &label = stage.visuals.add( make_text( *stage.theme, name, FontStyle{ Intent::LABEL }, lang ) );
 	label.position = { -6.F, y };
 
-	auto anim = ease( x1, x2, frames );
+	auto anim = ease( x1, x2, stage.camera.frames( duration ) );
 	while ( anim.next() )
 	{
 		circle.position = { anim.value(), circle.position.y() };
@@ -284,7 +289,7 @@ Scene show_morph( Stage &stage, Script & )
 	auto letter = [&]( const char *s, const Color &color ) { return demo_letter( stage, s, color, home ); };
 
 	Visual *shown = &stage.visuals.add( circle() );
-	co_await wait_for( 12 );
+	co_await wait_for( stage, 0.5s );
 
 	std::vector<std::unique_ptr<Visual>> targets;
 	targets.push_back( square() );
@@ -297,9 +302,9 @@ Scene show_morph( Stage &stage, Script & )
 	for ( auto &target: targets )
 	{
 		Visual *next = target.get();
-		co_await morph( stage, *shown, std::move( target ), 36, ease_cubic_in_out );
+		co_await morph( stage, *shown, std::move( target ), 1.5s, ease_cubic_in_out );
 		shown = next;
-		co_await wait_for( 12 );
+		co_await wait_for( stage, 0.5s );
 	}
 }
 
@@ -330,7 +335,7 @@ Scene show_formula_morph( Stage &stage, Script & )
 		  ord( superscript( b, text( "2" ) ) ) } );
 
 	Visual *shown = &stage.visuals.add( build( superscript( parens( row( { ord( a ), bin( "+" ), ord( b ) } ) ), text( "2" ) ) ) );
-	co_await wait_for( 12 );
+	co_await wait_for( stage, 0.5s );
 
 	std::vector<std::unique_ptr<Visual>> steps;
 	steps.push_back( build( expanded ) );
@@ -339,9 +344,9 @@ Scene show_formula_morph( Stage &stage, Script & )
 	for ( auto &step: steps )
 	{
 		Visual *next = step.get();
-		co_await morph( stage, *shown, std::move( step ), 40, ease_cubic_in_out );
+		co_await morph( stage, *shown, std::move( step ), 1.7s, ease_cubic_in_out );
 		shown = next;
-		co_await wait_for( 12 );
+		co_await wait_for( stage, 0.5s );
 	}
 }
 
@@ -358,7 +363,7 @@ Scene show_text_morph( Stage &stage, Script & )
 	};
 
 	Visual *shown = &stage.visuals.add( line( "The big cat sat down" ) );
-	co_await wait_for( 12 );
+	co_await wait_for( stage, 0.5s );
 
 	std::vector<std::unique_ptr<Visual>> sentences;
 	sentences.push_back( line( "The cat sat down" ) );        // "big" fades away
@@ -368,9 +373,9 @@ Scene show_text_morph( Stage &stage, Script & )
 	for ( auto &sentence: sentences )
 	{
 		Visual *next = sentence.get();
-		co_await morph( stage, *shown, std::move( sentence ), 40, ease_cubic_in_out );
+		co_await morph( stage, *shown, std::move( sentence ), 1.7s, ease_cubic_in_out );
 		shown = next;
-		co_await wait_for( 12 );
+		co_await wait_for( stage, 0.5s );
 	}
 }
 
@@ -427,30 +432,30 @@ Scene show_more_morphs( Stage &stage, Script & )
 	struct Step
 	{
 		std::unique_ptr<Visual> to;
-		int64_t frames;
+		std::chrono::duration<double> duration;
 		MorphOptions options;
 	};
 	std::vector<Step> steps;
-	steps.push_back( { demo_circle( spot ), 40, {} } );  // the line inflates into a disc
-	steps.push_back( { arrow( 0.F ), 40, {} } );         // the disc becomes an arrow, and
-	steps.push_back( { arrow( 60.F ), 40, {} } );        // the arrow turns
+	steps.push_back( { demo_circle( spot ), 1.7s, {} } );  // the line inflates into a disc
+	steps.push_back( { arrow( 0.F ), 1.7s, {} } );         // the disc becomes an arrow, and
+	steps.push_back( { arrow( 60.F ), 1.7s, {} } );        // the arrow turns
 	MorphOptions ripple;
 	ripple.stagger = 0.6F;
 	ripple.part_ease = []( float t ) { return t * t * ( 3.F - 2.F * t ); };
-	steps.push_back( { word( "smooth" ), 40, {} } );     // the arrow becomes a word
-	steps.push_back( { word( "morph" ), 60, ripple } );  // whose letters change one after another
-	steps.push_back( { picture( spot, 1.F ), 40, {} } ); // the word cross-fades into a picture
-	steps.push_back( { picture( { 3.F, spot.y() }, 0.6F ), 40, {} } ); // which moves and shrinks
-	steps.push_back( { demo_circle( { 3.F, spot.y() } ), 40, {} } );   // and fades into a disc
+	steps.push_back( { word( "smooth" ), 1.7s, {} } );     // the arrow becomes a word
+	steps.push_back( { word( "morph" ), 2.5s, ripple } );  // whose letters change one after another
+	steps.push_back( { picture( spot, 1.F ), 1.7s, {} } ); // the word cross-fades into a picture
+	steps.push_back( { picture( { 3.F, spot.y() }, 0.6F ), 1.7s, {} } ); // which moves and shrinks
+	steps.push_back( { demo_circle( { 3.F, spot.y() } ), 1.7s, {} } );   // and fades into a disc
 
 	Visual *shown = &stage.visuals.add( std::move( line ) );
-	co_await wait_for( 12 );
+	co_await wait_for( stage, 0.5s );
 	for ( auto &step: steps )
 	{
 		Visual *next = step.to.get();
-		co_await morph( stage, *shown, std::move( step.to ), step.frames, ease_cubic_in_out, step.options );
+		co_await morph( stage, *shown, std::move( step.to ), step.duration, ease_cubic_in_out, step.options );
 		shown = next;
-		co_await wait_for( 12 );
+		co_await wait_for( stage, 0.5s );
 	}
 }
 
@@ -459,7 +464,7 @@ Scene narrate( Narration &narration )
 	while ( !narration.is_done() )
 	{
 		narration.speak();
-		co_await wait_for( 1 );
+		co_await next_frame();
 	}
 }
 
@@ -572,13 +577,13 @@ Scene show_missing_glyphs( Stage &stage, Script &script )
 		y -= 1.2F;
 	}
 
-	co_await wait_for( 48 );
+	co_await wait_for( stage, 2s );
 }
 
 // The ease functions side by side, as circles racing across the screen while the narrator speaks
 Scene show_eases( Stage &stage, Script &script )
 {
-	const int64_t duration = 24;
+	const auto duration = 1s;
 
 	const std::string not_found{ "\uFFFD" };
 	const std::string lang = script.master_language();
@@ -606,7 +611,7 @@ Scene show_eases( Stage &stage, Script &script )
 Scene show_formulas( Stage &stage, Script & )
 {
 	show_math( stage );
-	co_await wait_for( 72 );
+	co_await wait_for( stage, 3s );
 }
 
 // The whole demo: the scenes above one after another, each on a fresh stage

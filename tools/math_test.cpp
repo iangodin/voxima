@@ -26,37 +26,37 @@ Screenplay math_test( Stage &stage )
 
 	auto &label = stage.visuals.add( make_text( *stage.theme, "Math Layout Test 😀", large ) );
 	center_group( label );
-	co_await wait_for( 1 );
+	co_await next_frame();
 	stage.visuals.clear();
 
 	create_math( stage,
 		"\\int_{0}^{\\infty} \\frac{\\sin(x)}{x} dx = \\frac{\\pi}{2}", math_style );
-	co_await wait_for( 1 );
+	co_await next_frame();
 	stage.visuals.clear();
 
 	create_math( stage,
 		"x+y", math_style );
-	co_await wait_for( 1 );
+	co_await next_frame();
 	stage.visuals.clear();
 
 	create_math( stage,
 		"\\sqrt{x^2+y^2}", math_style );
-	co_await wait_for( 1 );
+	co_await next_frame();
 	stage.visuals.clear();
 
 	create_math( stage,
 		"\\sum_{n=1}^{\\infty} \\frac{1}{n^2} = \\frac{\\pi^2}{6}", math_style );
-	co_await wait_for( 1 );
+	co_await next_frame();
 	stage.visuals.clear();
 
 	create_math( stage,
 		"x = \\sum_{i=1}^{n} \\left( \\frac{i^2}{2} \\right)", math_style );
-	co_await wait_for( 1 );
+	co_await next_frame();
 	stage.visuals.clear();
 
 	create_math( stage,
 		"A = \\left[\\matrix{\\frac{1}{2} & \\beta \\cr \\gamma & \\delta^2}\\right]", math_style );
-	co_await wait_for( 1 );
+	co_await next_frame();
 	stage.visuals.clear();
 }
 
