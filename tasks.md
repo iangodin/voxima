@@ -64,7 +64,7 @@ The stock verbs, so a scene says what it means. We have tween, morph, choreograp
   - [x] Staggered groups (`stagger`, `children_of`). Open: spring and other physics-like eases
 
 ## Math Authoring
-  - [ ] A parser for LaTeX-like math strings (\frac{a}{b}, \sum_{i=0}^n ...) into the Expr tree: no C++ needed to write a formula
+  - Math is written as C++ expressions building the Expr tree directly (`math/Expr.h`); there is no string parser, and none is planned. Anything that makes those expressions shorter to write belongs here instead (helpers, operators).
   - [ ] Step-by-step transformations of an equation (one line to the next, showing which parts move), on top of the morph
   - [ ] Highlight a part of a formula in narration (by tag, as words are)
 
@@ -84,6 +84,7 @@ Scenes are compiled C++, so every change is a rebuild.
 
 ## Not Planned
   - 3D: it would be another renderer.
+  - A LaTeX (or any string) math parser: formulas are built in C++ from `Expr`, by design.
 
 ## Source Code
   - [x] Syntax highlighting of C and C++ with tree-sitter (code::highlight)
