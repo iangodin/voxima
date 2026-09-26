@@ -56,7 +56,7 @@ The biggest gap: everything is placed by hand-typed coordinates. The building bl
 ## Animation Vocabulary
 The stock verbs, so a scene says what it means. We have tween, morph, choreograph and the word effects; missing:
   - [x] Updaters: something run every frame that keeps one thing tied to another (a label that follows a moving point, a connector between two moving boxes)
-  - [ ] Draw-on (Create) and Write for any visual: strokes drawn along their length, text written; the reverse (Uncreate)
+  - [x] Draw-on (Create) and Write for any visual: strokes drawn along their length, text written; `draw_on` does both; open: the reverse (Uncreate)
   - [x] Fade in and out, grow and shrink from a point, slide in from an edge, for any visual
   - [ ] Indicate (a pulse is done: `indicate`; open: flash, circumscribe, highlight a part, circumscribe)
   - [ ] Move along a path, and turn about a point

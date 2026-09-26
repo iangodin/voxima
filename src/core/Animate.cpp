@@ -2,7 +2,10 @@
 
 #include "core/EaseCubic.h"
 #include "core/Tween.h"
+#include "visuals/Outline.h"
+#include "visuals/Path.h"
 #include "visuals/Placement.h"
+#include "visuals/Trim.h"
 
 #include <algorithm>
 #include <cmath>
@@ -136,4 +139,57 @@ Scene indicate( const Stage &stage, Visual &visual, float factor, std::chrono::d
 	co_await tween( stage, duration, []( float t ) { return t; },
 		[&]( float t ) { scale.set( visual, 1.F + ( factor - 1.F ) * std::sin( t * std::numbers::pi_v<float> ) ); } );
 	scale.set( visual, 1.F );
+}
+
+Scene draw_on( Stage &stage, Visual &visual, std::chrono::duration<double> duration, float trace, Group *parent )
+{
+	Group &into = parent ? *parent : stage.visuals;
+	const Alpha alpha( visual );
+
+	// One path for each shape, all its contours together; in the color the shape is seen in
+	struct Traced
+	{
+		Path *path;
+		std::vector<Contour> contours;
+	};
+	std::vector<Traced> traced;
+	auto &overlay = into.add( std::make_unique<Group>() );
+	for ( OutlineShape &shape: to_outline( visual, nullptr, stage.foreground ) )
+	{
+		if ( shape.contours.empty() )
+		{
+			continue;
+		}
+		auto path = std::make_unique<Path>();
+		path->color = { 1.F, 1.F, 1.F, 0.F };
+		path->stroke_color = shape.stroke.a > 0.F && shape.stroke_thickness > 0.F ? shape.stroke : shape.fill;
+		path->stroke_thickness = shape.stroke_thickness > 0.F ? shape.stroke_thickness : 0.03F;
+		path->join = LineJoin::ROUND;
+		traced.push_back( { &overlay.add( std::move( path ) ), std::move( shape.contours ) } );
+	}
+
+	// (only now: the outlines have the colors the visual is seen in)
+	alpha.set( visual, 0.F );
+	trace = std::clamp( trace, 0.05F, 1.F );
+	co_await tween( stage, duration, []( float t ) { return t; },
+		[&]( float t )
+		{
+			const float along = std::min( t / trace, 1.F );
+			const float fade = trace < 1.F ? std::clamp( ( t - trace ) / ( 1.F - trace ), 0.F, 1.F ) : ( t >= 1.F ? 1.F : 0.F );
+			for ( Traced &shape: traced )
+			{
+				shape.path->commands.clear();
+				for ( const Contour &contour: shape.contours )
+				{
+					for ( PathCommand &command: trimmed_commands( contour, ease_cubic_in_out( along ) ) )
+					{
+						shape.path->commands.push_back( command );
+					}
+				}
+			}
+			alpha.set( visual, fade );
+			overlay.color.a = 1.F - fade;
+			overlay.stroke_color.a = 1.F - fade;
+		} );
+	into.remove( &overlay );
 }

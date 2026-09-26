@@ -3,6 +3,7 @@
 #include "core/Ease.h"
 #include "core/Scene.h"
 #include "core/Stage.h"
+#include "visuals/Group.h"
 #include "visuals/Point.h"
 #include "visuals/Visual.h"
 
@@ -37,3 +38,10 @@ Scene move_by( const Stage &stage, Visual &visual, Point offset, std::chrono::du
 
 // A pulse to draw the eye: bigger by `factor` at its most, about its own center, and back
 Scene indicate( const Stage &stage, Visual &visual, float factor = 1.2F, std::chrono::duration<double> duration = std::chrono::milliseconds( 600 ) );
+
+// Draw a visual on: its outlines are traced by a line, each as far along as the others (for text, the letters' shapes), and
+// then the visual itself fades in over them. The first `trace` (0 to 1, of the time) is the tracing, the rest the fade.
+// It is the visual as a whole that comes in, so it can be a shape, a path, a piece of text or a group of them.
+// The outlines are drawn in `parent` (the group the visual is a child of; the stage's visuals if it is not given), which is
+// also where the visual has to be a direct child of, so that they line up.
+Scene draw_on( Stage &stage, Visual &visual, std::chrono::duration<double> duration = std::chrono::milliseconds( 1500 ), float trace = 0.7F, Group *parent = nullptr );

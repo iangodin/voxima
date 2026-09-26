@@ -849,6 +849,16 @@ Scene show_verbs( Stage &stage, Script & )
 	co_await wait_for( stage, 0.3s );
 	co_await choreograph( fade_out( stage, *a, 0.5s ), slide_out( stage, *b, { 0.F, 3.F }, 0.8s ), shrink_out( stage, *c, 0.6s ), fade_out( stage, ab, 0.5s ), fade_out( stage, bc, 0.5s ) );
 	co_await wait_for( stage, 0.5s );
+
+	// Drawn on: a shape's outline traced, and text written
+	auto &ring = stage.visuals.add( std::make_unique<Circle>() );
+	ring.radius = 1.2F;
+	ring.color = palette.purple;
+	ring.position = { -3.F, -0.5F };
+	auto &words = stage.visuals.add( make_text( theme, "Draw me", FontStyle{ Intent::TITLE }.large() ) );
+	move_to( words, { 2.5F, -0.5F }, Anchor::CENTER );
+	co_await choreograph( draw_on( stage, ring, 1.6s ), draw_on( stage, words, 1.6s ) );
+	co_await wait_for( stage, 1s );
 }
 
 // Music under the demo movie. Music is not in the repository (assets/ is not): without the file the movie

@@ -33,6 +33,7 @@ add_executable( sonimation_unit_tests
 	TestUpdaters.cpp
 	TestConnector.cpp
 	TestAnimate.cpp
+	TestTrim.cpp
 	TestPanelListTable.cpp
 	TestPalette.cpp
 	TestFontStacks.cpp
