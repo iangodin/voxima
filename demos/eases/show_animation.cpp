@@ -59,6 +59,10 @@
 #include <code/LineHighlight.h>
 #include <code/Typing.h>
 #include <plot/Axes.h>
+#include <visuals/CreateList.h>
+#include <visuals/CreateTable.h>
+#include <visuals/Panel.h>
+#include <visuals/Placement.h>
 #include <plot/Graph.h>
 #include <visuals/ArrowTip.h>
 #include <visuals/Image.h>
@@ -749,6 +753,64 @@ Scene show_plot_edge( Stage &stage, Script & )
 	co_await show_plot_with( stage, AxisPlacement::EDGE );
 }
 
+// Things placed against each other, not on coordinates: a list and a table in panels, and a row of labeled shapes
+Scene show_layout( Stage &stage, Script & )
+{
+	Theme &theme = *stage.theme;
+	const Palette &palette = theme.palette();
+
+	// A title, at the top
+	auto &title = stage.visuals.add( make_text( theme, "Layout", FontStyle{ Intent::TITLE }.large() ) );
+	move_to( title, { 0.F, 4.1F }, Anchor::TOP );
+
+	// A list in a panel, and a table in another, side by side
+	auto list_panel = make_panel( make_list( theme, { "Rows and columns", "Grids of any size", "Panels that fit", "Numbered lists too" } ) );
+	auto table_panel = make_panel( make_table(
+		theme,
+		{ { "Palette", "Type", "Background" },
+		  { "paper", "light", "warm white" },
+		  { "one-dark", "dark", "slate" },
+		  { "blueprint", "dark", "navy" } },
+		{ .alignment = { Align::START, Align::CENTER, Align::END } } ) );
+	auto &left = stage.visuals.add( std::move( list_panel ) );
+	auto &right = stage.visuals.add( std::move( table_panel ) );
+	move_to( left, { -3.6F, 1.2F }, Anchor::CENTER );
+	next_to( right, left, Anchor::RIGHT, 0.7F );
+
+	// A row of shapes, each with its label under it, the row centered under the panels
+	Group shapes;
+	auto shape_with = [&]( std::unique_ptr<Visual> shape, const std::string &name )
+	{
+		auto column = std::make_unique<Group>();
+		column->add( std::move( shape ) );
+		// The label's baseline at the same depth in every column (a text's box depends on the letters in it, so lining
+		// up the boxes would not line up the words), centered under the shape
+		auto &label = column->add( make_text( theme, name, FontStyle{ Intent::LABEL } ) );
+		const AABB box = box_of( label );
+		label.position = { -( box.min.x() + box.max.x() ) / 2.F, -1.05F };
+		return column;
+	};
+	auto circle = std::make_unique<Circle>();
+	circle->radius = 0.5F;
+	circle->color = palette.red;
+	auto square = std::make_unique<Rectangle>();
+	square->half_width = square->half_height = 0.5F;
+	square->color = palette.blue;
+	auto bar = std::make_unique<Rectangle>();
+	bar->half_width = 1.1F;
+	bar->half_height = 0.3F;
+	bar->color = palette.green;
+	auto &row = stage.visuals.add( std::make_unique<Group>() );
+	row.add( shape_with( std::move( circle ), "circle" ) );
+	row.add( shape_with( std::move( square ), "square" ) );
+	row.add( shape_with( std::move( bar ), "a longer bar" ) );
+	arrange_row( row, { .gap = 1.2F, .align = Align::BASELINE } ); // the columns' origins level: shapes centered, labels on one line
+	next_to( row, left, Anchor::BOTTOM, 0.9F );
+	move_to( row, { 0.F, point_at( row, Anchor::CENTER ).y() }, Anchor::CENTER );
+
+	co_await wait_for( stage, 3s );
+}
+
 // Music under the demo movie. Music is not in the repository (assets/ is not): without the file the movie
 // plays silent, and says so.
 constexpr const char *MOVIE_MUSIC = "assets/music/Alexander Ehlers - Spacetime.mp3";
@@ -776,6 +838,7 @@ SONIMATION_SCENE( "missing-glyphs", "Characters that cannot be drawn, shown as m
 SONIMATION_SCENE( "eases", "The ease functions, as circles racing across the screen (with narration)", show_eases );
 SONIMATION_SCENE( "formulas", "A page of laid-out math formulas", show_formulas );
 SONIMATION_SCENE( "code", "Syntax-highlighted C++, typed, with lines pointed out", show_code );
+SONIMATION_SCENE( "layout", "Panels, a list and a table, and a row of shapes, placed against each other", show_layout );
 SONIMATION_SCENE( "camera", "Zooming in on a graph, and panning along it", show_camera );
 SONIMATION_SCENE( "plot", "Axes crossing in the middle, and graphs drawn on them", show_plot );
 SONIMATION_SCENE( "plot-edge", "The same, with the axes along the left and bottom", show_plot_edge );

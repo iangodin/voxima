@@ -115,6 +115,10 @@ add_library( visuals STATIC
 	src/core/SceneRegistry.cpp
 	src/core/WordEffects.cpp
 	src/visuals/Outline.cpp
+	src/visuals/Placement.cpp
+	src/visuals/Panel.cpp
+	src/visuals/CreateList.cpp
+	src/visuals/CreateTable.cpp
 	src/visuals/MissingGlyph.cpp
 	src/visuals/MorphMatch.cpp
 	src/visuals/MorphLeaves.cpp

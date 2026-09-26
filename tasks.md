@@ -13,8 +13,9 @@
   - [x] Axes: ticks at nice steps, numbers (with a halo), arrow tips, axis names, a grid (make_axes)
   - [x] Graphs of functions: smooth, clipped to the plot, broken at asymptotes, drawn on along their length (plot, draw)
   - [x] Axes along the edges or crossing in the middle (AxesOptions::placement), the grid as one path (no bright spots at crossings)
+  - [x] Curve colors from the palette (the accents in turn)
   - [ ] Points and scatter plots, bar charts, a legend
-  - [ ] Plot colors from the theme (as the code palettes are)
+  - [ ] Parametric and polar curves; a point moving along a curve with its tangent; shaded areas (Riemann sums)
   - [ ] Axes drawn on (growing, ticks and numbers appearing), and graphs morphing into other graphs
   - [ ] Import external SVG files
   - [x] Add support for images / photos
@@ -38,6 +39,51 @@
   - [x] Over/underbrace
   - [x] Stacked relations (stackrel)
   - [x] Phantom / invisible spacing placeholder
+
+## Composition and Diagrams
+The biggest gap: everything is placed by hand-typed coordinates. The building blocks of most teaching content:
+  - [x] Arrange: rows, columns and grids of visuals with a gap, aligned (start, center, end, baselines); next_to( a, b, side, gap )
+  - [x] Anchors: the edges, corners and center of any visual (point_at, move_to), so things are placed relative to each other, not to the stage
+  - [x] Panels: a rounded box that fits its contents (padding, radius, outline), in the text color's tint so it suits any palette
+  - [ ] Callouts: a panel with a pointer to what it is about; a shadow
+  - [x] Lists (bullets, numbers; several lines an item) and tables (columns aligned left, center or right; header; rules), on a fixed line step so rows are evenly spaced
+  - [ ] Distribute (equal spaces between things of different sizes), and align a set of things to one edge
+  - [ ] Text wrapped to a width (a list item or a table cell that is a paragraph)
+  - [ ] Connectors: arrows and lines that join two visuals and follow them when they move; braces and labels attached to a part
+  - [ ] Diagrams: nodes and edges (flowcharts, trees, graphs), number lines, geometry (points, angles, polygons with labeled vertices)
+  - [ ] Safe areas and a grid to lay out on; stay inside the frame
+
+## Animation Vocabulary
+The stock verbs, so a scene says what it means. We have tween, morph, choreograph and the word effects; missing:
+  - [ ] Updaters: something run every frame that keeps one thing tied to another (a label that follows a moving point, a connector between two moving boxes)
+  - [ ] Draw-on (Create) and Write for any visual: strokes drawn along their length, text written; the reverse (Uncreate)
+  - [ ] Fade in and out, grow and shrink from a point, slide in from an edge, for any visual
+  - [ ] Indicate, flash, circumscribe, highlight a part: draw the eye to something
+  - [ ] Move along a path, and turn about a point
+  - [ ] Transitions between scenes (cross-fade, wipe, slide): a scene now just clears the stage
+  - [ ] Spring and other physics-like eases; staggered groups (each part starting a little after the last)
+
+## Math Authoring
+  - [ ] A parser for LaTeX-like math strings (\frac{a}{b}, \sum_{i=0}^n ...) into the Expr tree: no C++ needed to write a formula
+  - [ ] Step-by-step transformations of an equation (one line to the next, showing which parts move), on top of the morph
+  - [ ] Highlight a part of a formula in narration (by tag, as words are)
+
+## Authoring Loop
+Scenes are compiled C++, so every change is a rebuild.
+  - [ ] Hot reload: change the script (or a theme file) and the preview updates
+  - [ ] Scenes as data: which could be written without C++ (as themes now are), and how far that goes
+  - [ ] A project template (a new video: scripts, theme, scene, build), and tutorials
+  - [ ] Visual regression: a tool to render chosen frames and compare them with a saved set (we compared by hand many times)
+
+## Output and Integration
+  - [ ] Burned-in subtitles (there are only sidecar tracks muxed in), with a style from the theme
+  - [ ] Transparent background (to composite over something else), and other formats (GIF, ProRes)
+  - [ ] Chapters in the output, from the scenes
+  - [ ] Pronunciation control for the narration (a dictionary, a respelling in the script)
+  - [ ] Loudness normalisation of the mix (LUFS), and the rest of audio.md's chain (gate, compressor, EQ)
+
+## Not Planned
+  - 3D: it would be another renderer.
 
 ## Source Code
   - [x] Syntax highlighting of C and C++ with tree-sitter (code::highlight)
