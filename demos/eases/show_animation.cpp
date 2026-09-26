@@ -78,7 +78,7 @@ void show_title( Stage &stage )
 {
 	StyledText text( "Hello\nالعالم" );
 	text.set_font_style( 0, text.size(), FontStyle{ Intent::TITLE }.large() );
-	text.set_color( 0, 5, Color{ 1.0f, 0.0f, 0.0f, 1.0f } );
+	text.set_color( 0, 5, stage.theme->palette().red );
 	text.set_weight( 2, 4, Weight::BLACK );
 
 	auto &label = stage.visuals.add( make_styled_text( *stage.theme, text ) );
@@ -140,10 +140,10 @@ void show_math( Stage &stage )
 	// Parts can be found again after building, to color or animate them. The composites name
 	// their own parts, so none of this needs a tag of ours.
 	auto &root_formula = place( root( text( "137" ), fraction( text( "22" ), text( "7" ) ) ) );
-	find_tag( root_formula, "numerator" )->color = Color{ 1.F, 0.4F, 0.4F, 1.F };
-	find_tag( root_formula, "denominator" )->color = Color{ 0.4F, 0.7F, 1.F, 1.F };
-	find_tag( root_formula, "sign" )->color = Color{ 1.F, 0.85F, 0.3F, 1.F };
-	find_tag( root_formula, "index" )->color = Color{ 0.5F, 1.F, 0.5F, 1.F };
+	find_tag( root_formula, "numerator" )->color = stage.theme->palette().red;
+	find_tag( root_formula, "denominator" )->color = stage.theme->palette().blue;
+	find_tag( root_formula, "sign" )->color = stage.theme->palette().yellow;
+	find_tag( root_formula, "index" )->color = stage.theme->palette().green;
 
 	// A binomial coefficient
 	place( binomial( text( "n" ), text( "k" ) ) );
@@ -158,8 +158,8 @@ void show_math( Stage &stage )
 		       rel( "=" ),
 		       ord( "3.14" ) } ) );
 	// A path: the bar inside the part tagged "ratio", the superscript inside "power"
-	find_tag( equation, "ratio", "bar" )->color = Color{ 1.F, 0.85F, 0.3F, 1.F };
-	find_tag( equation, "power", "superscript" )->color = Color{ 1.F, 0.4F, 0.4F, 1.F };
+	find_tag( equation, "ratio", "bar" )->color = stage.theme->palette().yellow;
+	find_tag( equation, "power", "superscript" )->color = stage.theme->palette().red;
 
 	// A sum: in display style its limits go over and under it
 	place( sum( text( "n=1" ), text( "∞" ) ) );
@@ -168,7 +168,7 @@ void show_math( Stage &stage )
 	MatrixOptions tight{ .column_sep_em = 0.6F };
 	std::vector<std::vector<Expr>> grid = { { text( "a" ), text( "b" ) }, { text( "c" ), text( "d" ) } };
 	auto &matrix_formula = place( pmatrix( grid, tight ) );
-	find_tag( matrix_formula, "r0c1" )->color = Color{ 0.5F, 1.F, 0.5F, 1.F }; // the entry b
+	find_tag( matrix_formula, "r0c1" )->color = stage.theme->palette().green; // the entry b
 
 	// An n x n matrix with an omitted middle: cdots across a row, vdots/ddots down and across
 	std::vector<std::vector<Expr>> ellipsis_grid = {
@@ -258,21 +258,22 @@ Scene show_ease(
 		stage, duration, ease, [&]( float t ) { circle.position = { x1 + ( x2 - x1 ) * t, circle.position.y() }; } );
 }
 
-std::unique_ptr<Circle> demo_circle( Point at )
+std::unique_ptr<Circle> demo_circle( const Stage &stage, Point at )
 {
+	const Palette &palette = stage.theme->palette();
 	auto c = std::make_unique<Circle>();
 	c->radius = 0.8F;
 	c->position = at;
-	c->color = Color{ 1.F, 0.45F, 0.45F, 1.F };
+	c->color = palette.red;
 	return c;
 }
 
-std::unique_ptr<Rectangle> demo_square( Point at )
+std::unique_ptr<Rectangle> demo_square( const Stage &stage, Point at )
 {
 	auto r = std::make_unique<Rectangle>();
 	r->half_width = r->half_height = 0.7F;
 	r->position = at;
-	r->color = Color{ 0.4F, 0.7F, 1.F, 1.F };
+	r->color = stage.theme->palette().blue;
 	return r;
 }
 
@@ -305,8 +306,8 @@ AudioBuffer pluck( float frequency, float seconds = 2.F )
 Scene show_morph( Stage &stage, Script & )
 {
 	const Point home = { 0.F, 2.5F };
-	auto circle = [&]() { return demo_circle( home ); };
-	auto square = [&]() { return demo_square( home ); };
+	auto circle = [&]() { return demo_circle( stage, home ); };
+	auto square = [&]() { return demo_square( stage, home ); };
 	auto letter = [&]( const char *s, const Color &color ) { return demo_letter( stage, s, color, home ); };
 
 	Visual *shown = &stage.visuals.add( circle() );
@@ -314,10 +315,10 @@ Scene show_morph( Stage &stage, Script & )
 
 	std::vector<std::unique_ptr<Visual>> targets;
 	targets.push_back( square() );
-	targets.push_back( letter( "a", Color{ 1.F, 0.85F, 0.3F, 1.F } ) );
-	targets.push_back( letter( "e", Color{ 0.5F, 1.F, 0.5F, 1.F } ) );
+	targets.push_back( letter( "a", stage.theme->palette().yellow ) );
+	targets.push_back( letter( "e", stage.theme->palette().green ) );
 	targets.push_back( letter( "8", Color{ 1.F, 1.F, 1.F, 1.F } ) );
-	targets.push_back( letter( "x", Color{ 0.4F, 0.7F, 1.F, 1.F } ) );
+	targets.push_back( letter( "x", stage.theme->palette().blue ) );
 	targets.push_back( circle() );
 
 	const float notes[] = { 261.6F, 293.7F, 329.6F, 392.0F, 440.0F, 523.3F }; // C D E G A C
@@ -416,7 +417,7 @@ Scene show_more_morphs( Stage &stage, Script & )
 	line->start = { -2.F, 0.F };
 	line->end = { 2.F, 0.F };
 	line->stroke_thickness = 0.12F;
-	line->stroke_color = Color{ 1.F, 0.85F, 0.3F, 1.F };
+	line->stroke_color = stage.theme->palette().yellow;
 	line->position = spot;
 
 	auto arrow = [&]( float degrees )
@@ -426,12 +427,12 @@ Scene show_more_morphs( Stage &stage, Script & )
 		shaft->start = { -1.5F, 0.F };
 		shaft->end = { 1.2F, 0.F };
 		shaft->stroke_thickness = 0.12F;
-		shaft->stroke_color = Color{ 0.5F, 1.F, 0.5F, 1.F };
+		shaft->stroke_color = stage.theme->palette().green;
 		auto tip = std::make_unique<ArrowTip>();
 		tip->start = { -1.5F, 0.F };
 		tip->end = { 1.6F, 0.F };
 		tip->size = 0.3F;
-		tip->color = Color{ 0.5F, 1.F, 0.5F, 1.F };
+		tip->color = stage.theme->palette().green;
 		group->add( std::move( shaft ) );
 		group->add( std::move( tip ) );
 		group->position = spot;
@@ -462,7 +463,7 @@ Scene show_more_morphs( Stage &stage, Script & )
 		MorphOptions options;
 	};
 	std::vector<Step> steps;
-	steps.push_back( { demo_circle( spot ), 1.7s, {} } );  // the line inflates into a disc
+	steps.push_back( { demo_circle( stage, spot ), 1.7s, {} } );  // the line inflates into a disc
 	steps.push_back( { arrow( 0.F ), 1.7s, {} } );         // the disc becomes an arrow, and
 	steps.push_back( { arrow( 60.F ), 1.7s, {} } );        // the arrow turns
 	MorphOptions ripple;
@@ -472,7 +473,7 @@ Scene show_more_morphs( Stage &stage, Script & )
 	steps.push_back( { word( "morph" ), 2.5s, ripple } );  // whose letters change one after another
 	steps.push_back( { picture( spot, 1.F ), 1.7s, {} } ); // the word cross-fades into a picture
 	steps.push_back( { picture( { 3.F, spot.y() }, 0.6F ), 1.7s, {} } ); // which moves and shrinks
-	steps.push_back( { demo_circle( { 3.F, spot.y() } ), 1.7s, {} } );   // and fades into a disc
+	steps.push_back( { demo_circle( stage, { 3.F, spot.y() } ), 1.7s, {} } );   // and fades into a disc
 
 	Visual *shown = &stage.visuals.add( std::move( line ) );
 	co_await wait_for( stage, 0.5s );
@@ -502,9 +503,9 @@ Scene follow_speech( Stage &stage, Narration &narration )
 	const Point spot = { 5.5F, 2.5F };
 	auto smooth = []( float t ) { return t * t * ( 3.F - 2.F * t ); };
 
-	Visual *shown = &stage.visuals.add( demo_circle( spot ) );
+	Visual *shown = &stage.visuals.add( demo_circle( stage, spot ) );
 
-	auto square = demo_square( spot );
+	auto square = demo_square( stage, spot );
 	Visual *next = square.get();
 	co_await morph_driven(
 		stage,
@@ -514,7 +515,7 @@ Scene follow_speech( Stage &stage, Narration &narration )
 		[&]( Morph &m ) { return narration.track_markers( "a", "b", [&m, smooth]( float t ) { m.set( smooth( t ) ); } ); } );
 	shown = next;
 
-	auto letter = demo_letter( stage, "a", Color{ 1.F, 0.85F, 0.3F, 1.F }, spot );
+	auto letter = demo_letter( stage, "a", stage.theme->palette().yellow, spot );
 	next = letter.get();
 	co_await morph_driven(
 		stage,
@@ -524,7 +525,7 @@ Scene follow_speech( Stage &stage, Narration &narration )
 		[&]( Morph &m ) { return narration.track_markers( "b", "c", [&m, smooth]( float t ) { m.set( smooth( t ) ); } ); } );
 	shown = next;
 
-	auto circle = demo_circle( spot );
+	auto circle = demo_circle( stage, spot );
 	next = circle.get();
 	co_await morph_driven(
 		stage,
@@ -696,7 +697,7 @@ Scene show_plot_with( Stage &stage, AxisPlacement placement )
 	co_await draw( stage, wave, 2s );
 
 	GraphOptions orange;
-	orange.color = Color::rgb( 229, 160, 90 );
+	orange.color = stage.theme->palette().orange;
 	auto &inverse = axes.add_plot( plot( axes, []( double x ) { return 1.0 / x; }, orange ) );
 	co_await draw( stage, inverse, 2s );
 	co_await wait_for( stage, 2s );

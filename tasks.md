@@ -117,8 +117,8 @@
   - [x] Themes as files (themes/*.huml): fonts as families in stacks, a palette, and inherit; the five built-in themes converted, checked against a record of every font they load
   - [x] --theme takes a file, --theme-dir, and theme.huml next to the scripts is used by default
   - [ ] Palettes from a file (a palette section in a theme file)
-  - [ ] Scenes' own colors from the palette (the demos use fixed colors)
-  - [ ] A light background for the math (check every Expr part follows the text color)
+  - [x] The demo scenes use the palette's accents, not fixed colors, so they read on light and dark (a scene of your own: theme->palette().blue)
+  - [x] Math on a light background: every part of an Expr follows the text color (fraction bars, radicals, brackets, big operators, accents, braces), checked on the formulas scene
 
 ## Camera
   - [x] Pan and zoom: Camera::center and zoom, and camera_to / camera_frame (zoom by ratio, the pan following so what is zoomed toward holds still on the screen)
