@@ -156,6 +156,13 @@ bool Producer::preview( const std::string &language )
 	bool quit = false;
 	int64_t skipped = 0;
 
+	// Repeat: play the scene being watched again and again. Going somewhere with a key (seek) moves the repeat
+	// to the scene arrived in; the repeat's own jump back does not.
+	bool repeat = false;
+	int64_t loop_scene = -1; // which scene (see FrameStore::scene), once known
+	bool retarget = false;
+	bool jumped = false; // went somewhere on purpose since the last frame shown: what was passed over is not "skipped"
+
 	auto last_frame = [&]() { return static_cast<int64_t>( store.size() ) - 1; };
 	auto blocks_queued = [&]()
 	{
@@ -166,6 +173,8 @@ bool Producer::preview( const std::string &language )
 	// Stop the sound and go to `frame` (waiting for it, if it has not been made yet)
 	auto seek = [&]( int64_t frame )
 	{
+		retarget = true;
+		jumped = true;
 		int64_t target = std::max<int64_t>( 0, frame );
 		if ( store.complete() )
 			target = std::min( target, std::max<int64_t>( 0, last_frame() ) );
@@ -244,6 +253,23 @@ bool Producer::preview( const std::string &language )
 		seek( here - start > skip ? start : before );
 	};
 
+	// The innermost scene that includes `frame`, or -1
+	auto scene_index_at = [&]( int64_t frame )
+	{
+		int64_t found = -1;
+		int depth = -1;
+		const auto scenes = store.scenes();
+		for ( size_t i = 0; i < scenes.size(); ++i )
+		{
+			if ( scenes[i].start <= frame && ( scenes[i].end < 0 || frame < scenes[i].end ) && scenes[i].depth > depth )
+			{
+				found = static_cast<int64_t>( i );
+				depth = scenes[i].depth;
+			}
+		}
+		return found;
+	};
+
 	Uint64 title_time = 0;
 	std::string title_text;
 
@@ -289,6 +315,10 @@ bool Producer::preview( const std::string &language )
 						next_after = pending >= 0 ? pending : playhead;
 						resolve_next();
 						break;
+					case SDLK_R:
+						repeat = !repeat;
+						retarget = true;
+						break;
 					case SDLK_UP: skip_by( skip ); break;
 					case SDLK_DOWN: skip_by( -skip ); break;
 					default: break;
@@ -311,6 +341,12 @@ bool Producer::preview( const std::string &language )
 				playhead = cursor = std::max<int64_t>( 0, last_frame() );
 				pending = -1;
 			}
+		}
+
+		if ( repeat && retarget && pending < 0 && playhead <= last_frame() )
+		{
+			loop_scene = scene_index_at( playhead );
+			retarget = false;
 		}
 
 		if ( mode != Mode::paused )
@@ -356,8 +392,28 @@ bool Producer::preview( const std::string &language )
 			else if ( heard <= last_frame() )
 				playhead = heard;
 
+			// Repeating: at the end of the scene (or, playing backwards, its start), go back into it
+			bool wrapped = false;
+			if ( repeat )
+			{
+				if ( const auto scene = store.scene( loop_scene ); scene && scene->end >= 0 )
+				{
+					if ( mode == Mode::forward && heard >= scene->end )
+					{
+						seek( scene->start );
+						wrapped = true;
+					}
+					else if ( mode == Mode::reverse && heard < scene->start )
+					{
+						seek( scene->end - 1 );
+						wrapped = true;
+					}
+					retarget = false;
+				}
+			}
+
 			// Played to the end (or back to the start): stop there
-			if ( at_end && queued == 0 )
+			if ( !wrapped && at_end && queued == 0 )
 			{
 				set_mode( Mode::paused );
 			}
@@ -382,8 +438,9 @@ bool Producer::preview( const std::string &language )
 			SDL_RenderTexture( sdl.renderer, sdl.texture, nullptr, nullptr );
 			SDL_RenderPresent( sdl.renderer );
 
-			if ( mode != Mode::paused && shown >= 0 && std::abs( playhead - shown ) > 1 )
+			if ( !jumped && mode != Mode::paused && shown >= 0 && std::abs( playhead - shown ) > 1 )
 				skipped += std::abs( playhead - shown ) - 1;
+			jumped = false;
 			shown = playhead;
 		}
 
@@ -414,6 +471,8 @@ bool Producer::preview( const std::string &language )
 			else
 				title << " (" << store.size() << " made so far)";
 			const bool waiting = pending >= 0 || ( mode != Mode::paused && !store.complete() && cursor > last_frame() );
+			if ( repeat )
+				title << " - repeating";
 			if ( next_after >= 0 )
 			{
 				title << " - waiting for the next scene";

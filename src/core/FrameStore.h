@@ -7,6 +7,7 @@
 #include <exception>
 #include <memory>
 #include <mutex>
+#include <optional>
 #include <string>
 #include <vector>
 
@@ -91,6 +92,15 @@ public:
 			_scenes[_open.back()].end = frame;
 			_open.pop_back();
 		}
+	}
+
+	// Scene number `index` (in the order they started), or nothing if there is none yet
+	std::optional<SceneSpan> scene( int64_t index ) const
+	{
+		std::lock_guard lock( _mutex );
+		if ( index < 0 || static_cast<size_t>( index ) >= _scenes.size() )
+			return std::nullopt;
+		return _scenes[static_cast<size_t>( index )];
 	}
 
 	// The scenes so far, in the order they started
