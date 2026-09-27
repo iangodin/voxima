@@ -16,9 +16,8 @@ build/Release/sonimation --width 1280 --height 720 \
 	--font-dir assets/fonts \
 	--render-dir render \
 	--save-svg \
-	--theme "New Computer Modern" \
 	--container mkv \
 	--vcodec h264 \
 	--acodec opus \
 	--lang en \
-	$@
+	"$@"
