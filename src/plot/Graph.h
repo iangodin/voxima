@@ -9,6 +9,7 @@
 #include <functional>
 #include <memory>
 #include <optional>
+#include <string>
 #include <vector>
 
 struct Stage;
@@ -24,6 +25,9 @@ struct GraphOptions
 	// The curve's color; by default the next of the axes' series colors (the palette's blue, then orange, green ...)
 	std::optional<Color> color;
 	float thickness = 0.05F;
+
+	// What the curve is called, for a legend
+	std::string name;
 };
 
 // The graph of a function on a pair of axes (plot()): a smooth stroked curve through samples of it, in the axes'
@@ -46,6 +50,17 @@ public:
 		return _drawn;
 	}
 
+	const std::string &name() const
+	{
+		return _name;
+	}
+
+	// The color the curve is drawn in
+	Color line_color() const
+	{
+		return stroke_color;
+	}
+
 	// The length of the whole curve, in the axes' coordinates
 	float length() const
 	{
@@ -59,6 +74,7 @@ private:
 	std::vector<std::vector<float>> _distance; // along the whole curve, at each point of each piece
 	float _length = 0.F;
 	float _drawn = 1.F;
+	std::string _name;
 };
 
 // The graph of y = f( x ) on the axes. Add it to them with add_plot, so it moves with them and is drawn under their

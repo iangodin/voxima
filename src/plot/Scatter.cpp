@@ -44,6 +44,8 @@ std::unique_ptr<Path> strokes( Point a, Point b, Point c, Point d, const Color &
 	return path;
 }
 
+}
+
 std::unique_ptr<Visual> make_marker( MarkerShape kind, float size, const Color &color, float thickness )
 {
 	switch ( kind )
@@ -71,6 +73,9 @@ std::unique_ptr<Visual> make_marker( MarkerShape kind, float size, const Color &
 	circle->color = color;
 	return circle;
 }
+
+namespace
+{
 
 // A run of points as a smooth curve: cubics through them, tangents set by the points either side (Catmull-Rom)
 void add_smooth( std::vector<PathCommand> &commands, const std::vector<Point> &p )

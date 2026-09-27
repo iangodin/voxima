@@ -86,8 +86,8 @@ TEST_CASE( "scatter series take the axes' colors in turn, or the one given", "[s
 {
 	Theme theme = NewComputerModern::create_theme();
 	auto axes = small_axes( theme );
-	const Color first = scatter( *axes, { { 1.0, 1.0 } } )->color();
-	const Color second = scatter( *axes, { { 1.0, 1.0 } } )->color();
+	const Color first = scatter( *axes, { { 1.0, 1.0 } } )->series_color();
+	const Color second = scatter( *axes, { { 1.0, 1.0 } } )->series_color();
 	CHECK( ( first.r != second.r || first.g != second.g || first.b != second.b ) );
-	CHECK( scatter( *axes, { { 1.0, 1.0 } }, { .color = Color{ 1.F, 0.F, 1.F, 1.F } } )->color().g == 0.F );
+	CHECK( scatter( *axes, { { 1.0, 1.0 } }, { .color = Color{ 1.F, 0.F, 1.F, 1.F } } )->series_color().g == 0.F );
 }

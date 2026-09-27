@@ -28,6 +28,9 @@ enum class JoinStyle
 	SMOOTH // a curve through them (it can overshoot between points that are far apart)
 };
 
+// A marker of the given kind and half-width, centered on its origin, in a color (a legend uses these too)
+std::unique_ptr<Visual> make_marker( MarkerShape kind, float size, const Color &color, float thickness = 0.04F );
+
 struct ScatterOptions
 {
 	MarkerShape marker = MarkerShape::CIRCLE;
@@ -60,7 +63,7 @@ public:
 	}
 
 	// The color the series is drawn in (the one asked for, or the axes' next series color)
-	Color color() const
+	Color series_color() const
 	{
 		return _color;
 	}
