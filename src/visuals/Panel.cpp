@@ -44,6 +44,7 @@ void Panel::fit()
 				static_cast<RoundRectangle &>( *layer ).half_width = static_cast<RoundRectangle &>( *layer ).half_height = 0.F;
 			}
 		}
+		extent = AABB{};
 		return;
 	}
 
@@ -76,6 +77,10 @@ void Panel::fit()
 			i += 1.F;
 		}
 	}
+
+	// The panel occupies its background's box for layout purposes: a shadow is a visual effect behind it, not
+	// something else should make room for, so it must not move where the panel is anchored or placed next to.
+	extent = AABB{ _background->position - Point{ half_width, half_height }, _background->position + Point{ half_width, half_height } };
 }
 
 std::unique_ptr<Panel> make_panel( std::unique_ptr<Visual> content, const PanelOptions &options )
