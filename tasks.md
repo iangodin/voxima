@@ -20,9 +20,16 @@
   - [ ] Parametric curves ( x(t), y(t) ) and polar curves ( r(θ) ) with a polar grid
   - [ ] Shaded areas: under a curve between two x, between two curves; Riemann sums (left, right, midpoint, trapezoids) with the number of pieces animated
   - [ ] A point that rides a curve (by x, or by fraction of the way) with its tangent line; secant lines closing in on a tangent
-  - [ ] Axes drawn on (the lines growing, then the ticks and numbers appearing one after another)
+  - [ ] Axes in parts (lines, ticks, numbers, names, grid) that can each be animated; axes drawn on: the lines growing from where they cross, then the ticks and numbers appearing one after another, the grid fading in
   - [ ] Re-sampling a graph in place with a new function (so a value tweened over time, like the a in sin(a x), or a blend of two functions, can reshape a curve without rebuilding it each frame)
-  - [ ] Axis features: log scales, a second y axis, a title and rotated axis names, custom tick lists and number formats (%, units, scientific), minor ticks
+  - [x] Ticks at chosen places with their own texts (`x_tick_labels`, `y_tick_labels`)
+  - [ ] Log scales (x and/or y): ticks at decades, minor ticks at 2 to 9, graphs sampled in log space
+  - [ ] A second y axis on the right, with its own range, color and name
+  - [ ] A plot title, and axis names that can be turned to run along the axis (the y name)
+  - [ ] Number formats for tick numbers: percent, unit suffix, scientific, thousands separators, or a function
+  - [ ] Minor ticks between the major ones, and their grid lines
+  - [ ] Long category names on a bar chart's axis: wrapped or turned so they do not overlap
+  - [ ] A framed plot (a box round it, ticks inside) as an alternative to arrowed axes
   - [ ] Import external SVG files
   - [x] Add support for images / photos
 
