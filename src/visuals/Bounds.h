@@ -111,14 +111,14 @@ public:
 
 	void visit( const Line &line ) override
 	{
-		add( line.start );
-		add( line.end );
+		add( line.position + line.start );
+		add( line.position + line.end );
 	}
 
 	void visit( const ArrowTip &arrow ) override
 	{
-		add( arrow.start );
-		add( arrow.end );
+		add( arrow.position + arrow.start );
+		add( arrow.position + arrow.end );
 	}
 
 	void visit( const Group &group ) override

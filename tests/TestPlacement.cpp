@@ -2,6 +2,7 @@
 #include <catch2/catch_test_macros.hpp>
 
 #include <visuals/Circle.h>
+#include <visuals/Line.h>
 #include <visuals/Placement.h>
 #include <visuals/Rectangle.h>
 
@@ -255,4 +256,16 @@ TEST_CASE( "keep_inside moves a visual in, and fit_inside shrinks one that is to
 	CHECK( big.scale_x == Approx( width / 30.F ) );
 	CHECK( big.scale_y == Approx( width / 30.F ) );
 	CHECK( big.position.x() == Approx( 0.F ).margin( 1e-3 ) );
+}
+
+TEST_CASE( "a line's box includes its position, like every other shape's", "[placement]" )
+{
+	Line line;
+	line.start = { -1.F, 0.F };
+	line.end = { 1.F, 0.F };
+	line.position = { 5.F, 2.F };
+	const AABB box = box_of( line );
+	CHECK( box.min.x() == Approx( 4.F ) );
+	CHECK( box.max.x() == Approx( 6.F ) );
+	CHECK( box.min.y() == Approx( 2.F ) );
 }
