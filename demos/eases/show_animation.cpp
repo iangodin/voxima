@@ -29,6 +29,7 @@
 #include <core/Wait.h>
 
 #include <math/Expr.h>
+#include <math/Operators.h>
 #include <math/Symbols.h>
 #include <visuals/Tags.h>
 #include <visuals/Circle.h>
@@ -1077,6 +1078,52 @@ Scene show_charts( Stage &stage, Script & )
 	co_await wait_for( stage, 2s );
 }
 
+// Tables: columns that wrap to a width, formulas as cells, tinted rows, and a grid
+Scene show_tables( Stage &stage, Script & )
+{
+	using namespace math::literals;
+	Theme &theme = *stage.theme;
+	const Palette &palette = theme.palette();
+	const FontStyle style{ Intent::PROSE };
+
+	auto &title = stage.visuals.add( make_text( theme, "Tables", FontStyle{ Intent::TITLE } ) );
+	move_to( title, { 0.F, 4.1F }, Anchor::TOP );
+
+	// A table too wide for its place: the widest column is wrapped, and the rows tinted
+	const std::vector<std::vector<std::string>> steps = {
+		{ "Step", "What happens" },
+		{ "read", "The input is read a line at a time and split into words, keeping the position of each" },
+		{ "check", "Every word is looked up, and the ones that are not known are collected for the report" },
+		{ "run", "Done" } };
+	auto &notes = stage.visuals.add( make_panel( make_table(
+		theme,
+		steps,
+		{ .striped = true, .header_fill = Color{ palette.blue.r, palette.blue.g, palette.blue.b, 0.25F }, .max_width = 6.6F } ) ) );
+	move_to( notes, { -3.6F, 0.9F }, Anchor::CENTER );
+
+	// Formulas in the cells, the columns lined up on their edges
+	math::Context context( theme, FontStyle{ Intent::MATH } );
+	auto cell = [&]( const math::Expr &formula )
+	{
+		auto visual = formula.build( context );
+		return std::unique_ptr<Visual>( std::move( visual ) );
+	};
+	std::vector<std::vector<std::unique_ptr<Visual>>> rows( 4 );
+	rows[0].push_back( make_text( theme, "function", FontStyle{ Intent::PROSE }.bold() ) );
+	rows[0].push_back( make_text( theme, "derivative", FontStyle{ Intent::PROSE }.bold() ) );
+	using namespace math;
+	rows[1].push_back( cell( superscript( "x"_m, "2"_m ) ) );
+	rows[1].push_back( cell( "2"_m * "x"_m ) );
+	rows[2].push_back( cell( row( { op( sin() ), ord( "x"_m ) } ) ) );
+	rows[2].push_back( cell( row( { op( cos() ), ord( "x"_m ) } ) ) );
+	rows[3].push_back( cell( radical( "x"_m ) ) );
+	rows[3].push_back( cell( "1"_m / ( "2"_m * radical( "x"_m ) ) ) );
+	auto &formulas = stage.visuals.add( make_panel( make_table( theme, std::move( rows ), { .grid = true, .alignment = { Align::CENTER } } ) ) );
+	move_to( formulas, { 4.2F, 0.6F }, Anchor::CENTER );
+
+	co_await wait_for( stage, 3s );
+}
+
 // Music under the demo movie. Music is not in the repository (assets/ is not): without the file the movie
 // plays silent, and says so.
 constexpr const char *MOVIE_MUSIC = "assets/music/Alexander Ehlers - Spacetime.mp3";
@@ -1111,6 +1158,7 @@ SONIMATION_SCENE( "diagram", "A diagram laid out in layers, a callout, a wrapped
 SONIMATION_SCENE( "geometry", "A triangle with named corners and marked angles", show_geometry );
 SONIMATION_SCENE( "math-marks", "Cancelled and boxed parts, colors, primes, and words between math", show_math_marks );
 SONIMATION_SCENE( "charts", "Scatter plots and bar charts: grouped, stacked, horizontal, with negatives", show_charts );
+SONIMATION_SCENE( "tables", "Tables that wrap, hold formulas, and tint their rows", show_tables );
 SONIMATION_SCENE( "camera", "Zooming in on a graph, and panning along it", show_camera );
 SONIMATION_SCENE( "plot", "Axes crossing in the middle, and graphs drawn on them", show_plot );
 SONIMATION_SCENE( "plot-edge", "The same, with the axes along the left and bottom", show_plot_edge );
