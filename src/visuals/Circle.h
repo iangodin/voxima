@@ -6,6 +6,14 @@
 
 struct Circle : public Visual
 {
+	Circle() = default;
+
+	Circle( float r, const Color &c = {} )
+		: radius( r )
+	{
+		color = c;
+	}
+
 	float radius = 1.F;
 
 	void accept( VisualVisitor &visitor ) const override

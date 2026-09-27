@@ -840,9 +840,11 @@ Scene show_layout( Stage &stage, Script & )
 	// A list in a panel, and a table in another, side by side
 	// (a panel with a shadow has an opaque fill: the background lifted a little toward the text color)
 	const Color lifted{ palette.background.r * 0.88F + palette.text.r * 0.12F, palette.background.g * 0.88F + palette.text.g * 0.12F, palette.background.b * 0.88F + palette.text.b * 0.12F, 1.F };
-	auto list_panel = make_panel( make_list( theme, { "Rows and columns", "Grids of any size", "Panels that fit", "Numbered lists too" } ), { .fill = lifted, .shadow = ShadowOptions{} } );
-	auto table_panel = make_panel( make_table(
-		theme,
+	auto list_panel = make_panel(
+		make_list( theme, { "Rows and columns", "Grids of any size", "Panels that fit", "Numbered lists too" } ),
+		{ .fill = lifted, .shadow = ShadowOptions{} } );
+	auto table_panel = make_panel(
+		make_table( theme,
 		{ { "Palette", "Type", "Background" },
 		  { "paper", "light", "warm white" },
 		  { "one-dark", "dark", "slate" },
@@ -866,16 +868,9 @@ Scene show_layout( Stage &stage, Script & )
 		label.position = { -( box.min.x() + box.max.x() ) / 2.F, -1.05F };
 		return column;
 	};
-	auto circle = std::make_unique<Circle>();
-	circle->radius = 0.5F;
-	circle->color = palette.red;
-	auto square = std::make_unique<Rectangle>();
-	square->half_width = square->half_height = 0.5F;
-	square->color = palette.blue;
-	auto bar = std::make_unique<Rectangle>();
-	bar->half_width = 1.1F;
-	bar->half_height = 0.3F;
-	bar->color = palette.green;
+	auto circle = std::make_unique<Circle>( 0.5F, palette.red );
+	auto square = std::make_unique<Rectangle>( 0.5F, 0.5F, palette.blue );
+	auto bar = std::make_unique<Rectangle>( 1.1F, 0.4F, palette.green );
 	auto &row = stage.visuals.add( std::make_unique<Group>() );
 	row.add( shape_with( std::move( circle ), "circle" ) );
 	row.add( shape_with( std::move( square ), "square" ) );
