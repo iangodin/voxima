@@ -8,6 +8,8 @@
 #include <visuals/Line.h>
 #include <visuals/Path.h>
 
+#include <visuals/Tags.h>
+
 #include <cmath>
 #include <map>
 #include <cstdio>
@@ -133,18 +135,22 @@ void make_halo( Visual &visual, const Color &color, float width )
 }
 
 // A number, where it goes, with its halo under it if the options have one
-void add_number( Group &axes, Theme &theme, const AxesOptions &options, const std::string &text, Point where )
+void add_number( Group &axes, Theme &theme, const AxesOptions &options, const std::string &text, Point where, const std::string &tick_tag )
 {
 	if ( options.number_halo )
 	{
 		Placed halo = text_of( theme, text, options.number_style, options.color );
 		make_halo( *halo.text, *options.number_halo, options.halo_width );
 		halo.text->position = where;
-		axes.add( std::move( halo.text ) );
+		Visual &added = axes.add( std::move( halo.text ) );
+		tag_visual( added, NUMBER_HALO_TAG );
+		tag_visual( added, tick_tag );
 	}
 	Placed number = text_of( theme, text, options.number_style, options.color );
 	number.text->position = where;
-	axes.add( std::move( number.text ) );
+	Visual &added = axes.add( std::move( number.text ) );
+	tag_visual( added, NUMBER_TAG );
+	tag_visual( added, tick_tag );
 }
 
 }
@@ -227,8 +233,8 @@ std::unique_ptr<Axes> make_axes( Theme &theme, const AxesOptions &options )
 		const float length = std::sqrt( along.lengthSquared() );
 		return length > 2.F * tip ? to - along * ( 2.F * tip / length ) : to;
 	};
-	add_line( *axes->_lines, x_from, stop_at_tip( x_from, x_to ), options.thickness, options.color );
-	add_line( *axes->_lines, y_from, stop_at_tip( y_from, y_to ), options.thickness, options.color );
+	tag_visual( add_line( *axes->_lines, x_from, stop_at_tip( x_from, x_to ), options.thickness, options.color ), AXIS_LINE_TAG );
+	tag_visual( add_line( *axes->_lines, y_from, stop_at_tip( y_from, y_to ), options.thickness, options.color ), AXIS_LINE_TAG );
 	if ( options.arrows )
 	{
 		for ( auto [from, to]: { std::pair{ x_from, x_to }, std::pair{ y_from, y_to } } )
@@ -238,7 +244,7 @@ std::unique_ptr<Axes> make_axes( Theme &theme, const AxesOptions &options )
 			arrow->end = to;
 			arrow->size = tip;
 			arrow->color = options.color;
-			axes->_lines->add( std::move( arrow ) );
+			tag_visual( axes->_lines->add( std::move( arrow ) ), AXIS_ARROW_TAG );
 		}
 	}
 
@@ -251,6 +257,7 @@ std::unique_ptr<Axes> make_axes( Theme &theme, const AxesOptions &options )
 		return !at_crossing && !under_tip;
 	};
 
+	int tick_count = 0;
 	for ( double x: axes->_x_ticks )
 	{
 		if ( !ticked( x, xc, options.x.max, options.x.span() / options.width ) )
@@ -258,13 +265,16 @@ std::unique_ptr<Axes> make_axes( Theme &theme, const AxesOptions &options )
 			continue;
 		}
 		const Point p = axes->at( x, yc );
-		add_line( *axes->_lines, { p.x(), p.y() - tick / 2.F }, { p.x(), p.y() + tick / 2.F }, options.thickness, options.color );
+		const std::string tick_tag = std::string( TICK_TAG ) + "-" + std::to_string( tick_count++ );
+		Line &mark = add_line( *axes->_lines, { p.x(), p.y() - tick / 2.F }, { p.x(), p.y() + tick / 2.F }, options.thickness, options.color );
+		tag_visual( mark, TICK_TAG );
+		tag_visual( mark, tick_tag );
 		if ( options.numbers )
 		{
 			// Centred under the tick
 			const std::string text = x_texts.empty() ? tick_text( x, x_step ) : x_texts[x];
 			const AABB box = text_of( theme, text, options.number_style, options.color ).box;
-			add_number( *axes, theme, options, text, { p.x() - ( box.min.x() + box.max.x() ) / 2.F, p.y() - tick / 2.F - gap - box.max.y() } );
+			add_number( *axes, theme, options, text, { p.x() - ( box.min.x() + box.max.x() ) / 2.F, p.y() - tick / 2.F - gap - box.max.y() }, tick_tag );
 		}
 	}
 	for ( double y: axes->_y_ticks )
@@ -274,13 +284,16 @@ std::unique_ptr<Axes> make_axes( Theme &theme, const AxesOptions &options )
 			continue;
 		}
 		const Point p = axes->at( xc, y );
-		add_line( *axes->_lines, { p.x() - tick / 2.F, p.y() }, { p.x() + tick / 2.F, p.y() }, options.thickness, options.color );
+		const std::string tick_tag = std::string( TICK_TAG ) + "-" + std::to_string( tick_count++ );
+		Line &mark = add_line( *axes->_lines, { p.x() - tick / 2.F, p.y() }, { p.x() + tick / 2.F, p.y() }, options.thickness, options.color );
+		tag_visual( mark, TICK_TAG );
+		tag_visual( mark, tick_tag );
 		if ( options.numbers )
 		{
 			// To the left of the tick, its middle level with it
 			const std::string text = y_texts.empty() ? tick_text( y, y_step ) : y_texts[y];
 			const AABB box = text_of( theme, text, options.number_style, options.color ).box;
-			add_number( *axes, theme, options, text, { p.x() - tick / 2.F - gap - box.max.x(), p.y() - ( box.min.y() + box.max.y() ) / 2.F } );
+			add_number( *axes, theme, options, text, { p.x() - tick / 2.F - gap - box.max.x(), p.y() - ( box.min.y() + box.max.y() ) / 2.F }, tick_tag );
 		}
 	}
 
@@ -289,13 +302,13 @@ std::unique_ptr<Axes> make_axes( Theme &theme, const AxesOptions &options )
 	{
 		Placed label = text_of( theme, options.x_label, options.label_style, options.color );
 		label.text->position = { x_to.x() + 2.F * gap - label.box.min.x(), x_to.y() - ( label.box.min.y() + label.box.max.y() ) / 2.F };
-		axes->add( std::move( label.text ) );
+		tag_visual( axes->add( std::move( label.text ) ), AXIS_NAME_TAG );
 	}
 	if ( !options.y_label.empty() )
 	{
 		Placed label = text_of( theme, options.y_label, options.label_style, options.color );
 		label.text->position = { y_to.x() - ( label.box.min.x() + label.box.max.x() ) / 2.F, y_to.y() + 2.F * gap - label.box.min.y() };
-		axes->add( std::move( label.text ) );
+		tag_visual( axes->add( std::move( label.text ) ), AXIS_NAME_TAG );
 	}
 
 	return axes;

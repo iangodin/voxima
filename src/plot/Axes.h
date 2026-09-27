@@ -95,6 +95,16 @@ struct AxesOptions
 // add_plot (see plot()), so it moves and scales with them. From the bottom up they are drawn: the grid, the axes with
 // their ticks and arrow tips, what is plotted, then the numbers and names (each number with a halo, so it can be read
 // where a curve passes over it). (Group::add puts a visual on top of everything instead.)
+// The tags on the parts of axes (see Tags.h), for animating them apart: the axis lines and their arrow tips; each tick mark and its
+// number (and the halo under it) share a tag "tick-N" (N counting the ticks from 0, x's first) besides their own kind; the names
+// at the ends; and the grid, which is the first child of the axes.
+inline constexpr const char *AXIS_LINE_TAG = "axis-line";
+inline constexpr const char *AXIS_ARROW_TAG = "axis-arrow";
+inline constexpr const char *TICK_TAG = "tick";
+inline constexpr const char *NUMBER_TAG = "number";
+inline constexpr const char *NUMBER_HALO_TAG = "number-halo";
+inline constexpr const char *AXIS_NAME_TAG = "axis-name";
+
 class Axes : public Group
 {
 public:

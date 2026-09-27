@@ -8,6 +8,7 @@
 #include <visuals/ArrowTip.h>
 #include <visuals/Glyph.h>
 #include <visuals/Line.h>
+#include <visuals/Tags.h>
 
 #include <cmath>
 #include <variant>
@@ -372,4 +373,40 @@ TEST_CASE( "ticks of your own replace the ones at even steps, with their own tex
 				++x_ticks;
 	}
 	CHECK( x_ticks == 3 );
+}
+
+TEST_CASE( "the parts of axes are tagged, a tick and its number sharing a tag", "[plot]" )
+{
+	Theme theme = NewComputerModern::create_theme();
+	AxesOptions options;
+	options.x = { -2.0, 2.0 };
+	options.y = { -1.0, 1.0 };
+	options.width = 4.F;
+	options.height = 2.F;
+	options.x_label = "t";
+	options.y_label = "v";
+	auto axes = make_axes( theme, options );
+
+	CHECK( find_tagged( *axes, AXIS_LINE_TAG ).size() == 2 );
+	CHECK( find_tagged( *axes, AXIS_ARROW_TAG ).size() == 2 );
+	CHECK( find_tagged( *axes, AXIS_NAME_TAG ).size() == 2 );
+
+	const size_t ticks = find_tagged( *axes, TICK_TAG ).size();
+	CHECK( ticks > 3 );
+	CHECK( find_tagged( *axes, NUMBER_TAG ).size() == ticks );
+
+	// The first tick and its number, and no more than those
+	const auto first = find_tagged( *axes, "tick-0" );
+	CHECK( first.size() == 2 ); // (the mark and its number)
+	bool has_mark = false;
+	bool has_number = false;
+	for ( const Visual *part: first )
+	{
+		has_mark = has_mark || dynamic_cast<const Line *>( part ) != nullptr;
+		has_number = has_number || dynamic_cast<const Group *>( part ) != nullptr;
+	}
+	CHECK( has_mark );
+	CHECK( has_number );
+	CHECK( find_tagged( *axes, "tick-" + std::to_string( ticks - 1 ) ).size() == 2 );
+	CHECK( find_tagged( *axes, "tick-" + std::to_string( ticks ) ).empty() );
 }
