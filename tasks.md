@@ -20,7 +20,7 @@
   - [ ] Parametric curves ( x(t), y(t) ) and polar curves ( r(θ) ) with a polar grid
   - [ ] Shaded areas: under a curve between two x, between two curves; Riemann sums (left, right, midpoint, trapezoids) with the number of pieces animated
   - [ ] A point that rides a curve (by x, or by fraction of the way) with its tangent line; secant lines closing in on a tangent
-  - [ ] Axes in parts (lines, ticks, numbers, names, grid) that can each be animated; axes drawn on: the lines growing from where they cross, then the ticks and numbers appearing one after another, the grid fading in
+  - [x] Axes in tagged parts (lines, arrows, ticks with their numbers, names, grid), and `draw_axes`: lines growing from the crossing, ticks and numbers coming in outward, the grid and names fading in
   - [ ] Re-sampling a graph in place with a new function (so a value tweened over time, like the a in sin(a x), or a blend of two functions, can reshape a curve without rebuilding it each frame)
   - [x] Ticks at chosen places with their own texts (`x_tick_labels`, `y_tick_labels`)
   - [ ] Log scales (x and/or y): ticks at decades, minor ticks at 2 to 9, graphs sampled in log space

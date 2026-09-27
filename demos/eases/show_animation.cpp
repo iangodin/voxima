@@ -33,6 +33,7 @@
 #include <visuals/Tags.h>
 #include <visuals/Circle.h>
 #include <plot/BarChart.h>
+#include <plot/DrawAxes.h>
 #include <plot/Legend.h>
 #include <plot/NumberLine.h>
 #include <plot/Scatter.h>
@@ -759,7 +760,8 @@ Scene show_plot_with( Stage &stage, AxisPlacement placement )
 	options.height = 5.F;
 	options.grid = true;
 	auto &axes = stage.visuals.add( make_axes( *stage.theme, options ) );
-	co_await wait_for( stage, 0.5s );
+	co_await draw_axes( stage, axes, 2.5s );
+	co_await wait_for( stage, 0.3s );
 
 	auto &wave = axes.add_plot( plot( axes, []( double x ) { return std::sin( x ); } ) );
 	co_await draw( stage, wave, 2s );
