@@ -16,7 +16,7 @@
   - [x] Curve colors from the palette (the accents in turn)
   - [x] Points and scatter plots: `scatter( axes, points, { .marker, .line } )`, six markers, a line straight or smooth
   - [x] Bar charts: `make_bar_chart` (vertical or horizontal; grouped or stacked; negatives; value labels; a color a category). Open: histograms (binning data)
-  - [ ] A legend: swatch or marker and a name for each series, in a panel in a corner; series named when they are plotted
+  - [x] A legend: `make_legend`, from scatter series, graphs and bar charts (`legend_entry`, `legend_entries`), placed in a corner with `add_legend`
   - [ ] Parametric curves ( x(t), y(t) ) and polar curves ( r(θ) ) with a polar grid
   - [ ] Shaded areas: under a curve between two x, between two curves; Riemann sums (left, right, midpoint, trapezoids) with the number of pieces animated
   - [ ] A point that rides a curve (by x, or by fraction of the way) with its tangent line; secant lines closing in on a tangent

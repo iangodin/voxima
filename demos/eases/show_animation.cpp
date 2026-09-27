@@ -33,6 +33,7 @@
 #include <visuals/Tags.h>
 #include <visuals/Circle.h>
 #include <plot/BarChart.h>
+#include <plot/Legend.h>
 #include <plot/NumberLine.h>
 #include <plot/Scatter.h>
 #include <visuals/Brace.h>
@@ -1041,16 +1042,18 @@ Scene show_charts( Stage &stage, Script & )
 	// Points, one series joined by a line, another as crosses
 	auto &plot_axes = stage.visuals.add( make_axes( theme, { .x = { 0, 10 }, .y = { 0, 8 }, .width = 7.F, .height = 4.5F, .grid = true, .x_label = "t", .y_label = "v" } ) );
 	plot_axes.position = { -3.7F, 0.2F };
-	plot_axes.add_plot( scatter( plot_axes, { { 1, 1.5 }, { 2, 2.4 }, { 3.5, 3.0 }, { 5, 5.2 }, { 6.5, 5.6 }, { 8, 7.1 }, { 9.5, 7.4 } }, { .line = JoinStyle::SMOOTH } ) );
-	plot_axes.add_plot( scatter( plot_axes, { { 1, 3.0 }, { 2.5, 2.2 }, { 4, 4.6 }, { 5.5, 3.1 }, { 7, 4.4 }, { 9, 5.0 } }, { .marker = MarkerShape::CROSS, .size = 0.14F } ) );
-	plot_axes.add_plot( scatter( plot_axes, { { 2, 6.5 }, { 4, 7.4 }, { 6, 6.0 } }, { .marker = MarkerShape::TRIANGLE } ) );
+	auto &measured = plot_axes.add_plot( scatter( plot_axes, { { 1, 1.5 }, { 2, 2.4 }, { 3.5, 3.0 }, { 5, 5.2 }, { 6.5, 5.6 }, { 8, 7.1 }, { 9.5, 7.4 } }, { .line = JoinStyle::SMOOTH, .name = "measured" } ) );
+	auto &noisy = plot_axes.add_plot( scatter( plot_axes, { { 1, 3.0 }, { 2.5, 2.2 }, { 4, 4.6 }, { 5.5, 3.1 }, { 7, 4.4 }, { 9, 5.0 } }, { .marker = MarkerShape::CROSS, .size = 0.14F, .name = "noisy" } ) );
+	auto &peaks = plot_axes.add_plot( scatter( plot_axes, { { 2, 6.5 }, { 4, 7.4 }, { 6, 6.0 } }, { .marker = MarkerShape::TRIANGLE, .name = "peaks" } ) );
+	add_legend( plot_axes, make_legend( theme, { legend_entry( measured ), legend_entry( noisy ), legend_entry( peaks ) } ), Anchor::BOTTOM_RIGHT );
 
 	// Bars side by side
 	auto &bars = stage.visuals.add( make_bar_chart( theme, {
 		.categories = { "Q1", "Q2", "Q3", "Q4" },
 		.series = { { "north", { 12, 19, 15, 22 } }, { "south", { 9, 14, 20, 17 } } },
-		.width = 4.8F, .height = 4.F, .value_labels = true } ) );
+		.width = 4.8F, .height = 4.F, .values = Range{ 0, 30 }, .value_labels = true } ) );
 	bars.position = { 4.9F, 0.6F };
+	add_legend( bars.axes(), make_legend( theme, legend_entries( bars ), { .horizontal = true } ), Anchor::TOP_LEFT );
 
 	auto &title = stage.visuals.add( make_text( theme, "Points and bars", FontStyle{ Intent::TITLE } ) );
 	move_to( title, { 0.F, 4.1F }, Anchor::TOP );
