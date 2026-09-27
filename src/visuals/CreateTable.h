@@ -64,7 +64,7 @@ public:
 	}
 
 private:
-	friend std::unique_ptr<Table> make_table( Theme &theme, std::vector<std::vector<std::unique_ptr<Visual>>> cells, const TableOptions &options );
+	friend std::unique_ptr<Table> build_table( Theme &theme, std::vector<std::vector<std::unique_ptr<Visual>>> cells, const TableOptions &options, bool text_cells );
 
 	size_t _rows = 0;
 	size_t _columns = 0;
@@ -72,6 +72,11 @@ private:
 };
 
 std::unique_ptr<Table> make_table( Theme &theme, const std::vector<std::vector<std::string>> &rows, const TableOptions &options = {} );
+
+// The layout both of them use. `text_cells`: the cells are text, so a row is as many lines tall as its cells' lines and no more or
+// less (a fixed step, so rows are evenly spaced whatever letters they hold); otherwise a row is as tall as its cells are, above and
+// below the baseline they sit on (a formula with a fraction in it), and never less than a line of text.
+std::unique_ptr<Table> build_table( Theme &theme, std::vector<std::vector<std::unique_ptr<Visual>>> cells, const TableOptions &options, bool text_cells );
 
 // The same, the cells being any visuals (a formula, a small picture, a shape), each with its origin on the baseline its row sits on,
 // as text has. The header row is not made bold (the cells are already made), and none is wrapped.

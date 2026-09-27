@@ -340,3 +340,22 @@ TEST_CASE( "a table can tint its rows, behind everything", "[table]" )
 	CHECK( stripe.half_width == Approx( header_band.half_width ) );
 	CHECK( stripe.half_height > 0.2F );
 }
+
+TEST_CASE( "a row of tall cells is as tall as they are, above and below the baseline", "[table]" )
+{
+	Theme theme = NewComputerModern::create_theme();
+	auto make = [&]( float first_height ) {
+		std::vector<std::vector<std::unique_ptr<Visual>>> cells( 2 );
+		cells[0].push_back( box( 1.F, first_height ) ); // centered on its origin: reaches half its height each way
+		cells[1].push_back( box( 1.F, 0.2F ) );
+		return make_table( theme, std::move( cells ), { .header = false } );
+	};
+	auto small = make( 0.2F );
+	auto tall = make( 3.F );
+	// The second row is lower by what the first grew below its baseline (1.5 against the 0.1 it had)
+	const float small_step = small->cell( 0, 0 ).position.y() - small->cell( 1, 0 ).position.y();
+	const float tall_step = tall->cell( 0, 0 ).position.y() - tall->cell( 1, 0 ).position.y();
+	CHECK( tall_step > small_step + 1.F );
+	// And the table is taller by the same room, above the first row too
+	CHECK( box_of( *tall ).max.y() - box_of( *tall ).min.y() > box_of( *small ).max.y() - box_of( *small ).min.y() + 2.F );
+}

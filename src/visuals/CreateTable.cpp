@@ -99,10 +99,15 @@ std::unique_ptr<Table> make_table( Theme &theme, const std::vector<std::vector<s
 	for ( size_t r = 0; r < texts.size(); ++r )
 		for ( const std::string &text: texts[r] )
 			cells[r].push_back( make_text( theme, text, style_of( r ) ) );
-	return make_table( theme, std::move( cells ), options );
+	return build_table( theme, std::move( cells ), options, true );
 }
 
 std::unique_ptr<Table> make_table( Theme &theme, std::vector<std::vector<std::unique_ptr<Visual>>> cells, const TableOptions &options )
+{
+	return build_table( theme, std::move( cells ), options, false );
+}
+
+std::unique_ptr<Table> build_table( Theme &theme, std::vector<std::vector<std::unique_ptr<Visual>>> cells, const TableOptions &options, bool text_cells )
 {
 	auto table = std::make_unique<Table>();
 	table->_rows = cells.size();
@@ -126,7 +131,9 @@ std::unique_ptr<Table> make_table( Theme &theme, std::vector<std::vector<std::un
 	};
 	std::vector<std::vector<Made>> made( row_count );
 	std::vector<float> widths( columns, 0.F );
-	std::vector<size_t> lines( row_count, 1 );
+	// How far each row reaches above its baseline (its ascent), and below its last one (its descent), as text does by default
+	std::vector<float> ascent( row_count, 0.75F * em );
+	std::vector<float> descent( row_count, 0.25F * em );
 	for ( size_t r = 0; r < row_count; ++r )
 	{
 		table->_cells.emplace_back();
@@ -139,9 +146,19 @@ std::unique_ptr<Table> make_table( Theme &theme, std::vector<std::vector<std::un
 			if ( !box.empty() )
 			{
 				widths[c] = std::max( widths[c], box.max.x() - box.min.x() );
-				// How many lines of text it is as tall as
-				const float height = ( box.max.y() - box.min.y() ) / ( LINE * em );
-				lines[r] = std::max( lines[r], static_cast<size_t>( std::max( 1.F, std::ceil( height - 0.35F ) ) ) );
+				if ( text_cells )
+				{
+					// How many lines of text it is as tall as: the first sits on the baseline, the others go down a line each
+					const float height = ( box.max.y() - box.min.y() ) / ( LINE * em );
+					const auto lines = static_cast<size_t>( std::max( 1.F, std::ceil( height - 0.35F ) ) );
+					descent[r] = std::max( descent[r], static_cast<float>( lines - 1 ) * LINE * em + 0.25F * em );
+				}
+				else
+				{
+					// As far as it goes, either way (its box is round its own origin, where its baseline is)
+					ascent[r] = std::max( ascent[r], box.max.y() - cell.position.y() );
+					descent[r] = std::max( descent[r], cell.position.y() - box.min.y() );
+				}
 			}
 		}
 	}
@@ -156,7 +173,8 @@ std::unique_ptr<Table> make_table( Theme &theme, std::vector<std::vector<std::un
 	std::vector<float> baselines( row_count, 0.F );
 	for ( size_t r = 1; r < row_count; ++r )
 	{
-		baselines[r] = baselines[r - 1] - ( static_cast<float>( lines[r - 1] ) * LINE + options.row_spacing ) * em;
+		// A text row's step is its lines and the space between; the 0.2 em is what a line has beyond its ascent and descent
+		baselines[r] = baselines[r - 1] - ( descent[r - 1] + ascent[r] + ( LINE - 1.F + options.row_spacing ) * em );
 	}
 
 	for ( size_t r = 0; r < row_count; ++r )
@@ -183,10 +201,9 @@ std::unique_ptr<Table> make_table( Theme &theme, std::vector<std::vector<std::un
 	// half way between the letters of one row (down to the descenders) and the next (up to the ascenders).
 	const float total_width = columns == 0 ? 0.F : lefts.back() + widths.back();
 	const float pad = gap / 2.F;
-	auto last_baseline = [&]( size_t r ) { return baselines[r] - static_cast<float>( lines[r] - 1 ) * LINE * em; };
-	auto between = [&]( size_t r ) { return ( last_baseline( r ) - 0.25F * em + baselines[r + 1] + 0.75F * em ) / 2.F; };
-	const float top_edge = ( row_count == 0 ) ? 0.F : baselines[0] + 0.75F * em + pad / 2.F;
-	const float bottom_edge = ( row_count == 0 ) ? 0.F : last_baseline( row_count - 1 ) - 0.25F * em - pad / 2.F;
+	auto between = [&]( size_t r ) { return ( baselines[r] - descent[r] + baselines[r + 1] + ascent[r + 1] ) / 2.F; };
+	const float top_edge = ( row_count == 0 ) ? 0.F : baselines[0] + ascent[0] + pad / 2.F;
+	const float bottom_edge = ( row_count == 0 ) ? 0.F : baselines[row_count - 1] - descent[row_count - 1] - pad / 2.F;
 
 	// The tints, behind the lines: each row's band runs from the middle of the gap above it to the middle of the gap below
 	if ( row_count > 0 && ( options.striped || options.header_fill ) )
