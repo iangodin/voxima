@@ -418,6 +418,17 @@ Scene show_math_marks( Stage &stage, Script & )
 
 	co_await wait_for( stage, 2s );
 
+	// Written with operators and named symbols
+	stage.visuals.clear();
+	{
+		using namespace math::literals;
+		place( eq( superscript( "a"_m, "2"_m ) + superscript( "b"_m, "2"_m ), superscript( "c"_m, "2"_m ) ), 2.4F );
+		place( row( { ord( "x"_m ), rel( sym::in ), ord( "S"_m ), space( Row::QUAD ), ord( -"a"_m / ( "b"_m + "c"_m ) ), rel( sym::leq ), ord( text( sym::alpha ) * text( sym::beta ) ) } ), 0.6F );
+		place( row( { ord( text( sym::forall ) ), ord( "x"_m ), rel( sym::Rightarrow ), ord( "f"_m * "x"_m ), rel( sym::neq ), ord( text( sym::infty ) ) } ), -1.4F );
+		place( row( { ord( upright( sym::Sigma ) ), ord( "a"_m ), bin( sym::pm ), ord( "b"_m ), bin( sym::cdot ), ord( "c"_m ), rel( sym::approx ), ord( text( sym::pi ) ) } ), -3.2F );
+	}
+	co_await wait_for( stage, 2s );
+
 	// Lines lined up on the equals sign, numbered
 	stage.visuals.clear();
 	place( aligned( { { text( "f(x)" ), row( { rel( "=" ), ord( "(x + 1)(x − 1)" ) } ) },
@@ -764,13 +775,18 @@ Scene show_plot_with( Stage &stage, AxisPlacement placement )
 	co_await draw_axes( stage, axes, 2.5s );
 	co_await wait_for( stage, 0.3s );
 
-	auto &wave = axes.add_plot( plot( axes, []( double x ) { return std::sin( x ); } ) );
+	auto &wave = axes.add_plot( plot( axes, []( double x ) { return std::sin( x ); }, { .name = "sin x" } ) );
 	co_await draw( stage, wave, 2s );
 
 	GraphOptions orange;
 	orange.color = stage.theme->palette().orange;
+	orange.name = "1 / x";
 	auto &inverse = axes.add_plot( plot( axes, []( double x ) { return 1.0 / x; }, orange ) );
 	co_await draw( stage, inverse, 2s );
+
+	// A key to the two curves
+	auto &key = add_legend( axes, make_legend( *stage.theme, { legend_entry( wave ), legend_entry( inverse ) } ), Anchor::TOP_RIGHT );
+	co_await fade_in( stage, key, 0.6s );
 	co_await wait_for( stage, 2s );
 }
 
@@ -1017,6 +1033,49 @@ Scene show_diagram( Stage &stage, Script & )
 	move_to( top, { top.position.x(), 4.0F }, Anchor::TOP );
 	keep_inside( top, safe_area( stage.camera ) );
 
+	co_await wait_for( stage, 2s );
+
+	// The same kind of thing going across, built up node by node: the boxes come in one after another, then the arrows, then a
+	// node is pointed out and moved, the arrows following it
+	stage.visuals.clear();
+	stage.updaters.clear();
+	auto &pipeline = stage.visuals.add( make_diagram() );
+	for ( const auto &[id, name, accent]: { std::tuple{ "in", "Input", palette.blue }, std::tuple{ "clean", "Clean", palette.green }, std::tuple{ "model", "Model", palette.orange }, std::tuple{ "out", "Report", palette.purple } } )
+	{
+		pipeline.add_text_node( theme, id, name, label, {}, tinted( accent ) );
+	}
+	pipeline.add_edge( "in", "clean" );
+	pipeline.add_edge( "clean", "model" );
+	pipeline.add_edge( "model", "out" );
+	pipeline.layout_layers( { .direction = Direction::RIGHT, .layer_gap = 1.4F } );
+	auto tie = follow( stage, pipeline );
+
+	// (nodes hidden until their turn: the arrows are drawn over the space between)
+	for ( size_t i = 0; i < pipeline.edge_count(); ++i )
+	{
+		pipeline.edge( i ).color.a = 0.F;
+		pipeline.edge( i ).stroke_color.a = 0.F;
+	}
+	std::vector<Visual *> nodes;
+	for ( const char *id: { "in", "clean", "model", "out" } )
+	{
+		nodes.push_back( &pipeline.node( id ) );
+	}
+	co_await stagger( stage, nodes, 0.25s, [&]( Visual &node ) { return grow_in( stage, node, 0.5s ); } );
+	std::vector<Visual *> arrows;
+	for ( size_t i = 0; i < pipeline.edge_count(); ++i )
+	{
+		arrows.push_back( &pipeline.edge( i ) );
+	}
+	for ( Visual *arrow: arrows )
+	{
+		arrow->color.a = 1.F;
+		arrow->stroke_color.a = 1.F;
+	}
+	co_await stagger( stage, arrows, 0.2s, [&]( Visual &arrow ) { return fade_in( stage, arrow, 0.4s ); } );
+	co_await circumscribe( stage, pipeline.node( "model" ) );
+	co_await move_by( stage, pipeline.node( "model" ), { 0.F, 1.8F }, 0.8s, ease_cubic_in_out );
+	co_await move_by( stage, pipeline.node( "model" ), { 0.F, -1.8F }, 0.8s, ease_cubic_in_out );
 	co_await wait_for( stage, 3s );
 }
 
