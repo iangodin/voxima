@@ -204,3 +204,18 @@ TEST_CASE( "The axes are drawn in the text color, whatever the palette", "[palet
 	auto axes = make_axes( theme );
 	CHECK( axes->options().color == Color{ 1.F, 1.F, 1.F, 1.F } ); // white: the text color, dark on a light background
 }
+
+TEST_CASE( "background_fill is the background, but never taken for the theme's text color", "[palette]" )
+{
+	Palette dark = Palette::get( "one-dark" );
+	CHECK( dark.background_fill().r == dark.background.r );
+
+	Palette white = dark;
+	white.background = { 1.F, 1.F, 1.F, 1.F };
+	const Color fill = white.background_fill();
+	CHECK( fill.r > 0.99F );
+	CHECK( fill.r < 1.F ); // (not pure white, which a shape's color would resolve to the text color)
+	const Color text = { 0.1F, 0.1F, 0.1F, 1.F };
+	CHECK( fill.resolved( text ).r == fill.r );
+	CHECK( Color( 1.F, 1.F, 1.F, 1.F ).resolved( text ).r == text.r );
+}

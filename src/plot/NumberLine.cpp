@@ -66,7 +66,7 @@ Group &NumberLine::add_interval( Theme &theme, double from, double to, const Col
 		dot->stroke_thickness = 0.05F;
 		dot->stroke_color = color;
 		// A hollow end shows the line under it as empty: the dot is the background's color
-		dot->color = closed ? color : theme.palette().background;
+		dot->color = closed ? color : theme.palette().background_fill();
 		interval->add( std::move( dot ) );
 	};
 	end( from, options.closed_from );

@@ -39,6 +39,19 @@ struct Palette
 		return { blue, orange, green, purple, red, cyan, yellow, pink };
 	}
 
+	// The background as a color to fill a shape with, so it shows as the background. Pure white in a shape means "the theme's text
+	// color" (Color::resolved), so a palette whose background is pure white (github-light) would fill it with the text color instead:
+	// this is that white, a hair off, which is not taken for it.
+	Color background_fill() const
+	{
+		Color fill = background;
+		if ( fill.r == 1.F && fill.g == 1.F && fill.b == 1.F && fill.a == 1.F )
+		{
+			fill = { 0.999F, 0.999F, 0.999F, 1.F };
+		}
+		return fill;
+	}
+
 	// The same palette on another background (a theme keeps its look on the black it always had: see house())
 	Palette with_background( const Color &color ) const
 	{
