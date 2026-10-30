@@ -1,15 +1,22 @@
 
-from conan import ConanFile
-from conan.tools.cmake import CMakeToolchain, CMakeDeps, cmake_layout
+import os
 
-class MyProjectConan(ConanFile):
-  name = "Sonimation"
-  version = "0.0"
+from conan import ConanFile
+from conan.tools.cmake import CMake, CMakeToolchain, CMakeDeps, cmake_layout
+
+# For working on Sonimation (make config: conan install .), and for packaging it (conan create .), so others can
+# build plugins of scenes against it (see examples/).
+class SonimationConan(ConanFile):
+  name = "sonimation"
+  version = "0.1.0" # as in CMakeLists.txt's project()
   settings = "os", "compiler", "build_type", "arch"
   generators = "CMakeDeps"
+  exports_sources = (
+    "CMakeLists.txt", "cmake/*", "src/*", "extern/*", "themes/*", "tools/*", "tests/*", "demos/*",
+    "download_fonts.py" )
 
   def requirements(self):
-    self.requires("catch2/3.13.0")
+    self.test_requires("catch2/3.13.0")
     self.requires("cpptrace/1.0.4")
     self.requires("lunasvg/3.5.0")
     self.requires("plutovg/1.3.2")
@@ -36,3 +43,21 @@ class MyProjectConan(ConanFile):
     tc.generator = "Ninja"
     tc.generate()
 
+  def build(self):
+    cmake = CMake(self)
+    cmake.configure()
+    cmake.build()
+
+  def package(self):
+    # Only Sonimation's own: audio.cpp has install rules of its own (see CMakeLists.txt)
+    cmake = CMake(self)
+    cmake.install(component="Sonimation")
+
+  def package_info(self):
+    # Found with its own config (find_package( Sonimation ) gives Sonimation::core and sonimation_add_plugin),
+    # not one made by Conan
+    self.cpp_info.set_property("cmake_find_mode", "none")
+    # The package itself, as a CMake prefix: find_package finds lib/cmake/Sonimation in it, on every platform
+    self.cpp_info.builddirs = ["."]
+    self.cpp_info.libs = ["sonimation_core"]
+    self.cpp_info.includedirs = [os.path.join("include", "sonimation")]
