@@ -57,7 +57,9 @@ private:
 	//   up/down: 1 second forward/back (keeps playing)   home/end: the start/the end   escape: quit
 	//   [ and ]: the previous scene (or the start of this one, if a second or more in) and the next
 	//   r: repeat the scene being watched (again to stop), in either direction
-	// Going somewhere the producer has not got to yet waits for it.
+	//   F5: load the plugins and the script again, and play from the scene being watched
+	// Going somewhere the producer has not got to yet waits for it. A plugin (--plugin) that is rebuilt is loaded
+	// again by itself, as F5 does (but not the script).
 	bool preview( const std::string &language );
 
 	// The frame rate that suits the main display, for --preview without --fps: its refresh rate, or the nearest

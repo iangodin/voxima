@@ -137,6 +137,18 @@ public:
 		return _error;
 	}
 
+	// Empty again, for the scenes to be played from the start (the preview, reloading a plugin). The producer
+	// must have stopped.
+	void reset()
+	{
+		std::lock_guard lock( _mutex );
+		_frames.clear();
+		_scenes.clear();
+		_open.clear();
+		_complete = false;
+		_error = nullptr;
+	}
+
 private:
 	size_t _block_frames;
 	mutable std::mutex _mutex;

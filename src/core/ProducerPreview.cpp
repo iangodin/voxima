@@ -104,43 +104,56 @@ bool Producer::preview( const std::string &language )
 
 	FrameStore store( static_cast<size_t>( block ) );
 
-	// The producer: runs the scenes as fast as it can, and the player takes the frames as it needs them. It
-	// stops when asked (on leaving), or when the scenes end, or fail (the player reports it).
-	std::jthread producer( [&]( std::stop_token stop )
-	{
-		try
-		{
-			_script.select_languages( languages );
-			_stage.visuals.clear();
-			_stage.updaters.clear();
-			_stage.audio.begin( scratch, languages, true );
-			_current_frame = -1;
-			_stage.scene_event = [&]( const std::string &name, bool started )
-			{
-				if ( started )
-					store.scene_started( name, _current_frame );
-				else
-					store.scene_ended( _current_frame );
-			};
-			_screenplay = _director( _stage, _script );
-			_screenplay.handle.promise().producer_ptr = this;
+	// What the scenes may change, as it was before they started, so a reload starts them as the first time
+	const Camera first_camera = _stage.camera;
+	const Color first_background = _stage.background;
+	const Color first_foreground = _stage.foreground;
 
-			while ( !stop.stop_requested() && tick() )
-			{
-				std::ostringstream svg;
-				_stage.save_svg( svg );
-				_stage.audio.write_audio();
-				store.append( svg.str(), _stage.audio.take_audio( language ) );
-			}
-			_stage.scene_event = nullptr;
-			store.finish();
-		}
-		catch ( ... )
+	// The producer: runs the scenes as fast as it can, and the player takes the frames as it needs them. It
+	// stops when asked (on leaving, or to reload), or when the scenes end, or fail (the player reports it).
+	std::jthread producer;
+	auto start_producer = [&]()
+	{
+		producer = std::jthread( [&]( std::stop_token stop )
 		{
-			_stage.scene_event = nullptr;
-			store.fail( std::current_exception() );
-		}
-	} );
+			try
+			{
+				_stage.camera = first_camera;
+				_stage.background = first_background;
+				_stage.foreground = first_foreground;
+				_script.select_languages( languages );
+				_stage.visuals.clear();
+				_stage.updaters.clear();
+				_stage.audio.begin( scratch, languages, true );
+				_current_frame = -1;
+				_stage.scene_event = [&]( const std::string &name, bool started )
+				{
+					if ( started )
+						store.scene_started( name, _current_frame );
+					else
+						store.scene_ended( _current_frame );
+				};
+				_screenplay = _director( _stage, _script );
+				_screenplay.handle.promise().producer_ptr = this;
+
+				while ( !stop.stop_requested() && tick() )
+				{
+					std::ostringstream svg;
+					_stage.save_svg( svg );
+					_stage.audio.write_audio();
+					store.append( svg.str(), _stage.audio.take_audio( language ) );
+				}
+				_stage.scene_event = nullptr;
+				store.finish();
+			}
+			catch ( ... )
+			{
+				_stage.scene_event = nullptr;
+				store.fail( std::current_exception() );
+			}
+		} );
+	};
+	start_producer();
 
 	prefer_x11();
 	if ( !SDL_Init( SDL_INIT_VIDEO | SDL_INIT_AUDIO ) )
@@ -365,13 +378,133 @@ bool Producer::preview( const std::string &language )
 		return found;
 	};
 
+	// Reloading: when a plugin is rebuilt (or F5, which reloads the script too), the scenes start again with the
+	// new code, and the player goes back to where it was in the scene it was in. What went wrong, loading or
+	// playing, is shown in the title until the next reload (with plugins, there can be one to fix it); without
+	// plugins a scene's failure ends the preview, as it always has.
+	std::string problem;       // what went wrong, to show
+	bool error_shown = false;  // the producer's error has been made a problem
+	std::string resume_scene;  // the scene to go back to once it has been played again
+	int64_t resume_offset = 0; // and how far into it
+	Uint64 watch_time = 0;
+
+	auto set_problem = [&]( std::string what )
+	{
+		std::cerr << what << '\n';
+		problem = what.substr( 0, what.find( '\n' ) );
+	};
+
+	auto reload = [&]( bool scripts )
+	{
+		resume_scene.clear();
+		if ( const auto scene = store.scene( scene_index_at( playhead ) ) )
+		{
+			resume_scene = scene->name;
+			resume_offset = playhead - scene->start;
+		}
+
+		SDL_SetWindowTitle( sdl.window, "Sonimation preview - reloading" );
+		std::cout << "Reloading\n";
+
+		// Nothing the plugins made may outlive them: their coroutines, their visuals, what they tied to them, and
+		// any error (its type may be theirs)
+		producer = std::jthread();
+		_screenplay = Screenplay();
+		_stage.visuals.clear();
+		_stage.updaters.clear();
+		_stage.scene_event = nullptr;
+		store.reset();
+		problem.clear();
+		error_shown = false;
+
+		next_after = -1;
+		loop_scene = -1;
+		shown = -1;
+		seek( 0 );
+
+		try
+		{
+			for ( auto &plugin: _plugins )
+			{
+				plugin.load();
+			}
+			if ( scripts )
+			{
+				Script fresh;
+				fresh.set_directory( _script.directory() );
+				if ( !fresh.load( language ) )
+				{
+					throw std::runtime_error( "unable to load script for " + language );
+				}
+				_script = std::move( fresh );
+			}
+		}
+		catch ( const std::exception &e )
+		{
+			// Left empty: the next build is tried as it comes
+			resume_scene.clear();
+			set_problem( e.what() );
+			return;
+		}
+
+		start_producer();
+	};
+
+	// Back to the scene that was being watched, once it has been played again (or not, if it is gone)
+	auto resume = [&]()
+	{
+		if ( resume_scene.empty() )
+			return;
+		for ( const auto &scene: store.scenes() )
+		{
+			if ( scene.name == resume_scene )
+			{
+				const bool past_end = scene.end >= 0 && scene.start + resume_offset >= scene.end;
+				seek( past_end ? scene.start : scene.start + resume_offset );
+				resume_scene.clear();
+				return;
+			}
+		}
+		if ( store.complete() )
+			resume_scene.clear();
+	};
+
 	Uint64 title_time = 0;
 	std::string title_text;
 
 	while ( !quit )
 	{
-		if ( auto error = store.error() )
-			std::rethrow_exception( error );
+		if ( auto error = store.error(); error && !error_shown )
+		{
+			if ( _plugins.empty() )
+				std::rethrow_exception( error );
+			try
+			{
+				std::rethrow_exception( error );
+			}
+			catch ( const std::exception &e )
+			{
+				set_problem( std::string( "Error: " ) + e.what() );
+			}
+			catch ( ... )
+			{
+				set_problem( "Error: a scene failed" );
+			}
+			error_shown = true;
+		}
+
+		// A rebuilt plugin, a few times a second (every one is asked, as each notes what it saw)
+		if ( const Uint64 now = SDL_GetTicks(); !_plugins.empty() && now - watch_time >= 250 )
+		{
+			watch_time = now;
+			bool changed = false;
+			for ( auto &plugin: _plugins )
+			{
+				changed = plugin.changed() || changed;
+			}
+			if ( changed )
+				reload( false );
+		}
 
 		SDL_Event event;
 		while ( SDL_PollEvent( &event ) )
@@ -420,11 +553,13 @@ bool Producer::preview( const std::string &language )
 						break;
 					case SDLK_UP: skip_by( skip ); break;
 					case SDLK_DOWN: skip_by( -skip ); break;
+					case SDLK_F5: reload( true ); break;
 					default: break;
 				}
 			}
 		}
 
+		resume();
 		resolve_next();
 
 		// A frame that was asked for has been made (or turned out never to be)
@@ -561,7 +696,15 @@ bool Producer::preview( const std::string &language )
 			const bool waiting = pending >= 0 || ( mode != Mode::paused && !store.complete() && cursor > last_frame() );
 			if ( repeat )
 				title << " - repeating";
-			if ( next_after >= 0 )
+			if ( !problem.empty() )
+			{
+				title << " - " << problem << " (fix it and rebuild, or F5)";
+			}
+			else if ( !resume_scene.empty() )
+			{
+				title << " - reloaded, going back to " << resume_scene;
+			}
+			else if ( next_after >= 0 )
 			{
 				title << " - waiting for the next scene";
 			}
