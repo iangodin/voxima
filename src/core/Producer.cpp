@@ -11,8 +11,10 @@
 #include <exporters/FfmpegMux.h>
 #include <exporters/PngRender.h>
 #include <exporters/SubtitleWriter.h>
+#include <cstdlib>
 #include <optional>
 #include <core/ThemeFile.h>
+#include <utils/ExecutablePath.h>
 #include <utils/Language.h>
 #include <utils/ParseSequenceName.h>
 #include <utils/Timer.h>
@@ -314,6 +316,39 @@ bool Producer::render( const RenderJob &job )
 
 namespace
 {
+// Where the fonts are, without --font-dir: assets/fonts here (in the source tree, say), $SONIMATION_FONTS, or
+// those installed with the program (in share/sonimation/fonts, which download_fonts.py fills). Nothing if none
+// of them is there, and the theme looks in assets/fonts as it always has.
+std::optional<std::filesystem::path> find_font_dir()
+{
+	std::error_code error;
+	if ( std::filesystem::is_directory( "assets/fonts", error ) )
+	{
+		return std::nullopt;
+	}
+#ifdef _MSC_VER
+#pragma warning( push )
+#pragma warning( disable : 4996 ) // getenv: only read, here
+#endif
+	const char *fonts = std::getenv( "SONIMATION_FONTS" );
+#ifdef _MSC_VER
+#pragma warning( pop )
+#endif
+	if ( fonts && *fonts )
+	{
+		return std::filesystem::path( fonts );
+	}
+	if ( const auto program = executable_path(); !program.empty() )
+	{
+		const auto installed = program.parent_path().parent_path() / "share" / "sonimation" / "fonts";
+		if ( std::filesystem::is_directory( installed, error ) )
+		{
+			return installed;
+		}
+	}
+	return std::nullopt;
+}
+
 std::string palette_names()
 {
 	std::string out;
@@ -340,7 +375,7 @@ bool Producer::produce( int argc, char *argv[] )
 	app.add_option( "-a,--acodec", acodec, "Audio codec (flac, wav, aac, opus, vorbis)" );
 
 	std::optional<std::string> font_path;
-	app.add_option( "--font-dir", font_path, "Directory containing fonts" );
+	app.add_option( "--font-dir", font_path, "Directory containing fonts (without it: assets/fonts, $SONIMATION_FONTS, or the installed share/sonimation/fonts)" );
 
 	std::string render_dir = "render";
 	app.add_option( "--render-dir", render_dir, "Directory for render to" );
@@ -533,6 +568,10 @@ bool Producer::produce( int argc, char *argv[] )
 	if ( font_path )
 	{
 		_stage.theme->set_font_path( *font_path );
+	}
+	else if ( const auto found = find_font_dir() )
+	{
+		_stage.theme->set_font_path( found->string() );
 	}
 
 	// A palette of its own choosing: its background and its text color for the picture (light or dark), and its colors

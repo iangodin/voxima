@@ -1,6 +1,10 @@
 #! /usr/bin/env python3
 
-output_dir = "assets/fonts"
+import sys
+
+# Where they go: assets/fonts (where sonimation looks, run from here), or the directory given, such as an
+# installed Sonimation's share/sonimation/fonts
+output_dir = sys.argv[1] if len(sys.argv) > 1 else "assets/fonts"
 
 font_renames = {
   "IBM Plex Serif Var-Italic.ttf": "IBMPlexSerif-Italic-Variable.ttf",

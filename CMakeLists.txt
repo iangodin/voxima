@@ -96,6 +96,7 @@ set_property( DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS
 # so there is one of each registry
 add_library( visuals SHARED
 	src/core/PluginLoader.cpp
+	src/utils/ExecutablePath.cpp
 	src/core/EaseCubic.cpp
 	src/core/EaseElastic.cpp
 	src/core/EaseBack.cpp
