@@ -135,7 +135,7 @@ void setup_codecs(
 		}
 		else if ( acodec == "wav" || acodec == "flac" || acodec == "aac" )
 		{
-			throw std::runtime_error( std::string( acodec ) + " is not supported in mp4 container" );
+			throw std::runtime_error( std::string( acodec ) + " is not supported in webm container" );
 		}
 		else
 		{
