@@ -74,3 +74,5 @@ target_link_libraries( sonimation_unit_tests
 target_compile_definitions( sonimation_unit_tests PRIVATE SONIMATION_TEST_DATA="${CMAKE_CURRENT_SOURCE_DIR}/data" )
 
 add_test( NAME unit_tests COMMAND sonimation_unit_tests WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}" )
+
+copy_runtime_dlls( sonimation_unit_tests )

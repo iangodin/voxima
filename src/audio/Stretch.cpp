@@ -3,11 +3,19 @@
 #include <sndfile.h>
 
 #include <atomic>
+#include <cmath>
 #include <cstdlib>
 #include <filesystem>
 #include <sstream>
 #include <stdexcept>
+
+#ifdef _WIN32
+#include <process.h>
+#define GETPID _getpid
+#else
 #include <unistd.h>
+#define GETPID getpid
+#endif
 
 namespace
 {
@@ -17,7 +25,7 @@ std::filesystem::path temporary_path( const std::string &suffix )
 {
 	static std::atomic<unsigned> counter{ 0 };
 	std::ostringstream name;
-	name << "sonimation-stretch-" << ::getpid() << "-" << counter++ << suffix;
+	name << "sonimation-stretch-" << GETPID() << "-" << counter++ << suffix;
 	return std::filesystem::temp_directory_path() / name.str();
 }
 

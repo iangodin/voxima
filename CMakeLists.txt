@@ -242,4 +242,17 @@ add_executable( align_poc tools/align_poc.cpp )
 target_compile_features( align_poc PUBLIC cxx_std_20 )
 target_link_libraries( align_poc PUBLIC visuals )
 
+# Windows has no rpath: audio.cpp puts audiocpp.dll in bin/, so copy it (and any other shared library) next to the program
+function( copy_runtime_dlls program )
+	if ( WIN32 )
+		add_custom_command( TARGET ${program} POST_BUILD
+			COMMAND ${CMAKE_COMMAND} -E copy_if_different $<TARGET_RUNTIME_DLLS:${program}> $<TARGET_FILE_DIR:${program}>
+			COMMAND_EXPAND_LISTS )
+	endif()
+endfunction()
+
+foreach( program sonimation test_huml tts_poc align_poc )
+	copy_runtime_dlls( ${program} )
+endforeach()
+
 add_subdirectory( tests )
