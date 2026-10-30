@@ -337,7 +337,7 @@ bool Producer::produce( int argc, char *argv[] )
 	app.add_option( "-v,--vcodec", vcodec, "Video codec (h264, h265, vp9 or av1)" );
 
 	std::string acodec;
-	app.add_option( "-a,--acodec", acodec, "Video codec (flac, wav, aac, opus)" );
+	app.add_option( "-a,--acodec", acodec, "Audio codec (flac, wav, aac, opus, vorbis)" );
 
 	std::optional<std::string> font_path;
 	app.add_option( "--font-dir", font_path, "Directory containing fonts" );
