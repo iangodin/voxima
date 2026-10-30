@@ -5,7 +5,7 @@
 
 #include <memory>
 
-struct Theme;
+class Theme;
 
 enum class TextAlign
 {
@@ -31,7 +31,7 @@ struct TextLayout
 /// of the block; the result is not centered.
 std::unique_ptr<Group> make_styled_text( Theme &theme, const StyledText &text, const TextLayout &layout = {} );
 
-class Glyph;
+struct Glyph;
 
 /// A glyph of laid-out text, and where in the text it came from
 struct PlacedGlyphInfo

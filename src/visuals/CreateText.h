@@ -14,7 +14,7 @@
 #include <memory>
 
 class Group;
-struct Theme;
+class Theme;
 struct Glyph;
 struct FontFace;
 

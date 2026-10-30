@@ -25,7 +25,7 @@ struct CodeLayout
 	float line_spacing = 1.2F;
 };
 
-class Glyph;
+struct Glyph;
 
 // A glyph of a listing, and which character of the source it is
 struct CodeGlyph

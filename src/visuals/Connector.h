@@ -71,5 +71,5 @@ private:
 std::unique_ptr<Connector> make_connector( const Visual &from, const Visual &to, const ConnectorOptions &options = {} );
 
 // Keep a connector joining its two visuals at every frame, until the handle goes
-class Stage;
+struct Stage;
 Updaters::Handle follow( Stage &stage, Connector &connector );
