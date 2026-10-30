@@ -415,7 +415,19 @@ bool Producer::produce( int argc, char *argv[] )
 	bool list_scenes = false;
 	app.add_flag( "--list-scenes", list_scenes, "List the scenes that can be rendered, and exit" );
 
+	std::vector<std::string> plugin_paths;
+	app.add_option(
+		"--plugin",
+		plugin_paths,
+		"A plugin of scenes (a .dll or .so; the extension may be left out) to load (repeatable); with --preview, it is loaded again when it is rebuilt" );
+
 	CLI11_PARSE( app, argc, argv );
+
+	// Their scenes register as they load, so before anything looks for one
+	for ( const auto &path: plugin_paths )
+	{
+		_plugins.emplace_back( path ).load();
+	}
 
 	if ( list_scenes )
 	{
@@ -451,7 +463,9 @@ bool Producer::produce( int argc, char *argv[] )
 			const auto scenes = SceneEntry::all();
 			if ( scenes.size() != 1 )
 			{
-				throw std::runtime_error( "no scene to render: give --scene <name>, or register one called \"movie\"\nScenes:\n" + describe_scenes() );
+				throw std::runtime_error(
+					"no scene to render: give --scene <name>, or register one called \"movie\" (in a --plugin, or in the program)\nScenes:\n" +
+					describe_scenes() );
 			}
 			const std::string only = scenes.front()->get_name();
 			_director = [only]( Stage &stage, Script &script ) { return play( stage, script, only ); };

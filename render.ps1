@@ -3,7 +3,7 @@
 # rendered instead, and the ones left out of the movie can be reached:
 #     .\render.ps1 --scene missing-glyphs
 #     .\render.ps1 --scene morph-shapes --scene karaoke
-#     build\Release\sonimation.exe --list-scenes
+#     build\Release\sonimation.exe --plugin build\Release\eases --list-scenes
 
 $ErrorActionPreference = "Stop"
 
@@ -18,6 +18,7 @@ if ($LASTEXITCODE -ne 0) {
 }
 
 & .\build\Release\sonimation.exe --width 1280 --height 720 `
+    --plugin build/Release/eases `
     --script-dir demos/eases `
     --font-dir assets/fonts `
     --render-dir render `

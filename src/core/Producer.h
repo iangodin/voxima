@@ -2,6 +2,7 @@
 #pragma once
 
 #include "Director.h"
+#include "PluginLoader.h"
 #include "Screenplay.h"
 #include "Stage.h"
 #include "Script.h"
@@ -15,8 +16,9 @@ class Producer
 {
 public:
 	// Which scene(s) to render is chosen on the command line (--scene, repeatable) from those registered
-	// with SONIMATION_SCENE (see SceneRegistry.h); with no --scene it is the scene called "movie". A
-	// Director given here is used instead of "movie" when there is no --scene.
+	// with SONIMATION_SCENE (see SceneRegistry.h), in the program or in a plugin (--plugin, see Plugin.h); with
+	// no --scene it is the scene called "movie". A Director given here is used instead of "movie" when there is
+	// no --scene.
 	explicit Producer( Director director = {} ) :
 		_director{ std::move( director ) }
 	{
@@ -77,6 +79,9 @@ private:
 
 		return !_screenplay.done();
 	}
+
+	// First, so they go last: the scenes, and all they made, have to go before the code that made them
+	std::vector<Plugin> _plugins;
 
 	Director _director;
 	Screenplay _screenplay;

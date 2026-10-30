@@ -64,6 +64,7 @@ add_executable( sonimation_unit_tests
 	TestSceneRegistry.cpp
 	TestWordEffects.cpp
 	TestMissingGlyph.cpp
+	TestPlugin.cpp
 )
 
 target_link_libraries( sonimation_unit_tests
@@ -72,6 +73,14 @@ target_link_libraries( sonimation_unit_tests
 )
 
 target_compile_definitions( sonimation_unit_tests PRIVATE SONIMATION_TEST_DATA="${CMAKE_CURRENT_SOURCE_DIR}/data" )
+
+# Plugins for TestPlugin.cpp to load
+sonimation_add_plugin( test_plugin plugin/TestPluginScenes.cpp )
+sonimation_add_plugin( test_plugin_wrong_abi plugin/TestPluginWrongAbi.cpp )
+add_dependencies( sonimation_unit_tests test_plugin test_plugin_wrong_abi )
+target_compile_definitions( sonimation_unit_tests PRIVATE
+	SONIMATION_TEST_PLUGIN="$<TARGET_FILE:test_plugin>"
+	SONIMATION_TEST_PLUGIN_WRONG_ABI="$<TARGET_FILE:test_plugin_wrong_abi>" )
 
 add_test( NAME unit_tests COMMAND sonimation_unit_tests WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}" )
 

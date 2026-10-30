@@ -3,7 +3,7 @@
 # rendered instead, and the ones left out of the movie can be reached:
 #     ./render.sh --scene missing-glyphs
 #     ./render.sh --scene morph-shapes --scene karaoke
-#     build/Release/sonimation --list-scenes
+#     build/Release/sonimation --plugin build/Release/eases --list-scenes
 set -e
 
 mkdir -p render
@@ -12,6 +12,7 @@ rm -f render/frame*.svg render/frame*.png
 
 make
 build/Release/sonimation --width 1280 --height 720 \
+	--plugin build/Release/eases \
 	--script-dir demos/eases \
 	--font-dir assets/fonts \
 	--render-dir render \

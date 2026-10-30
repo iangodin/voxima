@@ -52,7 +52,7 @@ std::string describe_scenes()
 	std::ostringstream out;
 	if ( scenes.empty() )
 	{
-		out << "  (no scenes are registered)\n";
+		out << "  (no scenes are registered: load some with --plugin)\n";
 	}
 	for ( const auto *scene: scenes )
 	{

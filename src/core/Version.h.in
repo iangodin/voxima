@@ -1,0 +1,5 @@
+#pragma once
+
+// Made by CMake from the project's version
+
+#define SONIMATION_VERSION "@PROJECT_VERSION@"

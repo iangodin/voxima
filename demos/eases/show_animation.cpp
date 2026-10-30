@@ -18,6 +18,7 @@
 #include <core/Animate.h>
 #include <core/Coroutine.h>
 #include <core/Director.h>
+#include <core/Plugin.h>
 #include <core/EaseBack.h>
 #include <core/EaseCubic.h>
 #include <core/EaseElastic.h>
@@ -1201,6 +1202,8 @@ Scene movie( Stage &stage, Script &script )
 	music.fade_out( 3s );
 	co_await wait_for( stage, 3s );
 }
+
+SONIMATION_PLUGIN();
 
 SONIMATION_SCENE( "missing-glyphs", "Characters that cannot be drawn, shown as magenta boxes (and reported)", show_missing_glyphs );
 SONIMATION_SCENE( "eases", "The ease functions, as circles racing across the screen (with narration)", show_eases );

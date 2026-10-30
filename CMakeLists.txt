@@ -1,7 +1,7 @@
 
 cmake_minimum_required( VERSION 3.31 )
 
-project( Sonimation )
+project( Sonimation VERSION 0.1.0 )
 
 set(CMAKE_CXX_SCAN_FOR_MODULES OFF)
 set( CMAKE_EXPORT_COMPILE_COMMANDS ON )
@@ -81,6 +81,7 @@ foreach( theme_file ${THEME_FILES} )
 	string( APPEND BUILTIN_THEME_SOURCES "R\"huml(${theme_text})huml\",\n" )
 	set_property( DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS ${theme_file} )
 endforeach()
+configure_file( src/core/Version.h.in ${CMAKE_CURRENT_BINARY_DIR}/core/Version.h @ONLY )
 configure_file( src/core/BuiltinThemes.h.in ${CMAKE_CURRENT_BINARY_DIR}/core/BuiltinThemes.h @ONLY )
 
 # The grammars' highlight queries, compiled in (see extern/tree-sitter-queries/README.md)
@@ -91,7 +92,10 @@ set_property( DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS
 	extern/tree-sitter-queries/c/highlights.scm
 	extern/tree-sitter-queries/cpp/highlights.scm )
 
-add_library( visuals STATIC
+# The core, shared by the program and the plugins of scenes it loads (see src/core/Plugin.h): one library,
+# so there is one of each registry
+add_library( visuals SHARED
+	src/core/PluginLoader.cpp
 	src/core/EaseCubic.cpp
 	src/core/EaseElastic.cpp
 	src/core/EaseBack.cpp
@@ -185,6 +189,11 @@ add_library( visuals STATIC
 	src/visuals/LargeOperator.cpp
 )
 
+add_library( Sonimation::core ALIAS visuals )
+set_target_properties( visuals PROPERTIES
+	OUTPUT_NAME sonimation_core
+	WINDOWS_EXPORT_ALL_SYMBOLS ON
+	POSITION_INDEPENDENT_CODE ON )
 target_compile_features( visuals PUBLIC cxx_std_20 )
 if ( NOT MSVC )
 	target_compile_options( visuals PUBLIC -fcoroutines )
@@ -205,18 +214,24 @@ target_link_libraries( visuals PUBLIC
 	tree-sitter::tree-sitter
 	tree-sitter-c::tree-sitter-c
 	tree-sitter-cpp::tree-sitter-cpp
+	${CMAKE_DL_LIBS}
 )
 if ( NOT MSVC )
 	# audiocpp.h has a "/*" inside a doc comment that -Wcomment flags; not our header to fix.
 	target_compile_options( visuals PRIVATE -Wno-comment )
 endif()
 
-add_executable( sonimation tools/main.cpp demos/eases/show_animation.cpp )
+add_executable( sonimation tools/main.cpp )
 target_compile_features( sonimation PUBLIC cxx_std_20 )
 if ( NOT MSVC )
 	target_compile_options( sonimation PUBLIC -fcoroutines )
 endif()
 target_link_libraries( sonimation PUBLIC visuals )
+
+include( cmake/SonimationPlugin.cmake )
+
+# The demo, as a plugin: sonimation --plugin build/Release/eases ...
+sonimation_add_plugin( eases demos/eases/show_animation.cpp )
 
 add_executable( list_font tools/list_font.cpp )
 target_compile_features( list_font PUBLIC cxx_std_20 )

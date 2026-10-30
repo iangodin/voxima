@@ -45,7 +45,7 @@ visuals stay on the stage.
 ## Choosing what to render
 
 ```
-sonimation --list-scenes                       # the registered scenes and what they do
+sonimation --plugin build/Release/eases --list-scenes   # the registered scenes and what they do (see Plugins)
 sonimation ...                                  # renders the scene called "movie"
 sonimation ... --scene morph-text               # one scene
 sonimation ... --scene morph-shapes --scene karaoke   # several, in the order given (a movie made on the spot)
@@ -57,6 +57,34 @@ scene is called "movie" and there is no `--scene`, the only registered scene is 
 
 A `Producer` can still be given a `Director` in code (`Producer producer( my_director )`), used when there is
 no `--scene`.
+
+## Plugins: scenes outside the program
+
+`sonimation` itself has no scenes: they are in **plugins**, shared libraries (a `.dll`, or a `.so`) loaded with
+`--plugin` (repeatable; the extension may be left out). A plugin is its scenes, registered as above, and one line
+in one of its files (`core/Plugin.h`):
+
+```cpp
+SONIMATION_PLUGIN();
+```
+
+```
+sonimation --plugin build/Release/eases --list-scenes
+sonimation --plugin build/Release/eases ... --scene karaoke
+```
+
+The demo is one (`demos/eases`, built as `build/Release/eases`); `render.sh` and `render.ps1` load it. In CMake a
+plugin is `sonimation_add_plugin( name sources... )` (`cmake/SonimationPlugin.cmake`).
+
+A plugin shares the program's strings, functions and coroutines, so it must be **built just as the program was**:
+the same compiler and version, standard library, and Debug or Release, against the same Sonimation. Each says what
+it was built with, and one that does not match is refused when it is loaded, naming both, rather than crashing.
+
+**With `--preview`, a rebuilt plugin is loaded again by itself**: the scenes start again with the new code, and
+the window goes back to where it was in the scene being watched. F5 does the same, and loads the script again
+too. If the new build cannot be loaded, or a scene fails, it is shown in the window's title (and on stderr), and
+the next build is tried when it comes. (What is loaded is a copy, in the temporary directory, so the build can
+write over the file.)
 
 ## Languages: one video for all, or one per language
 
