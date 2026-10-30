@@ -193,21 +193,30 @@ add_library( visuals SHARED
 add_library( Sonimation::core ALIAS visuals )
 set_target_properties( visuals PROPERTIES
 	OUTPUT_NAME sonimation_core
+	EXPORT_NAME core
 	WINDOWS_EXPORT_ALL_SYMBOLS ON
 	POSITION_INDEPENDENT_CODE ON )
 target_compile_features( visuals PUBLIC cxx_std_20 )
 if ( NOT MSVC )
 	target_compile_options( visuals PUBLIC -fcoroutines )
 endif()
-target_include_directories( visuals PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/src ${CMAKE_CURRENT_SOURCE_DIR}/extern ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR} )
+target_include_directories( visuals PUBLIC
+	$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src>
+	$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/extern>
+	$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+	$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>
+	$<INSTALL_INTERFACE:include/sonimation> )
+# Public: what its headers include. The rest is only in its own code.
 target_link_libraries( visuals PUBLIC
 	lunasvg::lunasvg
-	plutovg::plutovg
 	Freetype::Freetype
+	SndFile::sndfile
+)
+target_link_libraries( visuals PRIVATE
+	plutovg::plutovg
 	harfbuzz::harfbuzz
 	CLI11::CLI11
 	audiocpp
-	SndFile::sndfile
 	soxr::soxr
 	fribidi::fribidi
 	clipper2::clipper2
@@ -270,5 +279,43 @@ endfunction()
 foreach( program sonimation test_huml tts_poc align_poc )
 	copy_runtime_dlls( ${program} )
 endforeach()
+
+# Installing (make install PREFIX=<dir>): the program, the core and its headers, and what a plugin project needs to
+# find them (find_package( Sonimation ), then sonimation_add_plugin, see examples/). Only this component:
+# audio.cpp has install rules of its own (ggml's headers and libraries), which are not wanted.
+include( GNUInstallDirs )
+include( CMakePackageConfigHelpers )
+
+if ( NOT WIN32 )
+	set_target_properties( sonimation PROPERTIES INSTALL_RPATH "$ORIGIN/../${CMAKE_INSTALL_LIBDIR}" )
+	set_target_properties( visuals PROPERTIES INSTALL_RPATH "$ORIGIN" )
+endif()
+
+install( TARGETS sonimation visuals EXPORT SonimationTargets COMPONENT Sonimation
+	RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+	LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+	ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR} )
+# The core's TTS, next to it. Not part of the interface, but a shared library it links to has to be exported with it.
+install( TARGETS audiocpp EXPORT SonimationTargets COMPONENT Sonimation
+	RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+	LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR} )
+install( DIRECTORY src/ DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/sonimation COMPONENT Sonimation FILES_MATCHING PATTERN "*.h" PATTERN "*.hpp" )
+install( FILES ${CMAKE_CURRENT_BINARY_DIR}/core/Version.h DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/sonimation/core COMPONENT Sonimation )
+
+set( SONIMATION_CMAKE_DIR ${CMAKE_INSTALL_LIBDIR}/cmake/Sonimation )
+install( EXPORT SonimationTargets NAMESPACE Sonimation:: DESTINATION ${SONIMATION_CMAKE_DIR} COMPONENT Sonimation )
+configure_package_config_file( cmake/SonimationConfig.cmake.in ${CMAKE_CURRENT_BINARY_DIR}/SonimationConfig.cmake
+	INSTALL_DESTINATION ${SONIMATION_CMAKE_DIR} )
+# Plugins are built just as the program was, so only this version will do (see src/core/Plugin.h)
+write_basic_package_version_file( ${CMAKE_CURRENT_BINARY_DIR}/SonimationConfigVersion.cmake COMPATIBILITY ExactVersion )
+install( FILES
+	${CMAKE_CURRENT_BINARY_DIR}/SonimationConfig.cmake
+	${CMAKE_CURRENT_BINARY_DIR}/SonimationConfigVersion.cmake
+	cmake/SonimationPlugin.cmake
+	DESTINATION ${SONIMATION_CMAKE_DIR} COMPONENT Sonimation )
+
+# The fonts are not installed (they are big): download_fonts.py <prefix>/share/sonimation/fonts gets them, and
+# sonimation looks there
+install( PROGRAMS download_fonts.py DESTINATION ${CMAKE_INSTALL_DATADIR}/sonimation COMPONENT Sonimation )
 
 add_subdirectory( tests )

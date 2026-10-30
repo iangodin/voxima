@@ -1,4 +1,4 @@
-.PHONY: default all config clean debug tsan
+.PHONY: default all config clean debug tsan install
 
 default: all
 
@@ -19,6 +19,10 @@ tsan:
 		-DCMAKE_CXX_FLAGS=-fsanitize=thread -DCMAKE_EXE_LINKER_FLAGS=-fsanitize=thread \
 		-DCANIM_TTS_CUDA=OFF
 	@cmake --build build/Tsan --target sonimation
+
+# Install the Release build: make install PREFIX=<dir> (see examples/ for a plugin project built against it)
+install: all
+	@cmake --install build/Release --prefix "$(PREFIX)" --component Sonimation
 
 test: debug
 	@ctest --preset conan-debug --output-on-failure

@@ -86,6 +86,19 @@ too. If the new build cannot be loaded, or a scene fails, it is shown in the win
 the next build is tried when it comes. (What is loaded is a copy, in the temporary directory, so the build can
 write over the file.)
 
+## Installing, and plugins of your own
+
+```
+make install PREFIX=<dir>
+```
+
+installs `sonimation`, its core library and headers, and the CMake package a plugin project finds with
+`find_package( Sonimation )` (`conan create .` makes a Conan package of the same). `examples/` is such a
+project, with how to build and run it. The fonts are not installed (they are big): `download_fonts.py`
+(installed in `share/sonimation`) fetches them to a directory given, and without `--font-dir` sonimation looks in
+`assets/fonts`, then `$SONIMATION_FONTS`, then the installed `share/sonimation/fonts`. The TTS models are not
+installed either: give them with `--tts-model` and the like (see `tts.md`). Scenes without narration need none.
+
 ## Languages: one video for all, or one per language
 
 ```
