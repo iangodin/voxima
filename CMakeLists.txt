@@ -318,4 +318,63 @@ install( FILES
 # sonimation looks there
 install( PROGRAMS download_fonts.py DESTINATION ${CMAKE_INSTALL_DATADIR}/sonimation COMPONENT Sonimation )
 
+# How to use it, and a plugin project to start from
+install( FILES doc/scenes.md doc/script.md doc/themes.md tts.md DESTINATION ${CMAKE_INSTALL_DOCDIR} COMPONENT Sonimation )
+install( DIRECTORY examples/ DESTINATION ${CMAKE_INSTALL_DATADIR}/sonimation/examples COMPONENT Sonimation )
+
+# The compiler's runtime, for a machine that does not have it (on Windows: MSVC's, and the OpenMP that audio.cpp's
+# TTS uses). InstallRequiredSystemLibraries does not know the newest Visual Studio (18, toolset v145) yet, so with
+# MSVC the redistributable DLLs are found from the compiler itself, in the newest of its VC/Redist/MSVC/<version>.
+set( SONIMATION_RUNTIME_DLLS "" )
+if ( MSVC )
+	string( REGEX REPLACE "/Tools/MSVC/.*$" "" SONIMATION_VC_DIR "${CMAKE_CXX_COMPILER}" )
+	string( TOLOWER "${CMAKE_CXX_COMPILER_ARCHITECTURE_ID}" SONIMATION_ARCH )
+	file( GLOB SONIMATION_CRT_DIRS LIST_DIRECTORIES true "${SONIMATION_VC_DIR}/Redist/MSVC/*/${SONIMATION_ARCH}/Microsoft.VC*.CRT" )
+	if ( SONIMATION_CRT_DIRS )
+		list( SORT SONIMATION_CRT_DIRS COMPARE NATURAL )
+		list( GET SONIMATION_CRT_DIRS -1 SONIMATION_CRT_DIR )
+		string( REGEX REPLACE "\\.CRT$" ".OpenMP" SONIMATION_OPENMP_DIR "${SONIMATION_CRT_DIR}" )
+		file( GLOB SONIMATION_RUNTIME_DLLS "${SONIMATION_CRT_DIR}/*.dll" "${SONIMATION_OPENMP_DIR}/vcomp140.dll" )
+		list( FILTER SONIMATION_RUNTIME_DLLS EXCLUDE REGEX "vccorlib" ) # C++/CX's, not used
+	endif()
+endif()
+if ( SONIMATION_RUNTIME_DLLS )
+	install( FILES ${SONIMATION_RUNTIME_DLLS} DESTINATION ${CMAKE_INSTALL_BINDIR} COMPONENT Sonimation )
+else()
+	set( CMAKE_INSTALL_SYSTEM_RUNTIME_COMPONENT Sonimation )
+	set( CMAKE_INSTALL_OPENMP_LIBRARIES ON )
+	include( InstallRequiredSystemLibraries )
+endif()
+
+# Packages of what is installed (make package, into build/packages): a .zip on Windows, a .tar.gz and a .deb
+# elsewhere; -DCPACK_GENERATOR=... for others. The file name says the compiler, as plugins have to be built with the
+# same one (see src/core/Plugin.h).
+string( REGEX MATCH "^[0-9]+\\.[0-9]+" SONIMATION_COMPILER_VERSION "${CMAKE_CXX_COMPILER_VERSION}" )
+string( TOLOWER "${CMAKE_CXX_COMPILER_ID}${SONIMATION_COMPILER_VERSION}" SONIMATION_COMPILER )
+string( TOLOWER "${CMAKE_SYSTEM_NAME}-${CMAKE_SYSTEM_PROCESSOR}" SONIMATION_SYSTEM )
+set( CPACK_PACKAGE_NAME sonimation )
+set( CPACK_PACKAGE_VENDOR "Sonimation" )
+set( CPACK_PACKAGE_CONTACT "Ian Godin" )
+set( CPACK_PACKAGE_DESCRIPTION_SUMMARY "Educational videos from C++ scenes: vector graphics, narration and subtitles in many languages" )
+set( CPACK_PACKAGE_FILE_NAME "sonimation-${PROJECT_VERSION}-${SONIMATION_SYSTEM}-${SONIMATION_COMPILER}" )
+if ( NOT CPACK_GENERATOR )
+	if ( WIN32 )
+		set( CPACK_GENERATOR ZIP )
+	else()
+		set( CPACK_GENERATOR TGZ DEB )
+	endif()
+endif()
+# Only Sonimation's own (see above), in one package
+set( CPACK_COMPONENTS_ALL Sonimation )
+set( CPACK_COMPONENTS_GROUPING ALL_COMPONENTS_IN_ONE )
+set( CPACK_ARCHIVE_COMPONENT_INSTALL ON )
+set( CPACK_COMPONENT_INCLUDE_TOPLEVEL_DIRECTORY ON ) # unpacked, it is one folder
+set( CPACK_DEB_COMPONENT_INSTALL ON )
+set( CPACK_DEBIAN_PACKAGE_DEPENDS "ffmpeg" ) # it renders through ffmpeg
+find_program( DPKG_SHLIBDEPS dpkg-shlibdeps )
+if ( DPKG_SHLIBDEPS )
+	set( CPACK_DEBIAN_PACKAGE_SHLIBDEPS ON ) # and the system libraries it links to
+endif()
+include( CPack )
+
 add_subdirectory( tests )

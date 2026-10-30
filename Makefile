@@ -1,4 +1,4 @@
-.PHONY: default all config clean debug tsan install
+.PHONY: default all config clean debug tsan install package
 
 default: all
 
@@ -23,6 +23,10 @@ tsan:
 # Install the Release build: make install PREFIX=<dir> (see examples/ for a plugin project built against it)
 install: all
 	@cmake --install build/Release --prefix "$(PREFIX)" --component Sonimation
+
+# Packages of the Release build, as installed (a .zip on Windows; a .tar.gz and a .deb elsewhere), in build/packages
+package: all
+	@cpack --config build/Release/CPackConfig.cmake -B build/packages
 
 test: debug
 	@ctest --preset conan-debug --output-on-failure
