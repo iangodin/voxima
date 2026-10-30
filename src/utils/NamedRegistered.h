@@ -22,9 +22,11 @@ public:
 
 	virtual ~NamedRegistered()
 	{
-		if ( !m_name.empty() )
+		// Only if it is still this one: another (from a plugin loaded since, say) may have taken the name
+		auto &registry = get_registry();
+		if ( auto it = registry.find( m_name ); it != registry.end() && it->second == this )
 		{
-			get_registry().erase( m_name );
+			registry.erase( it );
 		}
 	}
 
@@ -45,11 +47,9 @@ public:
 		return m_name;
 	}
 
-	static std::unordered_map<std::string, T *> &get_registry()
-	{
-		static std::unordered_map<std::string, T *> registry;
-		return registry;
-	}
+	// Defined in one place in the core library for each T (with an explicit instantiation there), not here:
+	// a header's static would be a separate one in each plugin, and their entries would not be seen.
+	static std::unordered_map<std::string, T *> &get_registry();
 private:
 	std::string m_name;
 

@@ -124,3 +124,7 @@ private:
 	std::filesystem::path _font_path = "assets/fonts";
 	Palette _palette = Palette::house( "one-dark" );
 };
+
+// The one registry of themes, in the core library (see NamedRegistered.h)
+template<>
+std::unordered_map<std::string, Theme *> &NamedRegistered<Theme>::get_registry();

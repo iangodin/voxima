@@ -68,6 +68,13 @@ void apply_variations( FT_Face face, const FontKey &key )
 
 }
 
+template<>
+std::unordered_map<std::string, Theme *> &NamedRegistered<Theme>::get_registry()
+{
+	static std::unordered_map<std::string, Theme *> registry;
+	return registry;
+}
+
 Theme::Theme( std::string name ) :
 	NamedRegistered<Theme>( std::move( name ) )
 {

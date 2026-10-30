@@ -60,6 +60,10 @@ private:
 	Director _run;
 };
 
+// The one registry of scenes, in the core library (see NamedRegistered.h)
+template<>
+std::unordered_map<std::string, SceneEntry *> &NamedRegistered<SceneEntry>::get_registry();
+
 #define SONIMATION_SCENE_CONCAT_( a, b ) a##b
 #define SONIMATION_SCENE_CONCAT( a, b ) SONIMATION_SCENE_CONCAT_( a, b )
 #define SONIMATION_SCENE( name, description, function ) \

@@ -9,6 +9,13 @@
 #include <sstream>
 #include <stdexcept>
 
+template<>
+std::unordered_map<std::string, SceneEntry *> &NamedRegistered<SceneEntry>::get_registry()
+{
+	static std::unordered_map<std::string, SceneEntry *> registry;
+	return registry;
+}
+
 std::vector<const SceneEntry *> SceneEntry::all()
 {
 	std::vector<const SceneEntry *> scenes;
