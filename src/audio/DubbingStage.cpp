@@ -5,6 +5,8 @@
 #include "SoundFile.h"
 
 #include <algorithm>
+#include <stdexcept>
+#include <system_error>
 
 void DubbingStage::setup(
 	const std::filesystem::path &render_dir,
@@ -30,11 +32,40 @@ void DubbingStage::setup(
 	_codec = codec;
 	_tts_voice_dir = std::move( tts_voice_dir );
 
-	// Loads the model and creates a session immediately - a missing/bad
-	// model file fails here, at startup, rather than mid-render. The aligner
-	// (if any) loads lazily on first use inside TTSClient::align().
-	_tts.emplace( tts_model, tts_backend, tts_threads, aligner_model );
-	_tts->setup( _render_dir );
+	_tts_dir = render_dir; // where it keeps what it made, though begin() may render elsewhere
+	_tts_model = tts_model;
+	_tts_backend = tts_backend;
+	_tts_threads = tts_threads;
+	_aligner_model = aligner_model;
+
+	// Loads the model and creates a session immediately - a bad model file
+	// fails here, at startup, rather than mid-render. With no model file at
+	// all, there may be no narration to need one (a first try of an installed
+	// Sonimation, say): it waits to be asked for, and says what is missing
+	// then. The aligner (if any) loads lazily on first use inside
+	// TTSClient::align().
+	std::error_code error;
+	if ( std::filesystem::exists( _tts_model, error ) )
+	{
+		tts();
+	}
+}
+
+tts::TTSClient &DubbingStage::tts()
+{
+	if ( !_tts )
+	{
+		std::error_code error;
+		if ( !std::filesystem::exists( _tts_model, error ) )
+		{
+			throw std::runtime_error(
+				"narration needs a TTS model, and there is none at " + _tts_model.string() +
+				" (give one with --tts-model; see tts.md)" );
+		}
+		_tts.emplace( _tts_model, _tts_backend, _tts_threads, _aligner_model );
+		_tts->setup( _tts_dir );
+	}
+	return *_tts;
 }
 
 void DubbingStage::begin( const std::filesystem::path &render_dir, const std::vector<std::string> &languages, bool in_memory )

@@ -82,10 +82,8 @@ public:
 		return _block_size;
 	}
 
-	tts::TTSClient &tts()
-	{
-		return _tts.value();
-	}
+	// Loaded by setup() if the model is there, or else on first use (narration), which throws if it is still not
+	tts::TTSClient &tts();
 
 	const std::filesystem::path &voice_dir() const
 	{
@@ -124,6 +122,11 @@ private:
 	std::filesystem::path _render_dir;
 	std::filesystem::path _tts_voice_dir;
 	std::optional<tts::TTSClient> _tts;
+	std::filesystem::path _tts_dir;
+	std::filesystem::path _tts_model;
+	std::string _tts_backend;
+	int _tts_threads = 0;
+	std::filesystem::path _aligner_model;
 	std::map<std::string, AudioMixer, std::less<>> _mixers;
 	std::map<std::string, Microphone, std::less<>> _mics;
 	std::map<std::string, std::string, std::less<>> _outputs;
