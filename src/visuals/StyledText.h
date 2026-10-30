@@ -66,6 +66,11 @@ public:
 
 	void set_bidi_level( size_t start, size_t end, size_t level );
 
+	// BCP-47 tag (e.g. "en", "fr-CA") passed to Harfbuzz for this range, in
+	// addition to the script/direction hb_buffer_guess_segment_properties
+	// already infers from the Unicode content itself.
+	void set_language( size_t start, size_t end, std::string language );
+
 	void analyze_bidi( void );
 
 	const std::string &text( void ) const

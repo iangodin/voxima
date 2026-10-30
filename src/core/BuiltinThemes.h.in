@@ -1,0 +1,12 @@
+#pragma once
+
+// Made by CMake from themes/*.huml: the built-in themes, as the text of their files
+
+#include <string_view>
+
+namespace themes
+{
+inline constexpr std::string_view BUILTIN_SOURCES[] = {
+@BUILTIN_THEME_SOURCES@
+};
+}

@@ -17,13 +17,16 @@ class MyProjectConan(ConanFile):
     self.requires("harfbuzz/12.3.0")
     self.requires("cli11/2.6.2")
     self.requires("ctre/3.10.0")
-    self.requires("asio/1.36.0")
-    self.requires("capnproto/1.1.0")
     self.requires("libsndfile/1.2.2")
     self.requires("soxr/0.1.3")
     self.requires("fribidi/1.0.13")
     self.requires("fontconfig/2.17.1")
     self.requires("clipper2/2.0.1")
+    self.requires("sdl/3.4.14")
+    # Syntax highlighting. The grammars ask for an older tree-sitter; the newer one reads their parsers too.
+    self.requires("tree-sitter/0.26.9", force=True)
+    self.requires("tree-sitter-c/0.23.2")
+    self.requires("tree-sitter-cpp/0.23.4")
 
   def layout(self):
     cmake_layout(self, generator="Ninja Multi-Config")

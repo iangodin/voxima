@@ -1,0 +1,104 @@
+# Scenes and movies
+
+A **scene** is a coroutine that animates the stage: `Scene f( Stage &, Script & )` (`Scene` is just
+`Coroutine`). Scenes are registered by name, so any one of them can be rendered on its own, and a **movie** is
+a scene that plays other scenes.
+
+## Registering a scene
+
+Put one line next to the scene (`core/SceneRegistry.h`):
+
+```cpp
+Scene show_intro( Stage &stage, Script &script )
+{
+    // build visuals on stage.visuals, co_await animations, narration, other scenes ...
+}
+SONIMATION_SCENE( "intro", "The title and the first formula", show_intro );
+```
+
+The function, or any callable, only has to convert to a `Director`
+(`std::function<Coroutine( Stage &, Script & )>`); a scene that needs more arguments is wrapped in a lambda.
+There is no list to edit: adding a scene is writing it and adding that line.
+
+## A movie
+
+A movie is an ordinary scene whose body plays others:
+
+```cpp
+Scene movie( Stage &stage, Script &script )
+{
+    co_await sequence( stage, script, { "intro", "morphs", "outro" } );
+}
+SONIMATION_SCENE( "movie", "The whole thing", movie );
+```
+
+- `play( stage, script, "name" )` plays one registered scene and finishes when it does.
+- `sequence( stage, script, { ... } )` plays several, one after another.
+- Scenes can also run at the same time: `co_await choreograph( play( ... ), play( ... ) )`.
+  (Each `play` clears the stage first, so do that only for scenes that share nothing.)
+
+**The stage is cleared before each scene** (`PlayOptions::clear_stage`, on by default), so a scene looks the
+same on its own as in a movie and never depends on what the one before left behind. Pass
+`PlayOptions{ .clear_stage = false }` for a scene that carries on from the previous one. The last scene's
+visuals stay on the stage.
+
+## Choosing what to render
+
+```
+sonimation --list-scenes                       # the registered scenes and what they do
+sonimation ...                                  # renders the scene called "movie"
+sonimation ... --scene morph-text               # one scene
+sonimation ... --scene morph-shapes --scene karaoke   # several, in the order given (a movie made on the spot)
+```
+
+An unknown name is reported (with the list) before any model or font is loaded, and exits with status 1. If no
+scene is called "movie" and there is no `--scene`, the only registered scene is used; with several and no
+"movie", the list is shown as an error.
+
+A `Producer` can still be given a `Director` in code (`Producer producer( my_director )`), used when there is
+no `--scene`.
+
+## Languages: one video for all, or one per language
+
+```
+sonimation ... --lang en --lang fr              # one container with an audio and a subtitle track for each language
+sonimation ... --lang en --lang fr --separate   # one container per language, in <render-dir>/en/ and <render-dir>/fr/
+```
+
+- **Together** (the default): one video, timed to the first language (the master), with an audio and a
+  subtitle track for each language. The languages are **kept in step**: the narration is divided at its markers and
+  at the start of each line, and each segment is given the length the slowest language takes, so a marker falls
+  at the same time in every language's audio (within 40 ms, under a frame). The faster languages get silence at the
+  end of a segment; nobody is speeded up or cut off. A language whose markers or lines differ from the master's
+  cannot be kept in step: it is warned about and left as it is.
+  **`--max-speedup 1.15`** lets the other languages be speeded up by up to 15% (default 1.0: not at all) so that
+  the shared timeline is shorter and they need less silence. The master language is never speeded up. A segment
+  that has to be made shorter loses its pauses first (each is shortened, down to 80 ms, before anything else
+  changes), and only if that is not enough is the speech itself speeded up by what is left, with ffmpeg's
+  `atempo`, which keeps the pitch (so ffmpeg must be installed for this; without `--max-speedup` it is not used).
+- **`--separate`:** each language is a complete render of its own: its narration and its subtitles, the script's
+  text for that language on screen, and animation timed to *its* narration, through the markers in the script
+  (`{name}`, see `tts.md`). Each folder holds `final.<container>` and the pieces it was made from. The models are
+  loaded once for all of them. It is up to the scene to adapt to the narration: use `until_marker`,
+  `track_markers` and the like rather than fixed frame counts, so that it follows whatever each language takes.
+
+## Missing glyphs
+
+A character that cannot be drawn is never left to fail quietly. Two things count:
+
+- a character no real font in the theme's stack has (the catch-all NotDef font at the end of the stack draws a
+  box for anything, so it does not count as having it), and
+- U+FFFD, the replacement character: what a script value that is missing (`as_string( "\uFFFD" )`) or a badly
+  encoded string turns into.
+
+Each is drawn as a **magenta box with the character's code in it** (`FFFD`, `10FFFD` ...), which keeps the text's
+spacing and is tagged `missing-glyph`. When the render finishes, every one is listed with the text it was in:
+
+```
+WARNING: 2 missing glyphs (drawn as magenta boxes in the video):
+  U+FFFD  in "A script value that is missing: ..."
+  U+10FFFD  in "A character no font has: ..."
+```
+
+`--strict-glyphs` makes the render exit with an error if there were any, for automated builds. (`--scene
+missing-glyphs` shows the effect.) Text that is not valid UTF-8 is still rejected outright.

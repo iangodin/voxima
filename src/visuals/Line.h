@@ -18,7 +18,7 @@ struct Line : public Visual
 	{
 		start *= scale;
 		end *= scale;
-		position *= scale;
+		scale_common( scale );
 		return *this;
 	}
 };

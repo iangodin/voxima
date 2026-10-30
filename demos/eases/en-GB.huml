@@ -2,5 +2,4 @@ meta::
   lang: "en-GB"
   inherit: "en"
 
-voices::
-  narrator: "en-GB-LibbyNeural"
+# No GB-specific reference clip - inherits "en"'s voice.

@@ -50,7 +50,8 @@ Group &create_node( Stage &stage, std::string title, float x, float y, float w, 
 	rect.top_right_radius = 0.05f,
 	rect.bottom_left_radius = 0.05f,
 	rect.bottom_right_radius = 0.05f;
-	auto &text = create_text( stage, group, title, FontStyle( "prose" ) );
+	auto &text = group.add( make_text( *stage.theme, title, FontStyle( "prose" ) ) );
+	center_group( text );
 	text.position = { 0.F, 0.F };
 	text.color = { 1.F, 1.F, 1.F, 1.F };
 

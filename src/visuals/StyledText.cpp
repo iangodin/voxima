@@ -81,10 +81,16 @@ void StyledText::analyze_bidi( void )
 	}
 	utf8_to_utf32.push_back( _utf8.size() );
 
+	std::vector<FriBidiCharType> bidi_types( fribidi_text.size() );
+	fribidi_get_bidi_types(
+		fribidi_text.data(),
+		static_cast<FriBidiStrIndex>( fribidi_text.size() ),
+		bidi_types.data() );
+
 	FriBidiParType base_dir = FRIBIDI_PAR_ON;
 	std::vector<FriBidiLevel> levels( fribidi_text.size() );
 	[[maybe_unused]] auto result = fribidi_get_par_embedding_levels(
-		fribidi_text.data(),
+		bidi_types.data(),
 		static_cast<FriBidiStrIndex>( fribidi_text.size() ),
 		&base_dir,
 		levels.data() );
@@ -138,4 +144,9 @@ void StyledText::set_typeclass( size_t start, size_t end, TypeClass typeclass )
 void StyledText::set_bidi_level( size_t start, size_t end, size_t level )
 {
 	apply_to_style( _style, start, end, [&]( TextStyle &sty ) { sty.bidi_level = level; } );
+}
+
+void StyledText::set_language( size_t start, size_t end, std::string language )
+{
+	apply_to_style( _style, start, end, [&]( TextStyle &sty ) { sty.language = language; } );
 }

@@ -12,6 +12,8 @@ enum class TypeClass
 	SLAB,
 	MONO,
 	SCRIPT,
+	FRAKTUR,
+	DOUBLE_STRUCK,
 };
 
 enum class Weight
@@ -27,6 +29,7 @@ enum class Slant
 	UPRIGHT,
 	ITALIC,
 	OBLIQUE,
+	MATH_ITALIC,
 };
 
 enum class Scale
@@ -64,6 +67,8 @@ struct FontProperties
 	std::optional<Slant> slant;
 	std::optional<Width> width;
 	std::optional<Scale> scale;
+	// Multiplier applied on top of `scale`, for sizes the Scale steps don't cover
+	std::optional<float> size_factor;
 };
 
 class FontStyle
@@ -85,7 +90,8 @@ public:
 		_weight( properties.weight ),
 		_slant( properties.slant ),
 		_width( properties.width ),
-		_scale( properties.scale )
+		_scale( properties.scale ),
+		_size_factor( properties.size_factor )
 	{
 	}
 
@@ -129,6 +135,20 @@ public:
 		return *this;
 	}
 
+	// Math-alphabet requests only (𝔉𝔯𝔞𝔨𝔱𝔲𝔯, no font file has a Fraktur style of its own)
+	FontStyle &fraktur( void )
+	{
+		_typeclass = TypeClass::FRAKTUR;
+		return *this;
+	}
+
+	// Math-alphabet requests only (blackboard bold, e.g. ℝ, ℕ)
+	FontStyle &double_struck( void )
+	{
+		_typeclass = TypeClass::DOUBLE_STRUCK;
+		return *this;
+	}
+
 	FontStyle &light( void )
 	{
 		_weight = Weight::LIGHT;
@@ -168,6 +188,14 @@ public:
 	FontStyle &oblique( void )
 	{
 		_slant = Slant::OBLIQUE;
+		return *this;
+	}
+
+	// The math intent already defaults to this. Not the same as italic(): that asks for an
+	// italic font file, which math fonts don't have, so it has no visible effect there.
+	FontStyle &math_italic( void )
+	{
+		_slant = Slant::MATH_ITALIC;
 		return *this;
 	}
 
@@ -249,6 +277,13 @@ public:
 		return *this;
 	}
 
+	// Multiply the size by `factor` (compounds with earlier calls)
+	FontStyle &scaled( float factor )
+	{
+		_size_factor = _size_factor.value_or( 1.F ) * factor;
+		return *this;
+	}
+
 	FontStyle &set_scale( Scale scale )
 	{
 		_scale = scale;
@@ -269,7 +304,8 @@ public:
 			_weight == other._weight &&
 			_slant == other._slant &&
 			_width == other._width &&
-			_scale == other._scale;
+			_scale == other._scale &&
+			_size_factor == other._size_factor;
 	}
 
 	bool operator!=( const FontStyle &other ) const
@@ -284,7 +320,8 @@ public:
 		if ( _weight != other._weight ) return _weight < other._weight;
 		if ( _slant != other._slant ) return _slant < other._slant;
 		if ( _width != other._width ) return _width < other._width;
-		return _scale < other._scale;
+		if ( _scale != other._scale ) return _scale < other._scale;
+		return _size_factor < other._size_factor;
 	}
 
 	FontProperties properties( void ) const
@@ -295,6 +332,7 @@ public:
 			.slant = _slant,
 			.width = _width,
 			.scale = _scale,
+			.size_factor = _size_factor,
 		};
 	}
 
@@ -305,5 +343,6 @@ public:
 	std::optional<Slant> _slant;
 	std::optional<Width> _width;
 	std::optional<Scale> _scale;
+	std::optional<float> _size_factor;
 };
 

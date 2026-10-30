@@ -1,6 +1,10 @@
 meta::
   lang:: "ja", "ja-JP"
 
+# ja is not supported by the current Chatterbox TTS backend either (its
+# language allowlist omits ja, same as zh - see tts.md). No reference clip
+# exists; narrating this script will fail. Accepted gap for now - do not
+# include "ja"/"ja-JP" in --lang for a real render until this is resolved.
 voices::
   narrator: "デフォルト"
 

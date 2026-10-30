@@ -25,6 +25,9 @@ public:
 
 	void record( const AudioBuffer &buffer );
 
+	// Delegates to the mixer - see AudioMixer::frames_written().
+	size_t frames_written( void ) const;
+
 private:
 	ObserverPtr<AudioMixer> _mixer;
 	AudioBuffer _buffer;

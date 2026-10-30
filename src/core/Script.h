@@ -22,6 +22,10 @@ public:
 
 	bool load( std::string lang );
 
+	// Make these (already loaded) languages the ones in use, in this order: the first is the master. This is how a
+	// render for a single language is made from a script that has loaded several. Throws if one is not loaded.
+	void select_languages( const std::vector<std::string> &languages );
+
 	template<typename ...Keys>
 	const huml::Value &fetch( std::string_view lang, Keys &&...keys ) const
 	{
@@ -39,6 +43,13 @@ public:
 	const auto &languages( void ) const
 	{
 		return _languages;
+	}
+
+	// The first language passed to --lang ("master"): what on-screen visuals
+	// render in when a Scene doesn't otherwise pick a language per element.
+	const std::string &master_language( void ) const
+	{
+		return _languages.front();
 	}
 
 	friend std::ostream &operator<<( std::ostream &output, const Script &script )

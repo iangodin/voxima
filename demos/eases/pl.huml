@@ -1,0 +1,23 @@
+meta::
+  lang: "pl"
+  inherit: null
+
+voices::
+  narrator: "chatterbox/pl-cml-tts-11295_11059_000062.wav"
+
+labels::
+  ease_cubic_in: "Sześcienna wejście"
+  ease_cubic_out: "Sześcienna wyjście"
+  ease_cubic_in_out: "Sześcienna wejście-wyjście"
+  ease_elastic_in: "Elastyczna wejście"
+  ease_elastic_out: "Elastyczna wyjście"
+  ease_elastic_in_out: "Elastyczna wejście-wyjście"
+  ease_back_in: "Cofanie wejście"
+  ease_back_out: "Cofanie wyjście"
+  ease_back_in_out: "Cofanie wejście-wyjście"
+  ease_linear: "Liniowa"
+
+intro: """
+  Te animacje pokazują {a}różne rodzaje{b} łagodzenia.
+  Zobacz, jak każde słowo {c}zapala się{d}, gdy jest wypowiadane.
+"""

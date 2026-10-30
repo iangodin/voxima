@@ -92,7 +92,9 @@ Theme::Theme( Theme &&other ) :
 	_library( other._library ),
 	_faces( std::move( other._faces ) ),
 	_cache( std::move( other._cache ) ),
-	_factories( std::move( other._factories ) )
+	_factories( std::move( other._factories ) ),
+	_font_path( std::move( other._font_path ) ),
+	_palette( std::move( other._palette ) )
 {
 	other._library = nullptr;
 }
@@ -109,6 +111,8 @@ Theme &Theme::operator=( Theme &&other )
 		_faces = std::move( other._faces );
 		_cache = std::move( other._cache );
 		_factories = std::move( other._factories );
+		_font_path = std::move( other._font_path );
+		_palette = std::move( other._palette );
 		other._library = nullptr;
 	}
 	return *this;
@@ -117,6 +121,18 @@ Theme &Theme::operator=( Theme &&other )
 FontFace Theme::load_font( const std::string &name, size_t face_index, float scale )
 {
 	return load_variable_font( name, face_index, scale, 400, 100, 0 );
+}
+
+FontFace Theme::load_notdef_font( float scale )
+{
+	return load_notdef_font( "AND-Regular.otf", scale );
+}
+
+FontFace Theme::load_notdef_font( const std::string &name, float scale )
+{
+	FontFace face = load_font( name, 0, scale );
+	face.notdef = true;
+	return face;
 }
 
 FontFace Theme::load_variable_font(
@@ -138,10 +154,12 @@ FontFace Theme::load_emoji_font(
 
 FontFace Theme::load_font_internal( const FontKey &key, float scale )
 {
+	const std::string source = std::format( "{}#{} w{} wd{} sl{} o{}/{}", key.name, key.face_index, key.weight, key.width, key.slant, key.style1, key.style2 );
+
 	auto it = _faces.find( key );
 	if ( it != _faces.end() )
 	{
-		return { it->second, scale };
+		return { it->second, scale, false, source };
 	}
 
 	FT_Face face = nullptr;
@@ -170,7 +188,7 @@ FontFace Theme::load_font_internal( const FontKey &key, float scale )
 
 	FontFacePtr ptr( face, FT_Done_Face );
 	_faces[key] = ptr;
-	return { ptr, scale };
+	return { ptr, scale, false, source };
 }
 
 FontStack Theme::get_stack( const FontStyle &style )
@@ -203,7 +221,7 @@ MathFonts Theme::get_math( const FontStyle &style )
 	auto base_style = style.properties();
 
 	auto roman_stack = get_stack( FontStyle( "math", base_style ) );
-	auto italic_stack = get_stack( FontStyle( "math", base_style ).italic() );
+	auto italic_stack = get_stack( FontStyle( "math", base_style ).math_italic() );
 	auto bold_stack = get_stack( FontStyle( "math", base_style ).bold() );
 	auto sans_stack = get_stack( FontStyle( "math", base_style ).sans() );
 	auto mono_stack = get_stack( FontStyle( "math", base_style ).mono() );

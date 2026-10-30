@@ -1,0 +1,43 @@
+# Clean and legible, for software and physics: FiraGO for text, Fira Mono for code, Fira Math for math, Noto Emoji, and
+# Noto Sans CJK for CJK. Fira Mono has no italic, so its italic is the upright.
+meta::
+  name: "Modern Technical"
+  inherit: null
+
+palette: "github-dark"
+
+fonts::
+  fira::
+    regular: "FiraGO-Regular.ttf"
+    italic: "FiraGO-Italic.ttf"
+    bold: "FiraGO-Bold.ttf"
+    bold_italic: "FiraGO-BoldItalic.ttf"
+    light: "FiraGO-Light.ttf"
+  fira_mono::
+    regular: "FiraMono-Regular.ttf"
+    bold: "FiraMono-Bold.ttf"
+  fira_math:: regular: "FiraMath-Regular.otf"
+  # The emoji font at its regular weight whatever the style (a variable font's axes are otherwise the style's)
+  emoji_regular::
+    variable: "NotoEmoji-Variable.ttf"
+    weight: 400
+    width: 100
+    slant: 0
+  noto_cjk:: regular: "NotoSansCJK-Variable.ttc"
+  notdef:: notdef: "AND-Regular.otf"
+
+stacks::
+  fallbacks:: "emoji_regular", "noto_cjk", "fira_mono", "notdef"
+  prose:: "fira", "...fallbacks"
+  # (Fira Mono is a fallback of its own stack too, as it always has been)
+  code:: "fira_mono", "...fallbacks"
+  math:: "fira_math", "...fallbacks"
+
+intents::
+  prose: "prose"
+  code: "code"
+  math: "math"
+  title: "prose"
+  label: "prose"
+  annotation: "prose"
+  caption: "prose"

@@ -17,7 +17,7 @@ struct Ellipse : public Visual
 	{
 		half_width *= scale;
 		half_height *= scale;
-		position *= scale;
+		scale_common( scale );
 		return *this;
 	}
 };

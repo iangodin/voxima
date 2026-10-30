@@ -3,7 +3,7 @@ meta::
   inherit: null
 
 voices::
-  narrator: "fr-FR-DeniseNeural"
+  narrator: "chatterbox/fr-cml-tts-10087_11650_000028-0002.wav"
 
 labels::
   ease_cubic_in: "Cubique entrée"
@@ -18,5 +18,6 @@ labels::
   ease_linear: "Linéaire"
 
 intro: """
-  Ceux-ci montrent diverses animations de lissage.
+  Ceux-ci montrent {a}diverses animations{b} de lissage.
+  Chaque mot {c}s'illumine{d} quand il est prononcé.
 """

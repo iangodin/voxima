@@ -5,3 +5,4 @@
 /.cache/
 /CMakeUserPresets.json
 __pycache__
+models/

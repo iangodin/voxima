@@ -14,4 +14,12 @@ struct Image : public Visual
 	{
 		visitor.visit( *this );
 	}
+
+	Image &operator*=( float scale ) override
+	{
+		half_width *= scale;
+		half_height *= scale;
+		scale_common( scale );
+		return *this;
+	}
 };

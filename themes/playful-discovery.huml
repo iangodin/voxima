@@ -1,0 +1,41 @@
+# Soft and rounded, for a general audience: Comfortaa, Tajawal for Arabic, Noto Emoji, Kosugi Maru for Japanese, and DejaVu
+# Sans Mono for code, with GFS Neohellenic Math for math.
+meta::
+  name: "Playful Discovery"
+  inherit: null
+
+palette: "catppuccin-mocha"
+
+fonts::
+  comfortaa:: variable: "Comfortaa-Variable.ttf"
+  tajawal::
+    light: "Tajawal-Light.ttf"
+    regular: "Tajawal-Regular.ttf"
+    bold: "Tajawal-Bold.ttf"
+    black: "Tajawal-Black.ttf"
+  noto_emoji:: variable: "NotoEmoji-Variable.ttf"
+  kosugi:: regular: "KosugiMaru-Regular.ttf"
+  # A regular DejaVu Sans Mono, whatever the style: the last fallback
+  dejavu_regular:: regular: "DejaVuSansMono.ttf"
+  # DejaVu Sans Mono in the style asked for (its italic is an oblique)
+  dejavu_mono::
+    regular: "DejaVuSansMono.ttf"
+    italic: "DejaVuSansMono-Oblique.ttf"
+    bold: "DejaVuSansMono-Bold.ttf"
+    bold_italic: "DejaVuSansMono-BoldOblique.ttf"
+  gfs_math:: regular: "GFSNeohellenicMath.otf"
+
+stacks::
+  prose:: "comfortaa", "tajawal", "noto_emoji", "kosugi", "dejavu_regular"
+  # The monospaced font first, so code lines up in columns; the rest for what it lacks
+  code:: "dejavu_mono", "...prose"
+  math:: "gfs_math", "...prose"
+
+intents::
+  prose: "prose"
+  code: "code"
+  math: "math"
+  title: "prose"
+  label: "prose"
+  annotation: "prose"
+  caption: "prose"

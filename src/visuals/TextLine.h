@@ -2,30 +2,8 @@
 
 #include "Group.h"
 
+// A single laid-out line of text. `baseline` and `math_axis` (inherited from
+// Visual) are filled in by make_styled_text() as the line is shaped.
 class TextLine : public Group
 {
-public:
-	void set_horizontal_baseline( float baseline )
-	{
-		mHorizontalBaseline = baseline;
-	}
-
-	[[nodiscard]] float get_horizontal_baseline() const
-	{
-		return mHorizontalBaseline;
-	}
-
-	void set_vertical_axis( float axis )
-	{
-		mVerticalAxis = axis;
-	}
-
-	[[nodiscard]] float get_vertical_axis() const
-	{
-		return mVerticalAxis;
-	}
-
-private:
-	float mHorizontalBaseline = 0.0f;
-	float mVerticalAxis = 0.0f;
 };

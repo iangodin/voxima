@@ -6,9 +6,12 @@
 
 #include <audio/DubbingStage.h>
 #include <audio/Microphone.h>
+#include <audio/TimedWord.h>
+#include <audio/Timeline.h>
 
 #include <utils/ObserverPtr.h>
 
+#include <filesystem>
 #include <string>
 #include <vector>
 
@@ -30,14 +33,86 @@ public:
 
 	bool is_done() const;
 
+	// Words of the current speech() batch, timed relative to the batch start.
+	// Real forced-alignment times when available, otherwise distributed
+	// proportionally across each line (see distribute_words()).
+	const std::vector<TimedWord> &words() const
+	{
+		return _words;
+	}
+
+	// The markers in the narrated text (see utils/Markers.h) and when each is reached, in the order they
+	// appear across the batch's lines. They are left out of what is spoken and shown as subtitles.
+	const std::vector<TimedMarker> &markers() const
+	{
+		return _markers;
+	}
+
+	// The batch divided at its markers and line starts (see Timeline.h), for keeping languages in step
+	const Timeline &timeline() const
+	{
+		return _timeline;
+	}
+
+	// How long the batch's audio is, in seconds
+	double duration() const
+	{
+		return _duration;
+	}
+
+	// Move this narration onto a timeline shared with other languages (see Timeline.h): each segment starts
+	// at starts[i], and what it does not fill is silence. A segment that is given less time than it takes is made
+	// shorter: its pauses first, then its speech is speeded up by the little that is left (ffmpeg's atempo). The audio, the words, the markers and the subtitle
+	// cues are all moved. `starts` has one entry more than there are segments (the last is the total length).
+	void retime( const std::vector<double> &starts );
+
+	// What retime() had to do to fit this narration into the shared timeline: how many of its segments were made
+	// shorter (0 if it only had silence added), and the most its speech was speeded up (1.0 if only pauses were)
+	size_t shortened_segments() const
+	{
+		return _shortened_segments;
+	}
+
+	double largest_speedup() const
+	{
+		return _largest_speedup;
+	}
+
+	// Seconds of this batch's audio consumed by speak() so far. Compare
+	// against TimedWord times to know which word is currently being spoken.
+	double position() const
+	{
+		return static_cast<double>( _position_frames ) / static_cast<double>( _audio_rate );
+	}
+
 private:
-	std::string _voice;
+	// Local (batch-relative) subtitle cue span for one narrated line, held
+	// until the batch's absolute-time anchor is known (see speak()).
+	struct PendingCue
+	{
+		double local_start;
+		double local_end;
+		std::string text;
+	};
+
+	std::filesystem::path _voice_ref;
 	std::string _language;
+	std::string _tts_language;
 	AudioBuffer _buffer;
 	ObserverPtr<Script> _script;
 	ObserverPtr<tts::TTSClient> _tts;
 	ObserverPtr<Microphone> _mic;
+	ObserverPtr<DubbingStage> _stage;
 	std::vector<tts::SynthesisResult> _results;
+	std::vector<PendingCue> _pending_cues;
+	std::vector<TimedWord> _words;
+	std::vector<TimedMarker> _markers;
+	Timeline _timeline;
+	double _duration = 0.0;
+	size_t _shortened_segments = 0;
+	double _largest_speedup = 1.0;
+	size_t _position_frames = 0;
+	bool _cues_emitted = true;
 	size_t _audio_rate = 0;
 	size_t _current_result_index = 0;
 	size_t _offset = 0;

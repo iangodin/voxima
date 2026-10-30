@@ -23,7 +23,7 @@ struct RoundRectangle : public Visual
 	{
 		half_width *= scale;
 		half_height *= scale;
-		position *= scale;
+		scale_common( scale );
 		top_left_radius *= scale;
 		top_right_radius *= scale;
 		bottom_left_radius *= scale;

@@ -235,7 +235,7 @@ SCENARIO( "StyledText style application" )
 		WHEN( "checking line indices" )
 		{
 			StyledText multiline( "abc\ndef" );
-			
+
 			THEN( "line indices should be set" )
 			{
 				auto style0 = multiline.styles().find( 0 ); // 'a'
@@ -249,6 +249,90 @@ SCENARIO( "StyledText style application" )
 				auto style1 = multiline.styles().find( 4 ); // 'd'
 				REQUIRE( style1.has_value() );
 				CHECK( style1->line == 1 );
+			}
+		}
+
+		WHEN( "setting a language on part of the text" )
+		{
+			text.set_language( 6, 11, "fr-CA" );
+
+			THEN( "language should be set only on that range" )
+			{
+				auto unset = text.styles().find( 0 );
+				REQUIRE( unset.has_value() );
+				CHECK_FALSE( unset->language.has_value() );
+
+				auto style = text.styles().find( 6 );
+				REQUIRE( style.has_value() );
+				REQUIRE( style->language.has_value() );
+				CHECK( style->language.value() == "fr-CA" );
+			}
+		}
+	}
+}
+
+namespace
+{
+std::vector<size_t> bidi_levels( const StyledText &text )
+{
+	std::vector<size_t> levels;
+	text.styles().for_each(
+		0,
+		text.size(),
+		TextStyle{},
+		[&]( size_t start, size_t end, const TextStyle &style )
+		{
+			for ( size_t i = start; i < end; ++i )
+			{
+				levels.push_back( style.bidi_level.value_or( 99 ) );
+			}
+		} );
+	return levels;
+}
+}
+
+SCENARIO( "StyledText bidi analysis" )
+{
+	GIVEN( "a string of digits and punctuation" )
+	{
+		StyledText text( "3.141592" );
+
+		THEN( "every character is left-to-right (level 0) in a single run" )
+		{
+			auto levels = bidi_levels( text );
+			REQUIRE( levels.size() == text.size() );
+			for ( auto level: levels )
+			{
+				CHECK( level == 0 );
+			}
+			CHECK( text.styles().size() == 1 );
+		}
+	}
+
+	GIVEN( "Latin text" )
+	{
+		StyledText text( "Hello World" );
+
+		THEN( "every character is level 0" )
+		{
+			for ( auto level: bidi_levels( text ) )
+			{
+				CHECK( level == 0 );
+			}
+		}
+	}
+
+	GIVEN( "Arabic text" )
+	{
+		StyledText text( "مرحبا" );
+
+		THEN( "every character is right-to-left (level 1)" )
+		{
+			auto levels = bidi_levels( text );
+			REQUIRE_FALSE( levels.empty() );
+			for ( auto level: levels )
+			{
+				CHECK( level == 1 );
 			}
 		}
 	}

@@ -1,5 +1,6 @@
 #pragma once
 
+#include "visuals/AABB.h"
 #include "visuals/Point.h"
 #include "visuals/VisualVisitor.h"
 #include "visuals/Circle.h"
@@ -18,18 +19,6 @@
 #include <limits>
 #include <variant>
 
-struct AABB
-{
-	Point min = { std::numeric_limits<float>::max(), std::numeric_limits<float>::max() };
-	Point max = { std::numeric_limits<float>::lowest(), std::numeric_limits<float>::lowest() };
-
-	void add( Point p )
-	{
-		min = { std::min( min.x(), p.x() ), std::min( min.y(), p.y() ) };
-		max = { std::max( max.x(), p.x() ), std::max( max.y(), p.y() ) };
-	}
-};
-
 class BoundingBoxVisitor : public VisualVisitor
 {
 public:
@@ -37,31 +26,31 @@ public:
 
 	void visit( const Circle &circle ) override
 	{
-		bounds.add( { circle.position.x() - circle.radius, circle.position.y() - circle.radius } );
-		bounds.add( { circle.position.x() + circle.radius, circle.position.y() + circle.radius } );
+		add( { circle.position.x() - circle.radius, circle.position.y() - circle.radius } );
+		add( { circle.position.x() + circle.radius, circle.position.y() + circle.radius } );
 	}
 
 	void visit( const Rectangle &rectangle ) override
 	{
-		bounds.add( { rectangle.position.x() - rectangle.half_width,
+		add( { rectangle.position.x() - rectangle.half_width,
 		              rectangle.position.y() - rectangle.half_height } );
-		bounds.add( { rectangle.position.x() + rectangle.half_width,
+		add( { rectangle.position.x() + rectangle.half_width,
 		              rectangle.position.y() + rectangle.half_height } );
 	}
 
 	void visit( const RoundRectangle &rectangle ) override
 	{
-		bounds.add( { rectangle.position.x() - rectangle.half_width,
+		add( { rectangle.position.x() - rectangle.half_width,
 		              rectangle.position.y() - rectangle.half_height } );
-		bounds.add( { rectangle.position.x() + rectangle.half_width,
+		add( { rectangle.position.x() + rectangle.half_width,
 		              rectangle.position.y() + rectangle.half_height } );
 	}
 
 	void visit( const Ellipse &ellipse ) override
 	{
-		bounds.add( { ellipse.position.x() - ellipse.half_width,
+		add( { ellipse.position.x() - ellipse.half_width,
 		              ellipse.position.y() - ellipse.half_height } );
-		bounds.add( { ellipse.position.x() + ellipse.half_width,
+		add( { ellipse.position.x() + ellipse.half_width,
 		              ellipse.position.y() + ellipse.half_height } );
 	}
 
@@ -76,15 +65,15 @@ public:
 					if constexpr ( std::is_same_v<T, MoveTo> || std::is_same_v<T, LineTo> ||
 					               std::is_same_v<T, QuadTo> || std::is_same_v<T, CubicTo> )
 					{
-						bounds.add( { path.position.x() + arg.to.x(), path.position.y() + arg.to.y() } );
+						add( { path.position.x() + arg.to.x(), path.position.y() + arg.to.y() } );
 					}
 					if constexpr ( std::is_same_v<T, QuadTo> || std::is_same_v<T, CubicTo> )
 					{
-						bounds.add( { path.position.x() + arg.ctrl1.x(), path.position.y() + arg.ctrl1.y() } );
+						add( { path.position.x() + arg.ctrl1.x(), path.position.y() + arg.ctrl1.y() } );
 					}
 					if constexpr ( std::is_same_v<T, CubicTo> )
 					{
-						bounds.add( { path.position.x() + arg.ctrl2.x(), path.position.y() + arg.ctrl2.y() } );
+						add( { path.position.x() + arg.ctrl2.x(), path.position.y() + arg.ctrl2.y() } );
 					}
 				},
 				cmd );
@@ -102,17 +91,17 @@ public:
 					if constexpr ( std::is_same_v<T, MoveTo> || std::is_same_v<T, LineTo> ||
 					               std::is_same_v<T, QuadTo> || std::is_same_v<T, CubicTo> )
 					{
-						bounds.add( { ( glyph.position.x() + arg.to.x() ) * glyph.scale_x,
+						add( { ( glyph.position.x() + arg.to.x() ) * glyph.scale_x,
 						              ( glyph.position.y() + arg.to.y() ) * glyph.scale_y } );
 					}
 					if constexpr ( std::is_same_v<T, QuadTo> || std::is_same_v<T, CubicTo> )
 					{
-						bounds.add( { ( glyph.position.x() + arg.ctrl1.x() ) * glyph.scale_x,
+						add( { ( glyph.position.x() + arg.ctrl1.x() ) * glyph.scale_x,
 						              ( glyph.position.y() + arg.ctrl1.y() ) * glyph.scale_y } );
 					}
 					if constexpr ( std::is_same_v<T, CubicTo> )
 					{
-						bounds.add( { ( glyph.position.x() + arg.ctrl2.x() ) * glyph.scale_x,
+						add( { ( glyph.position.x() + arg.ctrl2.x() ) * glyph.scale_x,
 						              ( glyph.position.y() + arg.ctrl2.y() ) * glyph.scale_y } );
 					}
 				},
@@ -122,22 +111,25 @@ public:
 
 	void visit( const Line &line ) override
 	{
-		bounds.add( line.start );
-		bounds.add( line.end );
+		add( line.position + line.start );
+		add( line.position + line.end );
 	}
 
 	void visit( const ArrowTip &arrow ) override
 	{
-		bounds.add( arrow.start );
-		bounds.add( arrow.end );
+		add( arrow.position + arrow.start );
+		add( arrow.position + arrow.end );
 	}
 
 	void visit( const Group &group ) override
 	{
+		Point old_offset = _offset;
+		_offset = _offset + group.position;
 		for ( const auto &visual: group )
 		{
 			visual->accept( *this );
 		}
+		_offset = old_offset;
 	}
 
 	void visit( const MathAssembly &assembly ) override
@@ -147,7 +139,12 @@ public:
 
 	void visit( const Image &image ) override
 	{
-		bounds.add( { image.position.x() - image.half_width, image.position.y() - image.half_height } );
-		bounds.add( { image.position.x() + image.half_width, image.position.y() + image.half_height } );
+		add( { image.position.x() - image.half_width, image.position.y() - image.half_height } );
+		add( { image.position.x() + image.half_width, image.position.y() + image.half_height } );
 	}
+
+private:
+	void add( Point p ) { bounds.add( _offset + p ); }
+
+	Point _offset = { 0.F, 0.F };
 };

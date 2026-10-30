@@ -1,6 +1,7 @@
 #include <visuals/Bounds.h>
 #include <visuals/CreateText.h>
 #include <visuals/CreateStyledText.h>
+#include <visuals/MissingGlyph.h>
 #include <visuals/StyledText.h>
 #include <visuals/Group.h>
 
@@ -8,7 +9,6 @@
 #include <fonts/FontStack.h>
 #include <fonts/FontStyle.h>
 
-#include <core/Stage.h>
 #include <core/Theme.h>
 
 #include <utils/Utf8.h>
@@ -40,17 +40,18 @@ std::vector<TextRange> create_ranges( std::string_view str, const FontStack &fon
 	{
 		size_t offset = str.size() - remaining.size();
 		char32_t codepoint = decode_utf8( remaining );
-		auto entry = font.lookup_codepoint( codepoint );
+		// A character that will be drawn as a marker (no font has it, or it is U+FFFD) gets a range of its own kind
+		const size_t face = needs_marker( font, codepoint ) ? TextRange::MISSING : font.lookup_codepoint( codepoint ).font_index;
 
 		if ( !current_face.has_value() )
 		{
-			current_face = entry.font_index;
+			current_face = face;
 		}
 
-		if ( entry.font_index != current_face )
+		if ( face != current_face )
 		{
 			ranges.push_back( { current_face.value(), start_offset, offset - start_offset } );
-			current_face = entry.font_index;
+			current_face = face;
 			start_offset = offset;
 		}
 	}
@@ -135,17 +136,29 @@ std::unique_ptr<Glyph> create_glyph( unsigned int glyph_id, const FontFace *font
 	glyph->advanceX = static_cast<float>( face->glyph->metrics.horiAdvance );
 	glyph->advanceY = static_cast<float>( face->glyph->metrics.vertAdvance );
 
+	// Layout box: the advance width, and the glyph's own height and depth
+	const float height = static_cast<float>( face->glyph->metrics.horiBearingY );
+	const float depth = static_cast<float>( face->glyph->metrics.height - face->glyph->metrics.horiBearingY );
+	AABB box;
+	box.add( { 0.F, -depth } );
+	box.add( { glyph->advanceX, height } );
+	glyph->extent = box;
+
 	return glyph;
 }
 
-Group &create_text( Stage &stage, const std::string &text, const FontStyle &style )
-{
-	return create_text( stage, stage.visuals, text, style );
-}
-
-Group &create_text( Stage &stage, Group &group, const std::string &text, const FontStyle &style )
+std::unique_ptr<Group> make_text(
+	Theme &theme,
+	const std::string &text,
+	const FontStyle &style,
+	const std::optional<std::string> &language,
+	const TextLayout &layout )
 {
 	StyledText st( text );
 	st.set_font_style( 0, st.size(), style );
-	return create_styled_text( stage, group, st );
+	if ( language )
+	{
+		st.set_language( 0, st.size(), *language );
+	}
+	return make_styled_text( theme, st, layout );
 }

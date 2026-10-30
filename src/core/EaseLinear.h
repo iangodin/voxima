@@ -1,9 +1,4 @@
-
 #pragma once
 
-#include "Animation.h"
-
-#include <cmath>
-
-Animation ease_linear( float start, float end, int64_t total_frames );
-
+// No easing: t itself
+float ease_linear( float t );

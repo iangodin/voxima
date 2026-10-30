@@ -3,7 +3,7 @@ meta::
   inherit: null
 
 voices::
-  narrator: "en-US-AriaNeural"
+  narrator: "chatterbox/en-alba-mackenna-casual.wav"
 
 labels::
   ease_cubic_in: "Cubic In"
@@ -18,5 +18,6 @@ labels::
   ease_linear: "Linear"
 
 intro: """
-  These show various ease animations
+  These show {a}various ease{b} animations.
+  Watch each word {c}light up{d} as it is spoken.
 """

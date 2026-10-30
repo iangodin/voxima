@@ -34,3 +34,26 @@ Coroutine choreograph( Coroutines &&...coros )
 
 	co_return;
 }
+
+// choreograph() for coroutines that are not known until run time: runs them all together and finishes when the
+// last one does
+inline Coroutine choreograph_all( std::vector<Coroutine> coros )
+{
+	while ( true )
+	{
+		bool active = false;
+		for ( auto &coro: coros )
+		{
+			if ( !coro.done() )
+			{
+				coro.resume();
+				active = active || !coro.done();
+			}
+		}
+		if ( !active )
+		{
+			break;
+		}
+		co_yield NextFrame{};
+	}
+}

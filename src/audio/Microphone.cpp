@@ -41,3 +41,10 @@ void Microphone::record( const AudioBuffer &buffer )
 
 //====================================//
 
+size_t Microphone::frames_written( void ) const
+{
+	return _mixer->frames_written();
+}
+
+//====================================//
+

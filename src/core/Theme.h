@@ -7,6 +7,8 @@
 
 #include <utils/NamedRegistered.h>
 
+#include <core/Palette.h>
+
 #include <ft2build.h>
 #include FT_FREETYPE_H
 
@@ -59,6 +61,13 @@ public:
 
 	FontFace load_font( const std::string &name, size_t face_index, float scale );
 
+	// The catch-all font that ends a font stack: it draws a box for every character, and is marked (FontFace::notdef)
+	// so that a character only it has is shown as a missing glyph
+	FontFace load_notdef_font( float scale );
+
+	// The same, from another file than the usual one
+	FontFace load_notdef_font( const std::string &name, float scale );
+
 	FontFace load_variable_font(
 		const std::string &name,
 		size_t face_index,
@@ -83,6 +92,25 @@ public:
 		_font_path = path;
 	}
 
+	// The colors of the look (see Palette), apart from its fonts: each theme starts with one of its own (on black, as
+	// every video has been), and any palette can be used with any theme. Stage::use_palette makes the stage's background and
+	// text color the palette's.
+	const Palette &palette() const
+	{
+		return _palette;
+	}
+
+	void set_palette( Palette palette )
+	{
+		_palette = std::move( palette );
+	}
+
+	// The colors of highlighted source code (see make_code): the palette's
+	const CodePalette &code_palette() const
+	{
+		return _palette.code;
+	}
+
 	constexpr static float FONT_SCALE = 120.F;
 
 private:
@@ -94,4 +122,5 @@ private:
 	std::map<std::string, FontFactory> _factories;
 
 	std::filesystem::path _font_path = "assets/fonts";
+	Palette _palette = Palette::house( "one-dark" );
 };

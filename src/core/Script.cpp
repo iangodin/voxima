@@ -1,5 +1,8 @@
 
+#include <stdexcept>
 #include "Script.h"
+
+#include <utils/Language.h>
 
 #include <fstream>
 #include <sstream>
@@ -9,24 +12,54 @@ using namespace huml;
 
 bool Script::load( std::string lang )
 {
-	auto it = std::find( _languages.begin(), _languages.end(), lang );
-	if ( it != _languages.end() )
+	if ( _native_scripts.find( lang ) != _native_scripts.end() )
 	{
 		// Already loaded
+		if ( std::find( _languages.begin(), _languages.end(), lang ) == _languages.end() )
+		{
+			_languages.push_back( lang ); // and in use again
+		}
 		return true;
 	}
 
-	try
+	// Try the exact requested tag first, then progressively less specific
+	// BCP-47 fallbacks (e.g. "en-CA" -> "en") when no file exists for the
+	// exact tag. Whichever file actually supplied the content, the result is
+	// still stored under the tag the caller asked for, so later lookups
+	// (fetch(), TTS language derivation, subtitle/track metadata) stay keyed
+	// on what was requested rather than silently rewritten.
+	for ( const auto &candidate: language::fallback_chain( lang ) )
 	{
-		Value root = load_recursive( lang );
-		_native_scripts[lang] = root;
-		_languages.push_back( std::move( lang ) );
-		return true;
+		try
+		{
+			Value root = load_recursive( candidate );
+			_native_scripts[lang] = root;
+			_languages.push_back( lang );
+			return true;
+		}
+		catch ( ... )
+		{
+			continue;
+		}
 	}
-	catch ( ... )
+
+	return false;
+}
+
+void Script::select_languages( const std::vector<std::string> &languages )
+{
+	if ( languages.empty() )
 	{
-		return false;
+		throw std::invalid_argument( "select_languages needs at least one language" );
 	}
+	for ( const auto &lang: languages )
+	{
+		if ( _native_scripts.find( lang ) == _native_scripts.end() )
+		{
+			throw std::invalid_argument( "language not loaded: " + lang );
+		}
+	}
+	_languages = languages;
 }
 
 Value Script::load_recursive( const std::string &lang )
