@@ -11,7 +11,7 @@ A starting point is in `<prefix>/share/voxima/examples` (or `examples/` in the c
 cmake_minimum_required( VERSION 3.31 )
 project( MyVideo CXX )
 
-find_package( Voxima 0.1.0 REQUIRED )
+find_package( Voxima REQUIRED )
 
 voxima_add_plugin( myvideo scenes.cpp more_scenes.cpp )
 ```
@@ -19,8 +19,9 @@ voxima_add_plugin( myvideo scenes.cpp more_scenes.cpp )
 `voxima_add_plugin( name sources... )` makes a module called `name`, links it to Voxima's core, turns on C++20 and
 coroutines, and names it `name.so` or `name.dll`. Exactly one of its source files must contain `VOXIMA_PLUGIN();`.
 
-`find_package( Voxima <version> )` needs the **exact version** of the Voxima you built: a plugin is only good for the
-Voxima it was built against.
+`find_package( Voxima )` finds the Voxima you installed, and the plugin is built against its headers. A plugin is only
+good for that Voxima: one loaded by a `voxima` of another version is refused (see below). To insist on a version,
+write it (`find_package( Voxima 0.1.0 REQUIRED )`); only that exact version matches.
 
 Configure with the install folder as the prefix path, and the Conan toolchain of the Voxima build (it
 finds the libraries the headers use, see below):

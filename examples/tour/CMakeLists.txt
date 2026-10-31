@@ -5,7 +5,7 @@ cmake_minimum_required( VERSION 3.31 )
 project( TourVoxima CXX )
 
 if ( NOT TARGET Voxima::core )
-	find_package( Voxima 0.1.0 REQUIRED )
+	find_package( Voxima REQUIRED )
 endif()
 
 voxima_add_plugin( tour tour.cpp )

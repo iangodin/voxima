@@ -9,7 +9,7 @@ cmake_minimum_required( VERSION 3.31 )
 
 if ( CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR )
 	project( VoximaExamples CXX )
-	find_package( Voxima 0.1.0 REQUIRED )
+	find_package( Voxima REQUIRED )
 else()
 	set( CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/plugins )
 	set( CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/plugins ) # (DLLs, on Windows)

@@ -1305,14 +1305,15 @@ A starting point is in <code>&lt;prefix&gt;/share/voxima/examples</code> (or <co
 <div class="highlight"><pre><span></span><code><span class="nb">cmake_minimum_required</span><span class="p">(</span><span class="w"> </span><span class="s">VERSION</span><span class="w"> </span><span class="s">3.31</span><span class="w"> </span><span class="p">)</span>
 <span class="nb">project</span><span class="p">(</span><span class="w"> </span><span class="s">MyVideo</span><span class="w"> </span><span class="s">CXX</span><span class="w"> </span><span class="p">)</span>
 
-<span class="nb">find_package</span><span class="p">(</span><span class="w"> </span><span class="s">Voxima</span><span class="w"> </span><span class="s">0.1.0</span><span class="w"> </span><span class="s">REQUIRED</span><span class="w"> </span><span class="p">)</span>
+<span class="nb">find_package</span><span class="p">(</span><span class="w"> </span><span class="s">Voxima</span><span class="w"> </span><span class="s">REQUIRED</span><span class="w"> </span><span class="p">)</span>
 
 <span class="nb">voxima_add_plugin</span><span class="p">(</span><span class="w"> </span><span class="s">myvideo</span><span class="w"> </span><span class="s">scenes.cpp</span><span class="w"> </span><span class="s">more_scenes.cpp</span><span class="w"> </span><span class="p">)</span>
 </code></pre></div>
 <p><code>voxima_add_plugin( name sources... )</code> makes a module called <code>name</code>, links it to Voxima's core, turns on C++20 and
 coroutines, and names it <code>name.so</code> or <code>name.dll</code>. Exactly one of its source files must contain <code>VOXIMA_PLUGIN();</code>.</p>
-<p><code>find_package( Voxima &lt;version&gt; )</code> needs the <strong>exact version</strong> of the Voxima you built: a plugin is only good for the
-Voxima it was built against.</p>
+<p><code>find_package( Voxima )</code> finds the Voxima you installed, and the plugin is built against its headers. A plugin is only
+good for that Voxima: one loaded by a <code>voxima</code> of another version is refused (see below). To insist on a version,
+write it (<code>find_package( Voxima 0.1.0 REQUIRED )</code>); only that exact version matches.</p>
 <p>Configure with the install folder as the prefix path, and the Conan toolchain of the Voxima build (it
 finds the libraries the headers use, see below):</p>
 <div class="highlight"><pre><span></span><code>cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH=&lt;prefix&gt; \

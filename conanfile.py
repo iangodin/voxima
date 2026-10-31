@@ -1,21 +1,26 @@
 
 import os
+import re
 
 from conan import ConanFile
 from conan.tools.cmake import CMake, CMakeToolchain, CMakeDeps, cmake_layout
-from conan.tools.files import copy
+from conan.tools.files import copy, load
 
 # For working on Voxima (make config: conan install .), and for packaging it (conan create .), so others can
 # build plugins of scenes against it (see examples/).
 class VoximaConan(ConanFile):
   name = "voxima"
-  version = "0.1.0" # as in CMakeLists.txt's project()
   license = "MIT"
   settings = "os", "compiler", "build_type", "arch"
   generators = "CMakeDeps"
   exports_sources = (
     "CMakeLists.txt", "cmake/*", "src/*", "extern/*", "themes/*", "tools/*", "tests/*",
     "download_fonts.py", "download_models.py", "LICENSE", "THIRD_PARTY_NOTICES.md", "doc/*", "examples/*" )
+
+  # The version is the one in CMakeLists.txt's project(), the one place it is written
+  def set_version(self):
+    cmake = load(self, os.path.join(self.recipe_folder, "CMakeLists.txt"))
+    self.version = re.search(r"project\(\s*Voxima\s+VERSION\s+([0-9.]+)", cmake).group(1)
 
   def requirements(self):
     self.test_requires("catch2/3.13.0")
