@@ -1,5 +1,5 @@
 
-add_executable( sonimation_unit_tests
+add_executable( voxima_unit_tests
 	TestTextRanges.cpp
 	TestHuml.cpp
 	TestIntervalMap.cpp
@@ -54,6 +54,7 @@ add_executable( sonimation_unit_tests
 	TestScriptLanguageFallback.cpp
 	TestTimedWord.cpp
 	TestMarkers.cpp
+	TestAltText.cpp
 	TestTimeline.cpp
 	TestRetime.cpp
 	TestCompress.cpp
@@ -67,21 +68,21 @@ add_executable( sonimation_unit_tests
 	TestPlugin.cpp
 )
 
-target_link_libraries( sonimation_unit_tests
+target_link_libraries( voxima_unit_tests
 	Catch2::Catch2WithMain
 	visuals
 )
 
-target_compile_definitions( sonimation_unit_tests PRIVATE SONIMATION_TEST_DATA="${CMAKE_CURRENT_SOURCE_DIR}/data" )
+target_compile_definitions( voxima_unit_tests PRIVATE TEST_DATA_DIR="${CMAKE_CURRENT_SOURCE_DIR}/data" )
 
 # Plugins for TestPlugin.cpp to load
-sonimation_add_plugin( test_plugin plugin/TestPluginScenes.cpp )
-sonimation_add_plugin( test_plugin_wrong_abi plugin/TestPluginWrongAbi.cpp )
-add_dependencies( sonimation_unit_tests test_plugin test_plugin_wrong_abi )
-target_compile_definitions( sonimation_unit_tests PRIVATE
-	SONIMATION_TEST_PLUGIN="$<TARGET_FILE:test_plugin>"
-	SONIMATION_TEST_PLUGIN_WRONG_ABI="$<TARGET_FILE:test_plugin_wrong_abi>" )
+voxima_add_plugin( test_plugin plugin/TestPluginScenes.cpp )
+voxima_add_plugin( test_plugin_wrong_abi plugin/TestPluginWrongAbi.cpp )
+add_dependencies( voxima_unit_tests test_plugin test_plugin_wrong_abi )
+target_compile_definitions( voxima_unit_tests PRIVATE
+	VOXIMA_TEST_PLUGIN="$<TARGET_FILE:test_plugin>"
+	VOXIMA_TEST_PLUGIN_WRONG_ABI="$<TARGET_FILE:test_plugin_wrong_abi>" )
 
-add_test( NAME unit_tests COMMAND sonimation_unit_tests WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}" )
+add_test( NAME unit_tests COMMAND voxima_unit_tests WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}" )
 
-copy_runtime_dlls( sonimation_unit_tests )
+copy_runtime_dlls( voxima_unit_tests )

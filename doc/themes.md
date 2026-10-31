@@ -50,8 +50,9 @@ A softer, more approachable theme for educational content aimed at a general aud
 # Palettes
 
 A theme is fonts; the colors are a `Palette`, chosen apart from it: any palette works with any theme. Each theme starts with
-one of its own (on the plain black every video has had), and `--palette name` (or `theme.set_palette( Palette::get( name ) )`
-and `stage.use_palette( theme.palette() )` in a scene) changes it, background and text included.
+one of its own, whole - background and text included - and `--palette name` (or `theme.set_palette( Palette::get( name ) )`
+and `stage.use_palette( theme.palette() )` in a scene) changes it to another. A theme with no palette of its own starts on
+plain black (`Palette::house( "one-dark" )`, `Theme`'s own default) instead.
 
 A palette names roles, not uses: `background`, `text`, `muted` (axes, grids, comments), and eight accents (`red orange yellow
 green cyan blue purple pink`). Code colors (`palette.code`), a plot's curve colors (the accents in turn: blue, orange, green ...)
@@ -78,7 +79,7 @@ meta::
   name: "My Course"
   inherit: "Modern Technical"     # a built-in theme, or <name>.huml in a --theme-dir (or next to the scripts)
 
-palette: "github-light"           # the colors it starts with, on black (see Palettes; --palette changes it)
+palette: "github-light"           # the colors it starts with, whole (see Palettes; --palette changes it)
 
 fonts::                           # families: what a style becomes a file through
   plex_mono::
@@ -115,4 +116,4 @@ The intents are `prose`, `code`, `title`, `label`, `annotation`, `caption` and `
 (`ThemeUtils::get_theme_font_size`): a theme is which files, not how big.
 
 The built-in files are the record of what fonts each theme uses, and a test (`tests/data/font_stacks.txt`, made by
-`SONIMATION_UPDATE_GOLDEN=1`) keeps them to it: every intent, weight, slant and size loads the same files as before.
+`UPDATE_GOLDEN=1`) keeps them to it: every intent, weight, slant and size loads the same files as before.

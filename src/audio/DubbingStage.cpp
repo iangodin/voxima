@@ -41,7 +41,7 @@ void DubbingStage::setup(
 	// Loads the model and creates a session immediately - a bad model file
 	// fails here, at startup, rather than mid-render. With no model file at
 	// all, there may be no narration to need one (a first try of an installed
-	// Sonimation, say): it waits to be asked for, and says what is missing
+	// Voxima, say): it waits to be asked for, and says what is missing
 	// then. The aligner (if any) loads lazily on first use inside
 	// TTSClient::align().
 	std::error_code error;

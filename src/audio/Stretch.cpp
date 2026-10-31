@@ -25,7 +25,7 @@ std::filesystem::path temporary_path( const std::string &suffix )
 {
 	static std::atomic<unsigned> counter{ 0 };
 	std::ostringstream name;
-	name << "sonimation-stretch-" << GETPID() << "-" << counter++ << suffix;
+	name << "voxima-stretch-" << GETPID() << "-" << counter++ << suffix;
 	return std::filesystem::temp_directory_path() / name.str();
 }
 

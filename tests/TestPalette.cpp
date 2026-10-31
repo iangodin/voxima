@@ -112,11 +112,11 @@ TEST_CASE( "The code colors come from a palette's accents", "[palette]" )
 	CHECK_FALSE( Palette::get( "one-dark" ).code.style_for( "keyword" ).weight.has_value() );
 }
 
-TEST_CASE( "A theme keeps its own palette, on black, and any palette can be used with it", "[palette]" )
+TEST_CASE( "A theme keeps its own palette, whole, and any palette can be used with it", "[palette]" )
 {
 	Theme theme = AcademicClassic::create_theme();
 	CHECK( theme.palette().name == "academic" );
-	CHECK( theme.palette().background == Color{ 0.F, 0.F, 0.F, 1.F } );
+	CHECK( theme.palette().background == Palette::get( "academic" ).background );
 
 	theme.set_palette( Palette::get( "solarized-light" ) );
 	CHECK( theme.palette().name == "solarized-light" );

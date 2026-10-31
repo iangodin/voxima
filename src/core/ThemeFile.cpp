@@ -244,7 +244,9 @@ Theme build( const huml::Value &root, const std::string &where )
 	Theme theme( spec->name );
 	if ( !spec->palette.empty() )
 	{
-		theme.set_palette( Palette::house( spec->palette ) );
+		// A theme that names a palette uses it whole, background included; black is only what a theme with
+		// no palette at all starts with (Theme's own default, Palette::house( "one-dark" )).
+		theme.set_palette( Palette::get( spec->palette ) );
 	}
 	for ( const auto &[intent, stack]: spec->intents )
 	{

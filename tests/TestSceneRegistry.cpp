@@ -48,9 +48,9 @@ bool contains( const std::vector<std::string> &log, const std::string &line )
 }
 }
 
-SONIMATION_SCENE( "test-macro", "Registered with the macro", macro_scene );
+REGISTER_SCENE( "test-macro", "Registered with the macro", macro_scene );
 
-TEST_CASE( "SONIMATION_SCENE registers a scene by name", "[scenes]" )
+TEST_CASE( "REGISTER_SCENE registers a scene by name", "[scenes]" )
 {
 	const SceneEntry *entry = SceneEntry::get_by_name( "test-macro" );
 	REQUIRE( entry != nullptr );
@@ -212,7 +212,7 @@ Scene long_scene( Stage &stage, Script & )
 }
 }
 
-SONIMATION_SCENE( "test-long", "A scene of thirty frames", long_scene );
+REGISTER_SCENE( "test-long", "A scene of thirty frames", long_scene );
 
 TEST_CASE( "play fades the old scene out and the new one in", "[scenes]" )
 {

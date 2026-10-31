@@ -1,5 +1,5 @@
 
-# Sonimation
+# Voxima
 
 ## Project Summary
 

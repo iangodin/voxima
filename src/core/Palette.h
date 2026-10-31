@@ -52,7 +52,7 @@ struct Palette
 		return fill;
 	}
 
-	// The same palette on another background (a theme keeps its look on the black it always had: see house())
+	// The same palette on another background
 	Palette with_background( const Color &color ) const
 	{
 		Palette copy = *this;
@@ -77,8 +77,8 @@ struct Palette
 	// Add a palette of your own (or replace one): it can then be found by name, and given with --palette
 	static void add( Palette palette );
 
-	// A palette on black, as the themes have always had: the colors of `name` on the plain black background of
-	// every video so far
+	// A palette on plain black: the colors of `name` with its own background overridden. What a theme with no
+	// palette of its own starts with (Theme's default); a theme that names a palette uses it whole instead.
 	static Palette house( std::string_view name );
 };
 

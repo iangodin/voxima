@@ -44,6 +44,11 @@ public:
 	void speak( void );
 	bool is_done() const;
 
+	// Plays the narration through: call this alongside whatever else a scene animates.
+	//
+	//   co_await choreograph( narration.play(), ... );
+	Scene play();
+
 	// ---- Markers (see utils/Markers.h) ----
 	//
 	// Cue points in the narrated text, the same in every language, so that what is animated follows what is said
@@ -67,6 +72,16 @@ public:
 
 	Coroutine until_marker( size_t index );
 	Coroutine until_marker( std::string name );
+
+	// When line `index` of the current speech() batch starts (0 for the first, at the very start of the
+	// batch), or past the end of the narration if there is no such line. A line's start is a sync point
+	// kept lined up across languages the same way a marker is (see doc/scenes.md), and - unlike a word
+	// index - it stays correct even when a line's shown text and its spoken text differ in word count (a
+	// <written|spoken> substitution, see utils/AltText.h): both point at the same place regardless.
+	//
+	//   co_await narration.until_line( 2 );
+	double line_time( size_t index ) const;
+	Coroutine until_line( size_t index );
 
 	// Calls callback( t ) each frame with how far the narration is between two markers, 0 to 1 (see track_time).
 	// track_to_end runs from a marker to the end of the narration.
@@ -107,7 +122,7 @@ public:
 	// loop that calls speak(), and do not call speech() again until it is done.
 	//
 	//   co_await choreograph(
-	//       narrate( narration ),
+	//       narration.play(),
 	//       narration.animate_words( text, word_effects::all( { word_effects::color( grey, yellow, white ),
 	//                                                            word_effects::pop() } ) ) );
 	Coroutine animate_words( Group &text, WordEffect effect, size_t first_word = 0 );

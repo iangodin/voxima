@@ -5,6 +5,7 @@
 #include <audio/Resample.h>
 #include <core/Director.h>
 #include <core/Stage.h>
+#include <core/Wait.h>
 #include <cstring>
 #include <iostream>
 #include <map>
@@ -29,6 +30,15 @@ void Narration::speak( void )
 	for ( auto &narrator: _narrators )
 	{
 		narrator.speak( _audio_block );
+	}
+}
+
+Scene Narration::play()
+{
+	while ( !is_done() )
+	{
+		speak();
+		co_await next_frame();
 	}
 }
 
@@ -218,6 +228,33 @@ Coroutine Narration::until_marker( size_t index )
 Coroutine Narration::until_marker( std::string name )
 {
 	co_await until_time( marker_time( name ) );
+}
+
+double Narration::line_time( size_t index ) const
+{
+	if ( index == 0 )
+	{
+		return 0.0;
+	}
+	const Narrator *n = master();
+	if ( !n )
+	{
+		return 0.0;
+	}
+	const std::string id = "\nline" + std::to_string( index );
+	for ( const auto &cut: n->timeline().cuts )
+	{
+		if ( cut.id == id )
+		{
+			return cut.seconds;
+		}
+	}
+	return 1e300; // no such line: past the end
+}
+
+Coroutine Narration::until_line( size_t index )
+{
+	co_await until_time( line_time( index ) );
 }
 
 Coroutine Narration::track_markers( size_t from, size_t to, std::function<void( float )> callback )

@@ -1,6 +1,6 @@
 // A plugin of scenes: build it (see CMakeLists.txt), then
 //
-//     sonimation --plugin build/hello --script-dir scripts --lang en --theme "Academic Classic" --preview
+//     voxima --plugin build/hello --script-dir scripts --lang en --theme "Academic Classic" --preview
 //
 // With --preview, rebuilding it while the window is open plays the scene again with the change.
 
@@ -19,7 +19,7 @@
 
 using namespace std::chrono_literals;
 
-SONIMATION_PLUGIN();
+VOXIMA_PLUGIN();
 
 namespace
 {
@@ -45,4 +45,4 @@ Scene hello( Stage &stage, Script &script )
 }
 
 // "movie" is what plays without --scene
-SONIMATION_SCENE( "movie", "A title and a circle", hello );
+REGISTER_SCENE( "movie", "A title and a circle", hello );

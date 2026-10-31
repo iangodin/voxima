@@ -402,7 +402,7 @@ instead of talking capnp-over-socket to `edge_tts_server.py`. Design:
   busts stale entries instead of silently serving audio from a different model.
 - **`Narrator::speech()` duration bug fixed** - `duration` now accumulates
   unconditionally per result instead of only inside the resample branch.
-- **New CLI options** on `sonimation`: `--tts-model` (default
+- **New CLI options** on `voxima`: `--tts-model` (default
   `models/Chatterbox-GGUF/chatterbox-q8_0.gguf`), `--tts-voice-dir` (default
   `voices`), `--tts-backend` (default `best`, i.e. CUDA if built with it), `--tts-threads`
   (default 4).

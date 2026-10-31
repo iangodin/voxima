@@ -15,7 +15,7 @@
 // The font stacks of the themes, for every intent, weight, slant and size that picks a different file: what each entry
 // loads (the file and face, and a variable font's axes). It is the record the themes are kept to: whatever way they are made
 // (in code, or from files), they must load these fonts. To make it anew after a change that is meant to alter it, run the
-// tests with SONIMATION_UPDATE_GOLDEN=1 (and look at the difference before committing it).
+// tests with UPDATE_GOLDEN=1 (and look at the difference before committing it).
 
 namespace
 {
@@ -131,8 +131,8 @@ TEST_CASE( "The themes load the fonts they always have", "[themes][fonts]" )
 		actual += describe_stacks( theme );
 	}
 
-	const std::string path = std::string( SONIMATION_TEST_DATA ) + "/font_stacks.txt";
-	if ( std::getenv( "SONIMATION_UPDATE_GOLDEN" ) )
+	const std::string path = std::string( TEST_DATA_DIR ) + "/font_stacks.txt";
+	if ( std::getenv( "UPDATE_GOLDEN" ) )
 	{
 		std::ofstream( path, std::ios::binary ) << actual;
 		WARN( "wrote " << path );

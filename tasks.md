@@ -1,5 +1,5 @@
 
-# Sonimation Task List
+# Voxima Task List
 
 ## Text Rendering
   - [x] Create StyledText class to support styling text
@@ -201,7 +201,7 @@ Scenes are compiled C++, so every change is a rebuild.
 
 ## Rendering
   - [ ] Add support for motion blur
-  - [x] Add registry of "Scenes" (SONIMATION_SCENE, play/sequence for movies; see doc/scenes.md)
+  - [x] Add registry of "Scenes" (REGISTER_SCENE, play/sequence for movies; see doc/scenes.md)
   - [x] Add command line option to select a scene to render (--scene, repeatable; --list-scenes)
 
 ## Animation Timing

@@ -40,6 +40,13 @@ public:
 		}
 	}
 
+	// A string from the script's "labels" section, the usual place for short on-screen text (titles, captions):
+	// fetch( lang, "labels", key ), with a fallback for one that is missing.
+	std::string label( std::string_view lang, std::string_view key, std::string_view fallback = "�" ) const
+	{
+		return std::string( fetch( lang, "labels", key ).as_string( fallback ) );
+	}
+
 	const auto &languages( void ) const
 	{
 		return _languages;

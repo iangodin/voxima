@@ -5,10 +5,10 @@ from conan import ConanFile
 from conan.tools.cmake import CMake, CMakeToolchain, CMakeDeps, cmake_layout
 from conan.tools.files import copy
 
-# For working on Sonimation (make config: conan install .), and for packaging it (conan create .), so others can
+# For working on Voxima (make config: conan install .), and for packaging it (conan create .), so others can
 # build plugins of scenes against it (see examples/).
-class SonimationConan(ConanFile):
-  name = "sonimation"
+class VoximaConan(ConanFile):
+  name = "voxima"
   version = "0.1.0" # as in CMakeLists.txt's project()
   license = "MIT"
   settings = "os", "compiler", "build_type", "arch"
@@ -59,16 +59,16 @@ class SonimationConan(ConanFile):
     cmake.build()
 
   def package(self):
-    # Only Sonimation's own: audio.cpp has install rules of its own (see CMakeLists.txt)
+    # Only Voxima's own: audio.cpp has install rules of its own (see CMakeLists.txt)
     cmake = CMake(self)
-    cmake.install(component="Sonimation")
+    cmake.install(component="Voxima")
     copy(self, "LICENSE", self.source_folder, os.path.join(self.package_folder, "licenses"))
 
   def package_info(self):
-    # Found with its own config (find_package( Sonimation ) gives Sonimation::core and sonimation_add_plugin),
+    # Found with its own config (find_package( Voxima ) gives Voxima::core and voxima_add_plugin),
     # not one made by Conan
     self.cpp_info.set_property("cmake_find_mode", "none")
-    # The package itself, as a CMake prefix: find_package finds lib/cmake/Sonimation in it, on every platform
+    # The package itself, as a CMake prefix: find_package finds lib/cmake/Voxima in it, on every platform
     self.cpp_info.builddirs = ["."]
-    self.cpp_info.libs = ["sonimation_core"]
-    self.cpp_info.includedirs = [os.path.join("include", "sonimation")]
+    self.cpp_info.libs = ["voxima_core"]
+    self.cpp_info.includedirs = [os.path.join("include", "voxima")]

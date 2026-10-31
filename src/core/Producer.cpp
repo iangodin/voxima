@@ -316,8 +316,8 @@ bool Producer::render( const RenderJob &job )
 
 namespace
 {
-// Where the fonts are, without --font-dir: assets/fonts here (in the source tree, say), $SONIMATION_FONTS, or
-// those installed with the program (in share/sonimation/fonts, which download_fonts.py fills). Nothing if none
+// Where the fonts are, without --font-dir: assets/fonts here (in the source tree, say), $VOXIMA_FONTS, or
+// those installed with the program (in share/voxima/fonts, which download_fonts.py fills). Nothing if none
 // of them is there, and the theme looks in assets/fonts as it always has.
 std::optional<std::filesystem::path> find_font_dir()
 {
@@ -330,7 +330,7 @@ std::optional<std::filesystem::path> find_font_dir()
 #pragma warning( push )
 #pragma warning( disable : 4996 ) // getenv: only read, here
 #endif
-	const char *fonts = std::getenv( "SONIMATION_FONTS" );
+	const char *fonts = std::getenv( "VOXIMA_FONTS" );
 #ifdef _MSC_VER
 #pragma warning( pop )
 #endif
@@ -340,7 +340,7 @@ std::optional<std::filesystem::path> find_font_dir()
 	}
 	if ( const auto program = executable_path(); !program.empty() )
 	{
-		const auto installed = program.parent_path().parent_path() / "share" / "sonimation" / "fonts";
+		const auto installed = program.parent_path().parent_path() / "share" / "voxima" / "fonts";
 		if ( std::filesystem::is_directory( installed, error ) )
 		{
 			return installed;
@@ -362,7 +362,7 @@ std::string palette_names()
 
 bool Producer::produce( int argc, char *argv[] )
 {
-	CLI::App app{ "Sonimation" };
+	CLI::App app{ "Voxima" };
 	argv = app.ensure_utf8( argv );
 
 	std::string container = "mkv";
@@ -375,7 +375,7 @@ bool Producer::produce( int argc, char *argv[] )
 	app.add_option( "-a,--acodec", acodec, "Audio codec (flac, wav, aac, opus, vorbis)" );
 
 	std::optional<std::string> font_path;
-	app.add_option( "--font-dir", font_path, "Directory containing fonts (without it: assets/fonts, $SONIMATION_FONTS, or the installed share/sonimation/fonts)" );
+	app.add_option( "--font-dir", font_path, "Directory containing fonts (without it: assets/fonts, $VOXIMA_FONTS, or the installed share/voxima/fonts)" );
 
 	std::string render_dir = "render";
 	app.add_option( "--render-dir", render_dir, "Directory for render to" );
@@ -574,13 +574,13 @@ bool Producer::produce( int argc, char *argv[] )
 		_stage.theme->set_font_path( found->string() );
 	}
 
-	// A palette of its own choosing: its background and its text color for the picture (light or dark), and its colors
-	// for code, plots and what stands out. Otherwise the theme's palette gives only those last, on black as always.
+	// The stage's background and text color (light or dark), and its colors for code, plots and what stands
+	// out: the theme's own palette, whole, unless --palette asks for a different one instead.
 	if ( palette_name )
 	{
 		_stage.theme->set_palette( Palette::get( *palette_name ) );
-		_stage.use_palette( _stage.theme->palette() );
 	}
+	_stage.use_palette( _stage.theme->palette() );
 
 	constexpr size_t audio_rate = 48000;
 

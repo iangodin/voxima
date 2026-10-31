@@ -20,7 +20,7 @@ using namespace math;
 // Every symbol in Symbols.h is read back from the file, so a new one is checked without being listed here as well
 TEST_CASE( "every named math symbol is a glyph the math font has", "[math][symbols]" )
 {
-	const std::string path = std::string( SONIMATION_TEST_DATA ) + "/../../src/math/Symbols.h";
+	const std::string path = std::string( TEST_DATA_DIR ) + "/../../src/math/Symbols.h";
 	std::ifstream file( path );
 	REQUIRE( file );
 

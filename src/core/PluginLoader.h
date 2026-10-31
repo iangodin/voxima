@@ -6,7 +6,7 @@
 #include <utility>
 
 // A plugin of scenes (see Plugin.h), loaded into the program. Loading it registers its scenes (their
-// SONIMATION_SCENE objects are made as it loads), and unloading it unregisters them.
+// REGISTER_SCENE objects are made as it loads), and unloading it unregisters them.
 //
 // What is loaded is a copy of the file, so the file itself can be built again while the program runs (Windows
 // does not let a loaded DLL be written over); changed() says when it has been, for the preview to reload it.
@@ -58,5 +58,5 @@ private:
 	std::optional<Stamp> _seen_stamp;
 };
 
-// What the program was built with, which a plugin must match (SONIMATION_ABI, see Plugin.h)
-const char *sonimation_abi();
+// What the program was built with, which a plugin must match (VOXIMA_ABI, see Plugin.h)
+const char *voxima_abi();

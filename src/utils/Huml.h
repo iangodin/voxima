@@ -9,6 +9,7 @@
 #include <optional>
 #include <cstdint>
 #include <iostream>
+#include <stdexcept>
 
 namespace huml
 {
@@ -88,25 +89,54 @@ struct Value
 		return std::holds_alternative<List>( *this );
 	}
 
-	// Convenient getters
+	// What kind of value this is, for error messages ("missing" for a key that was not there at all)
+	const char *type_name() const
+	{
+		switch ( index() )
+		{
+			case 0: return "null";
+			case 1: return "missing";
+			case 2: return "bool";
+			case 3: return "int";
+			case 4: return "double";
+			case 5: return "string";
+			case 6: return "multiline";
+			case 7: return "list";
+			case 8: return "dict";
+		}
+		return "unknown";
+	}
+
+	template<typename T>
+	const T &require( const char *expected ) const
+	{
+		if ( auto *value = std::get_if<T>( this ) )
+		{
+			return *value;
+		}
+		throw std::runtime_error( std::string( "huml: expected " ) + expected + ", found " + type_name() );
+	}
+
+	// Convenient getters. Each throws std::runtime_error naming the type actually found (including "missing", for a
+	// key that was never there) rather than the unhelpful std::bad_variant_access a bare std::get would throw.
 	bool as_bool() const
 	{
-		return std::get<bool>( *this );
+		return require<bool>( "bool" );
 	}
 
 	int64_t as_int() const
 	{
-		return std::get<int64_t>( *this );
+		return require<int64_t>( "int" );
 	}
 
 	double as_double() const
 	{
-		return std::get<double>( *this );
+		return require<double>( "double" );
 	}
 
 	const std::string &as_string() const
 	{
-		return std::get<std::string>( *this );
+		return require<std::string>( "string" );
 	}
 
 	std::string_view as_string( std::string_view def ) const
@@ -123,17 +153,17 @@ struct Value
 
 	const MultiLine &as_multiline() const
 	{
-		return std::get<MultiLine>( *this );
+		return require<MultiLine>( "multiline" );
 	}
 
 	const Dict &as_dict() const
 	{
-		return std::get<Dict>( *this );
+		return require<Dict>( "dict" );
 	}
 
 	const List &as_list() const
 	{
-		return std::get<List>( *this );
+		return require<List>( "list" );
 	}
 
 	// Dictionary access sugar

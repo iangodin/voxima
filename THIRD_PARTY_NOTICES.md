@@ -1,7 +1,7 @@
 # Third-party notices
 
-Sonimation itself is under the MIT license (see `LICENSE`). It is built with the software below, which keeps its
-own licenses. In an installed or packaged Sonimation, the full texts are in `share/doc/Sonimation/licenses/`.
+Voxima itself is under the MIT license (see `LICENSE`). It is built with the software below, which keeps its
+own licenses. In an installed or packaged Voxima, the full texts are in `share/doc/Voxima/licenses/`.
 
 ## In this repository
 
@@ -25,14 +25,14 @@ The reference voice clips in `voices/` are CC BY 4.0 or CC0, with their sources 
 
 ## Libraries from Conan
 
-The libraries Sonimation is built against come from Conan (see `conanfile.py`), with what they depend on. Their
-license texts, as each package ships them, are collected into `licenses/conan/<package>/` when Sonimation is
+The libraries Voxima is built against come from Conan (see `conanfile.py`), with what they depend on. Their
+license texts, as each package ships them, are collected into `licenses/conan/<package>/` when Voxima is
 built, and installed with it. They include libraries under the LGPL (libsndfile, soxr, FriBidi, mpg123, LAME,
 GLib, gettext, libiconv, libdwarf); their sources, and the recipes that build them, are on
-[Conan Center](https://conan.io/center), and Sonimation's own source is public, so it can be rebuilt against
+[Conan Center](https://conan.io/center), and Voxima's own source is public, so it can be rebuilt against
 changed versions of them.
 
 ## Not included
 
-The fonts (fetched by `download_fonts.py`) and the TTS models (see `tts.md`) are not part of Sonimation, and
+The fonts (fetched by `download_fonts.py`) and the TTS models (see `tts.md`) are not part of Voxima, and
 keep their own licenses.

@@ -1,9 +1,9 @@
 # PowerShell equivalent of render.sh.
-# Renders the "movie" scene. Extra arguments go to sonimation, so a single scene (or several, in order) can be
+# Renders the "movie" scene. Extra arguments go to voxima, so a single scene (or several, in order) can be
 # rendered instead, and the ones left out of the movie can be reached:
 #     .\render.ps1 --scene missing-glyphs
 #     .\render.ps1 --scene morph-shapes --scene karaoke
-#     build\Release\sonimation.exe --plugin build\Release\eases --list-scenes
+#     build\Release\voxima.exe --plugin build\Release\eases --list-scenes
 
 $ErrorActionPreference = "Stop"
 
@@ -17,7 +17,7 @@ if ($LASTEXITCODE -ne 0) {
     exit $LASTEXITCODE
 }
 
-& .\build\Release\sonimation.exe --width 1280 --height 720 `
+& .\build\Release\voxima.exe --width 1280 --height 720 `
     --plugin build/Release/eases `
     --script-dir demos/eases `
     --font-dir assets/fonts `

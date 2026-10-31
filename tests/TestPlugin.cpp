@@ -11,8 +11,8 @@
 #include <string>
 
 // The test plugins (tests/plugin/), built next to the tests
-#ifndef SONIMATION_TEST_PLUGIN
-#error "SONIMATION_TEST_PLUGIN is not defined"
+#ifndef VOXIMA_TEST_PLUGIN
+#error "VOXIMA_TEST_PLUGIN is not defined"
 #endif
 
 namespace
@@ -44,7 +44,7 @@ std::string load_error( Plugin &plugin )
 
 TEST_CASE( "A plugin's scenes are registered while it is loaded", "[plugin]" )
 {
-	Plugin plugin( SONIMATION_TEST_PLUGIN );
+	Plugin plugin( VOXIMA_TEST_PLUGIN );
 	CHECK( SceneEntry::get_by_name( "plugin-test" ) == nullptr );
 
 	plugin.load();
@@ -75,7 +75,7 @@ TEST_CASE( "A plugin's scenes are registered while it is loaded", "[plugin]" )
 
 TEST_CASE( "A plugin can be named without its extension", "[plugin]" )
 {
-	std::filesystem::path path( SONIMATION_TEST_PLUGIN );
+	std::filesystem::path path( VOXIMA_TEST_PLUGIN );
 	Plugin plugin( path.parent_path() / path.stem() );
 	CHECK( plugin.path() == path );
 }
@@ -87,20 +87,20 @@ TEST_CASE( "A plugin that is not there is reported", "[plugin]" )
 
 TEST_CASE( "A plugin built for something else is refused, and its scenes go", "[plugin]" )
 {
-	Plugin plugin( SONIMATION_TEST_PLUGIN_WRONG_ABI );
+	Plugin plugin( VOXIMA_TEST_PLUGIN_WRONG_ABI );
 	const std::string error = load_error( plugin );
-	CHECK_THAT( error, Catch::Matchers::ContainsSubstring( "it was built for sonimation-0.0 some-other-compiler" ) );
-	CHECK_THAT( error, Catch::Matchers::ContainsSubstring( sonimation_abi() ) );
+	CHECK_THAT( error, Catch::Matchers::ContainsSubstring( "it was built for voxima-0.0 some-other-compiler" ) );
+	CHECK_THAT( error, Catch::Matchers::ContainsSubstring( voxima_abi() ) );
 	CHECK_FALSE( plugin.loaded() );
 	CHECK( SceneEntry::get_by_name( "plugin-wrong-abi" ) == nullptr );
 }
 
 TEST_CASE( "changed() waits for a rebuilt plugin to stop changing", "[plugin]" )
 {
-	const auto directory = std::filesystem::temp_directory_path() / "sonimation-plugin-test";
+	const auto directory = std::filesystem::temp_directory_path() / "voxima-plugin-test";
 	std::filesystem::create_directories( directory );
-	const auto copy = directory / std::filesystem::path( SONIMATION_TEST_PLUGIN ).filename();
-	std::filesystem::copy_file( SONIMATION_TEST_PLUGIN, copy, std::filesystem::copy_options::overwrite_existing );
+	const auto copy = directory / std::filesystem::path( VOXIMA_TEST_PLUGIN ).filename();
+	std::filesystem::copy_file( VOXIMA_TEST_PLUGIN, copy, std::filesystem::copy_options::overwrite_existing );
 
 	{
 		Plugin plugin( copy );

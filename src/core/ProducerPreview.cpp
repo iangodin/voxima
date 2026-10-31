@@ -92,7 +92,7 @@ int Producer::display_frame_rate( size_t audio_rate )
 bool Producer::preview( const std::string &language )
 {
 	const std::vector<std::string> languages = { language };
-	const std::filesystem::path scratch = std::filesystem::temp_directory_path() / "sonimation-preview";
+	const std::filesystem::path scratch = std::filesystem::temp_directory_path() / "voxima-preview";
 
 	// What the player needs of the stage is read here, before the producer thread starts: from then on the
 	// thread owns the stage, the script, the screenplay and the narration, and the player touches only the store
@@ -162,7 +162,7 @@ bool Producer::preview( const std::string &language )
 	}
 	SdlWindow sdl;
 
-	if ( !SDL_CreateWindowAndRenderer( "Sonimation preview", width, height, SDL_WINDOW_RESIZABLE, &sdl.window, &sdl.renderer ) )
+	if ( !SDL_CreateWindowAndRenderer( "Voxima preview", width, height, SDL_WINDOW_RESIZABLE, &sdl.window, &sdl.renderer ) )
 	{
 		throw sdl_error( "creating the window" );
 	}
@@ -403,7 +403,7 @@ bool Producer::preview( const std::string &language )
 			resume_offset = playhead - scene->start;
 		}
 
-		SDL_SetWindowTitle( sdl.window, "Sonimation preview - reloading" );
+		SDL_SetWindowTitle( sdl.window, "Voxima preview - reloading" );
 		std::cout << "Reloading\n";
 
 		// Nothing the plugins made may outlive them: their coroutines, their visuals, what they tied to them, and
@@ -685,7 +685,7 @@ bool Producer::preview( const std::string &language )
 				}
 			}
 
-			title << "Sonimation preview - ";
+			title << "Voxima preview - ";
 			if ( !scene_name.empty() )
 				title << scene_name << ", ";
 			title << std::fixed << std::setprecision( 2 ) << static_cast<double>( shown ) / fps << " s, frame " << shown;

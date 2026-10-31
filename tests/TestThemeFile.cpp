@@ -123,7 +123,7 @@ TEST_CASE( "The built-in themes are files, and their names are known", "[themes]
 	Theme theme = themes::load( "Playful Discovery" );
 	CHECK( theme.get_name() == "Playful Discovery" );
 	CHECK( theme.palette().name == "catppuccin-mocha" );
-	CHECK( theme.palette().background == Color{ 0.F, 0.F, 0.F, 1.F } ); // on black, as themes are
+	CHECK( theme.palette().background == Palette::get( "catppuccin-mocha" ).background ); // whole palette, background included
 
 	CHECK_THAT( first_error( [] { themes::load( "Nonesuch" ); } ), ContainsSubstring( "Modern Technical" ) ); // it lists the ones there are
 }
@@ -210,7 +210,7 @@ TEST_CASE( "A theme file says where and what is wrong", "[themes]" )
 
 TEST_CASE( "Themes are found in directories, and can inherit each other", "[themes]" )
 {
-	const auto directory = std::filesystem::temp_directory_path() / "sonimation-theme-test";
+	const auto directory = std::filesystem::temp_directory_path() / "voxima-theme-test";
 	std::filesystem::create_directories( directory );
 	std::ofstream( directory / "first.huml" ) << "meta::\n  name: \"First\"\n  inherit: \"Modern Technical\"\n\npalette: \"paper\"\n";
 	std::ofstream( directory / "second.huml" ) << "meta::\n  name: \"Second\"\n  inherit: \"first\"\n\nfonts::\n  fira::\n    bold: \"FiraGO-Regular.ttf\"\n";

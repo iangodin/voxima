@@ -15,7 +15,7 @@
 //       name: "My Course"
 //       inherit: "Modern Technical"     # a built-in theme, or a file: <name>.huml in a theme directory
 //
-//     palette: "github-light"           # the colors it starts with (see Palette; on black, as themes are)
+//     palette: "github-light"           # the colors it starts with, whole - background included (see Palette)
 //
 //     fonts::                           # families (see FontFamily): what a style becomes a file through
 //       plex_mono::

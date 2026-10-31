@@ -1,7 +1,7 @@
 
 cmake_minimum_required( VERSION 3.31 )
 
-project( Sonimation VERSION 0.1.0 )
+project( Voxima VERSION 0.1.0 )
 
 set(CMAKE_CXX_SCAN_FOR_MODULES OFF)
 set( CMAKE_EXPORT_COMPILE_COMMANDS ON )
@@ -190,9 +190,9 @@ add_library( visuals SHARED
 	src/visuals/LargeOperator.cpp
 )
 
-add_library( Sonimation::core ALIAS visuals )
+add_library( Voxima::core ALIAS visuals )
 set_target_properties( visuals PROPERTIES
-	OUTPUT_NAME sonimation_core
+	OUTPUT_NAME voxima_core
 	EXPORT_NAME core
 	WINDOWS_EXPORT_ALL_SYMBOLS ON
 	POSITION_INDEPENDENT_CODE ON )
@@ -205,7 +205,7 @@ target_include_directories( visuals PUBLIC
 	$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/extern>
 	$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
 	$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>
-	$<INSTALL_INTERFACE:include/sonimation> )
+	$<INSTALL_INTERFACE:include/voxima> )
 # Public: what its headers include. The rest is only in its own code.
 target_link_libraries( visuals PUBLIC
 	lunasvg::lunasvg
@@ -231,17 +231,24 @@ if ( NOT MSVC )
 	target_compile_options( visuals PRIVATE -Wno-comment )
 endif()
 
-add_executable( sonimation tools/main.cpp )
-target_compile_features( sonimation PUBLIC cxx_std_20 )
+add_executable( voxima tools/main.cpp )
+target_compile_features( voxima PUBLIC cxx_std_20 )
 if ( NOT MSVC )
-	target_compile_options( sonimation PUBLIC -fcoroutines )
+	target_compile_options( voxima PUBLIC -fcoroutines )
 endif()
-target_link_libraries( sonimation PUBLIC visuals )
+target_link_libraries( voxima PUBLIC visuals )
 
-include( cmake/SonimationPlugin.cmake )
+add_executable( tutorial_demo tools/main.cpp demos/tutorial/show_tutorial.cpp )
+target_compile_features( tutorial_demo PUBLIC cxx_std_20 )
+if ( NOT MSVC )
+	target_compile_options( tutorial_demo PUBLIC -fcoroutines )
+endif()
+target_link_libraries( tutorial_demo PUBLIC visuals )
 
-# The demo, as a plugin: sonimation --plugin build/Release/eases ...
-sonimation_add_plugin( eases demos/eases/show_animation.cpp )
+include( cmake/VoximaPlugin.cmake )
+
+# The demo, as a plugin: voxima --plugin build/Release/eases ...
+voxima_add_plugin( eases demos/eases/show_animation.cpp )
 
 add_executable( list_font tools/list_font.cpp )
 target_compile_features( list_font PUBLIC cxx_std_20 )
@@ -276,56 +283,56 @@ function( copy_runtime_dlls program )
 	endif()
 endfunction()
 
-foreach( program sonimation test_huml tts_poc align_poc )
+foreach( program voxima test_huml tts_poc align_poc )
 	copy_runtime_dlls( ${program} )
 endforeach()
 
 # Installing (make install PREFIX=<dir>): the program, the core and its headers, and what a plugin project needs to
-# find them (find_package( Sonimation ), then sonimation_add_plugin, see examples/). Only this component:
+# find them (find_package( Voxima ), then voxima_add_plugin, see examples/). Only this component:
 # audio.cpp has install rules of its own (ggml's headers and libraries), which are not wanted.
 include( GNUInstallDirs )
 include( CMakePackageConfigHelpers )
 
 if ( NOT WIN32 )
-	set_target_properties( sonimation PROPERTIES INSTALL_RPATH "$ORIGIN/../${CMAKE_INSTALL_LIBDIR}" )
+	set_target_properties( voxima PROPERTIES INSTALL_RPATH "$ORIGIN/../${CMAKE_INSTALL_LIBDIR}" )
 	set_target_properties( visuals PROPERTIES INSTALL_RPATH "$ORIGIN" )
 endif()
 
-install( TARGETS sonimation visuals EXPORT SonimationTargets COMPONENT Sonimation
+install( TARGETS voxima visuals EXPORT VoximaTargets COMPONENT Voxima
 	RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
 	LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
 	ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR} )
 # The core's TTS, next to it. Not part of the interface, but a shared library it links to has to be exported with it.
-install( TARGETS audiocpp EXPORT SonimationTargets COMPONENT Sonimation
+install( TARGETS audiocpp EXPORT VoximaTargets COMPONENT Voxima
 	RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
 	LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR} )
-install( DIRECTORY src/ DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/sonimation COMPONENT Sonimation FILES_MATCHING PATTERN "*.h" PATTERN "*.hpp" )
-install( FILES ${CMAKE_CURRENT_BINARY_DIR}/core/Version.h DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/sonimation/core COMPONENT Sonimation )
+install( DIRECTORY src/ DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/voxima COMPONENT Voxima FILES_MATCHING PATTERN "*.h" PATTERN "*.hpp" )
+install( FILES ${CMAKE_CURRENT_BINARY_DIR}/core/Version.h DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/voxima/core COMPONENT Voxima )
 
-set( SONIMATION_CMAKE_DIR ${CMAKE_INSTALL_LIBDIR}/cmake/Sonimation )
-install( EXPORT SonimationTargets NAMESPACE Sonimation:: DESTINATION ${SONIMATION_CMAKE_DIR} COMPONENT Sonimation )
-configure_package_config_file( cmake/SonimationConfig.cmake.in ${CMAKE_CURRENT_BINARY_DIR}/SonimationConfig.cmake
-	INSTALL_DESTINATION ${SONIMATION_CMAKE_DIR} )
+set( VOXIMA_CMAKE_DIR ${CMAKE_INSTALL_LIBDIR}/cmake/Voxima )
+install( EXPORT VoximaTargets NAMESPACE Voxima:: DESTINATION ${VOXIMA_CMAKE_DIR} COMPONENT Voxima )
+configure_package_config_file( cmake/VoximaConfig.cmake.in ${CMAKE_CURRENT_BINARY_DIR}/VoximaConfig.cmake
+	INSTALL_DESTINATION ${VOXIMA_CMAKE_DIR} )
 # Plugins are built just as the program was, so only this version will do (see src/core/Plugin.h)
-write_basic_package_version_file( ${CMAKE_CURRENT_BINARY_DIR}/SonimationConfigVersion.cmake COMPATIBILITY ExactVersion )
+write_basic_package_version_file( ${CMAKE_CURRENT_BINARY_DIR}/VoximaConfigVersion.cmake COMPATIBILITY ExactVersion )
 install( FILES
-	${CMAKE_CURRENT_BINARY_DIR}/SonimationConfig.cmake
-	${CMAKE_CURRENT_BINARY_DIR}/SonimationConfigVersion.cmake
-	cmake/SonimationPlugin.cmake
-	DESTINATION ${SONIMATION_CMAKE_DIR} COMPONENT Sonimation )
+	${CMAKE_CURRENT_BINARY_DIR}/VoximaConfig.cmake
+	${CMAKE_CURRENT_BINARY_DIR}/VoximaConfigVersion.cmake
+	cmake/VoximaPlugin.cmake
+	DESTINATION ${VOXIMA_CMAKE_DIR} COMPONENT Voxima )
 
-# The fonts are not installed (they are big): download_fonts.py <prefix>/share/sonimation/fonts gets them, and
-# sonimation looks there
-install( PROGRAMS download_fonts.py DESTINATION ${CMAKE_INSTALL_DATADIR}/sonimation COMPONENT Sonimation )
+# The fonts are not installed (they are big): download_fonts.py <prefix>/share/voxima/fonts gets them, and
+# voxima looks there
+install( PROGRAMS download_fonts.py DESTINATION ${CMAKE_INSTALL_DATADIR}/voxima COMPONENT Voxima )
 
 # How to use it, and a plugin project to start from
-install( FILES doc/scenes.md doc/script.md doc/themes.md tts.md DESTINATION ${CMAKE_INSTALL_DOCDIR} COMPONENT Sonimation )
-install( DIRECTORY examples/ DESTINATION ${CMAKE_INSTALL_DATADIR}/sonimation/examples COMPONENT Sonimation )
+install( FILES doc/scenes.md doc/script.md doc/themes.md tts.md DESTINATION ${CMAKE_INSTALL_DOCDIR} COMPONENT Voxima )
+install( DIRECTORY examples/ DESTINATION ${CMAKE_INSTALL_DATADIR}/voxima/examples COMPONENT Voxima )
 
-# The licenses: Sonimation's, and those of what it is built with, in share/doc/Sonimation/licenses (see
+# The licenses: Voxima's, and those of what it is built with, in share/doc/Voxima/licenses (see
 # THIRD_PARTY_NOTICES.md)
-install( FILES LICENSE THIRD_PARTY_NOTICES.md DESTINATION ${CMAKE_INSTALL_DOCDIR} COMPONENT Sonimation )
-set( SONIMATION_LICENSES ${CMAKE_INSTALL_DOCDIR}/licenses )
+install( FILES LICENSE THIRD_PARTY_NOTICES.md DESTINATION ${CMAKE_INSTALL_DOCDIR} COMPONENT Voxima )
+set( VOXIMA_LICENSES ${CMAKE_INSTALL_DOCDIR}/licenses )
 set( AUDIOCPP_EXTERNAL extern/audio.cpp/external )
 foreach( license
 		"extern/audio.cpp/LICENSE|audio.cpp"
@@ -343,16 +350,16 @@ foreach( license
 	string( REPLACE "|" ";" license "${license}" )
 	list( GET license 0 file )
 	list( GET license 1 directory )
-	install( FILES ${file} DESTINATION ${SONIMATION_LICENSES}/${directory} COMPONENT Sonimation )
+	install( FILES ${file} DESTINATION ${VOXIMA_LICENSES}/${directory} COMPONENT Voxima )
 endforeach()
 # The Conan packages' own, which the recipe collects next to the toolchain it makes (see conanfile.py)
 if ( CMAKE_TOOLCHAIN_FILE )
 	# (it can be relative to the build directory, as Conan's presets give it)
-	cmake_path( ABSOLUTE_PATH CMAKE_TOOLCHAIN_FILE BASE_DIRECTORY ${CMAKE_BINARY_DIR} OUTPUT_VARIABLE SONIMATION_TOOLCHAIN )
-	cmake_path( GET SONIMATION_TOOLCHAIN PARENT_PATH SONIMATION_GENERATORS_DIR )
+	cmake_path( ABSOLUTE_PATH CMAKE_TOOLCHAIN_FILE BASE_DIRECTORY ${CMAKE_BINARY_DIR} OUTPUT_VARIABLE VOXIMA_TOOLCHAIN )
+	cmake_path( GET VOXIMA_TOOLCHAIN PARENT_PATH VOXIMA_GENERATORS_DIR )
 endif()
-if ( SONIMATION_GENERATORS_DIR AND IS_DIRECTORY "${SONIMATION_GENERATORS_DIR}/licenses" )
-	install( DIRECTORY "${SONIMATION_GENERATORS_DIR}/licenses/" DESTINATION ${SONIMATION_LICENSES}/conan COMPONENT Sonimation )
+if ( VOXIMA_GENERATORS_DIR AND IS_DIRECTORY "${VOXIMA_GENERATORS_DIR}/licenses" )
+	install( DIRECTORY "${VOXIMA_GENERATORS_DIR}/licenses/" DESTINATION ${VOXIMA_LICENSES}/conan COMPONENT Voxima )
 else()
 	message( WARNING "The Conan packages' licenses were not found (run make config again): they will not be installed" )
 endif()
@@ -360,23 +367,23 @@ endif()
 # The compiler's runtime, for a machine that does not have it (on Windows: MSVC's, and the OpenMP that audio.cpp's
 # TTS uses). InstallRequiredSystemLibraries does not know the newest Visual Studio (18, toolset v145) yet, so with
 # MSVC the redistributable DLLs are found from the compiler itself, in the newest of its VC/Redist/MSVC/<version>.
-set( SONIMATION_RUNTIME_DLLS "" )
+set( VOXIMA_RUNTIME_DLLS "" )
 if ( MSVC )
-	string( REGEX REPLACE "/Tools/MSVC/.*$" "" SONIMATION_VC_DIR "${CMAKE_CXX_COMPILER}" )
-	string( TOLOWER "${CMAKE_CXX_COMPILER_ARCHITECTURE_ID}" SONIMATION_ARCH )
-	file( GLOB SONIMATION_CRT_DIRS LIST_DIRECTORIES true "${SONIMATION_VC_DIR}/Redist/MSVC/*/${SONIMATION_ARCH}/Microsoft.VC*.CRT" )
-	if ( SONIMATION_CRT_DIRS )
-		list( SORT SONIMATION_CRT_DIRS COMPARE NATURAL )
-		list( GET SONIMATION_CRT_DIRS -1 SONIMATION_CRT_DIR )
-		string( REGEX REPLACE "\\.CRT$" ".OpenMP" SONIMATION_OPENMP_DIR "${SONIMATION_CRT_DIR}" )
-		file( GLOB SONIMATION_RUNTIME_DLLS "${SONIMATION_CRT_DIR}/*.dll" "${SONIMATION_OPENMP_DIR}/vcomp140.dll" )
-		list( FILTER SONIMATION_RUNTIME_DLLS EXCLUDE REGEX "vccorlib" ) # C++/CX's, not used
+	string( REGEX REPLACE "/Tools/MSVC/.*$" "" VOXIMA_VC_DIR "${CMAKE_CXX_COMPILER}" )
+	string( TOLOWER "${CMAKE_CXX_COMPILER_ARCHITECTURE_ID}" VOXIMA_ARCH )
+	file( GLOB VOXIMA_CRT_DIRS LIST_DIRECTORIES true "${VOXIMA_VC_DIR}/Redist/MSVC/*/${VOXIMA_ARCH}/Microsoft.VC*.CRT" )
+	if ( VOXIMA_CRT_DIRS )
+		list( SORT VOXIMA_CRT_DIRS COMPARE NATURAL )
+		list( GET VOXIMA_CRT_DIRS -1 VOXIMA_CRT_DIR )
+		string( REGEX REPLACE "\\.CRT$" ".OpenMP" VOXIMA_OPENMP_DIR "${VOXIMA_CRT_DIR}" )
+		file( GLOB VOXIMA_RUNTIME_DLLS "${VOXIMA_CRT_DIR}/*.dll" "${VOXIMA_OPENMP_DIR}/vcomp140.dll" )
+		list( FILTER VOXIMA_RUNTIME_DLLS EXCLUDE REGEX "vccorlib" ) # C++/CX's, not used
 	endif()
 endif()
-if ( SONIMATION_RUNTIME_DLLS )
-	install( FILES ${SONIMATION_RUNTIME_DLLS} DESTINATION ${CMAKE_INSTALL_BINDIR} COMPONENT Sonimation )
+if ( VOXIMA_RUNTIME_DLLS )
+	install( FILES ${VOXIMA_RUNTIME_DLLS} DESTINATION ${CMAKE_INSTALL_BINDIR} COMPONENT Voxima )
 else()
-	set( CMAKE_INSTALL_SYSTEM_RUNTIME_COMPONENT Sonimation )
+	set( CMAKE_INSTALL_SYSTEM_RUNTIME_COMPONENT Voxima )
 	set( CMAKE_INSTALL_OPENMP_LIBRARIES ON )
 	include( InstallRequiredSystemLibraries )
 endif()
@@ -384,14 +391,14 @@ endif()
 # Packages of what is installed (make package, into build/packages): a .zip on Windows, a .tar.gz and a .deb
 # elsewhere; -DCPACK_GENERATOR=... for others. The file name says the compiler, as plugins have to be built with the
 # same one (see src/core/Plugin.h).
-string( REGEX MATCH "^[0-9]+\\.[0-9]+" SONIMATION_COMPILER_VERSION "${CMAKE_CXX_COMPILER_VERSION}" )
-string( TOLOWER "${CMAKE_CXX_COMPILER_ID}${SONIMATION_COMPILER_VERSION}" SONIMATION_COMPILER )
-string( TOLOWER "${CMAKE_SYSTEM_NAME}-${CMAKE_SYSTEM_PROCESSOR}" SONIMATION_SYSTEM )
-set( CPACK_PACKAGE_NAME sonimation )
-set( CPACK_PACKAGE_VENDOR "Sonimation" )
+string( REGEX MATCH "^[0-9]+\\.[0-9]+" VOXIMA_COMPILER_VERSION "${CMAKE_CXX_COMPILER_VERSION}" )
+string( TOLOWER "${CMAKE_CXX_COMPILER_ID}${VOXIMA_COMPILER_VERSION}" VOXIMA_COMPILER )
+string( TOLOWER "${CMAKE_SYSTEM_NAME}-${CMAKE_SYSTEM_PROCESSOR}" VOXIMA_SYSTEM )
+set( CPACK_PACKAGE_NAME voxima )
+set( CPACK_PACKAGE_VENDOR "Voxima" )
 set( CPACK_PACKAGE_CONTACT "Ian Godin" )
 set( CPACK_PACKAGE_DESCRIPTION_SUMMARY "Educational videos from C++ scenes: vector graphics, narration and subtitles in many languages" )
-set( CPACK_PACKAGE_FILE_NAME "sonimation-${PROJECT_VERSION}-${SONIMATION_SYSTEM}-${SONIMATION_COMPILER}" )
+set( CPACK_PACKAGE_FILE_NAME "voxima-${PROJECT_VERSION}-${VOXIMA_SYSTEM}-${VOXIMA_COMPILER}" )
 # For the installers that show it (some want it to be .txt)
 configure_file( LICENSE ${CMAKE_CURRENT_BINARY_DIR}/LICENSE.txt COPYONLY )
 set( CPACK_RESOURCE_FILE_LICENSE ${CMAKE_CURRENT_BINARY_DIR}/LICENSE.txt )
@@ -402,8 +409,8 @@ if ( NOT CPACK_GENERATOR )
 		set( CPACK_GENERATOR TGZ DEB )
 	endif()
 endif()
-# Only Sonimation's own (see above), in one package
-set( CPACK_COMPONENTS_ALL Sonimation )
+# Only Voxima's own (see above), in one package
+set( CPACK_COMPONENTS_ALL Voxima )
 set( CPACK_COMPONENTS_GROUPING ALL_COMPONENTS_IN_ONE )
 set( CPACK_ARCHIVE_COMPONENT_INSTALL ON )
 set( CPACK_COMPONENT_INCLUDE_TOPLEVEL_DIRECTORY ON ) # unpacked, it is one folder

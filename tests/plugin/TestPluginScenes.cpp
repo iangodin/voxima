@@ -8,7 +8,7 @@
 
 #include <memory>
 
-SONIMATION_PLUGIN();
+VOXIMA_PLUGIN();
 
 namespace
 {
@@ -27,4 +27,4 @@ Scene plugin_scene( Stage &stage, Script & )
 }
 }
 
-SONIMATION_SCENE( "plugin-test", "A scene from a plugin", plugin_scene );
+REGISTER_SCENE( "plugin-test", "A scene from a plugin", plugin_scene );

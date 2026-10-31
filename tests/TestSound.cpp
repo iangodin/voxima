@@ -40,7 +40,7 @@ AudioBuffer block( size_t frames )
 TEST_CASE( "a sound file is read, made stereo and resampled", "[sound]" )
 {
 	// A second of mono at 44.1 kHz, written as FLAC
-	const auto path = std::filesystem::temp_directory_path() / "sonimation-test-sound.flac";
+	const auto path = std::filesystem::temp_directory_path() / "voxima-test-sound.flac";
 	{
 		SF_INFO info = {};
 		info.channels = 1;

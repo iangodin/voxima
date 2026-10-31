@@ -2,8 +2,8 @@
 
 import sys
 
-# Where they go: assets/fonts (where sonimation looks, run from here), or the directory given, such as an
-# installed Sonimation's share/sonimation/fonts
+# Where they go: assets/fonts (where voxima looks, run from here), or the directory given, such as an
+# installed Voxima's share/voxima/fonts
 output_dir = sys.argv[1] if len(sys.argv) > 1 else "assets/fonts"
 
 font_renames = {

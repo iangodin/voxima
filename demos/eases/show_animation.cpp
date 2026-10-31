@@ -1,9 +1,9 @@
 // The demo's scenes. With no --scene the "movie" scene renders (the morph scenes, then the karaoke); any one can be
 // rendered on its own, or several in order:
 //
-//     sonimation ... --scene morph-text
-//     sonimation ... --scene morph-shapes --scene karaoke
-//     sonimation --list-scenes
+//     voxima --plugin build/Release/eases ... --scene morph-text
+//     voxima --plugin build/Release/eases ... --scene morph-shapes --scene karaoke
+//     voxima --plugin build/Release/eases --list-scenes
 //
 // Not part of the movie, so they are only rendered when asked for:
 //   missing-glyphs  characters that cannot be drawn, as magenta boxes (it warns at the end of the render, so
@@ -560,15 +560,6 @@ Scene show_more_morphs( Stage &stage, Script & )
 	}
 }
 
-Scene narrate( Narration &narration )
-{
-	while ( !narration.is_done() )
-	{
-		narration.speak();
-		co_await next_frame();
-	}
-}
-
 // A shape that changes on the phrases being said: a circle turns into a square between the markers {a} and {b}
 // in the script, into an a from {b} to {c}, and back into a circle from {c} to {d}. The markers are in the text of
 // every language, so this follows the narration whichever language it is in (word numbers would not).
@@ -632,7 +623,7 @@ Scene show_karaoke( Stage &stage, Script &script )
 	// One text per narrated line, shown as it is written: word N spoken is word N of the line, from the first
 	// word of that line on.
 	std::vector<Coroutine> running;
-	running.push_back( narrate( narration ) );
+	running.push_back( narration.play() );
 	running.push_back( follow_speech( stage, narration ) );
 
 	size_t first_word = 0;
@@ -713,7 +704,7 @@ Scene show_eases( Stage &stage, Script &script )
 		show_ease( stage, label( "ease_back_out" ), lang, ease_back_out, -0.5F, duration, accent( 7 ) ),
 		show_ease( stage, label( "ease_back_in_out" ), lang, ease_back_in_out, -1.0F, duration, accent( 8 ) ),
 		show_ease( stage, label( "ease_linear" ), lang, ease_linear, -1.5F, duration, accent( 9 ) ),
-		narrate( narration ) );
+		narration.play() );
 }
 
 // A page of laid-out formulas (see show_math)
@@ -1203,25 +1194,25 @@ Scene movie( Stage &stage, Script &script )
 	co_await wait_for( stage, 3s );
 }
 
-SONIMATION_PLUGIN();
+VOXIMA_PLUGIN();
 
-SONIMATION_SCENE( "missing-glyphs", "Characters that cannot be drawn, shown as magenta boxes (and reported)", show_missing_glyphs );
-SONIMATION_SCENE( "eases", "The ease functions, as circles racing across the screen (with narration)", show_eases );
-SONIMATION_SCENE( "formulas", "A page of laid-out math formulas", show_formulas );
-SONIMATION_SCENE( "code", "Syntax-highlighted C++, typed, with lines pointed out", show_code );
-SONIMATION_SCENE( "layout", "Panels, a list and a table, and a row of shapes, placed against each other", show_layout );
-SONIMATION_SCENE( "verbs", "Fade, slide, grow and indicate, with connectors following the moving circles", show_verbs );
-SONIMATION_SCENE( "diagram", "A diagram laid out in layers, a callout, a wrapped list, and evenly spread headings", show_diagram );
-SONIMATION_SCENE( "geometry", "A triangle with named corners and marked angles", show_geometry );
-SONIMATION_SCENE( "math-marks", "Cancelled and boxed parts, colors, primes, and words between math", show_math_marks );
-SONIMATION_SCENE( "charts", "Scatter plots and bar charts: grouped, stacked, horizontal, with negatives", show_charts );
-SONIMATION_SCENE( "tables", "Tables that wrap, hold formulas, and tint their rows", show_tables );
-SONIMATION_SCENE( "camera", "Zooming in on a graph, and panning along it", show_camera );
-SONIMATION_SCENE( "plot", "Axes crossing in the middle, and graphs drawn on them", show_plot );
-SONIMATION_SCENE( "plot-edge", "The same, with the axes along the left and bottom", show_plot_edge );
-SONIMATION_SCENE( "morph-shapes", "A circle turning into a square and letters, with holes opening and closing", show_morph );
-SONIMATION_SCENE( "morph-formula", "(a+b)^2 rewritten step by step, matching parts by tag and glyph", show_formula_morph );
-SONIMATION_SCENE( "morph-text", "A sentence edited word by word", show_text_morph );
-SONIMATION_SCENE( "morph-strokes", "A line, an arrow, staggered letters and a picture morphing", show_more_morphs );
-SONIMATION_SCENE( "karaoke", "Narrated text lit word by word, and a shape changing on the words", show_karaoke );
-SONIMATION_SCENE( "movie", "All the morph demos, then the karaoke", movie );
+REGISTER_SCENE( "missing-glyphs", "Characters that cannot be drawn, shown as magenta boxes (and reported)", show_missing_glyphs );
+REGISTER_SCENE( "eases", "The ease functions, as circles racing across the screen (with narration)", show_eases );
+REGISTER_SCENE( "formulas", "A page of laid-out math formulas", show_formulas );
+REGISTER_SCENE( "code", "Syntax-highlighted C++, typed, with lines pointed out", show_code );
+REGISTER_SCENE( "layout", "Panels, a list and a table, and a row of shapes, placed against each other", show_layout );
+REGISTER_SCENE( "verbs", "Fade, slide, grow and indicate, with connectors following the moving circles", show_verbs );
+REGISTER_SCENE( "diagram", "A diagram laid out in layers, a callout, a wrapped list, and evenly spread headings", show_diagram );
+REGISTER_SCENE( "geometry", "A triangle with named corners and marked angles", show_geometry );
+REGISTER_SCENE( "math-marks", "Cancelled and boxed parts, colors, primes, and words between math", show_math_marks );
+REGISTER_SCENE( "charts", "Scatter plots and bar charts: grouped, stacked, horizontal, with negatives", show_charts );
+REGISTER_SCENE( "tables", "Tables that wrap, hold formulas, and tint their rows", show_tables );
+REGISTER_SCENE( "camera", "Zooming in on a graph, and panning along it", show_camera );
+REGISTER_SCENE( "plot", "Axes crossing in the middle, and graphs drawn on them", show_plot );
+REGISTER_SCENE( "plot-edge", "The same, with the axes along the left and bottom", show_plot_edge );
+REGISTER_SCENE( "morph-shapes", "A circle turning into a square and letters, with holes opening and closing", show_morph );
+REGISTER_SCENE( "morph-formula", "(a+b)^2 rewritten step by step, matching parts by tag and glyph", show_formula_morph );
+REGISTER_SCENE( "morph-text", "A sentence edited word by word", show_text_morph );
+REGISTER_SCENE( "morph-strokes", "A line, an arrow, staggered letters and a picture morphing", show_more_morphs );
+REGISTER_SCENE( "karaoke", "Narrated text lit word by word, and a shape changing on the words", show_karaoke );
+REGISTER_SCENE( "movie", "All the morph demos, then the karaoke", movie );

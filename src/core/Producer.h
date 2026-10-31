@@ -16,7 +16,7 @@ class Producer
 {
 public:
 	// Which scene(s) to render is chosen on the command line (--scene, repeatable) from those registered
-	// with SONIMATION_SCENE (see SceneRegistry.h), in the program or in a plugin (--plugin, see Plugin.h); with
+	// with REGISTER_SCENE (see SceneRegistry.h), in the program or in a plugin (--plugin, see Plugin.h); with
 	// no --scene it is the scene called "movie". A Director given here is used instead of "movie" when there is
 	// no --scene.
 	explicit Producer( Director director = {} ) :

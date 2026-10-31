@@ -7,6 +7,7 @@
 #include <audio/Stretch.h>
 #include <core/Stage.h>
 #include <cstring>
+#include <utils/AltText.h>
 #include <utils/Language.h>
 #include <utils/Markers.h>
 
@@ -44,9 +45,14 @@ double Narrator::speech( const std::vector<std::string> &text )
 	double cumulative = 0.0;
 	for ( const auto &raw: text )
 	{
+		// What is shown can differ from what is said (see utils/AltText.h: <written>, <written|spoken>)
+		const AltText alt = parse_alt_text( raw );
+
 		// Markers are cue points, not words: they are taken out before anything is spoken, aligned or shown
-		const MarkedText marked = parse_markers( raw );
+		const MarkedText marked = parse_markers( alt.spoken );
 		const std::string &t = marked.text;
+		const std::string written = parse_markers( alt.written ).text;
+		const bool silent = t.find_first_not_of( ' ' ) == std::string::npos;
 
 		// Each line after the first is a place the languages are kept in step at (see Timeline.h)
 		if ( !_pending_cues.empty() )
@@ -54,16 +60,28 @@ double Narrator::speech( const std::vector<std::string> &text )
 			_timeline.cuts.push_back( { "\nline" + std::to_string( _pending_cues.size() ), cumulative } );
 		}
 
-		auto result = _tts->synthesize( t, _voice_ref, _tts_language );
-		if ( !result.success || !result.audio.has_value() )
+		tts::SynthesisResult result;
+		if ( silent )
 		{
-			throw std::runtime_error( "narration speech synthesis failed: " + result.message );
+			// Every word of this line was <written> with no spoken form: shown, but nothing to say - still
+			// a sync point (an empty line of audio), not a call into the TTS with nothing to synthesize.
+			result.success = true;
+			result.status = "ok";
+			result.audio = AudioBuffer( 0, _audio_rate, 1 );
 		}
-
-		// Resample immediately if the rate doesn't match the mixer's rate
-		if ( result.audio->rate() != _audio_rate )
+		else
 		{
-			result.audio = resample( result.audio.value(), _audio_rate );
+			result = _tts->synthesize( t, _voice_ref, _tts_language );
+			if ( !result.success || !result.audio.has_value() )
+			{
+				throw std::runtime_error( "narration speech synthesis failed: " + result.message );
+			}
+
+			// Resample immediately if the rate doesn't match the mixer's rate
+			if ( result.audio->rate() != _audio_rate )
+			{
+				result.audio = resample( result.audio.value(), _audio_rate );
+			}
 		}
 		const double line_duration = result.audio->duration();
 		duration += line_duration;
@@ -75,7 +93,7 @@ double Narrator::speech( const std::vector<std::string> &text )
 		double local_start = cumulative;
 		double local_end = cumulative + line_duration;
 		std::vector<TimedWord> line_words;
-		if ( _tts->has_aligner() )
+		if ( !silent && _tts->has_aligner() )
 		{
 			try
 			{
@@ -96,7 +114,7 @@ double Narrator::speech( const std::vector<std::string> &text )
 		// No usable alignment (unsupported language, no aligner model,
 		// failure, or a word count that disagrees with split_words()):
 		// spread the words proportionally over the whole line instead.
-		if ( line_words.empty() )
+		if ( line_words.empty() && !silent )
 		{
 			line_words = distribute_words( t, _pending_cues.size(), cumulative, line_duration );
 		}
@@ -107,7 +125,7 @@ double Narrator::speech( const std::vector<std::string> &text )
 			_markers.push_back( TimedMarker{ marker.name, seconds, _pending_cues.size() } );
 			_timeline.cuts.push_back( { marker.name, std::max( marker_cut( line_words, marker.offset, seconds, cumulative ), _timeline.cuts.back().seconds ) } );
 		}
-		_pending_cues.push_back( PendingCue{ local_start, local_end, t } );
+		_pending_cues.push_back( PendingCue{ local_start, local_end, written } );
 		cumulative += line_duration;
 
 		_results.push_back( std::move( result ) );

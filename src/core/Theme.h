@@ -92,9 +92,9 @@ public:
 		_font_path = path;
 	}
 
-	// The colors of the look (see Palette), apart from its fonts: each theme starts with one of its own (on black, as
-	// every video has been), and any palette can be used with any theme. Stage::use_palette makes the stage's background and
-	// text color the palette's.
+	// The colors of the look (see Palette), apart from its fonts: each theme starts with one of its own, whole
+	// (background included; a theme with none starts on plain black instead), and any palette can be used with any
+	// theme. Stage::use_palette makes the stage's background and text color the palette's.
 	const Palette &palette() const
 	{
 		return _palette;

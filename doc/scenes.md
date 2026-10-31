@@ -13,7 +13,7 @@ Scene show_intro( Stage &stage, Script &script )
 {
     // build visuals on stage.visuals, co_await animations, narration, other scenes ...
 }
-SONIMATION_SCENE( "intro", "The title and the first formula", show_intro );
+REGISTER_SCENE( "intro", "The title and the first formula", show_intro );
 ```
 
 The function, or any callable, only has to convert to a `Director`
@@ -29,7 +29,7 @@ Scene movie( Stage &stage, Script &script )
 {
     co_await sequence( stage, script, { "intro", "morphs", "outro" } );
 }
-SONIMATION_SCENE( "movie", "The whole thing", movie );
+REGISTER_SCENE( "movie", "The whole thing", movie );
 ```
 
 - `play( stage, script, "name" )` plays one registered scene and finishes when it does.
@@ -45,10 +45,10 @@ visuals stay on the stage.
 ## Choosing what to render
 
 ```
-sonimation --plugin build/Release/eases --list-scenes   # the registered scenes and what they do (see Plugins)
-sonimation ...                                  # renders the scene called "movie"
-sonimation ... --scene morph-text               # one scene
-sonimation ... --scene morph-shapes --scene karaoke   # several, in the order given (a movie made on the spot)
+voxima --plugin build/Release/eases --list-scenes   # the registered scenes and what they do (see Plugins)
+voxima ...                                  # renders the scene called "movie"
+voxima ... --scene morph-text               # one scene
+voxima ... --scene morph-shapes --scene karaoke   # several, in the order given (a movie made on the spot)
 ```
 
 An unknown name is reported (with the list) before any model or font is loaded, and exits with status 1. If no
@@ -60,24 +60,24 @@ no `--scene`.
 
 ## Plugins: scenes outside the program
 
-`sonimation` itself has no scenes: they are in **plugins**, shared libraries (a `.dll`, or a `.so`) loaded with
+`voxima` itself has no scenes: they are in **plugins**, shared libraries (a `.dll`, or a `.so`) loaded with
 `--plugin` (repeatable; the extension may be left out). A plugin is its scenes, registered as above, and one line
 in one of its files (`core/Plugin.h`):
 
 ```cpp
-SONIMATION_PLUGIN();
+VOXIMA_PLUGIN();
 ```
 
 ```
-sonimation --plugin build/Release/eases --list-scenes
-sonimation --plugin build/Release/eases ... --scene karaoke
+voxima --plugin build/Release/eases --list-scenes
+voxima --plugin build/Release/eases ... --scene karaoke
 ```
 
 The demo is one (`demos/eases`, built as `build/Release/eases`); `render.sh` and `render.ps1` load it. In CMake a
-plugin is `sonimation_add_plugin( name sources... )` (`cmake/SonimationPlugin.cmake`).
+plugin is `voxima_add_plugin( name sources... )` (`cmake/VoximaPlugin.cmake`).
 
 A plugin shares the program's strings, functions and coroutines, so it must be **built just as the program was**:
-the same compiler and version, standard library, and Debug or Release, against the same Sonimation. Each says what
+the same compiler and version, standard library, and Debug or Release, against the same Voxima. Each says what
 it was built with, and one that does not match is refused when it is loaded, naming both, rather than crashing.
 
 **With `--preview`, a rebuilt plugin is loaded again by itself**: the scenes start again with the new code, and
@@ -92,22 +92,22 @@ write over the file.)
 make install PREFIX=<dir>
 ```
 
-installs `sonimation`, its core library and headers, and the CMake package a plugin project finds with
-`find_package( Sonimation )` (`conan create .` makes a Conan package of the same). `make package` makes a
+installs `voxima`, its core library and headers, and the CMake package a plugin project finds with
+`find_package( Voxima )` (`conan create .` makes a Conan package of the same). `make package` makes a
 package of it to hand out, in `build/packages`: a `.zip` on Windows (with the MSVC runtime in it), a `.tar.gz`
 and a `.deb` elsewhere (`-DCPACK_GENERATOR=...` for others). Its name says the compiler it was built with, which a
-plugin built against it must use too. It holds these documents and `examples/` (in `share`), and the licenses: Sonimation's (MIT), and
-those of everything it is built with (`share/doc/Sonimation/licenses`, see `THIRD_PARTY_NOTICES.md`). `examples/` is such a
+plugin built against it must use too. It holds these documents and `examples/` (in `share`), and the licenses: Voxima's (MIT), and
+those of everything it is built with (`share/doc/Voxima/licenses`, see `THIRD_PARTY_NOTICES.md`). `examples/` is such a
 project, with how to build and run it. The fonts are not installed (they are big): `download_fonts.py`
-(installed in `share/sonimation`) fetches them to a directory given, and without `--font-dir` sonimation looks in
-`assets/fonts`, then `$SONIMATION_FONTS`, then the installed `share/sonimation/fonts`. The TTS models are not
+(installed in `share/voxima`) fetches them to a directory given, and without `--font-dir` voxima looks in
+`assets/fonts`, then `$VOXIMA_FONTS`, then the installed `share/voxima/fonts`. The TTS models are not
 installed either: give them with `--tts-model` and the like (see `tts.md`). Scenes without narration need none.
 
 ## Languages: one video for all, or one per language
 
 ```
-sonimation ... --lang en --lang fr              # one container with an audio and a subtitle track for each language
-sonimation ... --lang en --lang fr --separate   # one container per language, in <render-dir>/en/ and <render-dir>/fr/
+voxima ... --lang en --lang fr              # one container with an audio and a subtitle track for each language
+voxima ... --lang en --lang fr --separate   # one container per language, in <render-dir>/en/ and <render-dir>/fr/
 ```
 
 - **Together** (the default): one video, timed to the first language (the master), with an audio and a

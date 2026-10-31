@@ -48,7 +48,7 @@ std::filesystem::path resolve( std::filesystem::path path )
 std::filesystem::path copy_path( const std::filesystem::path &path )
 {
 	static std::atomic<unsigned> counter{ 0 };
-	const auto directory = std::filesystem::temp_directory_path() / "sonimation-plugins";
+	const auto directory = std::filesystem::temp_directory_path() / "voxima-plugins";
 	std::filesystem::create_directories( directory );
 
 	// Copies left by a program that did not get to remove its own (it crashed, or was killed). Only old ones, which
@@ -113,9 +113,9 @@ void *find_symbol( void *handle, const char *name )
 
 }
 
-const char *sonimation_abi()
+const char *voxima_abi()
 {
-	return SONIMATION_ABI;
+	return VOXIMA_ABI;
 }
 
 Plugin::Plugin( std::filesystem::path path ) :
@@ -178,15 +178,15 @@ void Plugin::load()
 	// Its scenes registered as it loaded; if it was not built as the program was, they cannot be trusted, and go
 	// as it is unloaded
 	using AbiFunction = const char *( * )();
-	auto abi = reinterpret_cast<AbiFunction>( find_symbol( handle, SONIMATION_PLUGIN_ABI_FUNCTION ) );
+	auto abi = reinterpret_cast<AbiFunction>( find_symbol( handle, VOXIMA_PLUGIN_ABI_FUNCTION ) );
 	std::string problem;
 	if ( abi == nullptr )
 	{
-		problem = "it has no SONIMATION_PLUGIN() (see core/Plugin.h)";
+		problem = "it has no VOXIMA_PLUGIN() (see core/Plugin.h)";
 	}
-	else if ( std::string( abi() ) != sonimation_abi() )
+	else if ( std::string( abi() ) != voxima_abi() )
 	{
-		problem = std::string( "it was built for " ) + abi() + ", but this program is " + sonimation_abi();
+		problem = std::string( "it was built for " ) + abi() + ", but this program is " + voxima_abi();
 	}
 	if ( !problem.empty() )
 	{
