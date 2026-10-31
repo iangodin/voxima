@@ -2,6 +2,7 @@
 #include "Plugin.h"
 
 #include <atomic>
+#include <algorithm>
 #include <chrono>
 #include <stdexcept>
 #include <string>
@@ -111,6 +112,41 @@ void *find_symbol( void *handle, const char *name )
 #endif
 }
 
+}
+
+std::vector<Plugin> load_plugins_in( const std::filesystem::path &directory, std::ostream &warnings )
+{
+	std::error_code error;
+	if ( !std::filesystem::is_directory( directory, error ) )
+	{
+		throw std::runtime_error( "no plugin directory " + directory.string() );
+	}
+
+	std::vector<std::filesystem::path> files;
+	for ( const auto &entry: std::filesystem::directory_iterator( directory ) )
+	{
+		if ( entry.is_regular_file( error ) && entry.path().extension() == plugin_extension )
+		{
+			files.push_back( entry.path() );
+		}
+	}
+	std::sort( files.begin(), files.end() );
+
+	std::vector<Plugin> plugins;
+	for ( const auto &file: files )
+	{
+		try
+		{
+			Plugin plugin( file );
+			plugin.load();
+			plugins.push_back( std::move( plugin ) );
+		}
+		catch ( const std::exception &e )
+		{
+			warnings << "warning: skipping " << e.what() << "\n";
+		}
+	}
+	return plugins;
 }
 
 const char *voxima_abi()

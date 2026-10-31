@@ -1306,7 +1306,13 @@ than crashing in some distant way. On Linux a plugin should be built with the sy
 The Conan toolchain file of the Voxima build, as above, has them: they are the very libraries Voxima was built
 with, which is also what keeps them compatible.</p>
 <h2 id="several-plugins">Several plugins<a class="headerlink" href="#several-plugins" title="Permanent link">&para;</a></h2>
-<p><code>--plugin</code> can be given more than once, and scene names from all of them are one list. A scene in one plugin can
+<p><code>--plugin</code> can be given more than once, and scene names from all of them are one list. <code>--plugin-dir &lt;folder&gt;</code>
+loads every plugin (<code>.so</code> or <code>.dll</code>) in a folder, in name order, so a folder of plugins is one command:</p>
+<div class="highlight"><pre><span></span><code>voxima --plugin-dir build/plugins --list-scenes
+</code></pre></div>
+<p>A file in the folder that cannot be loaded (built with another compiler, or not a plugin) is skipped with a
+warning, rather than stopping the rest; with <code>--plugin</code>, it is an error. Keep plugins in a folder of their own,
+since the core library is a <code>.so</code> too. A scene in one plugin can
 <code>play</code> a scene from another by name. If two plugins register the same name, the one loaded later takes it, so keep names distinct.</p>
 <h2 id="working-fast">Working fast<a class="headerlink" href="#working-fast" title="Permanent link">&para;</a></h2>
 <p>Use <code>--preview</code> and <strong>keep the window open while you build</strong>: the plugin is loaded again when it is rebuilt, and

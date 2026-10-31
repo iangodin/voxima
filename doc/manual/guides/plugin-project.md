@@ -51,7 +51,16 @@ with, which is also what keeps them compatible.
 
 ## Several plugins
 
-`--plugin` can be given more than once, and scene names from all of them are one list. A scene in one plugin can
+`--plugin` can be given more than once, and scene names from all of them are one list. `--plugin-dir <folder>`
+loads every plugin (`.so` or `.dll`) in a folder, in name order, so a folder of plugins is one command:
+
+```
+voxima --plugin-dir build/plugins --list-scenes
+```
+
+A file in the folder that cannot be loaded (built with another compiler, or not a plugin) is skipped with a
+warning, rather than stopping the rest; with `--plugin`, it is an error. Keep plugins in a folder of their own,
+since the core library is a `.so` too. A scene in one plugin can
 `play` a scene from another by name. If two plugins register the same name, the one loaded later takes it, so keep names distinct.
 
 ## Working fast

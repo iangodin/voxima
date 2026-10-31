@@ -59,4 +59,9 @@ OPTIONS:
           --plugin TEXT ...   A plugin of scenes (a .dll or .so; the extension may be left out)
                               to load (repeatable); with --preview, it is loaded again when it
                               is rebuilt
+          --plugin-dir TEXT ... 
+                              A directory of plugins: every plugin in it (a .dll or .so) is
+                              loaded, in name order (repeatable). One that cannot be loaded is
+                              skipped, with a warning. With --preview, they are loaded again
+                              when rebuilt
 ```

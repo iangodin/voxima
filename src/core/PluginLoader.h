@@ -3,7 +3,9 @@
 #include <cstdint>
 #include <filesystem>
 #include <optional>
+#include <ostream>
 #include <utility>
+#include <vector>
 
 // A plugin of scenes (see Plugin.h), loaded into the program. Loading it registers its scenes (their
 // REGISTER_SCENE objects are made as it loads), and unloading it unregisters them.
@@ -57,6 +59,12 @@ private:
 	std::optional<Stamp> _loaded_stamp;
 	std::optional<Stamp> _seen_stamp;
 };
+
+// Load every plugin file in a directory (those with the platform's extension, .dll or .so, in name order, so that
+// when two register a scene of the same name the same one always wins). A file that cannot be loaded (it was built
+// with another compiler or Voxima, say, or is not a plugin) is not an error: a warning naming it and why is
+// written to `warnings`, and the rest are loaded. Throws if `directory` is not a directory.
+std::vector<Plugin> load_plugins_in( const std::filesystem::path &directory, std::ostream &warnings );
 
 // What the program was built with, which a plugin must match (VOXIMA_ABI, see Plugin.h)
 const char *voxima_abi();

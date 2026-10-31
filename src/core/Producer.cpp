@@ -456,12 +456,25 @@ bool Producer::produce( int argc, char *argv[] )
 		plugin_paths,
 		"A plugin of scenes (a .dll or .so; the extension may be left out) to load (repeatable); with --preview, it is loaded again when it is rebuilt" );
 
+	std::vector<std::string> plugin_directories;
+	app.add_option(
+		"--plugin-dir",
+		plugin_directories,
+		"A directory of plugins: every plugin in it (a .dll or .so) is loaded, in name order (repeatable). One that cannot be loaded is skipped, with a warning. With --preview, they are loaded again when rebuilt" );
+
 	CLI11_PARSE( app, argc, argv );
 
 	// Their scenes register as they load, so before anything looks for one
 	for ( const auto &path: plugin_paths )
 	{
 		_plugins.emplace_back( path ).load();
+	}
+	for ( const auto &directory: plugin_directories )
+	{
+		for ( auto &plugin: load_plugins_in( directory, std::cerr ) )
+		{
+			_plugins.push_back( std::move( plugin ) );
+		}
 	}
 
 	if ( list_scenes )
@@ -499,7 +512,7 @@ bool Producer::produce( int argc, char *argv[] )
 			if ( scenes.size() != 1 )
 			{
 				throw std::runtime_error(
-					"no scene to render: give --scene <name>, or register one called \"movie\" (in a --plugin, or in the program)\nScenes:\n" +
+					"no scene to render: give --scene <name>, or register one called \"movie\" (in a --plugin or --plugin-dir, or in the program)\nScenes:\n" +
 					describe_scenes() );
 			}
 			const std::string only = scenes.front()->get_name();

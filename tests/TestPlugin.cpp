@@ -7,6 +7,8 @@
 #include <core/Stage.h>
 
 #include <filesystem>
+#include <fstream>
+#include <sstream>
 #include <stdexcept>
 #include <string>
 
@@ -117,4 +119,36 @@ TEST_CASE( "changed() waits for a rebuilt plugin to stop changing", "[plugin]" )
 	}
 
 	std::filesystem::remove_all( directory );
+}
+
+TEST_CASE( "A plugin directory loads its plugins and skips what cannot be loaded", "[plugin]" )
+{
+	const auto directory = std::filesystem::temp_directory_path() / "voxima-plugin-dir-test";
+	std::filesystem::remove_all( directory );
+	std::filesystem::create_directories( directory );
+	for ( const char *file: { VOXIMA_TEST_PLUGIN, VOXIMA_TEST_PLUGIN_WRONG_ABI } )
+	{
+		std::filesystem::copy_file( file, directory / std::filesystem::path( file ).filename() );
+	}
+	// Not a plugin by its name, so not tried
+	std::ofstream( directory / "notes.txt" ) << "not a plugin\n";
+
+	std::ostringstream warnings;
+	{
+		auto plugins = load_plugins_in( directory, warnings );
+		REQUIRE( plugins.size() == 1 );
+		CHECK( plugins[0].loaded() );
+		CHECK( SceneEntry::get_by_name( "plugin-test" ) != nullptr );
+		CHECK( SceneEntry::get_by_name( "plugin-wrong-abi" ) == nullptr );
+
+		// The one that was refused is named, with why; the rest is quiet
+		CHECK_THAT( warnings.str(), Catch::Matchers::ContainsSubstring( "skipping could not load plugin" ) );
+		CHECK_THAT( warnings.str(), Catch::Matchers::ContainsSubstring( "test_plugin_wrong_abi" ) );
+		CHECK_THAT( warnings.str(), Catch::Matchers::ContainsSubstring( "it was built for" ) );
+		CHECK_THAT( warnings.str(), !Catch::Matchers::ContainsSubstring( "notes.txt" ) );
+	}
+	CHECK( SceneEntry::get_by_name( "plugin-test" ) == nullptr );
+
+	std::filesystem::remove_all( directory );
+	CHECK_THROWS_WITH( load_plugins_in( directory, warnings ), Catch::Matchers::StartsWith( "no plugin directory" ) );
 }
