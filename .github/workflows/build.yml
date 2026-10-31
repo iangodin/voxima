@@ -12,29 +12,34 @@ on:
         default: all
 
 jobs:
+  # Which platforms to build (a job's own `if` cannot see its matrix, so the matrix is made here)
+  plan:
+    runs-on: ubuntu-24.04
+    outputs:
+      matrix: ${{ steps.plan.outputs.matrix }}
+    steps:
+      - id: plan
+        env:
+          PLATFORMS: ${{ inputs.platforms }}
+        run: |
+          all='[
+            {"name": "linux",      "os": "ubuntu-24.04", "cache": "linux"},
+            {"name": "windows",    "os": "windows-2022", "cache": "windows"},
+            {"name": "macos",      "os": "macos-14",     "cache": "macos"},
+            {"name": "linux-cuda", "os": "ubuntu-24.04", "cache": "linux", "cuda": true}
+          ]'
+          matrix=$(jq -c --arg p "$PLATFORMS" '{include: [.[] | select($p == "all" or $p == .name)]}' <<< "$all")
+          echo "$matrix"
+          echo "matrix=$matrix" >> "$GITHUB_OUTPUT"
+
   build:
     name: ${{ matrix.name }}
-    if: inputs.platforms == 'all' || inputs.platforms == matrix.name
+    needs: plan
     runs-on: ${{ matrix.os }}
     timeout-minutes: 180
     strategy:
       fail-fast: false
-      matrix:
-        include:
-          - name: linux
-            os: ubuntu-24.04
-            cache: linux
-          - name: windows
-            os: windows-2022
-            cache: windows
-          - name: macos
-            os: macos-14
-            cache: macos
-          # Builds the GPU speech backend (compiles and links; the runners have no GPU, so nothing is run)
-          - name: linux-cuda
-            os: ubuntu-24.04
-            cache: linux
-            cuda: true
+      matrix: ${{ fromJSON(needs.plan.outputs.matrix) }}
 
     steps:
       - uses: actions/checkout@v4
