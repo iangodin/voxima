@@ -6,7 +6,7 @@ video file. You need Voxima [built and installed](install.md) and the fonts.
 ## 1. Copy the example
 
 ```
-cp -r <prefix>/share/voxima/examples my-video
+cp -r <prefix>/share/voxima/examples/hello my-video
 cd my-video
 ```
 
@@ -19,44 +19,7 @@ It holds three files:
 ## 2. Look at the scene
 
 ```cpp
-#include <core/Animate.h>
-#include <core/Plugin.h>
-#include <core/SceneRegistry.h>
-#include <core/Script.h>
-#include <core/Stage.h>
-#include <core/Wait.h>
-#include <visuals/Circle.h>
-#include <visuals/CreateText.h>
-#include <visuals/Placement.h>
-
-using namespace std::chrono_literals;
-
-VOXIMA_PLUGIN();
-
-namespace
-{
-Scene hello( Stage &stage, Script &script )
-{
-	Theme &theme = *stage.theme;
-	const std::string title{ script.fetch( script.master_language(), "title" ).as_string() };
-
-	auto &words = stage.visuals.add( make_text( theme, title, FontStyle{ Intent::TITLE }.large() ) );
-	move_to( words, { 0.F, 1.5F } );
-
-	auto circle = std::make_unique<Circle>();
-	circle->radius = 1.F;
-	circle->color = theme.palette().blue;
-	auto &dot = stage.visuals.add( std::move( circle ) );
-	dot.position = { 0.F, -1.5F };
-
-	co_await fade_in( stage, words, 0.8s );
-	co_await grow_in( stage, dot, 0.6s );
-	co_await indicate( stage, dot );
-	co_await wait_for( stage, 1s );
-}
-}
-
-REGISTER_SCENE( "movie", "A title and a circle", hello );
+--8<-- "examples/hello/hello.cpp"
 ```
 
 Read it top to bottom:

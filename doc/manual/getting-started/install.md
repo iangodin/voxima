@@ -77,7 +77,7 @@ The rest of this manual calls that folder `<prefix>`. It holds
 | `<prefix>/lib/` | The core library (`libvoxima_core`) and the speech engine library the program loads |
 | `<prefix>/include/voxima/` | The headers your scenes are written against |
 | `<prefix>/lib/cmake/Voxima/` | The CMake package, for `find_package( Voxima )` |
-| `<prefix>/share/voxima/examples/` | A small plugin project to start from |
+| `<prefix>/share/voxima/examples/` | Example plugin projects to start from, one folder each |
 | `<prefix>/share/doc/Voxima/` | The manual (as a web site, open `manual/index.html`) and the licenses |
 
 [Your own plugin project](../guides/plugin-project.md) shows how to build against it.

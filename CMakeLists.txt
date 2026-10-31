@@ -242,8 +242,8 @@ include( cmake/VoximaPlugin.cmake )
 # The demo, as a plugin: voxima --plugin build/Release/eases ...
 voxima_add_plugin( eases demos/eases/show_animation.cpp )
 
-# The tutorial video, as a plugin: voxima --plugin build/Release/tutorial ...
-voxima_add_plugin( tutorial demos/tutorial/show_tutorial.cpp )
+# The examples, as plugins in build/Release/plugins (see examples/CMakeLists.txt)
+add_subdirectory( examples )
 
 add_executable( list_font tools/list_font.cpp )
 target_compile_features( list_font PUBLIC cxx_std_20 )

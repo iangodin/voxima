@@ -23,6 +23,7 @@ VOXIMA_PLUGIN();
 
 namespace
 {
+// --8<-- [start:scene]
 Scene hello( Stage &stage, Script &script )
 {
 	Theme &theme = *stage.theme;
@@ -42,7 +43,10 @@ Scene hello( Stage &stage, Script &script )
 	co_await indicate( stage, dot );
 	co_await wait_for( stage, 1s );
 }
+// --8<-- [end:scene]
 }
 
 // "movie" is what plays without --scene
+// --8<-- [start:register]
 REGISTER_SCENE( "movie", "A title and a circle", hello );
+// --8<-- [end:register]

@@ -1250,7 +1250,7 @@
 <p>This builds the small example plugin that comes with Voxima, previews it in a window, and renders it to a
 video file. You need Voxima <a href="../install/">built and installed</a> and the fonts.</p>
 <h2 id="1-copy-the-example">1. Copy the example<a class="headerlink" href="#1-copy-the-example" title="Permanent link">&para;</a></h2>
-<div class="highlight"><pre><span></span><code>cp -r &lt;prefix&gt;/share/voxima/examples my-video
+<div class="highlight"><pre><span></span><code>cp -r &lt;prefix&gt;/share/voxima/examples/hello my-video
 cd my-video
 </code></pre></div>
 <p>It holds three files:</p>
@@ -1260,7 +1260,13 @@ cd my-video
 <li><code>CMakeLists.txt</code>: builds <code>hello.cpp</code> into a plugin.</li>
 </ul>
 <h2 id="2-look-at-the-scene">2. Look at the scene<a class="headerlink" href="#2-look-at-the-scene" title="Permanent link">&para;</a></h2>
-<div class="highlight"><pre><span></span><code><span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;core/Animate.h&gt;</span>
+<div class="highlight"><pre><span></span><code><span class="c1">// A plugin of scenes: build it (see CMakeLists.txt), then</span>
+<span class="c1">//</span>
+<span class="c1">//     voxima --plugin build/hello --script-dir scripts --lang en --theme "Academic Classic" --preview</span>
+<span class="c1">//</span>
+<span class="c1">// With --preview, rebuilding it while the window is open plays the scene again with the change.</span>
+
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;core/Animate.h&gt;</span>
 <span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;core/Plugin.h&gt;</span>
 <span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;core/SceneRegistry.h&gt;</span>
 <span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;core/Script.h&gt;</span>
@@ -1269,6 +1275,9 @@ cd my-video
 <span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;visuals/Circle.h&gt;</span>
 <span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;visuals/CreateText.h&gt;</span>
 <span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;visuals/Placement.h&gt;</span>
+
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;memory&gt;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;string&gt;</span>
 
 <span class="k">using</span><span class="w"> </span><span class="k">namespace</span><span class="w"> </span><span class="nn">std</span><span class="o">::</span><span class="nn">chrono_literals</span><span class="p">;</span>
 
@@ -1297,6 +1306,7 @@ cd my-video
 <span class="p">}</span>
 <span class="p">}</span>
 
+<span class="c1">// "movie" is what plays without --scene</span>
 <span class="n">REGISTER_SCENE</span><span class="p">(</span><span class="w"> </span><span class="s">"movie"</span><span class="p">,</span><span class="w"> </span><span class="s">"A title and a circle"</span><span class="p">,</span><span class="w"> </span><span class="n">hello</span><span class="w"> </span><span class="p">);</span>
 </code></pre></div>
 <p>Read it top to bottom:</p>

@@ -1272,7 +1272,7 @@
 <p>Scenes live in a <strong>plugin</strong>: a shared library (<code>.so</code> on Linux, <code>.dll</code> on Windows) that <code>voxima</code> loads with
 <code>--plugin</code>. A plugin project is a small CMake project built against your Voxima build, installed with
 <code>make install PREFIX=&lt;prefix&gt;</code> (see <a href="../../getting-started/install/#install-it-to-build-plugins-elsewhere">Installing</a>).
-A starting point is in <code>&lt;prefix&gt;/share/voxima/examples</code> (or <code>examples/</code> in the checkout).</p>
+A starting point is in <code>&lt;prefix&gt;/share/voxima/examples</code> (or <code>examples/</code> in the checkout), one folder per example.</p>
 <h2 id="the-cmake-project">The CMake project<a class="headerlink" href="#the-cmake-project" title="Permanent link">&para;</a></h2>
 <div class="highlight"><pre><span></span><code><span class="nb">cmake_minimum_required</span><span class="p">(</span><span class="w"> </span><span class="s">VERSION</span><span class="w"> </span><span class="s">3.31</span><span class="w"> </span><span class="p">)</span>
 <span class="nb">project</span><span class="p">(</span><span class="w"> </span><span class="s">MyVideo</span><span class="w"> </span><span class="s">CXX</span><span class="w"> </span><span class="p">)</span>

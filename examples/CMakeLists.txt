@@ -1,18 +1,18 @@
-# A plugin of scenes, built against an installed Voxima. In Voxima:
+# All the examples. Each is a plugin project of its own, which can be copied out and built by itself (see its
+# CMakeLists.txt); here they are built together, so that they are kept working. Inside Voxima's build they go to
+# <build>/plugins, a directory of nothing else, which voxima --plugin-dir can load whole:
 #
-#     make install PREFIX=<dir>
+#     build/Release/voxima --plugin-dir build/Release/plugins --list-scenes
 #
-# then here, with the same compiler and build type (see src/core/Plugin.h), and the libraries Voxima's headers
-# use (the Conan toolchain Voxima was built with has them):
-#
-#     cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH=<dir> \
-#         -DCMAKE_TOOLCHAIN_FILE=<voxima>/build/Release/generators/conan_toolchain.cmake
-#     cmake --build build
-#     <dir>/bin/voxima --plugin build/hello --script-dir scripts --lang en --theme "Academic Classic" --preview
+# Built by itself, this is the same as building each one.
 cmake_minimum_required( VERSION 3.31 )
 
-project( HelloVoxima CXX )
+if ( CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR )
+	project( VoximaExamples CXX )
+	find_package( Voxima 0.1.0 REQUIRED )
+else()
+	set( CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/plugins )
+	set( CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/plugins ) # (DLLs, on Windows)
+endif()
 
-find_package( Voxima 0.1.0 REQUIRED )
-
-voxima_add_plugin( hello hello.cpp )
+add_subdirectory( hello )

@@ -3,7 +3,7 @@
 Scenes live in a **plugin**: a shared library (`.so` on Linux, `.dll` on Windows) that `voxima` loads with
 `--plugin`. A plugin project is a small CMake project built against your Voxima build, installed with
 `make install PREFIX=<prefix>` (see [Installing](../getting-started/install.md#install-it-to-build-plugins-elsewhere)).
-A starting point is in `<prefix>/share/voxima/examples` (or `examples/` in the checkout).
+A starting point is in `<prefix>/share/voxima/examples` (or `examples/` in the checkout), one folder per example.
 
 ## The CMake project
 
