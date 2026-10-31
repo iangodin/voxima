@@ -1,0 +1,51 @@
+site_name: Voxima
+site_description: Developer manual for Voxima, a C++ library for making educational videos
+docs_dir: doc/manual
+site_dir: doc/html
+theme:
+  name: material
+  features:
+    - navigation.sections
+    - navigation.top
+    - content.code.copy
+  palette:
+    - scheme: default
+      toggle:
+        icon: material/weather-night
+        name: Dark mode
+    - scheme: slate
+      toggle:
+        icon: material/weather-sunny
+        name: Light mode
+markdown_extensions:
+  - tables
+  - admonition
+  - toc:
+      permalink: true
+  - pymdownx.highlight
+  - pymdownx.superfences
+nav:
+  - Home: index.md
+  - Getting started:
+      - Installing: getting-started/install.md
+      - Your first video: getting-started/first-video.md
+  - Concepts:
+      - Overview: concepts/overview.md
+      - Animation and coroutines: concepts/coroutines.md
+      - Scenes and movies: concepts/scenes.md
+      - The script: concepts/script.md
+  - Guides:
+      - Visuals and layout: guides/visuals-layout.md
+      - Text and math: guides/text-math.md
+      - Animation verbs and the camera: guides/animation.md
+      - Morphing: guides/morphing.md
+      - Charts and diagrams: guides/charts-diagrams.md
+      - Narration and languages: guides/narration.md
+      - Music and sound effects: guides/sound.md
+      - Themes: guides/themes.md
+      - Rendering and previewing: guides/rendering.md
+      - Your own plugin project: guides/plugin-project.md
+  - Reference:
+      - Command line: reference/command-line.md
+      - Script keys: reference/script-keys.md
+      - HUML format: reference/huml.md

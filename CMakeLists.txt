@@ -8,7 +8,7 @@ set( CMAKE_EXPORT_COMPILE_COMMANDS ON )
 
 enable_testing()
 
-# Vendored via `extern/audio.cpp` (squashed git subtree, see tts.md). Added
+# Vendored via `extern/audio.cpp` (squashed git subtree, see doc/internal/tts.md). Added
 # before voxima's own -Werror/-Wall/-Wextra below - those flags are directory
 # scoped and would otherwise leak into audio.cpp's own (not warning-clean
 # under our flag set) subdirectory build.
@@ -44,7 +44,7 @@ set( ENGINE_ENABLE_METAL OFF CACHE BOOL "" FORCE )
 set( AUDIOCPP_BUILD_C_API ON CACHE BOOL "" FORCE )
 set( AUDIOCPP_MODEL_SET "custom" CACHE STRING "" FORCE )
 # chatterbox: narration synthesis. qwen3_forced_aligner: optional subtitle-
-# timing pass (see tts.md phase 4) - a separate, standalone family from
+# timing pass (see doc/internal/tts.md phase 4) - a separate, standalone family from
 # qwen3_tts/qwen3_asr, so this doesn't pull those in.
 set( AUDIOCPP_MODELS "chatterbox,qwen3_forced_aligner" CACHE STRING "" FORCE )
 add_subdirectory( extern/audio.cpp )
@@ -321,7 +321,7 @@ install( FILES
 install( PROGRAMS download_fonts.py DESTINATION ${CMAKE_INSTALL_DATADIR}/voxima COMPONENT Voxima )
 
 # How to use it, and a plugin project to start from
-install( FILES doc/scenes.md doc/script.md doc/themes.md tts.md DESTINATION ${CMAKE_INSTALL_DOCDIR} COMPONENT Voxima )
+install( DIRECTORY doc/html/ DESTINATION ${CMAKE_INSTALL_DOCDIR}/manual COMPONENT Voxima )
 install( DIRECTORY examples/ DESTINATION ${CMAKE_INSTALL_DATADIR}/voxima/examples COMPONENT Voxima )
 
 # The licenses: Voxima's, and those of what it is built with, in share/doc/Voxima/licenses (see

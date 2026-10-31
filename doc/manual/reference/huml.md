@@ -1,10 +1,3 @@
-+++
-title = "HUML specification v0.2.0"
-description = "HUML language specification v0.2.0"
-
-[extra]
-toc = true
-+++
 
 # HUML specification v0.2.0
 <sup class="tag">Experimental</sup>
@@ -584,4 +577,4 @@ Escape sequences:
 
 ### Previous versions
 
-- [v0.1.0](@/specifications/v0.1.0.md)
+- v0.1.0

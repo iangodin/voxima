@@ -1,4 +1,4 @@
-.PHONY: default all config clean debug tsan install package
+.PHONY: default all config clean debug tsan install package docs
 
 default: all
 
@@ -27,6 +27,11 @@ install: all
 # Packages of the Release build, as installed (a .zip on Windows; a .tar.gz and a .deb elsewhere), in build/packages
 package: all
 	@cpack --config build/Release/CPackConfig.cmake -B build/packages
+
+# The developer manual (doc/manual, with mkdocs-material, see doc/requirements.txt) as a static site in doc/html,
+# which is committed, and installed. Run it after changing the manual, and commit the result.
+docs:
+	@mkdocs build --strict
 
 test: debug
 	@ctest --preset conan-debug --output-on-failure

@@ -44,3 +44,11 @@ make test
 make debug
 ```
 
+
+## Documentation
+
+- `doc/manual/`: the developer manual (for people making videos), as linked Markdown. `make docs` builds it with
+  mkdocs-material (`pip install -r doc/requirements.txt`) into `doc/html/`, which is committed and installed.
+  Rebuild and commit it after changing the manual. The manual is written for people making videos with a source build of Voxima (installed with `make install`), not for
+  people working on Voxima itself.
+- `doc/internal/`: engineering and planning notes. Not installed.
