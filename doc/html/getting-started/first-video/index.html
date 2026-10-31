@@ -1334,8 +1334,8 @@ cd my-video
 <span class="p">}</span>
 <span class="p">}</span>
 
-<span class="c1">// "movie" is what plays without --scene</span>
-<span class="n">REGISTER_SCENE</span><span class="p">(</span><span class="w"> </span><span class="s">"movie"</span><span class="p">,</span><span class="w"> </span><span class="s">"A title and a circle"</span><span class="p">,</span><span class="w"> </span><span class="n">hello</span><span class="w"> </span><span class="p">);</span>
+<span class="c1">// With one scene registered, it is what plays without --scene (several plugins together: name it with --scene)</span>
+<span class="n">REGISTER_SCENE</span><span class="p">(</span><span class="w"> </span><span class="s">"hello"</span><span class="p">,</span><span class="w"> </span><span class="s">"A title and a circle"</span><span class="p">,</span><span class="w"> </span><span class="n">hello</span><span class="w"> </span><span class="p">);</span>
 </code></pre></div>
 <p>Read it top to bottom:</p>
 <ul>
@@ -1345,7 +1345,7 @@ cd my-video
 <li>The text and the circle are <strong>visuals</strong>, added to <code>stage.visuals</code>. Then <code>fade_in</code> and <code>grow_in</code> bring them in
   from nothing.</li>
 <li><code>co_await</code> plays an animation and continues when it is over. Each line takes the time it names.</li>
-<li><code>REGISTER_SCENE( "movie", ... )</code> gives the scene a name. A scene called <code>movie</code> is what plays when you do not
+<li><code>REGISTER_SCENE( "hello", ... )</code> gives the scene a name. With only one scene registered, that is what plays when you do not
   ask for another.</li>
 </ul>
 <h2 id="3-build-the-plugin">3. Build the plugin<a class="headerlink" href="#3-build-the-plugin" title="Permanent link">&para;</a></h2>

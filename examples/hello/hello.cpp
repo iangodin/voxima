@@ -46,7 +46,7 @@ Scene hello( Stage &stage, Script &script )
 // --8<-- [end:scene]
 }
 
-// "movie" is what plays without --scene
+// With one scene registered, it is what plays without --scene (several plugins together: name it with --scene)
 // --8<-- [start:register]
-REGISTER_SCENE( "movie", "A title and a circle", hello );
+REGISTER_SCENE( "hello", "A title and a circle", hello );
 // --8<-- [end:register]

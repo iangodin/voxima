@@ -6,7 +6,7 @@ manual is taken from, and they are built with Voxima, so they keep working.
 
 | Example | Shows | Guide |
 |---|---|---|
-| `hello` | One scene: a title and a circle (plays as `movie`) | [Your first video](first-video.md) |
+| `hello` | One scene: a title and a circle (the only scene of its plugin, so it plays by default) | [Your first video](first-video.md) |
 | `coroutines` | Waiting, doing things together, a change every frame, an updater | [Animation and coroutines](../concepts/coroutines.md) |
 | `layout` | Shapes, groups, placement, panels, lists, tables, tags | [Visuals and layout](../guides/visuals-layout.md) |
 | `text-math` | Text, styled and right-to-left text, formulas, code, missing glyphs | [Text and math](../guides/text-math.md) |
@@ -15,6 +15,7 @@ manual is taken from, and they are built with Voxima, so they keep working.
 | `charts` | Plots, scatter plots, bar charts, diagrams, geometry | [Charts and diagrams](../guides/charts-diagrams.md) |
 | `narration` | Speech in several languages; words, lines and markers followed | [Narration and languages](../guides/narration.md) |
 | `sound` | A sound made in code, and music | [Music and sound effects](../guides/sound.md) |
+| `tour` | A `movie` scene that plays the other examples' scenes one after another | [Scenes and movies](../concepts/scenes.md) |
 
 ## Running them
 
@@ -34,3 +35,17 @@ build/Release/voxima --plugin-dir build/Release/plugins --script-dir examples/la
 ```
 
 Scene names are unique across the examples (`layout-basics`, `morph-shapes`), so they can be loaded together.
+
+## The whole tour
+
+The `tour` example has a `movie` scene that plays the scenes of the others one after another, which is what
+renders when you give no `--scene`. Load everything and give it its own script folder:
+
+```
+build/Release/voxima --plugin-dir build/Release/plugins --script-dir examples/tour/scripts --lang en \
+    --theme "Academic Classic" --preview
+```
+
+Music is optional: set `VOXIMA_MUSIC` to a sound file for some under it. The narrated scenes are left out, since
+they need the speech models; render them on their own with `--scene` (see the `narration` example). Some themes'
+fonts lack a few math symbols, which show as magenta boxes and are listed at the end of the render.

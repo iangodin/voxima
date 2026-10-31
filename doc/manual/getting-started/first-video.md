@@ -30,7 +30,7 @@ Read it top to bottom:
 - The text and the circle are **visuals**, added to `stage.visuals`. Then `fade_in` and `grow_in` bring them in
   from nothing.
 - `co_await` plays an animation and continues when it is over. Each line takes the time it names.
-- `REGISTER_SCENE( "movie", ... )` gives the scene a name. A scene called `movie` is what plays when you do not
+- `REGISTER_SCENE( "hello", ... )` gives the scene a name. With only one scene registered, that is what plays when you do not
   ask for another.
 
 ## 3. Build the plugin

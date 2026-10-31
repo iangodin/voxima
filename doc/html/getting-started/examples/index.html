@@ -441,6 +441,17 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#the-whole-tour" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The whole tour
+      
+    </span>
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -1147,6 +1158,17 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#the-whole-tour" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The whole tour
+      
+    </span>
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -1179,7 +1201,7 @@ manual is taken from, and they are built with Voxima, so they keep working.</p>
 <tbody>
 <tr>
 <td><code>hello</code></td>
-<td>One scene: a title and a circle (plays as <code>movie</code>)</td>
+<td>One scene: a title and a circle (the only scene of its plugin, so it plays by default)</td>
 <td><a href="../first-video/">Your first video</a></td>
 </tr>
 <tr>
@@ -1222,6 +1244,11 @@ manual is taken from, and they are built with Voxima, so they keep working.</p>
 <td>A sound made in code, and music</td>
 <td><a href="../../guides/sound/">Music and sound effects</a></td>
 </tr>
+<tr>
+<td><code>tour</code></td>
+<td>A <code>movie</code> scene that plays the other examples' scenes one after another</td>
+<td><a href="../../concepts/scenes/">Scenes and movies</a></td>
+</tr>
 </tbody>
 </table>
 <h2 id="running-them">Running them<a class="headerlink" href="#running-them" title="Permanent link">&para;</a></h2>
@@ -1235,6 +1262,15 @@ all be loaded at once:</p>
     --scene layout-basics --preview
 </code></pre></div>
 <p>Scene names are unique across the examples (<code>layout-basics</code>, <code>morph-shapes</code>), so they can be loaded together.</p>
+<h2 id="the-whole-tour">The whole tour<a class="headerlink" href="#the-whole-tour" title="Permanent link">&para;</a></h2>
+<p>The <code>tour</code> example has a <code>movie</code> scene that plays the scenes of the others one after another, which is what
+renders when you give no <code>--scene</code>. Load everything and give it its own script folder:</p>
+<div class="highlight"><pre><span></span><code>build/Release/voxima --plugin-dir build/Release/plugins --script-dir examples/tour/scripts --lang en \
+    --theme "Academic Classic" --preview
+</code></pre></div>
+<p>Music is optional: set <code>VOXIMA_MUSIC</code> to a sound file for some under it. The narrated scenes are left out, since
+they need the speech models; render them on their own with <code>--scene</code> (see the <code>narration</code> example). Some themes'
+fonts lack a few math symbols, which show as magenta boxes and are listed at the end of the render.</p>
 
 
 
