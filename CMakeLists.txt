@@ -237,17 +237,13 @@ if ( NOT MSVC )
 endif()
 target_link_libraries( voxima PUBLIC visuals )
 
-add_executable( tutorial_demo tools/main.cpp demos/tutorial/show_tutorial.cpp )
-target_compile_features( tutorial_demo PUBLIC cxx_std_20 )
-if ( NOT MSVC )
-	target_compile_options( tutorial_demo PUBLIC -fcoroutines )
-endif()
-target_link_libraries( tutorial_demo PUBLIC visuals )
-
 include( cmake/VoximaPlugin.cmake )
 
 # The demo, as a plugin: voxima --plugin build/Release/eases ...
 voxima_add_plugin( eases demos/eases/show_animation.cpp )
+
+# The tutorial video, as a plugin: voxima --plugin build/Release/tutorial ...
+voxima_add_plugin( tutorial demos/tutorial/show_tutorial.cpp )
 
 add_executable( list_font tools/list_font.cpp )
 target_compile_features( list_font PUBLIC cxx_std_20 )

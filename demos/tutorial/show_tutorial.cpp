@@ -1,8 +1,8 @@
 // The tutorial video's scenes, one per chapter/scene in outline.md. With no --scene the "movie" scene
 // renders all of them in order; any one can be rendered on its own:
 //
-//     tutorial_demo --script-dir demos/tutorial --scene what-is-voxima
-//     tutorial_demo --script-dir demos/tutorial --list-scenes
+//     voxima --plugin build/Release/tutorial --script-dir demos/tutorial --scene what-is-voxima
+//     voxima --plugin build/Release/tutorial --script-dir demos/tutorial --list-scenes
 //
 // See outline.md for the chapter/scene breakdown this follows.
 //
@@ -18,6 +18,7 @@
 #include <core/EaseCubic.h>
 #include <core/MorphAnim.h>
 #include <core/Narration.h>
+#include <core/Plugin.h>
 #include <core/Scene.h>
 #include <core/SceneRegistry.h>
 #include <core/Screenplay.h>
@@ -37,6 +38,8 @@
 #include <visuals/WrapText.h>
 
 using namespace std::chrono_literals;
+
+VOXIMA_PLUGIN();
 
 namespace
 {
