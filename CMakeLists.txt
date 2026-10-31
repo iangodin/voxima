@@ -322,6 +322,41 @@ install( PROGRAMS download_fonts.py DESTINATION ${CMAKE_INSTALL_DATADIR}/sonimat
 install( FILES doc/scenes.md doc/script.md doc/themes.md tts.md DESTINATION ${CMAKE_INSTALL_DOCDIR} COMPONENT Sonimation )
 install( DIRECTORY examples/ DESTINATION ${CMAKE_INSTALL_DATADIR}/sonimation/examples COMPONENT Sonimation )
 
+# The licenses: Sonimation's, and those of what it is built with, in share/doc/Sonimation/licenses (see
+# THIRD_PARTY_NOTICES.md)
+install( FILES LICENSE THIRD_PARTY_NOTICES.md DESTINATION ${CMAKE_INSTALL_DOCDIR} COMPONENT Sonimation )
+set( SONIMATION_LICENSES ${CMAKE_INSTALL_DOCDIR}/licenses )
+set( AUDIOCPP_EXTERNAL extern/audio.cpp/external )
+foreach( license
+		"extern/audio.cpp/LICENSE|audio.cpp"
+		"${AUDIOCPP_EXTERNAL}/ggml/LICENSE|audio.cpp/ggml"
+		"${AUDIOCPP_EXTERNAL}/sentencepiece/LICENSE|audio.cpp/sentencepiece"
+		"${AUDIOCPP_EXTERNAL}/sentencepiece/third_party/absl/LICENSE|audio.cpp/sentencepiece/absl"
+		"${AUDIOCPP_EXTERNAL}/sentencepiece/third_party/protobuf-lite/LICENSE|audio.cpp/sentencepiece/protobuf-lite"
+		"${AUDIOCPP_EXTERNAL}/sentencepiece/third_party/darts_clone/LICENSE|audio.cpp/sentencepiece/darts_clone"
+		"${AUDIOCPP_EXTERNAL}/sentencepiece/third_party/esaxx/LICENSE|audio.cpp/sentencepiece/esaxx"
+		"${AUDIOCPP_EXTERNAL}/cJSON/LICENSE|audio.cpp/cJSON"
+		"${AUDIOCPP_EXTERNAL}/cpp-httplib/LICENSE|audio.cpp/cpp-httplib"
+		"${AUDIOCPP_EXTERNAL}/libyaml/License|audio.cpp/libyaml"
+		"extern/tree-sitter-queries/c/LICENSE|tree-sitter-queries/c"
+		"extern/tree-sitter-queries/cpp/LICENSE|tree-sitter-queries/cpp" )
+	string( REPLACE "|" ";" license "${license}" )
+	list( GET license 0 file )
+	list( GET license 1 directory )
+	install( FILES ${file} DESTINATION ${SONIMATION_LICENSES}/${directory} COMPONENT Sonimation )
+endforeach()
+# The Conan packages' own, which the recipe collects next to the toolchain it makes (see conanfile.py)
+if ( CMAKE_TOOLCHAIN_FILE )
+	# (it can be relative to the build directory, as Conan's presets give it)
+	cmake_path( ABSOLUTE_PATH CMAKE_TOOLCHAIN_FILE BASE_DIRECTORY ${CMAKE_BINARY_DIR} OUTPUT_VARIABLE SONIMATION_TOOLCHAIN )
+	cmake_path( GET SONIMATION_TOOLCHAIN PARENT_PATH SONIMATION_GENERATORS_DIR )
+endif()
+if ( SONIMATION_GENERATORS_DIR AND IS_DIRECTORY "${SONIMATION_GENERATORS_DIR}/licenses" )
+	install( DIRECTORY "${SONIMATION_GENERATORS_DIR}/licenses/" DESTINATION ${SONIMATION_LICENSES}/conan COMPONENT Sonimation )
+else()
+	message( WARNING "The Conan packages' licenses were not found (run make config again): they will not be installed" )
+endif()
+
 # The compiler's runtime, for a machine that does not have it (on Windows: MSVC's, and the OpenMP that audio.cpp's
 # TTS uses). InstallRequiredSystemLibraries does not know the newest Visual Studio (18, toolset v145) yet, so with
 # MSVC the redistributable DLLs are found from the compiler itself, in the newest of its VC/Redist/MSVC/<version>.
@@ -357,6 +392,9 @@ set( CPACK_PACKAGE_VENDOR "Sonimation" )
 set( CPACK_PACKAGE_CONTACT "Ian Godin" )
 set( CPACK_PACKAGE_DESCRIPTION_SUMMARY "Educational videos from C++ scenes: vector graphics, narration and subtitles in many languages" )
 set( CPACK_PACKAGE_FILE_NAME "sonimation-${PROJECT_VERSION}-${SONIMATION_SYSTEM}-${SONIMATION_COMPILER}" )
+# For the installers that show it (some want it to be .txt)
+configure_file( LICENSE ${CMAKE_CURRENT_BINARY_DIR}/LICENSE.txt COPYONLY )
+set( CPACK_RESOURCE_FILE_LICENSE ${CMAKE_CURRENT_BINARY_DIR}/LICENSE.txt )
 if ( NOT CPACK_GENERATOR )
 	if ( WIN32 )
 		set( CPACK_GENERATOR ZIP )

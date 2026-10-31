@@ -96,7 +96,8 @@ installs `sonimation`, its core library and headers, and the CMake package a plu
 `find_package( Sonimation )` (`conan create .` makes a Conan package of the same). `make package` makes a
 package of it to hand out, in `build/packages`: a `.zip` on Windows (with the MSVC runtime in it), a `.tar.gz`
 and a `.deb` elsewhere (`-DCPACK_GENERATOR=...` for others). Its name says the compiler it was built with, which a
-plugin built against it must use too. It holds these documents and `examples/` (in `share`). `examples/` is such a
+plugin built against it must use too. It holds these documents and `examples/` (in `share`), and the licenses: Sonimation's (MIT), and
+those of everything it is built with (`share/doc/Sonimation/licenses`, see `THIRD_PARTY_NOTICES.md`). `examples/` is such a
 project, with how to build and run it. The fonts are not installed (they are big): `download_fonts.py`
 (installed in `share/sonimation`) fetches them to a directory given, and without `--font-dir` sonimation looks in
 `assets/fonts`, then `$SONIMATION_FONTS`, then the installed `share/sonimation/fonts`. The TTS models are not

@@ -3,17 +3,19 @@ import os
 
 from conan import ConanFile
 from conan.tools.cmake import CMake, CMakeToolchain, CMakeDeps, cmake_layout
+from conan.tools.files import copy
 
 # For working on Sonimation (make config: conan install .), and for packaging it (conan create .), so others can
 # build plugins of scenes against it (see examples/).
 class SonimationConan(ConanFile):
   name = "sonimation"
   version = "0.1.0" # as in CMakeLists.txt's project()
+  license = "MIT"
   settings = "os", "compiler", "build_type", "arch"
   generators = "CMakeDeps"
   exports_sources = (
     "CMakeLists.txt", "cmake/*", "src/*", "extern/*", "themes/*", "tools/*", "tests/*", "demos/*",
-    "download_fonts.py" )
+    "download_fonts.py", "LICENSE", "THIRD_PARTY_NOTICES.md", "doc/*", "tts.md", "examples/*" )
 
   def requirements(self):
     self.test_requires("catch2/3.13.0")
@@ -43,6 +45,14 @@ class SonimationConan(ConanFile):
     tc.generator = "Ninja"
     tc.generate()
 
+    # The licenses of the libraries it is built with, as their packages ship them, for CMake to install with it
+    # (licenses/conan/<package>/, see THIRD_PARTY_NOTICES.md). Not the ones only for tests, or for building.
+    for require, dependency in self.dependencies.host.items():
+      if require.test:
+        continue
+      copy(self, "*", os.path.join(dependency.package_folder, "licenses"),
+           os.path.join(self.generators_folder, "licenses", dependency.ref.name))
+
   def build(self):
     cmake = CMake(self)
     cmake.configure()
@@ -52,6 +62,7 @@ class SonimationConan(ConanFile):
     # Only Sonimation's own: audio.cpp has install rules of its own (see CMakeLists.txt)
     cmake = CMake(self)
     cmake.install(component="Sonimation")
+    copy(self, "LICENSE", self.source_folder, os.path.join(self.package_folder, "licenses"))
 
   def package_info(self):
     # Found with its own config (find_package( Sonimation ) gives Sonimation::core and sonimation_add_plugin),
