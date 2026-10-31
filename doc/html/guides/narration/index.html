@@ -1254,11 +1254,14 @@ are made along with it.</p>
 <p>A narrator is a name in the script's <code>voices</code> section, pointing at a short <strong>reference clip</strong>; the speech is made
 in that voice.</p>
 <div class="highlight"><pre><span></span><code>voices::
-  narrator: "chatterbox/en-alba-mackenna-casual.wav"
+  narrator: "chatterbox/en-voice-zero-robert-middleton.wav"
 </code></pre></div>
 <p>The path is relative to <code>--tts-voice-dir</code> (default <code>voices</code>). Give each language its own clip, in a voice of that
 language, in that language's file. Use clips you have the right to use, and credit them as their licenses ask
 for (a voice's source and license should be kept next to it).</p>
+<p>The clips in Voxima's <code>voices/chatterbox/</code> are all CC0 or public domain (LibriVox recordings, the Kyutai voice
+donations and Voice-Zero), so no credit is needed, though crediting the readers is kind. The source of each is
+in <code>voices/chatterbox/SOURCES.md</code>.</p>
 <p>Chatterbox speaks many languages (English, French, German, Spanish and Polish among them). Chinese and
 Japanese text can be shown but <strong>cannot be narrated</strong>. Subtitle timing (the optional aligner model) is not
 available for every language either; a language without it still gets subtitles, timed by distributing the

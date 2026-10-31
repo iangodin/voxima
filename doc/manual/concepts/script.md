@@ -16,7 +16,7 @@ meta::
   inherit: null
 
 voices::
-  narrator: "chatterbox/en-alba-mackenna-casual.wav"
+  narrator: "chatterbox/en-voice-zero-robert-middleton.wav"
 
 labels::
   title: "Voxima"

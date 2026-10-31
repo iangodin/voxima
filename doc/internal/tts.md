@@ -136,11 +136,11 @@ per language/voice we want. Distinguish two consent stories:
 |---|---|---|---|---|
 | en | [Voice-Zero](https://github.com/OwenTyme/voice-zero) (LibriVox and Archive.org narrators: Robert Middleton, Douglas Harlon, Bev J. Stevens, Emily Cripps) and `kyutai/tts-voices` `voice-donations/Midlands.wav` | CC0 / public domain | Repurposed (narration recordings); Midlands is a purpose-built donation | The English narrators since 2026-10-30, credited per voice in `voices/chatterbox/SOURCES.md`. Default: `en-voice-zero-robert-middleton.wav`. |
 | fr, es, de, pl | LibriVox readers (Pauline Latournerie, Mario Pineda, Friedrich, Gosia Leksandrówna, Piotr Nater) and `kyutai/tts-voices` `voice-donations/SSA150803.wav` (fr) | Public domain / CC0 | Repurposed (audiobook narration); SSA150803 is a purpose-built donation | The narrators since 2026-10-30, credited per voice in `voices/chatterbox/SOURCES.md`. Defaults: `fr-kyutai-donation-ssa150803.wav`, `de-librivox-friedrich.wav`, `pl-librivox-gosia-leksandrowna.wav`; Spanish also keeps the CML-TTS clip below. |
-| en (earlier) | [`kyutai/tts-voices`](https://huggingface.co/kyutai/tts-voices), `alba-mackenna/casual.wav` | **CC BY 4.0** (corrected 2026-09-23 — see below) | Purpose-built voice acting, attribution required | Checked in: `voices/chatterbox/en-alba-mackenna-casual.wav`, 48kHz, ~10s. |
+| en (earlier) | [`kyutai/tts-voices`](https://huggingface.co/kyutai/tts-voices), `alba-mackenna/casual.wav` | **CC BY 4.0** (corrected 2026-09-23 — see below) | Purpose-built voice acting, attribution required | Removed 2026-10-31 (CC BY needs credit; was `voices/chatterbox/en-alba-mackenna-casual.wav`), 48kHz, ~10s. |
 | fr (earlier) | `kyutai/tts-voices`, `cml-tts/fr/` subset | CC BY 4.0 | Repurposed (audiobook narration) | Removed 2026-10-30 (was `voices/chatterbox/fr-cml-tts-10087_11650_000028-0002.wav`), 24kHz, 7.24s. |
 | de (earlier) | [`Thorsten-Voice/TV-44kHz-Full`](https://huggingface.co/datasets/Thorsten-Voice/TV-44kHz-Full) (canonical HF mirror of [thorstenMueller/Thorsten-Voice](https://github.com/thorstenMueller/Thorsten-Voice)) | **CC0** (confirmed against both the HF card and the author's own GitHub README) | Purpose-built, explicit | Removed 2026-10-30 (was `voices/chatterbox/de-thorsten-voice-short.wav`), 24kHz, 5.48s. A separate third-party HF mirror, `Thorsten-Voice/TV-24kHz-Neutral`, mislabels the same recordings CC-BY-4.0 — don't use that one as the license source. Clip-length sensitivity tested (5.48s vs 13.29s from the same speaker/subset) — both produce valid, comparably-sized output; no functional break from a longer reference clip. |
 | pl (earlier) | [`freds0/cml_tts_dataset_polish`](https://huggingface.co/datasets/freds0/cml_tts_dataset_polish) (CML-TTS) | CC BY 4.0 | Repurposed | Removed 2026-10-30 (was `voices/chatterbox/pl-cml-tts-11295_11059_000062.wav`), 24kHz, 10.88s. |
-| es | [`freds0/cml_tts_dataset_spanish`](https://huggingface.co/datasets/freds0/cml_tts_dataset_spanish) (CML-TTS) | CC BY 4.0 | Repurposed | Checked in: `voices/chatterbox/es-cml-tts-3719_1378_000081.wav`, 24kHz, 10.91s. |
+| es | [`freds0/cml_tts_dataset_spanish`](https://huggingface.co/datasets/freds0/cml_tts_dataset_spanish) (CML-TTS) | CC BY 4.0 | Repurposed | Removed 2026-10-31 (CC BY needs credit; was `voices/chatterbox/es-cml-tts-3719_1378_000081.wav`), 24kHz, 10.91s. |
 | zh | **none — accepted gap, see below** | — | — | Not a licensing question: the model itself doesn't support Chinese through this integration (see "Phase 1 validation spike: complete"). |
 
 **License correction (2026-09-23):** the `en` clip was originally logged as CC0. It
@@ -238,7 +238,7 @@ purely "does the engine work end to end on our toolchain."
 ```
 make config && make
 ./build/Release/tts_poc <text_file> models/Chatterbox-GGUF/chatterbox-q8_0.gguf \
-    voices/chatterbox/en-alba-mackenna-casual.wav <out.wav>
+    voices/chatterbox/en-voice-zero-robert-middleton.wav <out.wav>
 ```
 
 Produced 8-9s of audible English speech (peak ~27000/32768, not silent) from a
@@ -269,7 +269,7 @@ What this validated:
   `audio-cpp/audio.cpp-gguf` on HF Hub via `huggingface_hub.hf_hub_download`
   (no `model_manager_v2.py`/native manager needed for a single-file fetch).
   Live under `models/` (gitignored, not committed).
-- Reference voice clip: `voices/chatterbox/en-alba-mackenna-casual.wav`
+- Reference voice clip: `voices/chatterbox/en-voice-zero-robert-middleton.wav`
   (`kyutai/tts-voices`, CC0, purpose-built donation) - **checked into a new
   top-level `voices/` directory**, not `assets/` (the existing `assets/` is
   entirely gitignored project-wide, for downloaded/generated content like
@@ -331,7 +331,7 @@ sections above):
   real audio, not silence or a crash."
 - **Speaker-identity consistency: 3/3 runs completed normally.** Three
   different English sentences (short/medium/long) synthesized from the same
-  `en-alba-mackenna-casual.wav` reference all produced plausible,
+  `en-voice-zero-robert-middleton.wav` reference all produced plausible,
   duration-proportional audio. This only checks "the pipeline doesn't
   break/degrade across repeated use of one reference clip" — actual
   perceptual speaker-identity consistency needs a human listener and is not

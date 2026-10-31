@@ -98,16 +98,28 @@ drawn.
 ## Speech models and voices (only for narration)
 
 Narration is made by a local text-to-speech model, which runs on your own machine: nothing is sent anywhere. The
-reference voices are in the repository, in `voices/`. The models are large and are not:
+reference voices are in the repository, in `voices/`. The models are large (3.2 GB together) and are not; download
+them from the checkout:
+
+```
+python3 download_models.py
+```
+
+They go to `models/` (which git does not track), in the folders the defaults below expect. The script skips
+files you already have and resumes an interrupted download. `--all` also fetches the larger F16 versions. They
+are Q8_0 GGUF conversions in the Hugging Face repository
+[audio-cpp/audio.cpp-gguf](https://huggingface.co/audio-cpp/audio.cpp-gguf), under the licenses of the original
+models (Chatterbox: MIT; Qwen3-ForcedAligner: Apache-2.0):
 
 | File | Used for | Default path (relative to where you run `voxima`) | Option |
 |---|---|---|---|
-| `chatterbox-q8_0.gguf` | Speech | `models/Chatterbox-GGUF/chatterbox-q8_0.gguf` | `--tts-model` |
-| `qwen3-forced-aligner-0.6b-q8_0.gguf` | Timing of the subtitles to the words (optional) | `models/Qwen3-ForcedAligner-0.6B-GGUF/qwen3-forced-aligner-0.6b-q8_0.gguf` | `--aligner-model` |
+| [`chatterbox-q8_0.gguf`](https://huggingface.co/audio-cpp/audio.cpp-gguf/tree/main/Chatterbox-GGUF) | Speech | `models/Chatterbox-GGUF/chatterbox-q8_0.gguf` | `--tts-model` |
+| [`qwen3-forced-aligner-0.6b-q8_0.gguf`](https://huggingface.co/audio-cpp/audio.cpp-gguf/tree/main/Qwen3-ForcedAligner-0.6B-GGUF) | Timing of the subtitles to the words (optional) | `models/Qwen3-ForcedAligner-0.6B-GGUF/qwen3-forced-aligner-0.6b-q8_0.gguf` | `--aligner-model` |
 
-Put them there (the `models/` folder is not tracked by git). Each narrator speaks in the voice of a short
+To download them yourself, take the two files from that repository (`Chatterbox-GGUF/` and
+`Qwen3-ForcedAligner-0.6B-GGUF/`) and put them at those paths. Each narrator speaks in the voice of a short
 **reference clip** (a few seconds of a real voice), named in your script's `voices` section and looked for under
-`--tts-voice-dir` (default `voices`). See [Narration](../guides/narration.md#voices). A video with no narration
+`--tts-voice-dir` (default `voices`). See [Narration](../guides/narration.md#voices); the clips that come with Voxima, and their licenses, are listed there too. A video with no narration
 needs none of these.
 
 You can use a GPU for the speech with `--tts-backend cuda` (the default, `best`, picks one that works), if CUDA

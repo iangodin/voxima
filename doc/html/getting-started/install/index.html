@@ -1389,7 +1389,15 @@ CMake. For the second, install the build somewhere:</p>
 drawn.</p>
 <h2 id="speech-models-and-voices-only-for-narration">Speech models and voices (only for narration)<a class="headerlink" href="#speech-models-and-voices-only-for-narration" title="Permanent link">&para;</a></h2>
 <p>Narration is made by a local text-to-speech model, which runs on your own machine: nothing is sent anywhere. The
-reference voices are in the repository, in <code>voices/</code>. The models are large and are not:</p>
+reference voices are in the repository, in <code>voices/</code>. The models are large (3.2 GB together) and are not; download
+them from the checkout:</p>
+<div class="highlight"><pre><span></span><code>python3 download_models.py
+</code></pre></div>
+<p>They go to <code>models/</code> (which git does not track), in the folders the defaults below expect. The script skips
+files you already have and resumes an interrupted download. <code>--all</code> also fetches the larger F16 versions. They
+are Q8_0 GGUF conversions in the Hugging Face repository
+<a href="https://huggingface.co/audio-cpp/audio.cpp-gguf">audio-cpp/audio.cpp-gguf</a>, under the licenses of the original
+models (Chatterbox: MIT; Qwen3-ForcedAligner: Apache-2.0):</p>
 <table>
 <thead>
 <tr>
@@ -1401,22 +1409,23 @@ reference voices are in the repository, in <code>voices/</code>. The models are 
 </thead>
 <tbody>
 <tr>
-<td><code>chatterbox-q8_0.gguf</code></td>
+<td><a href="https://huggingface.co/audio-cpp/audio.cpp-gguf/tree/main/Chatterbox-GGUF"><code>chatterbox-q8_0.gguf</code></a></td>
 <td>Speech</td>
 <td><code>models/Chatterbox-GGUF/chatterbox-q8_0.gguf</code></td>
 <td><code>--tts-model</code></td>
 </tr>
 <tr>
-<td><code>qwen3-forced-aligner-0.6b-q8_0.gguf</code></td>
+<td><a href="https://huggingface.co/audio-cpp/audio.cpp-gguf/tree/main/Qwen3-ForcedAligner-0.6B-GGUF"><code>qwen3-forced-aligner-0.6b-q8_0.gguf</code></a></td>
 <td>Timing of the subtitles to the words (optional)</td>
 <td><code>models/Qwen3-ForcedAligner-0.6B-GGUF/qwen3-forced-aligner-0.6b-q8_0.gguf</code></td>
 <td><code>--aligner-model</code></td>
 </tr>
 </tbody>
 </table>
-<p>Put them there (the <code>models/</code> folder is not tracked by git). Each narrator speaks in the voice of a short
+<p>To download them yourself, take the two files from that repository (<code>Chatterbox-GGUF/</code> and
+<code>Qwen3-ForcedAligner-0.6B-GGUF/</code>) and put them at those paths. Each narrator speaks in the voice of a short
 <strong>reference clip</strong> (a few seconds of a real voice), named in your script's <code>voices</code> section and looked for under
-<code>--tts-voice-dir</code> (default <code>voices</code>). See <a href="../../guides/narration/#voices">Narration</a>. A video with no narration
+<code>--tts-voice-dir</code> (default <code>voices</code>). See <a href="../../guides/narration/#voices">Narration</a>; the clips that come with Voxima, and their licenses, are listed there too. A video with no narration
 needs none of these.</p>
 <p>You can use a GPU for the speech with <code>--tts-backend cuda</code> (the default, <code>best</code>, picks one that works), if CUDA
 was found when Voxima was configured. With <code>cpu</code>, <code>--tts-threads</code> sets how many threads it uses.</p>

@@ -20,7 +20,7 @@ own licenses. In an installed or packaged Voxima, the full texts are in `share/d
 audio.cpp also carries some model weights and test recordings (in `extern/audio.cpp/assets`), which keep the
 licenses of their original releases: see `extern/audio.cpp/docs/model_licenses.md`. They are not installed.
 
-The reference voice clips in `voices/` are CC BY 4.0 or CC0, with their sources and attribution in
+The reference voice clips in `voices/` are CC0 or public domain, with their sources and attribution in
 `voices/chatterbox/SOURCES.md`. They are not installed.
 
 ## Libraries from Conan

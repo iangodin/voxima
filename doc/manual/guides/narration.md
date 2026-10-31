@@ -11,12 +11,16 @@ in that voice.
 
 ```huml
 voices::
-  narrator: "chatterbox/en-alba-mackenna-casual.wav"
+  narrator: "chatterbox/en-voice-zero-robert-middleton.wav"
 ```
 
 The path is relative to `--tts-voice-dir` (default `voices`). Give each language its own clip, in a voice of that
 language, in that language's file. Use clips you have the right to use, and credit them as their licenses ask
 for (a voice's source and license should be kept next to it).
+
+The clips in Voxima's `voices/chatterbox/` are all CC0 or public domain (LibriVox recordings, the Kyutai voice
+donations and Voice-Zero), so no credit is needed, though crediting the readers is kind. The source of each is
+in `voices/chatterbox/SOURCES.md`.
 
 Chatterbox speaks many languages (English, French, German, Spanish and Polish among them). Chinese and
 Japanese text can be shown but **cannot be narrated**. Subtitle timing (the optional aligner model) is not

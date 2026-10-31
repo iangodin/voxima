@@ -3,6 +3,18 @@
 Short speaker reference clips for Chatterbox voice cloning (see `tts.md`). Each
 entry names the source, license, and consent story per the table in `tts.md`.
 
+## Licenses at a glance
+
+Checked against the upstream sources on 2026-10-31. Every clip here is CC0 or public domain, so none needs credit
+(each is credited below anyway). Clips that need credit (CC BY) are deliberately not kept here, so a video
+cannot use one by accident.
+
+| Clip | License |
+|---|---|
+| `en-voice-zero-*` (4 clips) | CC0 (Voice-Zero, from public-domain recordings) |
+| `en-kyutai-donation-midlands.wav`, `fr-kyutai-donation-ssa150803.wav` | CC0 (`kyutai/tts-voices` `voice-donations/`) |
+| `fr-`, `es-`, `de-`, `pl-librivox-*` (5 clips) | Public domain (LibriVox's policy) |
+
 ## English narrators
 
 Five voices chosen for documentary narration (2026-10-30). Each is public
@@ -96,7 +108,7 @@ none requires it.
 - Source: [LibriVox](https://librivox.org/cuentos-de-vacaciones-by-santiago-ramon-y-cajal/),
   [Archive.org](https://archive.org/details/cuentosdevacaciones_2408_librivox)
   `cuentosvacaciones_02_ramonycajal`, from 883.7s.
-- 10.6s. The other Spanish narrator is `es-cml-tts-3719_1378_000081.wav` below.
+- 10.6s. The only Spanish narrator.
 
 ### de-librivox-friedrich.wav
 
@@ -126,38 +138,12 @@ none requires it.
   `wilkpsyiludzie_03_dygasinski`, from 372.9s.
 - 10.0s.
 
-## Earlier reference clips
+## Removed clips
 
-The clips below came first. `es-cml-tts-3719_1378_000081.wav` is still one of
-the Spanish narrators; the English clip is kept for comparison. The earlier
-French, German and Polish clips (CML-TTS speakers 10087 and 11295, and
-Thorsten Müller) were removed on 2026-10-30.
-
-### en-alba-mackenna-casual.wav
-
-- Source: [`kyutai/tts-voices`](https://huggingface.co/kyutai/tts-voices),
-  `alba-mackenna/casual.wav`.
-- License: **CC BY 4.0** (corrected 2026-09-23 — originally logged here as CC0,
-  which was wrong; the repo's own README states the `alba-mackenna/` collection
-  is "Released under the CC BY 4.0 licence", not CC0 like `voice-donations/`).
-  Attribution: Alba MacKenna, via kyutai/tts-voices.
-- Consent story: purpose-built voice-acting for the dataset, but under CC BY
-  4.0 rather than the strongest (CC0) consent story — downgraded from "purpose-
-  built donation, explicit" to "purpose-built, attribution required" in tts.md.
-- 48kHz mono, ~10s. Used as the English proof-of-concept reference clip for
-  `tools/tts_poc.cpp`.
-
-### es-cml-tts-3719_1378_000081.wav
-
-- Source: [`freds0/cml_tts_dataset_spanish`](https://huggingface.co/datasets/freds0/cml_tts_dataset_spanish)
-  (HF parquet mirror of the [CML-TTS](https://arxiv.org/html/2306.10097)
-  Spanish subset), `dev/audio/3719/1378/3719_1378_000081.flac`, converted to
-  24kHz mono WAV.
-- License: CC BY 4.0 (per CML-TTS's own dataset license; the HF mirror's own
-  card doesn't carry a license tag, so this is inherited from upstream
-  CML-TTS/OpenSLR-146, not re-verified against the mirror itself).
-- Consent story: repurposed (LibriVox-style audiobook narration).
-- 24kHz mono, 10.91s.
+`en-alba-mackenna-casual.wav` (CC BY 4.0, `kyutai/tts-voices` `alba-mackenna/`) and
+`es-cml-tts-3719_1378_000081.wav` (CC BY 4.0, CML-TTS) were removed on 2026-10-31, because CC BY needs credit and
+a clip could be used without it. The earlier French, German and Polish clips (CML-TTS speakers 10087 and 11295,
+and Thorsten Müller) were removed on 2026-10-30.
 
 ## Chinese (zh) — not sourced
 

@@ -318,7 +318,7 @@ install( FILES
 
 # The fonts are not installed (they are big): download_fonts.py <prefix>/share/voxima/fonts gets them, and
 # voxima looks there
-install( PROGRAMS download_fonts.py DESTINATION ${CMAKE_INSTALL_DATADIR}/voxima COMPONENT Voxima )
+install( PROGRAMS download_fonts.py download_models.py DESTINATION ${CMAKE_INSTALL_DATADIR}/voxima COMPONENT Voxima )
 
 # How to use it, and a plugin project to start from
 install( DIRECTORY doc/html/ DESTINATION ${CMAKE_INSTALL_DOCDIR}/manual COMPONENT Voxima )

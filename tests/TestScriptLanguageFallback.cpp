@@ -24,7 +24,7 @@ struct ScriptDirFixture
 		std::filesystem::create_directories( dir );
 
 		std::ofstream en( dir / "en.huml" );
-		en << "meta::\n  lang: \"en\"\n\nvoices::\n  narrator: \"en-alba-mackenna-casual.wav\"\n";
+		en << "meta::\n  lang: \"en\"\n\nvoices::\n  narrator: \"en-voice-zero-robert-middleton.wav\"\n";
 	}
 
 	~ScriptDirFixture()
@@ -53,7 +53,7 @@ TEST_CASE( "Script::load falls back to the primary subtag when no file exists fo
 		// Content came from en.huml's fallback, but stays keyed on the tag
 		// that was actually requested, not silently rewritten to "en".
 		const auto &voice = script.fetch( "en-CA", "voices", "narrator" );
-		CHECK( voice.as_string() == "en-alba-mackenna-casual.wav" );
+		CHECK( voice.as_string() == "en-voice-zero-robert-middleton.wav" );
 	}
 
 	SECTION( "a tag with no fallback candidate at all fails to load" )
@@ -83,7 +83,7 @@ TEST_CASE( "Script::select_languages picks which loaded languages are in use", "
 		CHECK( script.languages() == std::vector<std::string>{ "fr" } );
 		CHECK( script.master_language() == "fr" );
 		// the text is still there for the ones not in use
-		CHECK( script.fetch( "en", "voices", "narrator" ).as_string() == "en-alba-mackenna-casual.wav" );
+		CHECK( script.fetch( "en", "voices", "narrator" ).as_string() == "en-voice-zero-robert-middleton.wav" );
 	}
 
 	SECTION( "and back to all of them, in any order" )
