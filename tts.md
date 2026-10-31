@@ -94,14 +94,14 @@ needing to touch ggml/CUDA headers directly.
 
 1. **Direct C ABI, linked in-process.** `TTSClient` calls `audiocpp.h` functions
    directly — no thread, no socket, no process lifecycle. Fastest and simplest at the
-   call site. Cost: pulls ggml (and optionally CUDA) into canim's own CMake build as a
+   call site. Cost: pulls ggml (and optionally CUDA) into voxima's own CMake build as a
    real dependency — `make config`/`make` would build a GPU-capable inference engine
    even for someone only touching math typesetting. Mitigate by making it an
    opt-in/off-by-default CMake component, so most contributors don't pay the build
    cost, and only render machines that need real narration enable it.
 2. **In-process background thread hosting `audiocpp_server`**, talked to over
    localhost HTTP. Keeps the ggml/CUDA build dependency contained to one module/thread
-   rather than every translation unit; canim still owns the process lifecycle (no
+   rather than every translation unit; voxima still owns the process lifecycle (no
    external subprocess to babysit). Pays HTTP/JSON overhead per call (likely trivial
    next to inference time) and keeps a second protocol alive instead of retiring the
    client/server split entirely.
@@ -209,7 +209,7 @@ reference-clip path per named voice.
 
 - Toolchain: CMake >= 3.20, GCC 13+ (Linux) / MSVC + VS2022 Build Tools + Ninja
   (Windows) / Xcode CLT (macOS). C11 / C++17 internally (audio.cpp's own standard;
-  canim itself stays C++20).
+  voxima itself stays C++20).
 - Required system libs: POSIX Threads. Optional: OpenMP (CPU parallelism), Git (build
   metadata), Python3 (test validation only).
 - CPU-only config flags: `ENGINE_ENABLE_CUDA=OFF -DENGINE_ENABLE_HIP=OFF
@@ -257,7 +257,7 @@ What this validated:
   Chatterbox family, only for `chatterbox_turbo`) -> `request_create` +
   `set_text` + `set_voice_audio` -> `session_run` -> `result_audio`.
 - CPU-only build config (`ENGINE_ENABLE_{CUDA,HIP,VULKAN,METAL}=OFF`,
-  `AUDIOCPP_BUILD_C_API=ON`) builds cleanly once canim's own
+  `AUDIOCPP_BUILD_C_API=ON`) builds cleanly once voxima's own
   `-Werror -Wall -Wextra` is kept from leaking into the vendored subdirectory
   (directory-scoped `add_compile_options` in CMake applies to subdirectories
   added afterward - fixed by moving `add_subdirectory(extern/audio.cpp)`

@@ -17,7 +17,7 @@ tsan:
 	@cmake -S . -B build/Tsan -G Ninja -DCMAKE_BUILD_TYPE=Debug \
 		-DCMAKE_TOOLCHAIN_FILE=$(CURDIR)/build/Debug/generators/conan_toolchain.cmake \
 		-DCMAKE_CXX_FLAGS=-fsanitize=thread -DCMAKE_EXE_LINKER_FLAGS=-fsanitize=thread \
-		-DCANIM_TTS_CUDA=OFF
+		-DVOXIMA_TTS_CUDA=OFF
 	@cmake --build build/Tsan --target voxima
 
 # Install the Release build: make install PREFIX=<dir> (see examples/ for a plugin project built against it)

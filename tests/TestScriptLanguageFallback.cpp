@@ -20,7 +20,7 @@ struct ScriptDirFixture
 	ScriptDirFixture()
 	{
 		dir = std::filesystem::temp_directory_path() /
-			( "canim-script-test-" + std::to_string( reinterpret_cast<uintptr_t>( this ) ) );
+			( "voxima-script-test-" + std::to_string( reinterpret_cast<uintptr_t>( this ) ) );
 		std::filesystem::create_directories( dir );
 
 		std::ofstream en( dir / "en.huml" );
