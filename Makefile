@@ -30,8 +30,12 @@ package: all
 
 # The developer manual (doc/manual, with mkdocs-material, see doc/requirements.txt) as a static site in doc/html,
 # which is committed, and installed. Run it after changing the manual, and commit the result.
+# MKDOCS can be a virtualenv's (python3 -m venv .venv; .venv/bin/pip install -r doc/requirements.txt; make docs MKDOCS=.venv/bin/mkdocs):
+# the pinned versions give the doc/html that CI checks for, a system's mkdocs-material may not
+MKDOCS ?= mkdocs
+
 docs:
-	@mkdocs build --strict
+	@$(MKDOCS) build --strict
 
 test: debug
 	@ctest --preset conan-debug --output-on-failure
@@ -40,7 +44,10 @@ conan:
 	@conan install . --build=missing -s build_type=Debug
 	@conan install . --build=missing -s build_type=Release
 
+# CMAKE_ARGS are for CMake, e.g. make config CMAKE_ARGS=-DVOXIMA_TTS_CUDA=ON for the GPU speech backend
+CMAKE_ARGS ?=
+
 config: conan
-	@cmake --preset conan-release -G "Ninja"
-	@cmake --preset conan-debug -G "Ninja"
+	@cmake --preset conan-release -G "Ninja" $(CMAKE_ARGS)
+	@cmake --preset conan-debug -G "Ninja" $(CMAKE_ARGS)
 

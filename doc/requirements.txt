@@ -1,2 +1,5 @@
-mkdocs>=1.6
-mkdocs-material>=9.5
+# Pinned, so that make docs gives the same doc/html everywhere (CI checks that the committed one is up to date)
+mkdocs==1.6.1
+mkdocs-material==9.8.0
+pymdown-extensions==12.3
+Markdown==3.11.2

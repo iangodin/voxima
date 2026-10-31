@@ -45,6 +45,12 @@ make debug
 ```
 
 
+## Versioning
+
+The version is written once, in `project( Voxima VERSION x.y.z )` in `CMakeLists.txt` (numbers only). `conanfile.py` reads
+it from there, and it becomes `core/Version.h` and the plugin ABI string. Do not write it anywhere else; examples use
+`find_package( Voxima REQUIRED )`. A release is a commit that bumps it, tagged `vX.Y.Z` (or `vX.Y.Z-alpha.N`).
+
 ## Examples
 
 `examples/<name>/` are plugin projects (see `examples/CMakeLists.txt`): `make` builds them into `build/Release/plugins`
@@ -54,8 +60,9 @@ the manual is code that is built. Keep scene names unique across examples.
 
 ## Documentation
 
-- `doc/manual/`: the developer manual (for people making videos), as linked Markdown. `make docs` builds it with
-  mkdocs-material (`pip install -r doc/requirements.txt`) into `doc/html/`, which is committed and installed.
-  Rebuild and commit it after changing the manual. The manual is written for people making videos with a source build of Voxima (installed with `make install`), not for
-  people working on Voxima itself.
+- `doc/manual/`: the developer manual (for people making videos), as linked Markdown, for people making videos with a
+  source build of Voxima (installed with `make install`), not for people working on Voxima itself. `make docs` builds it
+  with mkdocs-material into `doc/html/`, which is committed and installed: rebuild and commit it after changing the manual.
+  Use a virtualenv with the pinned versions (`python3 -m venv .venv; .venv/bin/pip install -r doc/requirements.txt;
+  make docs MKDOCS=.venv/bin/mkdocs`): other versions give different HTML, which the CI docs job rejects.
 - `doc/internal/`: engineering and planning notes. Not installed.
