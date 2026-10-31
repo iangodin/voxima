@@ -362,6 +362,34 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting-started/examples/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    The examples
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -1184,6 +1212,7 @@
 <p>A <strong>morph</strong> turns one visual into another: a circle into a square, a letter into a different letter, a formula
 into the next step of its derivation, a sentence into an edited sentence. Both visuals are flattened to
 outlines, their parts are paired up and cut to match, and the shape is blended from one to the other.</p>
+<p>The code on this page is from the <code>morphing</code> and <code>narration</code> examples (<code>examples/morphing</code>, <code>examples/narration</code>), which are built with Voxima.</p>
 <div class="highlight"><pre><span></span><code><span class="k">auto</span><span class="w"> </span><span class="n">square</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">make_unique</span><span class="o">&lt;</span><span class="n">Rectangle</span><span class="o">&gt;</span><span class="p">(</span><span class="w"> </span><span class="mf">0.6F</span><span class="p">,</span><span class="w"> </span><span class="mf">0.6F</span><span class="p">,</span><span class="w"> </span><span class="n">theme</span><span class="p">.</span><span class="n">palette</span><span class="p">().</span><span class="n">green</span><span class="w"> </span><span class="p">);</span>
 <span class="n">square</span><span class="o">-&gt;</span><span class="n">position</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">circle</span><span class="p">.</span><span class="n">position</span><span class="p">;</span>
 <span class="k">co_await</span><span class="w"> </span><span class="n">morph</span><span class="p">(</span><span class="w"> </span><span class="n">stage</span><span class="p">,</span><span class="w"> </span><span class="n">circle</span><span class="p">,</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">move</span><span class="p">(</span><span class="w"> </span><span class="n">square</span><span class="w"> </span><span class="p">),</span><span class="w"> </span><span class="mf">1.5</span><span class="n">s</span><span class="p">,</span><span class="w"> </span><span class="n">ease_cubic_in_out</span><span class="w"> </span><span class="p">);</span>
@@ -1210,13 +1239,14 @@ outlines, their parts are paired up and cut to match, and the shape is blended f
 <p>A leaf with no partner fades out or in. A pair that is the same shape only moved, turned or scaled (the head of
 an arrow that turns) is carried there whole.</p>
 <p>So for a derivation, <strong>tag the parts that should be followed</strong> from one step to the next:</p>
-<div class="highlight"><pre><span></span><code><span class="k">using</span><span class="w"> </span><span class="k">namespace</span><span class="w"> </span><span class="nn">math</span><span class="p">;</span>
-<span class="k">const</span><span class="w"> </span><span class="n">Expr</span><span class="w"> </span><span class="n">a</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">tag</span><span class="p">(</span><span class="w"> </span><span class="s">"a"</span><span class="p">,</span><span class="w"> </span><span class="n">text</span><span class="p">(</span><span class="w"> </span><span class="s">"a"</span><span class="w"> </span><span class="p">)</span><span class="w"> </span><span class="p">);</span>
+<div class="highlight"><pre><span></span><code><span class="k">const</span><span class="w"> </span><span class="n">Expr</span><span class="w"> </span><span class="n">a</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">tag</span><span class="p">(</span><span class="w"> </span><span class="s">"a"</span><span class="p">,</span><span class="w"> </span><span class="n">text</span><span class="p">(</span><span class="w"> </span><span class="s">"a"</span><span class="w"> </span><span class="p">)</span><span class="w"> </span><span class="p">);</span>
 <span class="k">const</span><span class="w"> </span><span class="n">Expr</span><span class="w"> </span><span class="n">b</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">tag</span><span class="p">(</span><span class="w"> </span><span class="s">"b"</span><span class="p">,</span><span class="w"> </span><span class="n">text</span><span class="p">(</span><span class="w"> </span><span class="s">"b"</span><span class="w"> </span><span class="p">)</span><span class="w"> </span><span class="p">);</span>
-
-<span class="k">auto</span><span class="w"> </span><span class="n">first</span><span class="w">  </span><span class="o">=</span><span class="w"> </span><span class="n">superscript</span><span class="p">(</span><span class="w"> </span><span class="n">parens</span><span class="p">(</span><span class="w"> </span><span class="n">row</span><span class="p">(</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">ord</span><span class="p">(</span><span class="w"> </span><span class="n">a</span><span class="w"> </span><span class="p">),</span><span class="w"> </span><span class="n">bin</span><span class="p">(</span><span class="w"> </span><span class="s">"+"</span><span class="w"> </span><span class="p">),</span><span class="w"> </span><span class="n">ord</span><span class="p">(</span><span class="w"> </span><span class="n">b</span><span class="w"> </span><span class="p">)</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="p">)</span><span class="w"> </span><span class="p">),</span><span class="w"> </span><span class="n">text</span><span class="p">(</span><span class="w"> </span><span class="s">"2"</span><span class="w"> </span><span class="p">)</span><span class="w"> </span><span class="p">);</span>
-<span class="k">auto</span><span class="w"> </span><span class="n">second</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">row</span><span class="p">(</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">ord</span><span class="p">(</span><span class="w"> </span><span class="n">superscript</span><span class="p">(</span><span class="w"> </span><span class="n">a</span><span class="p">,</span><span class="w"> </span><span class="n">text</span><span class="p">(</span><span class="w"> </span><span class="s">"2"</span><span class="w"> </span><span class="p">)</span><span class="w"> </span><span class="p">)</span><span class="w"> </span><span class="p">),</span><span class="w"> </span><span class="n">bin</span><span class="p">(</span><span class="w"> </span><span class="s">"+"</span><span class="w"> </span><span class="p">),</span><span class="w"> </span><span class="n">ord</span><span class="p">(</span><span class="w"> </span><span class="n">text</span><span class="p">(</span><span class="w"> </span><span class="s">"2ab"</span><span class="w"> </span><span class="p">)</span><span class="w"> </span><span class="p">),</span>
-<span class="w">                     </span><span class="n">bin</span><span class="p">(</span><span class="w"> </span><span class="s">"+"</span><span class="w"> </span><span class="p">),</span><span class="w"> </span><span class="n">ord</span><span class="p">(</span><span class="w"> </span><span class="n">superscript</span><span class="p">(</span><span class="w"> </span><span class="n">b</span><span class="p">,</span><span class="w"> </span><span class="n">text</span><span class="p">(</span><span class="w"> </span><span class="s">"2"</span><span class="w"> </span><span class="p">)</span><span class="w"> </span><span class="p">)</span><span class="w"> </span><span class="p">)</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="p">);</span>
+<span class="k">const</span><span class="w"> </span><span class="n">Expr</span><span class="w"> </span><span class="n">expanded</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">row</span><span class="p">(</span>
+<span class="w">    </span><span class="p">{</span><span class="w"> </span><span class="n">ord</span><span class="p">(</span><span class="w"> </span><span class="n">superscript</span><span class="p">(</span><span class="w"> </span><span class="n">a</span><span class="p">,</span><span class="w"> </span><span class="n">text</span><span class="p">(</span><span class="w"> </span><span class="s">"2"</span><span class="w"> </span><span class="p">)</span><span class="w"> </span><span class="p">)</span><span class="w"> </span><span class="p">),</span>
+<span class="w">      </span><span class="n">bin</span><span class="p">(</span><span class="w"> </span><span class="s">"+"</span><span class="w"> </span><span class="p">),</span>
+<span class="w">      </span><span class="n">ord</span><span class="p">(</span><span class="w"> </span><span class="n">text</span><span class="p">(</span><span class="w"> </span><span class="s">"2ab"</span><span class="w"> </span><span class="p">)</span><span class="w"> </span><span class="p">),</span>
+<span class="w">      </span><span class="n">bin</span><span class="p">(</span><span class="w"> </span><span class="s">"+"</span><span class="w"> </span><span class="p">),</span>
+<span class="w">      </span><span class="n">ord</span><span class="p">(</span><span class="w"> </span><span class="n">superscript</span><span class="p">(</span><span class="w"> </span><span class="n">b</span><span class="p">,</span><span class="w"> </span><span class="n">text</span><span class="p">(</span><span class="w"> </span><span class="s">"2"</span><span class="w"> </span><span class="p">)</span><span class="w"> </span><span class="p">)</span><span class="w"> </span><span class="p">)</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="p">);</span>
 </code></pre></div>
 <p>Here the <code>a</code> and <code>b</code> slide into place; everything else matches by glyph, and the parentheses fade.</p>
 <h2 id="options">Options<a class="headerlink" href="#options" title="Permanent link">&para;</a></h2>
@@ -1230,8 +1260,12 @@ an arrow that turns) is carried there whole.</p>
 <h2 id="driving-a-morph-yourself">Driving a morph yourself<a class="headerlink" href="#driving-a-morph-yourself" title="Permanent link">&para;</a></h2>
 <p><code>morph_driven</code> takes the thing that decides <em>when</em>: a scene that calls <code>morph.set( t )</code> as it goes. That is how a
 morph is tied to narration:</p>
-<div class="highlight"><pre><span></span><code><span class="k">co_await</span><span class="w"> </span><span class="n">morph_driven</span><span class="p">(</span><span class="w"> </span><span class="n">stage</span><span class="p">,</span><span class="w"> </span><span class="o">*</span><span class="n">shown</span><span class="p">,</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">move</span><span class="p">(</span><span class="w"> </span><span class="n">target</span><span class="w"> </span><span class="p">),</span><span class="w"> </span><span class="n">MorphOptions</span><span class="p">{},</span>
-<span class="w">    </span><span class="p">[</span><span class="o">&amp;</span><span class="p">](</span><span class="w"> </span><span class="n">Morph</span><span class="w"> </span><span class="o">&amp;</span><span class="n">m</span><span class="w"> </span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">return</span><span class="w"> </span><span class="n">narration</span><span class="p">.</span><span class="n">track_markers</span><span class="p">(</span><span class="w"> </span><span class="s">"a"</span><span class="p">,</span><span class="w"> </span><span class="s">"b"</span><span class="p">,</span><span class="w"> </span><span class="p">[</span><span class="o">&amp;</span><span class="n">m</span><span class="p">](</span><span class="w"> </span><span class="kt">float</span><span class="w"> </span><span class="n">t</span><span class="w"> </span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">m</span><span class="p">.</span><span class="n">set</span><span class="p">(</span><span class="w"> </span><span class="n">t</span><span class="w"> </span><span class="p">);</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="p">);</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="p">);</span>
+<div class="highlight"><pre><span></span><code><span class="k">co_await</span><span class="w"> </span><span class="n">morph_driven</span><span class="p">(</span>
+<span class="w">    </span><span class="n">stage</span><span class="p">,</span>
+<span class="w">    </span><span class="o">*</span><span class="n">shown</span><span class="p">,</span>
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">move</span><span class="p">(</span><span class="w"> </span><span class="n">square</span><span class="w"> </span><span class="p">),</span>
+<span class="w">    </span><span class="n">MorphOptions</span><span class="p">{},</span>
+<span class="w">    </span><span class="p">[</span><span class="o">&amp;</span><span class="p">](</span><span class="w"> </span><span class="n">Morph</span><span class="w"> </span><span class="o">&amp;</span><span class="n">m</span><span class="w"> </span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">return</span><span class="w"> </span><span class="n">narration</span><span class="p">.</span><span class="n">track_markers</span><span class="p">(</span><span class="w"> </span><span class="s">"a"</span><span class="p">,</span><span class="w"> </span><span class="s">"b"</span><span class="p">,</span><span class="w"> </span><span class="p">[</span><span class="o">&amp;</span><span class="n">m</span><span class="p">,</span><span class="w"> </span><span class="n">smooth</span><span class="p">](</span><span class="w"> </span><span class="kt">float</span><span class="w"> </span><span class="n">t</span><span class="w"> </span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">m</span><span class="p">.</span><span class="n">set</span><span class="p">(</span><span class="w"> </span><span class="n">smooth</span><span class="p">(</span><span class="w"> </span><span class="n">t</span><span class="w"> </span><span class="p">)</span><span class="w"> </span><span class="p">);</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="p">);</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="p">);</span>
 </code></pre></div>
 <p><code>set( t )</code> blends from <code>from</code> (0) to <code>to</code> (1); values outside that overshoot, which is what back and elastic eases
 do. A picture (<code>Image</code>) is not an outline and cannot blend; see <a href="../visuals-layout/#pictures">Visuals</a>.</p>

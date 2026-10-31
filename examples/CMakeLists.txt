@@ -16,6 +16,7 @@ else()
 endif()
 
 add_subdirectory( hello )
+add_subdirectory( coroutines )
 add_subdirectory( layout )
 add_subdirectory( text-math )
 add_subdirectory( animation )

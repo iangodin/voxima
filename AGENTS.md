@@ -45,6 +45,13 @@ make debug
 ```
 
 
+## Examples
+
+`examples/<name>/` are plugin projects (see `examples/CMakeLists.txt`): `make` builds them into `build/Release/plugins`
+(`voxima --plugin-dir build/Release/plugins --list-scenes`). The manual includes their code with pymdownx.snippets
+(`--8<-- "examples/x/x.cpp:section"`, between `// --8<-- [start:section]` and `[end:section]` markers), so code shown in
+the manual is code that is built. Keep scene names unique across examples.
+
 ## Documentation
 
 - `doc/manual/`: the developer manual (for people making videos), as linked Markdown. `make docs` builds it with

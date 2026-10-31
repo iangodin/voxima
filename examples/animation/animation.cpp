@@ -49,14 +49,17 @@ Scene show_verbs( Stage &stage, Script & )
 	a->position = { -4.F, 0.F };
 	b->position = { 0.F, 0.F };
 	c->position = { 4.F, 0.F };
+	// --8<-- [start:connector]
 	auto &ab = stage.visuals.add( make_connector( *a, *b, { .gap = 0.1F } ) );
 	auto &bc = stage.visuals.add( make_connector( *b, *c, { .gap = 0.1F } ) );
 	auto tie_ab = follow( stage, ab );
 	auto tie_bc = follow( stage, bc );
+	// --8<-- [end:connector]
 
 	auto &caption = stage.visuals.add( make_text( theme, "Fade, slide, grow, indicate", FontStyle{ Intent::TITLE } ) );
 	move_to( caption, { 0.F, 3.5F }, Anchor::TOP );
 
+	// --8<-- [start:verbs]
 	co_await choreograph( fade_in( stage, *a, 0.5s ), slide_in( stage, *b, { 0.F, -3.F }, 0.8s ), grow_in( stage, *c, 0.6s ), fade_in( stage, ab, 0.8s ), fade_in( stage, bc, 0.8s ) );
 	co_await wait_for( stage, 0.3s );
 	co_await indicate( stage, *b );
@@ -64,6 +67,7 @@ Scene show_verbs( Stage &stage, Script & )
 	co_await move_by( stage, *b, { 0.F, -2.5F }, 0.8s, ease_cubic_in_out );
 	co_await wait_for( stage, 0.3s );
 	co_await choreograph( fade_out( stage, *a, 0.5s ), slide_out( stage, *b, { 0.F, 3.F }, 0.8s ), shrink_out( stage, *c, 0.6s ), fade_out( stage, ab, 0.5s ), fade_out( stage, bc, 0.5s ) );
+	// --8<-- [end:verbs]
 	co_await wait_for( stage, 0.5s );
 
 	// Drawn on: a shape's outline traced, and text written
@@ -93,7 +97,9 @@ Scene show_verbs( Stage &stage, Script & )
 		square->position = { -4.F + 1.2F * static_cast<float>( i ), 2.2F };
 		row.add( std::move( square ) );
 	}
+	// --8<-- [start:stagger]
 	co_await stagger( stage, children_of( row ), 0.12s, [&]( Visual &v ) { return slide_in( stage, v, { 0.F, 1.5F }, 0.5s ); } );
+	// --8<-- [end:stagger]
 
 	auto &dart = stage.visuals.add( std::make_unique<Rectangle>() );
 	dart.half_width = 0.4F;
@@ -123,12 +129,14 @@ Scene show_camera( Stage &stage, Script & )
 
 	const double pi = std::numbers::pi;
 	// In on the first peak, (pi / 2, 1): a look at 3 times the size, moving on to the next peak, and out again
+	// --8<-- [start:camera]
 	const Point peak = axes.at( pi / 2, 1.0 );
 	co_await camera_to( stage, { peak, 3.F }, 1.5s );
 	co_await wait_for( stage, 1s );
 	co_await camera_to( stage, { axes.at( 3 * pi / 2, -1.0 ), 3.F }, 2s ); // then the trough after it
 	co_await wait_for( stage, 1s );
 	co_await camera_to( stage, { { 0.F, 0.F }, 1.F }, 1.5s );
+	// --8<-- [end:camera]
 	co_await wait_for( stage, 1s );
 }
 }

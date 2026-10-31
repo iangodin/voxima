@@ -4,11 +4,12 @@ Text is laid out with real shaping (HarfBuzz) and bidirectional reordering, so i
 have: Latin, Cyrillic, Greek, Arabic, Hebrew, Chinese, Japanese and more, mixed in one line if you like. The
 result is vector outlines like any other visual: you can move, scale, fade or morph it.
 
+The code on this page is from the `text-math` example (`examples/text-math`), which is built with Voxima.
+
 ## One piece of text
 
 ```cpp
-auto &title = stage.visuals.add( make_text( theme, "Hello, Voxima", FontStyle{ Intent::TITLE }.large(), "en" ) );
-move_to( title, { 0.F, 3.F }, Anchor::TOP );
+--8<-- "examples/text-math/text-math.cpp:title"
 ```
 
 `make_text( theme, string, style, language )`. The text's **baseline is at y = 0 and it is not centered**: its
@@ -22,8 +23,7 @@ When the text came from the script, use the script's language. Line breaks in th
 **Paragraphs** wrap to a width, at spaces:
 
 ```cpp
-auto &para = stage.visuals.add( make_paragraph( theme, long_text, FontStyle{ Intent::PROSE }, 10.F, lang,
-	TextLayout{ .align = TextAlign::CENTER } ) );
+--8<-- "examples/text-math/text-math.cpp:paragraph"
 ```
 
 (Only for languages that put spaces between words.)
@@ -34,9 +34,7 @@ A `FontStyle` says what the text is **for** (its *intent*) and how it should loo
 actual font that is. So a scene works with any theme.
 
 ```cpp
-FontStyle{ Intent::TITLE }                    // what it is for
-FontStyle{ Intent::PROSE }.large().bold()     // chained changes
-FontStyle{ Intent::CODE }.small()
+--8<-- "examples/text-math/text-math.cpp:font-styles"
 ```
 
 | Intents | |
@@ -55,12 +53,7 @@ big. If a font has no glyph for a character, the next font in the theme's stack 
 Build a `StyledText` and set styles on ranges of characters:
 
 ```cpp
-StyledText text( "Hello\nالعالم" );
-text.set_font_style( 0, text.size(), FontStyle{ Intent::TITLE }.large() );
-text.set_color( 0, 5, theme.palette().red );
-text.set_weight( 2, 4, Weight::BLACK );
-auto &label = stage.visuals.add( make_styled_text( theme, text ) );
-center_group( label );
+--8<-- "examples/text-math/text-math.cpp:styled-text"
 ```
 
 Ranges are `( start, end )` over the text; there are setters for color, weight, slant, scale, width, kind, intent
@@ -72,13 +65,7 @@ Formulas are built from small functions that describe them, and laid out only wh
 in its own size: numerators, subscripts and radicands come out right on their own.
 
 ```cpp
-using namespace math;
-using namespace math::literals;
-
-Context context( theme );          // the theme and the body size; large by default
-
-auto formula = eq( "a"_m * "a"_m + "b"_m * "b"_m, "c"_m * "c"_m );     // aa + bb = cc
-auto &shown = stage.visuals.add( formula.build( context ) );
+--8<-- "examples/text-math/text-math.cpp:formula"
 ```
 
 A formula is an `Expr`: cheap to copy, and can be built any number of times (`build( context, MathStyle::text() )`
@@ -104,19 +91,14 @@ spacing TeX uses.
 A fuller formula:
 
 ```cpp
-auto quadratic = row( {
-	ord( "x" ), rel( "=" ),
-	ord( fraction(
-		row( { ord( "−b" ), bin( sym::pm ), ord( radical( row( { ord( superscript( text( "b" ), text( "2" ) ) ),
-		                                                          bin( "−" ), ord( "4ac" ) } ) ) ) } ),
-		text( "2a" ) ) ) } );
+--8<-- "examples/text-math/text-math.cpp:quadratic"
 ```
 
 **Marking parts:** `colored( color, part )`, `cancel( part )` (a strike through, for terms that cancel),
 `boxed( part )`, and `tag( "name", part )` to find a part again after the build (to animate it):
 
 ```cpp
-Visual *half = find_tag( *shown, "half" );
+--8<-- "examples/text-math/text-math.cpp:tag"
 ```
 
 Greek letters set by `text()` are italic, as in TeX; capitals are upright (`upright( sym::Gamma )`). See `math/Symbols.h` for
@@ -125,23 +107,13 @@ the names. `words( "if" )` is for words between formulas.
 ## Code listings
 
 ```cpp
-auto listing = make_code( theme, code::Language::CPP, R"cpp(
-int main() { return 0; }
-)cpp" );
-center_group( *listing );
-auto &code = stage.visuals.add( std::move( listing ) );
+--8<-- "examples/text-math/text-math.cpp:listing"
 ```
 
 C and C++ are highlighted with the theme's code colors. Two helpers animate a listing:
 
 ```cpp
-Typewriter typer( code );
-co_await typer.type( stage );                       // typed out, as a person would (or type( stage, 4s ): fitted to 4 seconds)
-
-LineHighlight pointer( code, theme );
-co_await pointer.to( stage, Lines( 5 ), 0.4s );     // a line; Lines( 9, 12 ) a range;
-co_await pointer.to( stage, Lines{ { 7, 8 }, { 13, 13 } }, 0.5s );   // or several places
-co_await pointer.to( stage, Lines(), 0.4s );        // and away again
+--8<-- "examples/text-math/text-math.cpp:typing"
 ```
 
 Lines are numbered from 1, as an editor numbers them. Lines outside the listing are ignored.

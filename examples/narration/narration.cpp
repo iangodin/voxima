@@ -89,12 +89,14 @@ Scene follow_speech( Stage &stage, Narration &narration )
 
 	auto square = demo_square( stage, spot );
 	Visual *next = square.get();
+	// --8<-- [start:driven]
 	co_await morph_driven(
 		stage,
 		*shown,
 		std::move( square ),
 		MorphOptions{},
 		[&]( Morph &m ) { return narration.track_markers( "a", "b", [&m, smooth]( float t ) { m.set( smooth( t ) ); } ); } );
+	// --8<-- [end:driven]
 	shown = next;
 
 	auto letter = demo_letter( stage, "a", stage.theme->palette().yellow, spot );
@@ -169,6 +171,91 @@ Scene show_karaoke( Stage &stage, Script &script )
 	co_await choreograph_all( std::move( running ) );
 }
 
+// --8<-- [start:intro]
+Scene intro( Stage &stage, Script &script )
+{
+	Narration narration;
+	narration.setup( "narrator", script, stage.audio );     // the voice's name in the script
+	narration.speech( "intro" );                            // the text: a path of keys into the script
+
+	co_await choreograph(
+		narration.play(),                                   // plays it through
+		/* ...whatever else the scene animates, at the same time... */ wait_for( stage, 0.1s ) );
+}
+// --8<-- [end:intro]
+
+// A word effect of your own: the word wiggles as it is said
+// --8<-- [start:wiggle]
+Scene wiggle( WordContext word )
+{
+	co_await word.over_word( [&]( float t ) { word.word.rotation = 0.1F * std::sin( 20.F * t ); } );
+	word.word.rotation = 0.F;
+}
+// --8<-- [end:wiggle]
+
+// The ways to follow the narration: lines, markers, and words
+Scene show_narrated( Stage &stage, Script &script )
+{
+	Theme &theme = *stage.theme;
+	const std::string lang = script.master_language();
+
+	Narration narration;
+	narration.setup( "narrator", script, stage.audio );
+	narration.speech( "intro" );
+
+	auto &dot = stage.visuals.add( std::make_unique<Circle>() );
+	dot.radius = 0.5F;
+	dot.color = theme.palette().blue;
+	dot.position = { 5.5F, 2.5F };
+
+	auto &mark = stage.visuals.add( std::make_unique<Circle>() );
+	mark.radius = 0.2F;
+	mark.color = theme.palette().red;
+	mark.position = { -5.5F, 2.5F };
+
+	// --8<-- [start:until-line]
+	auto second_line = [&]() -> Scene
+	{
+		co_await narration.until_line( 1 );          // when the second line starts
+		mark.color = theme.palette().green;
+	};
+	// --8<-- [end:until-line]
+
+	// --8<-- [start:markers]
+	auto cues = [&]() -> Scene
+	{
+		co_await narration.until_marker( "a" );
+		co_await narration.track_markers( "a", "b", [&]( float t ) { dot.radius = 0.5F + t; } );   // t: 0 to 1 between the two
+		co_await narration.track_to_end( "b", [&]( float t ) { dot.radius = 1.5F - t; } );
+		double when = narration.marker_time( "a" );                  // seconds, in the first language's narration
+		( void ) when;
+	};
+	// --8<-- [end:markers]
+
+	// --8<-- [start:animate-words]
+	using namespace word_effects;
+	const Palette &palette = theme.palette();
+
+	const auto lines = script.fetch( lang, "intro" ).as_multiline();
+	StyledText styled( strip_markers( lines[0] ) );
+	styled.set_font_style( 0, styled.size(), FontStyle{ Intent::PROSE }.large() );
+	auto &text = stage.visuals.add( make_styled_text( theme, styled ) );
+	center_group( text );
+
+	auto words = narration.animate_words( text, all( { color( palette.muted, palette.yellow, stage.foreground ), pop( 1.15F ) } ) );
+	// --8<-- [end:animate-words]
+
+	const std::string second{ strip_markers( lines[1] ) };
+	StyledText styled_second( second );
+	styled_second.set_font_style( 0, styled_second.size(), FontStyle{ Intent::PROSE }.large() );
+	auto &text_second = stage.visuals.add( make_styled_text( theme, styled_second ) );
+	center_group( text_second );
+	text_second.position = { 0.F, -1.F };
+	auto wiggling = narration.animate_words( text_second, wiggle, split_words( strip_markers( lines[0] ) ).size() );
+
+	co_await choreograph( narration.play(), second_line(), cues(), std::move( words ), std::move( wiggling ) );
+}
+
 // The ease functions side by side, as circles racing across the screen while the narrator speaks
 Scene show_eases( Stage &stage, Script &script )
 {
@@ -201,5 +288,7 @@ Scene show_eases( Stage &stage, Script &script )
 }
 }
 
+REGISTER_SCENE( "narrated-intro", "Speech with nothing else", intro );
+REGISTER_SCENE( "narrated", "Following the narration by line, marker and word, with a word effect of its own", show_narrated );
 REGISTER_SCENE( "eases", "The ease functions, as circles racing across the screen (with narration)", show_eases );
 REGISTER_SCENE( "karaoke", "Narrated text lit word by word, and a shape changing on the words", show_karaoke );

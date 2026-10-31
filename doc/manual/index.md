@@ -11,7 +11,8 @@ language, so one set of scenes serves every language.
 
 1. [Installing](getting-started/install.md): build Voxima from source, then fonts, ffmpeg and the speech models.
 2. [Your first video](getting-started/first-video.md): build, preview and render a small plugin.
-3. [Overview](concepts/overview.md): how scenes, script and theme fit together.
+3. [The examples](getting-started/examples.md): small plugins for each part of this manual.
+4. [Overview](concepts/overview.md): how scenes, script and theme fit together.
 
 ## Concepts
 

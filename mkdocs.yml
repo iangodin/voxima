@@ -27,12 +27,14 @@ markdown_extensions:
   - pymdownx.snippets:
       base_path: ["."]
       check_paths: true
+      dedent_subsections: true
   - pymdownx.superfences
 nav:
   - Home: index.md
   - Getting started:
       - Installing: getting-started/install.md
       - Your first video: getting-started/first-video.md
+      - The examples: getting-started/examples.md
   - Concepts:
       - Overview: concepts/overview.md
       - Animation and coroutines: concepts/coroutines.md

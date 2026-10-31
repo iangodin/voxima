@@ -1,13 +1,11 @@
 # Visuals and layout
 
+The code on this page is from the `layout` example (`examples/layout`), which is built with Voxima.
+
 ## Shapes
 
 ```cpp
-auto circle = std::make_unique<Circle>( 0.7F, theme.palette().blue );   // radius, color
-auto &dot = stage.visuals.add( std::move( circle ) );
-dot.position = { -3.F, 0.F };
-
-auto &box = stage.visuals.add( std::make_unique<Rectangle>( 1.F, 0.5F, theme.palette().green ) );  // half width, half height
+--8<-- "examples/layout/layout.cpp:shapes"
 ```
 
 Every visual has the same properties:
@@ -27,9 +25,7 @@ everything in it.
 ## Groups
 
 ```cpp
-auto &row = stage.visuals.add( std::make_unique<Group>() );
-row.add( std::make_unique<Circle>( 0.4F ) );
-row.add( std::make_unique<Circle>( 0.4F ) );
+--8<-- "examples/layout/layout.cpp:groups"
 ```
 
 Iterate a group with a range-for; `size()`, `clear()`, `remove( &child )` (hands the child back) and
@@ -42,9 +38,7 @@ other** (`visuals/Placement.h`), so a change in size or text does not make thing
 the ones layout uses: for text, the advance widths and line height, not just the ink.
 
 ```cpp
-move_to( title, { 0.F, 3.5F }, Anchor::TOP );          // its top edge at y = 3.5
-next_to( label, circle, Anchor::BOTTOM );              // under it, a gap between
-next_to( panel, other, Anchor::RIGHT, 1.0F );          // to its right, 1 unit apart
+--8<-- "examples/layout/layout.cpp:placement"
 ```
 
 `Anchor` is `CENTER`, `LEFT`, `RIGHT`, `TOP`, `BOTTOM` or a corner (`TOP_LEFT`, ...). Visuals placed against each
@@ -53,11 +47,7 @@ other must be in the same group (or both directly on the stage).
 **Rows, columns and grids** arrange the children of a group:
 
 ```cpp
-arrange_row( group, { .gap = 0.5F } );                     // left to right, centered on the origin
-arrange_column( group, { .gap = 0.3F, .align = Align::START } );
-arrange_grid( group, 3, { .column_gap = 0.4F, .row_gap = 0.2F } );   // rows of 3
-distribute_row( group );                                   // equal spaces between, outer two stay put
-align_edges( group, Anchor::LEFT );                        // line up on an edge
+--8<-- "examples/layout/layout.cpp:arrange"
 ```
 
 `Align` (across the direction of the row) is `START`, `CENTER`, `END`, or `BASELINE`, which lines up the
@@ -66,8 +56,7 @@ baselines of text of any size.
 **Keeping things on screen:**
 
 ```cpp
-keep_inside( visual, safe_area( stage.camera ) );   // moved the least it takes
-fit_inside( visual, safe_area( stage.camera ) );    // and scaled down if it is too big
+--8<-- "examples/layout/layout.cpp:keep-inside"
 ```
 
 `safe_area` is the picture's frame, at zoom 1, pulled in by a margin (0.5 units by default).
@@ -80,7 +69,7 @@ frame, for your own placement.
 A **panel** is a rounded box fitted round something:
 
 ```cpp
-auto &panel = stage.visuals.add( make_panel( make_text( theme, "Theorem", style ), { .padding = 0.5F } ) );
+--8<-- "examples/layout/layout.cpp:panel"
 ```
 
 `PanelOptions` sets the `padding`, corner `radius`, `fill`, `outline` and `outline_width`, and an optional
@@ -89,8 +78,7 @@ auto &panel = stage.visuals.add( make_panel( make_text( theme, "Theorem", style 
 A **list** is a bulleted or numbered column:
 
 ```cpp
-auto &list = stage.visuals.add( make_list( theme, { "first", "second", "third" }, { .numbered = true } ) );
-list.row( 1 );    // each row is a visual of its own, to show or light on its own
+--8<-- "examples/layout/layout.cpp:list"
 ```
 
 Long items wrap if you set `max_width`; every row is spaced evenly.
@@ -98,12 +86,7 @@ Long items wrap if you set `max_width`; every row is spaced evenly.
 A **table** has rows of cells, a header, and optional rules, stripes and wrapping:
 
 ```cpp
-const std::vector<std::vector<std::string>> rows = {
-	{ "Name", "Scale", "Use" },
-	{ "tiny", "0.5", "footnotes" },
-	{ "huge", "2.0", "titles" } };
-auto &table = stage.visuals.add( make_table( theme, rows, { .striped = true, .max_width = 10.F } ) );
-table.cell( 1, 2 );   // a cell is a visual
+--8<-- "examples/layout/layout.cpp:table"
 ```
 
 Cells can also be visuals (a formula, a picture); then give `make_table` a vector of rows of
@@ -119,8 +102,7 @@ An `Image` shows a picture file: set its `path`, `half_width` and `half_height`.
 Tag a visual to find it again after it is built into something bigger:
 
 ```cpp
-tag_visual( shape, "hero" );
-Visual *found = find_tag( stage.visuals, "hero" );
+--8<-- "examples/layout/layout.cpp:tags"
 ```
 
 A path of names looks inside each match in turn (`find_tag( built, "fraction1", "bar" )`). Math formulas and

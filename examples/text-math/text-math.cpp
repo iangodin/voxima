@@ -20,6 +20,8 @@
 #include <math/Operators.h>
 #include <visuals/CreateText.h>
 #include <visuals/Layout.h>
+#include <visuals/Placement.h>
+#include <visuals/WrapText.h>
 
 #include <chrono>
 #include <cmath>
@@ -33,6 +35,7 @@ namespace
 {
 void show_title( Stage &stage )
 {
+	// --8<-- [start:styled-text]
 	StyledText text( "Hello\nالعالم" );
 	text.set_font_style( 0, text.size(), FontStyle{ Intent::TITLE }.large() );
 	text.set_color( 0, 5, stage.theme->palette().red );
@@ -40,6 +43,7 @@ void show_title( Stage &stage )
 
 	auto &label = stage.visuals.add( make_styled_text( *stage.theme, text ) );
 	center_group( label );
+	// --8<-- [end:styled-text]
 	label.position = { 0.F, 3.F };
 }
 
@@ -205,6 +209,68 @@ void show_math( Stage &stage )
 		       ord( mono( "t" ) ) } ) );
 }
 
+// The basics of the guide: a title, a paragraph, font styles, a formula built from small functions, and a code listing
+Scene show_basics( Stage &stage, Script &script )
+{
+	Theme &theme = *stage.theme;
+	const std::string lang = script.master_language();
+	const std::string long_text = "Text is laid out with real shaping and bidirectional reordering, and wraps to a width at the spaces between words.";
+
+	// --8<-- [start:title]
+	auto &title = stage.visuals.add( make_text( theme, "Hello, Voxima", FontStyle{ Intent::TITLE }.large(), "en" ) );
+	move_to( title, { 0.F, 3.F }, Anchor::TOP );
+	// --8<-- [end:title]
+
+	// --8<-- [start:paragraph]
+	auto &para = stage.visuals.add( make_paragraph( theme, long_text, FontStyle{ Intent::PROSE }, 10.F, lang,
+		TextLayout{ .align = TextAlign::CENTER } ) );
+	// --8<-- [end:paragraph]
+	move_to( para, { 0.F, 2.F }, Anchor::TOP );
+
+	// --8<-- [start:font-styles]
+	const FontStyle for_a_title{ Intent::TITLE };                       // what it is for
+	const FontStyle chained = FontStyle{ Intent::PROSE }.large().bold();  // chained changes
+	const FontStyle small_code = FontStyle{ Intent::CODE }.small();
+	// --8<-- [end:font-styles]
+	auto &styled = stage.visuals.add( make_text( theme, "Chained styles", chained, lang ) );
+	move_to( styled, { -5.F, -0.5F }, Anchor::LEFT );
+	auto &small = stage.visuals.add( make_text( theme, "small code", small_code, lang ) );
+	move_to( small, { 2.F, -0.5F }, Anchor::LEFT );
+	( void ) for_a_title;
+
+	// --8<-- [start:formula]
+	using namespace math;
+	using namespace math::literals;
+
+	Context context( theme );          // the theme and the body size; large by default
+
+	auto formula = eq( "a"_m * "a"_m + "b"_m * "b"_m, "c"_m * "c"_m );     // aa + bb = cc
+	auto &shown = stage.visuals.add( formula.build( context ) );
+	// --8<-- [end:formula]
+	move_to( shown, { -4.F, -2.F }, Anchor::CENTER );
+
+	// --8<-- [start:quadratic]
+	auto quadratic = row( {
+		ord( "x" ), rel( "=" ),
+		ord( fraction(
+			row( { ord( "−b" ), bin( sym::pm ), ord( radical( row( { ord( superscript( text( "b" ), text( "2" ) ) ),
+			                                                          bin( "−" ), ord( "4ac" ) } ) ) ) } ),
+			text( "2a" ) ) ) } );
+	// --8<-- [end:quadratic]
+	auto &solution = stage.visuals.add( quadratic.build( context ) );
+	move_to( solution, { 3.F, -2.5F }, Anchor::CENTER );
+
+	// --8<-- [start:tag]
+	auto halved = eq( "x"_m, fraction( tag( "half", text( "a" ) ), text( "2" ) ) );
+	auto &tagged = stage.visuals.add( halved.build( context ) );
+	Visual *half = find_tag( tagged, "half" );
+	// --8<-- [end:tag]
+	move_to( tagged, { 0.F, -3.8F }, Anchor::CENTER );
+	half->color = theme.palette().red;
+
+	co_await wait_for( stage, 3s );
+}
+
 // A page of laid-out formulas (see show_math)
 Scene show_formulas( Stage &stage, Script & )
 {
@@ -269,6 +335,7 @@ Scene show_math_marks( Stage &stage, Script & )
 // Syntax-highlighted source code, in the theme's code font and colors, typed, and then some lines pointed out
 Scene show_code( Stage &stage, Script & )
 {
+	// --8<-- [start:listing]
 	auto listing = make_code( *stage.theme, code::Language::CPP, R"cpp(
 
 // The sum of the squares, the long way
@@ -286,8 +353,10 @@ T sum_of_squares( const std::vector<T> &values )
 )cpp" );
 	center_group( *listing );
 	auto &shown = stage.visuals.add( std::move( listing ) );
+	// --8<-- [end:listing]
 
 	// Typed, like a person would
+	// --8<-- [start:typing]
 	Typewriter typer( shown );
 	co_await typer.type( stage );
 	co_await wait_for( stage, 1s );
@@ -301,6 +370,7 @@ T sum_of_squares( const std::vector<T> &values )
 	co_await pointer.to( stage, Lines{ { 7, 8 }, { 13, 13 } }, 0.5s );     // where it starts, and what it gives back
 	co_await wait_for( stage, 1.5s );
 	co_await pointer.to( stage, Lines(), 0.4s );
+	// --8<-- [end:typing]
 	co_await wait_for( stage, 1s );
 }
 
@@ -330,6 +400,7 @@ Scene show_missing_glyphs( Stage &stage, Script &script )
 }
 
 REGISTER_SCENE( "styled-text", "Styled text, and Arabic laid out right to left", show_styled_text );
+REGISTER_SCENE( "text-basics", "A title, a paragraph, font styles, and formulas built from small functions", show_basics );
 REGISTER_SCENE( "formulas", "A page of laid-out math formulas", show_formulas );
 REGISTER_SCENE( "math-marks", "Cancelled and boxed parts, colors, primes, and words between math", show_math_marks );
 REGISTER_SCENE( "code", "Syntax-highlighted C++, typed, with lines pointed out", show_code );

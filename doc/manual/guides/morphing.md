@@ -4,10 +4,10 @@ A **morph** turns one visual into another: a circle into a square, a letter into
 into the next step of its derivation, a sentence into an edited sentence. Both visuals are flattened to
 outlines, their parts are paired up and cut to match, and the shape is blended from one to the other.
 
+The code on this page is from the `morphing` and `narration` examples (`examples/morphing`, `examples/narration`), which are built with Voxima.
+
 ```cpp
-auto square = std::make_unique<Rectangle>( 0.6F, 0.6F, theme.palette().green );
-square->position = circle.position;
-co_await morph( stage, circle, std::move( square ), 1.5s, ease_cubic_in_out );
+--8<-- "examples/morphing/morphing.cpp:morph"
 ```
 
 What happens to the visuals:
@@ -18,9 +18,7 @@ What happens to the visuals:
   a raw pointer to it *before* you move it in if you will animate it next:
 
 ```cpp
-Visual *next = square.get();
-co_await morph( stage, *shown, std::move( square ), 1s, ease_cubic_in_out );
-shown = next;
+--8<-- "examples/morphing/morphing.cpp:pointer"
 ```
 
 ## How parts are matched
@@ -38,13 +36,7 @@ an arrow that turns) is carried there whole.
 So for a derivation, **tag the parts that should be followed** from one step to the next:
 
 ```cpp
-using namespace math;
-const Expr a = tag( "a", text( "a" ) );
-const Expr b = tag( "b", text( "b" ) );
-
-auto first  = superscript( parens( row( { ord( a ), bin( "+" ), ord( b ) } ) ), text( "2" ) );
-auto second = row( { ord( superscript( a, text( "2" ) ) ), bin( "+" ), ord( text( "2ab" ) ),
-                     bin( "+" ), ord( superscript( b, text( "2" ) ) ) } );
+--8<-- "examples/morphing/morphing.cpp:tags"
 ```
 
 Here the `a` and `b` slide into place; everything else matches by glyph, and the parentheses fade.
@@ -52,11 +44,7 @@ Here the `a` and `b` slide into place; everything else matches by glyph, and the
 ## Options
 
 ```cpp
-MorphOptions options;
-options.leaves = LeafMatch::BY_WORD;   // BY_WORD, BY_TAG, ... instead of AUTO
-options.stagger = 0.4F;                // start the parts one after another (0 to 0.95 of the time)
-options.part_ease = smooth;            // an ease for each part's own progress
-co_await morph( stage, *shown, std::move( target ), 1.7s, ease_cubic_in_out, options );
+--8<-- "examples/morphing/morphing.cpp:options"
 ```
 
 `stagger` makes a word change letter by letter, left to right.
@@ -67,8 +55,7 @@ co_await morph( stage, *shown, std::move( target ), 1.7s, ease_cubic_in_out, opt
 morph is tied to narration:
 
 ```cpp
-co_await morph_driven( stage, *shown, std::move( target ), MorphOptions{},
-	[&]( Morph &m ) { return narration.track_markers( "a", "b", [&m]( float t ) { m.set( t ); } ); } );
+--8<-- "examples/narration/narration.cpp:driven"
 ```
 
 `set( t )` blends from `from` (0) to `to` (1); values outside that overshoot, which is what back and elastic eases

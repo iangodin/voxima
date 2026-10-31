@@ -362,6 +362,34 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting-started/examples/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    The examples
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -1247,6 +1275,7 @@
 
 
 <h1 id="visuals-and-layout">Visuals and layout<a class="headerlink" href="#visuals-and-layout" title="Permanent link">&para;</a></h1>
+<p>The code on this page is from the <code>layout</code> example (<code>examples/layout</code>), which is built with Voxima.</p>
 <h2 id="shapes">Shapes<a class="headerlink" href="#shapes" title="Permanent link">&para;</a></h2>
 <div class="highlight"><pre><span></span><code><span class="k">auto</span><span class="w"> </span><span class="n">circle</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">make_unique</span><span class="o">&lt;</span><span class="n">Circle</span><span class="o">&gt;</span><span class="p">(</span><span class="w"> </span><span class="mf">0.7F</span><span class="p">,</span><span class="w"> </span><span class="n">theme</span><span class="p">.</span><span class="n">palette</span><span class="p">().</span><span class="n">blue</span><span class="w"> </span><span class="p">);</span><span class="w">   </span><span class="c1">// radius, color</span>
 <span class="k">auto</span><span class="w"> </span><span class="o">&amp;</span><span class="n">dot</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">stage</span><span class="p">.</span><span class="n">visuals</span><span class="p">.</span><span class="n">add</span><span class="p">(</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">move</span><span class="p">(</span><span class="w"> </span><span class="n">circle</span><span class="w"> </span><span class="p">)</span><span class="w"> </span><span class="p">);</span>
@@ -1300,7 +1329,7 @@ everything in it.</p>
 other</strong> (<code>visuals/Placement.h</code>), so a change in size or text does not make things overlap. The boxes used are
 the ones layout uses: for text, the advance widths and line height, not just the ink.</p>
 <div class="highlight"><pre><span></span><code><span class="n">move_to</span><span class="p">(</span><span class="w"> </span><span class="n">title</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="mf">0.F</span><span class="p">,</span><span class="w"> </span><span class="mf">3.5F</span><span class="w"> </span><span class="p">},</span><span class="w"> </span><span class="n">Anchor</span><span class="o">::</span><span class="n">TOP</span><span class="w"> </span><span class="p">);</span><span class="w">          </span><span class="c1">// its top edge at y = 3.5</span>
-<span class="n">next_to</span><span class="p">(</span><span class="w"> </span><span class="n">label</span><span class="p">,</span><span class="w"> </span><span class="n">circle</span><span class="p">,</span><span class="w"> </span><span class="n">Anchor</span><span class="o">::</span><span class="n">BOTTOM</span><span class="w"> </span><span class="p">);</span><span class="w">              </span><span class="c1">// under it, a gap between</span>
+<span class="n">next_to</span><span class="p">(</span><span class="w"> </span><span class="n">label</span><span class="p">,</span><span class="w"> </span><span class="n">dot</span><span class="p">,</span><span class="w"> </span><span class="n">Anchor</span><span class="o">::</span><span class="n">BOTTOM</span><span class="w"> </span><span class="p">);</span><span class="w">                 </span><span class="c1">// under it, a gap between</span>
 <span class="n">next_to</span><span class="p">(</span><span class="w"> </span><span class="n">panel</span><span class="p">,</span><span class="w"> </span><span class="n">other</span><span class="p">,</span><span class="w"> </span><span class="n">Anchor</span><span class="o">::</span><span class="n">RIGHT</span><span class="p">,</span><span class="w"> </span><span class="mf">1.0F</span><span class="w"> </span><span class="p">);</span><span class="w">          </span><span class="c1">// to its right, 1 unit apart</span>
 </code></pre></div>
 <p><code>Anchor</code> is <code>CENTER</code>, <code>LEFT</code>, <code>RIGHT</code>, <code>TOP</code>, <code>BOTTOM</code> or a corner (<code>TOP_LEFT</code>, ...). Visuals placed against each
@@ -1315,8 +1344,8 @@ other must be in the same group (or both directly on the stage).</p>
 <p><code>Align</code> (across the direction of the row) is <code>START</code>, <code>CENTER</code>, <code>END</code>, or <code>BASELINE</code>, which lines up the
 baselines of text of any size.</p>
 <p><strong>Keeping things on screen:</strong></p>
-<div class="highlight"><pre><span></span><code><span class="n">keep_inside</span><span class="p">(</span><span class="w"> </span><span class="n">visual</span><span class="p">,</span><span class="w"> </span><span class="n">safe_area</span><span class="p">(</span><span class="w"> </span><span class="n">stage</span><span class="p">.</span><span class="n">camera</span><span class="w"> </span><span class="p">)</span><span class="w"> </span><span class="p">);</span><span class="w">   </span><span class="c1">// moved the least it takes</span>
-<span class="n">fit_inside</span><span class="p">(</span><span class="w"> </span><span class="n">visual</span><span class="p">,</span><span class="w"> </span><span class="n">safe_area</span><span class="p">(</span><span class="w"> </span><span class="n">stage</span><span class="p">.</span><span class="n">camera</span><span class="w"> </span><span class="p">)</span><span class="w"> </span><span class="p">);</span><span class="w">    </span><span class="c1">// and scaled down if it is too big</span>
+<div class="highlight"><pre><span></span><code><span class="n">keep_inside</span><span class="p">(</span><span class="w"> </span><span class="n">group</span><span class="p">,</span><span class="w"> </span><span class="n">safe_area</span><span class="p">(</span><span class="w"> </span><span class="n">stage</span><span class="p">.</span><span class="n">camera</span><span class="w"> </span><span class="p">)</span><span class="w"> </span><span class="p">);</span><span class="w">   </span><span class="c1">// moved the least it takes</span>
+<span class="n">fit_inside</span><span class="p">(</span><span class="w"> </span><span class="n">group</span><span class="p">,</span><span class="w"> </span><span class="n">safe_area</span><span class="p">(</span><span class="w"> </span><span class="n">stage</span><span class="p">.</span><span class="n">camera</span><span class="w"> </span><span class="p">)</span><span class="w"> </span><span class="p">);</span><span class="w">    </span><span class="c1">// and scaled down if it is too big</span>
 </code></pre></div>
 <p><code>safe_area</code> is the picture's frame, at zoom 1, pulled in by a margin (0.5 units by default).</p>
 <p><code>box_of( visual )</code> and <code>point_at( visual, anchor )</code> give a visual's box and one of its points, in its parent's
@@ -1347,7 +1376,7 @@ frame, for your own placement.</p>
 <a href="../morphing/">morphs</a> only into the same picture (moving to where that is); otherwise it cross-fades.</p>
 <h2 id="tags">Tags<a class="headerlink" href="#tags" title="Permanent link">&para;</a></h2>
 <p>Tag a visual to find it again after it is built into something bigger:</p>
-<div class="highlight"><pre><span></span><code><span class="n">tag_visual</span><span class="p">(</span><span class="w"> </span><span class="n">shape</span><span class="p">,</span><span class="w"> </span><span class="s">"hero"</span><span class="w"> </span><span class="p">);</span>
+<div class="highlight"><pre><span></span><code><span class="n">tag_visual</span><span class="p">(</span><span class="w"> </span><span class="n">dot</span><span class="p">,</span><span class="w"> </span><span class="s">"hero"</span><span class="w"> </span><span class="p">);</span>
 <span class="n">Visual</span><span class="w"> </span><span class="o">*</span><span class="n">found</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">find_tag</span><span class="p">(</span><span class="w"> </span><span class="n">stage</span><span class="p">.</span><span class="n">visuals</span><span class="p">,</span><span class="w"> </span><span class="s">"hero"</span><span class="w"> </span><span class="p">);</span>
 </code></pre></div>
 <p>A path of names looks inside each match in turn (<code>find_tag( built, "fraction1", "bar" )</code>). Math formulas and

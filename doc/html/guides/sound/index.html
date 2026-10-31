@@ -362,6 +362,34 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting-started/examples/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    The examples
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -1159,13 +1187,20 @@
 
 
 <h1 id="music-and-sound-effects">Music and sound effects<a class="headerlink" href="#music-and-sound-effects" title="Permanent link">&para;</a></h1>
+<p>The code on this page is from the <code>sound</code> example (<code>examples/sound</code>), which is built with Voxima.</p>
 <p>Any sound file (WAV, FLAC, Ogg, MP3) can be played into the video with <code>stage.audio.play</code>. It starts at the frame
 being made, and carries on by itself, <strong>across scenes</strong>, until its end or until you stop it. It is mixed into
 <strong>every language's</strong> audio track. Any number play at once.</p>
-<div class="highlight"><pre><span></span><code><span class="n">Sound</span><span class="w"> </span><span class="n">music</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">stage</span><span class="p">.</span><span class="n">audio</span><span class="p">.</span><span class="n">play</span><span class="p">(</span><span class="w"> </span><span class="s">"assets/music/theme.mp3"</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="p">.</span><span class="n">volume</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">-18</span><span class="p">,</span><span class="w"> </span><span class="p">.</span><span class="n">loop</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">true</span><span class="p">,</span><span class="w"> </span><span class="p">.</span><span class="n">fade_in</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">2</span><span class="n">s</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="p">);</span>
-<span class="n">stage</span><span class="p">.</span><span class="n">audio</span><span class="p">.</span><span class="n">play</span><span class="p">(</span><span class="w"> </span><span class="s">"assets/sfx/pop.wav"</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="p">.</span><span class="n">volume</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">-6</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="p">);</span>
-<span class="p">...</span>
-<span class="n">music</span><span class="p">.</span><span class="n">fade_out</span><span class="p">(</span><span class="w"> </span><span class="mi">3</span><span class="n">s</span><span class="w"> </span><span class="p">);</span>
+<div class="highlight"><pre><span></span><code><span class="n">Sound</span><span class="w"> </span><span class="n">music</span><span class="p">;</span>
+<span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="n">file</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">getenv</span><span class="p">(</span><span class="w"> </span><span class="s">"VOXIMA_MUSIC"</span><span class="w"> </span><span class="p">);</span><span class="w"> </span><span class="n">file</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="nb">nullptr</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">filesystem</span><span class="o">::</span><span class="n">exists</span><span class="p">(</span><span class="w"> </span><span class="n">file</span><span class="w"> </span><span class="p">)</span><span class="w"> </span><span class="p">)</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="n">music</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">stage</span><span class="p">.</span><span class="n">audio</span><span class="p">.</span><span class="n">play</span><span class="p">(</span><span class="w"> </span><span class="n">file</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="p">.</span><span class="n">volume</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">-22.0</span><span class="p">,</span><span class="w"> </span><span class="p">.</span><span class="n">loop</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">true</span><span class="p">,</span><span class="w"> </span><span class="p">.</span><span class="n">fade_in</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">2</span><span class="n">s</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="p">);</span>
+<span class="p">}</span>
+<span class="k">else</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">cerr</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"No music: set VOXIMA_MUSIC to a sound file to have some</span><span class="se">\n</span><span class="s">"</span><span class="p">;</span>
+<span class="p">}</span>
+<span class="n">music</span><span class="p">.</span><span class="n">fade_out</span><span class="p">(</span><span class="w"> </span><span class="mi">2</span><span class="n">s</span><span class="w"> </span><span class="p">);</span>
 </code></pre></div>
 <p><code>SoundOptions</code>:</p>
 <table>
@@ -1199,14 +1234,26 @@ on whether or not you keep it, so you only need it if you will change it. A file
 it is played. <code>stage.audio.stop_sounds()</code> stops everything at once.</p>
 <p>Volume changes are smooth ramps, so they do not click.</p>
 <h2 id="sounds-made-in-code">Sounds made in code<a class="headerlink" href="#sounds-made-in-code" title="Permanent link">&para;</a></h2>
-<p><code>play</code> also takes an <code>AudioBuffer</code> of samples your program made (any rate and channel count; it is made stereo at the track's rate). The eases demo (<code>demos/eases/show_animation.cpp</code>) makes a plucked note this way:</p>
-<div class="highlight"><pre><span></span><code><span class="n">AudioBuffer</span><span class="w"> </span><span class="n">note</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">make_my_note</span><span class="p">(</span><span class="w"> </span><span class="mf">440.F</span><span class="w"> </span><span class="p">);</span><span class="w">                    </span><span class="c1">// your own code fills the samples</span>
-<span class="n">stage</span><span class="p">.</span><span class="n">audio</span><span class="p">.</span><span class="n">play</span><span class="p">(</span><span class="w"> </span><span class="n">note</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="p">.</span><span class="n">volume</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">-14.0</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="p">);</span>
+<p><code>play</code> also takes an <code>AudioBuffer</code> of samples your program made (any rate and channel count; it is made stereo at the track's rate). The <code>sound</code> example (<code>examples/sound</code>) makes a plucked note this way:</p>
+<div class="highlight"><pre><span></span><code><span class="c1">// A plucked note, made rather than read from a file: a sine that dies away over `seconds`</span>
+<span class="n">AudioBuffer</span><span class="w"> </span><span class="nf">pluck</span><span class="p">(</span><span class="w"> </span><span class="kt">float</span><span class="w"> </span><span class="n">frequency</span><span class="p">,</span><span class="w"> </span><span class="kt">float</span><span class="w"> </span><span class="n">seconds</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">2.F</span><span class="w"> </span><span class="p">)</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="k">constexpr</span><span class="w"> </span><span class="kt">size_t</span><span class="w"> </span><span class="n">rate</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">48000</span><span class="p">;</span>
+<span class="w">    </span><span class="n">AudioBuffer</span><span class="w"> </span><span class="n">note</span><span class="p">(</span><span class="w"> </span><span class="k">static_cast</span><span class="o">&lt;</span><span class="kt">size_t</span><span class="o">&gt;</span><span class="p">(</span><span class="w"> </span><span class="n">seconds</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">rate</span><span class="w"> </span><span class="p">),</span><span class="w"> </span><span class="n">rate</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="p">);</span>
+<span class="w">    </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="w"> </span><span class="kt">size_t</span><span class="w"> </span><span class="n">f</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">f</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">note</span><span class="p">.</span><span class="n">frames</span><span class="p">();</span><span class="w"> </span><span class="o">++</span><span class="n">f</span><span class="w"> </span><span class="p">)</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="k">const</span><span class="w"> </span><span class="kt">float</span><span class="w"> </span><span class="n">t</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">static_cast</span><span class="o">&lt;</span><span class="kt">float</span><span class="o">&gt;</span><span class="p">(</span><span class="w"> </span><span class="n">f</span><span class="w"> </span><span class="p">)</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">rate</span><span class="p">;</span>
+<span class="w">        </span><span class="k">const</span><span class="w"> </span><span class="kt">float</span><span class="w"> </span><span class="n">attack</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">min</span><span class="p">(</span><span class="w"> </span><span class="mf">1.F</span><span class="p">,</span><span class="w"> </span><span class="n">t</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="mf">0.005F</span><span class="w"> </span><span class="p">);</span><span class="w"> </span><span class="c1">// no click at the start</span>
+<span class="w">        </span><span class="n">note</span><span class="p">.</span><span class="n">frame</span><span class="p">(</span><span class="w"> </span><span class="n">f</span><span class="w"> </span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">attack</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">exp</span><span class="p">(</span><span class="w"> </span><span class="mf">-3.F</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">t</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">seconds</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="mf">2.F</span><span class="w"> </span><span class="p">)</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">sin</span><span class="p">(</span><span class="w"> </span><span class="mf">2.F</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="mf">3.14159265F</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">frequency</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">t</span><span class="w"> </span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">note</span><span class="p">;</span>
+<span class="p">}</span>
 </code></pre></div>
 <h2 id="tying-a-sound-to-an-animation">Tying a sound to an animation<a class="headerlink" href="#tying-a-sound-to-an-animation" title="Permanent link">&para;</a></h2>
 <p>Play the sound at the moment the animation does something, in the same scene:</p>
-<div class="highlight"><pre><span></span><code><span class="n">stage</span><span class="p">.</span><span class="n">audio</span><span class="p">.</span><span class="n">play</span><span class="p">(</span><span class="w"> </span><span class="s">"pop.wav"</span><span class="w"> </span><span class="p">);</span>
-<span class="k">co_await</span><span class="w"> </span><span class="n">grow_in</span><span class="p">(</span><span class="w"> </span><span class="n">stage</span><span class="p">,</span><span class="w"> </span><span class="n">dot</span><span class="p">,</span><span class="w"> </span><span class="mf">0.4</span><span class="n">s</span><span class="w"> </span><span class="p">);</span>
+<div class="highlight"><pre><span></span><code><span class="c1">// The sound starts at the frame being made, so with the animation</span>
+<span class="n">stage</span><span class="p">.</span><span class="n">audio</span><span class="p">.</span><span class="n">play</span><span class="p">(</span><span class="w"> </span><span class="n">pluck</span><span class="p">(</span><span class="w"> </span><span class="n">notes</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="w"> </span><span class="p">),</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="p">.</span><span class="n">volume</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">-14.0</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="p">);</span>
+<span class="k">co_await</span><span class="w"> </span><span class="n">grow_in</span><span class="p">(</span><span class="w"> </span><span class="n">stage</span><span class="p">,</span><span class="w"> </span><span class="n">dot</span><span class="p">,</span><span class="w"> </span><span class="mf">0.5</span><span class="n">s</span><span class="w"> </span><span class="p">);</span>
 </code></pre></div>
 <p>Narration is separate (it has its own voice and sync; see <a href="../narration/">Narration</a>); music and effects are
 mixed with it.</p>

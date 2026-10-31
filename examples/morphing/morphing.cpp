@@ -71,6 +71,67 @@ AudioBuffer pluck( float frequency, float seconds = 2.F )
 	return note;
 }
 
+// The basics of the guide: a circle becoming a square, going on from it, and a sentence changing with options
+Scene show_basic_morph( Stage &stage, Script & )
+{
+	Theme &theme = *stage.theme;
+	auto &circle = stage.visuals.add( std::make_unique<Circle>() );
+	circle.radius = 0.6F;
+	circle.color = theme.palette().blue;
+	circle.position = { 0.F, 2.F };
+	co_await wait_for( stage, 0.5s );
+
+	// --8<-- [start:morph]
+	auto square = std::make_unique<Rectangle>( 0.6F, 0.6F, theme.palette().green );
+	square->position = circle.position;
+	co_await morph( stage, circle, std::move( square ), 1.5s, ease_cubic_in_out );
+	// --8<-- [end:morph]
+	// (the circle has been replaced: it is not used again)
+	stage.visuals.clear();
+
+	// To go on from what was made, keep a pointer to it before it is handed over
+	Visual *shown = &stage.visuals.add( std::make_unique<Circle>() );
+	shown->position = { 0.F, 2.F };
+	for ( int i = 0; i < 2; ++i )
+	{
+		auto next_shape = std::make_unique<Rectangle>( 0.6F, 0.6F, theme.palette().green );
+		next_shape->position = shown->position;
+		std::unique_ptr<Visual> square = std::move( next_shape );
+		// --8<-- [start:pointer]
+		Visual *next = square.get();
+		co_await morph( stage, *shown, std::move( square ), 1s, ease_cubic_in_out );
+		shown = next;
+		// --8<-- [end:pointer]
+		auto circle_again = std::make_unique<Circle>();
+		circle_again->radius = 0.6F;
+		circle_again->position = shown->position;
+		Visual *back = circle_again.get();
+		co_await morph( stage, *shown, std::move( circle_again ), 1s, ease_cubic_in_out );
+		shown = back;
+	}
+	stage.visuals.clear();
+
+	// A sentence edited, with options
+	auto sentence = [&]( const char *words )
+	{
+		auto text = make_text( theme, words, FontStyle{ Intent::PROSE }.large() );
+		center_group( *text );
+		return text;
+	};
+	shown = &stage.visuals.add( sentence( "The big cat sat down" ) );
+	co_await wait_for( stage, 0.5s );
+	auto target = sentence( "The cat sat on the mat" );
+	auto smooth = []( float t ) { return t * t * ( 3.F - 2.F * t ); };
+	// --8<-- [start:options]
+	MorphOptions options;
+	options.leaves = LeafMatch::BY_WORD;   // BY_WORD, BY_TAG, ... instead of AUTO
+	options.stagger = 0.4F;                // start the parts one after another (0 to 0.95 of the time)
+	options.part_ease = smooth;            // an ease for each part's own progress
+	co_await morph( stage, *shown, std::move( target ), 1.7s, ease_cubic_in_out, options );
+	// --8<-- [end:options]
+	co_await wait_for( stage, 1s );
+}
+
 // A shape that turns into other shapes and letters, one after the other: circle, square, then glyphs
 // (with holes that open and close) and back to the circle. Each change sounds a two-note chord (sound effects
 // play together, and ring on into the next).
@@ -123,6 +184,7 @@ Scene show_formula_morph( Stage &stage, Script & )
 
 	// Tagged parts are followed from one formula to the next wherever they end up; everything else is matched
 	// by identical glyphs, and what has no counterpart fades (the parentheses, the new terms)
+	// --8<-- [start:tags]
 	const Expr a = tag( "a", text( "a" ) );
 	const Expr b = tag( "b", text( "b" ) );
 	const Expr expanded = row(
@@ -131,6 +193,7 @@ Scene show_formula_morph( Stage &stage, Script & )
 		  ord( text( "2ab" ) ),
 		  bin( "+" ),
 		  ord( superscript( b, text( "2" ) ) ) } );
+	// --8<-- [end:tags]
 
 	Visual *shown = &stage.visuals.add( build( superscript( parens( row( { ord( a ), bin( "+" ), ord( b ) } ) ), text( "2" ) ) ) );
 	co_await wait_for( stage, 0.5s );
@@ -258,6 +321,7 @@ Scene show_more_morphs( Stage &stage, Script & )
 }
 }
 
+REGISTER_SCENE( "morph-basics", "A circle becoming a square, and a sentence changing with options", show_basic_morph );
 REGISTER_SCENE( "morph-shapes", "A circle turning into a square and letters, with holes opening and closing", show_morph );
 REGISTER_SCENE( "morph-formula", "(a+b)^2 rewritten step by step, matching parts by tag and glyph", show_formula_morph );
 REGISTER_SCENE( "morph-text", "A sentence edited word by word", show_text_morph );

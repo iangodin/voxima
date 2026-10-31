@@ -1,14 +1,14 @@
 # Music and sound effects
 
+The code on this page is from the `sound` example (`examples/sound`), which is built with Voxima.
+
 Any sound file (WAV, FLAC, Ogg, MP3) can be played into the video with `stage.audio.play`. It starts at the frame
 being made, and carries on by itself, **across scenes**, until its end or until you stop it. It is mixed into
 **every language's** audio track. Any number play at once.
 
 ```cpp
-Sound music = stage.audio.play( "assets/music/theme.mp3", { .volume = -18, .loop = true, .fade_in = 2s } );
-stage.audio.play( "assets/sfx/pop.wav", { .volume = -6 } );
-...
-music.fade_out( 3s );
+--8<-- "examples/sound/sound.cpp:music"
+--8<-- "examples/sound/sound.cpp:fade-out"
 ```
 
 `SoundOptions`:
@@ -31,8 +31,7 @@ Volume changes are smooth ramps, so they do not click.
 `play` also takes an `AudioBuffer` of samples your program made (any rate and channel count; it is made stereo at the track's rate). The `sound` example (`examples/sound`) makes a plucked note this way:
 
 ```cpp
-AudioBuffer note = make_my_note( 440.F );                    // your own code fills the samples
-stage.audio.play( note, { .volume = -14.0 } );
+--8<-- "examples/sound/sound.cpp:pluck"
 ```
 
 ## Tying a sound to an animation
@@ -40,8 +39,7 @@ stage.audio.play( note, { .volume = -14.0 } );
 Play the sound at the moment the animation does something, in the same scene:
 
 ```cpp
-stage.audio.play( "pop.wav" );
-co_await grow_in( stage, dot, 0.4s );
+--8<-- "examples/sound/sound.cpp:tie"
 ```
 
 Narration is separate (it has its own voice and sync; see [Narration](narration.md)); music and effects are

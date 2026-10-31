@@ -38,6 +38,7 @@ namespace
 // Axes with a grid, and two graphs drawn on them: a sine wave, then 1/x (in two pieces, either side of 0)
 Scene show_plot_with( Stage &stage, AxisPlacement placement )
 {
+	// --8<-- [start:axes]
 	AxesOptions options;
 	options.placement = placement;
 	options.x = { -6.0, 6.0 };
@@ -47,8 +48,10 @@ Scene show_plot_with( Stage &stage, AxisPlacement placement )
 	options.grid = true;
 	auto &axes = stage.visuals.add( make_axes( *stage.theme, options ) );
 	co_await draw_axes( stage, axes, 2.5s );
+	// --8<-- [end:axes]
 	co_await wait_for( stage, 0.3s );
 
+	// --8<-- [start:graphs]
 	auto &wave = axes.add_plot( plot( axes, []( double x ) { return std::sin( x ); }, { .name = "sin x" } ) );
 	co_await draw( stage, wave, 2s );
 
@@ -57,9 +60,12 @@ Scene show_plot_with( Stage &stage, AxisPlacement placement )
 	orange.name = "1 / x";
 	auto &inverse = axes.add_plot( plot( axes, []( double x ) { return 1.0 / x; }, orange ) );
 	co_await draw( stage, inverse, 2s );
+	// --8<-- [end:graphs]
 
 	// A key to the two curves
+	// --8<-- [start:legend]
 	auto &key = add_legend( axes, make_legend( *stage.theme, { legend_entry( wave ), legend_entry( inverse ) } ), Anchor::TOP_RIGHT );
+	// --8<-- [end:legend]
 	co_await fade_in( stage, key, 0.6s );
 	co_await wait_for( stage, 2s );
 }
@@ -84,18 +90,22 @@ Scene show_charts( Stage &stage, Script & )
 	// Points, one series joined by a line, another as crosses
 	auto &plot_axes = stage.visuals.add( make_axes( theme, { .x = { 0, 10 }, .y = { 0, 8 }, .width = 7.F, .height = 4.5F, .grid = true, .x_label = "t", .y_label = "v" } ) );
 	plot_axes.position = { -3.7F, 0.2F };
+	// --8<-- [start:scatter]
 	auto &measured = plot_axes.add_plot( scatter( plot_axes, { { 1, 1.5 }, { 2, 2.4 }, { 3.5, 3.0 }, { 5, 5.2 }, { 6.5, 5.6 }, { 8, 7.1 }, { 9.5, 7.4 } }, { .line = JoinStyle::SMOOTH, .name = "measured" } ) );
 	auto &noisy = plot_axes.add_plot( scatter( plot_axes, { { 1, 3.0 }, { 2.5, 2.2 }, { 4, 4.6 }, { 5.5, 3.1 }, { 7, 4.4 }, { 9, 5.0 } }, { .marker = MarkerShape::CROSS, .size = 0.14F, .name = "noisy" } ) );
+	// --8<-- [end:scatter]
 	auto &peaks = plot_axes.add_plot( scatter( plot_axes, { { 2, 6.5 }, { 4, 7.4 }, { 6, 6.0 } }, { .marker = MarkerShape::TRIANGLE, .name = "peaks" } ) );
 	add_legend( plot_axes, make_legend( theme, { legend_entry( measured ), legend_entry( noisy ), legend_entry( peaks ) } ), Anchor::BOTTOM_RIGHT );
 
 	// Bars side by side
+	// --8<-- [start:bars]
 	auto &bars = stage.visuals.add( make_bar_chart( theme, {
 		.categories = { "Q1", "Q2", "Q3", "Q4" },
 		.series = { { "north", { 12, 19, 15, 22 } }, { "south", { 9, 14, 20, 17 } } },
 		.width = 4.8F, .height = 4.F, .values = Range{ 0, 30 }, .value_labels = true } ) );
 	bars.position = { 4.9F, 0.6F };
 	add_legend( bars.axes(), make_legend( theme, legend_entries( bars ), { .horizontal = true } ), Anchor::TOP_LEFT );
+	// --8<-- [end:bars]
 
 	auto &title = stage.visuals.add( make_text( theme, "Points and bars", FontStyle{ Intent::TITLE } ) );
 	move_to( title, { 0.F, 4.1F }, Anchor::TOP );
@@ -129,6 +139,7 @@ Scene show_diagram( Stage &stage, Script & )
 		return PanelOptions{ .fill = { accent.r, accent.g, accent.b, 0.25F }, .outline = accent, .outline_width = 0.04F };
 	};
 
+	// --8<-- [start:diagram]
 	auto &flow = stage.visuals.add( make_diagram() );
 	flow.add_text_node( theme, "read", "Read input", label, {}, tinted( palette.blue ) );
 	flow.add_text_node( theme, "parse", "Parse", label, {}, tinted( palette.green ) );
@@ -141,6 +152,7 @@ Scene show_diagram( Stage &stage, Script & )
 	flow.add_edge( "check", "run" );
 	flow.add_edge( "run", "log" );
 	flow.layout_layers( { .layer_gap = 0.9F } );
+	// --8<-- [end:diagram]
 	// Off to the left: the nodes moved (not the diagram, so the callout, in the stage's frame, finds them where they are)
 	for ( const char *id: { "read", "parse", "check", "run", "log" } )
 	{
@@ -148,23 +160,29 @@ Scene show_diagram( Stage &stage, Script & )
 	}
 	flow.update();
 
+	// --8<-- [start:callout]
 	auto &note = stage.visuals.add( make_callout(
 		make_paragraph( theme, "Both checks must finish before anything runs", label, 3.6F ),
 		flow.node( "run" ) ) );
 	next_to( note.panel(), flow.node( "run" ), Anchor::RIGHT, 1.6F );
 	note.update();
+	// --8<-- [end:callout]
 
 	auto &list = stage.visuals.add( make_list( theme, { "Each step is a node", "Arrows say what waits for what", "The layers are worked out for you" }, { .max_width = 5.2F } ) );
 	move_to( list, { 4.2F, -2.6F }, Anchor::CENTER );
 
 	// A brace along the list's left, with its label
+	// --8<-- [start:brace]
 	stage.visuals.add( make_labeled_brace_beside( theme, list, Anchor::LEFT, "3 ideas", label, 0.25F, { .color = palette.muted } ) );
+	// --8<-- [end:brace]
 
 	// A number line, with a mark and an interval
+	// --8<-- [start:number-line]
 	auto &numbers = stage.visuals.add( make_number_line( theme, { .range = { 0.0, 10.0 }, .length = 7.F } ) );
 	numbers.position = { 3.8F, 1.4F };
 	numbers.add_interval( theme, 6.0, 9.0, palette.blue, { .closed_to = false } );
 	numbers.add_mark( theme, 2.5, "x", palette.orange );
+	// --8<-- [end:number-line]
 
 	// Three things of different sizes, spread evenly along the top
 	auto &top = stage.visuals.add( std::make_unique<Group>() );
@@ -213,7 +231,9 @@ Scene show_diagram( Stage &stage, Script & )
 	{
 		nodes.push_back( &pipeline.node( id ) );
 	}
+	// --8<-- [start:diagram-stagger]
 	co_await stagger( stage, nodes, 0.25s, [&]( Visual &node ) { return grow_in( stage, node, 0.5s ); } );
+	// --8<-- [end:diagram-stagger]
 	std::vector<Visual *> arrows;
 	for ( size_t i = 0; i < pipeline.edge_count(); ++i )
 	{
@@ -240,10 +260,12 @@ Scene show_geometry( Stage &stage, Script & )
 	const Point b{ 2.F, -2.F };
 	const Point c{ 2.F, 2.F };
 
+	// --8<-- [start:geometry]
 	stage.visuals.add( make_polygon( theme, { a, b, c }, { .fill = Color{ palette.blue.r, palette.blue.g, palette.blue.b, 0.2F }, .labels = { "A", "B", "C" }, .dots = true } ) );
 	stage.visuals.add( make_angle( theme, b, a, c, { .radius = 0.5F } ) );
 	stage.visuals.add( make_angle( theme, a, b, c, { .radius = 1.2F, .color = palette.orange, .label = "θ" } ) );
 	stage.visuals.add( make_labeled_brace( theme, a, b, "adjacent", FontStyle{ Intent::LABEL }, { .color = palette.muted, .left = false } ) );
+	// --8<-- [end:geometry]
 
 	co_await wait_for( stage, 2s );
 }

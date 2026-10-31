@@ -4,6 +4,8 @@ A scene can be **narrated**: a text-to-speech model reads lines from the [script
 chosen voice, in every language of the video, and the animation follows the speech. Subtitles for every language
 are made along with it.
 
+The code on this page is from the `narration` example (`examples/narration`), which is built with Voxima.
+
 ## Voices
 
 A narrator is a name in the script's `voices` section, pointing at a short **reference clip**; the speech is made
@@ -30,16 +32,7 @@ words along each line.
 ## Speaking in a scene
 
 ```cpp
-Scene intro( Stage &stage, Script &script )
-{
-	Narration narration;
-	narration.setup( "narrator", script, stage.audio );     // the voice's name in the script
-	narration.speech( "intro" );                            // the text: a path of keys into the script
-
-	co_await choreograph(
-		narration.play(),                                   // plays it through
-		/* ...whatever else the scene animates, at the same time... */ );
-}
+--8<-- "examples/narration/narration.cpp:intro"
 ```
 
 - `setup( name, script, stage.audio )` finds the voice for **every language** in use.
@@ -57,7 +50,7 @@ Line breaks and markers in the script are the places to sync to, and they **line
 **Lines.** Each line of the multi-line text starts a sync point:
 
 ```cpp
-co_await narration.until_line( 2 );          // when the third line starts
+--8<-- "examples/narration/narration.cpp:until-line"
 ```
 
 This is the robust choice: it is correct in every language and even when the shown text and the spoken text
@@ -66,10 +59,7 @@ differ in length (`<written|spoken>`).
 **Markers.** For finer points inside a line, write `{name}` in every language's text, then:
 
 ```cpp
-co_await narration.until_marker( "a" );
-co_await narration.track_markers( "a", "b", [&]( float t ) { morph.set( t ); } );   // t: 0 to 1 between the two
-co_await narration.track_to_end( "b", [&]( float t ) { ... } );
-double when = narration.marker_time( "a" );                  // seconds, in the first language's narration
+--8<-- "examples/narration/narration.cpp:markers"
 ```
 
 `track_markers` calls your function every frame with how far through the words between the markers the
@@ -97,19 +87,7 @@ picture) is an ordinary visual: show the line when `until_line( i )` is reached.
 Light up each word as it is said (karaoke), pop it, underline it:
 
 ```cpp
-using namespace word_effects;
-const Palette &palette = theme.palette();
-
-narration.speech( "intro" );
-const auto lines = script.fetch( lang, "intro" ).as_multiline();
-StyledText styled( strip_markers( lines[0] ) );
-styled.set_font_style( 0, styled.size(), FontStyle{ Intent::PROSE }.large() );
-auto &text = stage.visuals.add( make_styled_text( theme, styled ) );
-center_group( text );
-
-co_await choreograph(
-	narration.play(),
-	narration.animate_words( text, all( { color( palette.muted, palette.yellow, stage.foreground ), pop( 1.15F ) } ) ) );
+--8<-- "examples/narration/narration.cpp:animate-words"
 ```
 
 Ready-made effects: `reveal()` (invisible until said, then fades in), `color( before, during, after )`,
@@ -120,11 +98,7 @@ the word is *seen* in: for the text color use `stage.foreground`, not white. For
 You can write your own effect: it is a coroutine receiving a `WordContext` (the word, its times, the clock):
 
 ```cpp
-Scene wiggle( WordContext word )
-{
-	co_await word.over_word( [&]( float t ) { word.word.rotation = 0.1F * std::sin( 20.F * t ); } );
-	word.word.rotation = 0.F;
-}
+--8<-- "examples/narration/narration.cpp:wiggle"
 ```
 
 `narration.on_words( text, callback )` is the simpler form: call a function as each word starts.

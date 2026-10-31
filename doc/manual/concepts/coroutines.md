@@ -4,14 +4,10 @@ A scene is a C++20 coroutine. It runs a little each frame and **pauses at every 
 animation as ordinary top-to-bottom code instead of a state machine:
 
 ```cpp
-Scene intro( Stage &stage, Script &script )
-{
-	auto &title = stage.visuals.add( make_text( *stage.theme, "Hello", FontStyle{ Intent::TITLE } ) );
-	co_await fade_in( stage, title, 0.5s );   // frames pass here
-	co_await wait_for( stage, 1s );
-	co_await fade_out( stage, title, 0.5s );
-}
+--8<-- "examples/coroutines/coroutines.cpp:intro"
 ```
+
+The code on this page is from the `coroutines` example (`examples/coroutines`), which is built with Voxima.
 
 A `Scene` is the coroutine type (`Scene` is an alias of `Coroutine`). Everything you can `co_await` in one is a
 `Scene` too: the animation verbs, `wait_for`, narration, and other scenes.
@@ -19,9 +15,7 @@ A `Scene` is the coroutine type (`Scene` is an alias of `Coroutine`). Everything
 ## Waiting
 
 ```cpp
-co_await wait_for( stage, 1.5s );     // a pause
-co_await wait_frames( 10 );           // exactly 10 frames, whatever the frame rate
-co_await next_frame();                // one frame
+--8<-- "examples/coroutines/coroutines.cpp:pauses"
 ```
 
 ## Doing things at the same time
@@ -29,20 +23,14 @@ co_await next_frame();                // one frame
 `choreograph` runs several animations together and finishes when the **last** one does:
 
 ```cpp
-co_await choreograph(
-	fade_in( stage, title, 0.5s ),
-	grow_in( stage, circle, 0.8s ),
-	narration.play() );
+--8<-- "examples/coroutines/coroutines.cpp:choreograph"
 ```
 
 When the number of animations is only known at run time, collect them in a `std::vector<Coroutine>` and use
 `choreograph_all`:
 
 ```cpp
-std::vector<Coroutine> running;
-for ( Visual *item: items )
-	running.push_back( fade_in( stage, *item, 0.4s ) );
-co_await choreograph_all( std::move( running ) );
+--8<-- "examples/coroutines/coroutines.cpp:choreograph-all"
 ```
 
 To start things one after another with an overlap, use `stagger` (see [Animation verbs](../guides/animation.md)).
@@ -53,10 +41,7 @@ For your own animations, **`tween`** calls a function once per frame with how fa
 an [ease](../guides/animation.md#easing):
 
 ```cpp
-co_await tween( stage, 1.5s, ease_cubic_in_out, [&]( float t )
-{
-	circle.position = { -4.F + 8.F * t, 0.F };
-} );
+--8<-- "examples/coroutines/coroutines.cpp:tween"
 ```
 
 `tween` always makes at least two frames, a first (`t = 0`) and a last (`t = 1`, exactly).
@@ -65,8 +50,7 @@ To keep **one thing tied to another** for as long as you like, add an *updater*.
 scene has done its step and before the picture is drawn:
 
 ```cpp
-auto tie = stage.updaters.add( [&] { label.position = dot.position + Point{ 0.F, 0.4F }; } );
-co_await move_along( stage, dot, path, 2s );     // the label goes with the dot
+--8<-- "examples/coroutines/coroutines.cpp:updater"
 ```
 
 The returned handle ends the updater when it is destroyed; call `tie.release()` to let it run to the end of the

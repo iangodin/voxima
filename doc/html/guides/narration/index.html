@@ -362,6 +362,34 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting-started/examples/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    The examples
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -1250,6 +1278,7 @@
 <p>A scene can be <strong>narrated</strong>: a text-to-speech model reads lines from the <a href="../../concepts/script/">script</a> in a
 chosen voice, in every language of the video, and the animation follows the speech. Subtitles for every language
 are made along with it.</p>
+<p>The code on this page is from the <code>narration</code> example (<code>examples/narration</code>), which is built with Voxima.</p>
 <h2 id="voices">Voices<a class="headerlink" href="#voices" title="Permanent link">&para;</a></h2>
 <p>A narrator is a name in the script's <code>voices</code> section, pointing at a short <strong>reference clip</strong>; the speech is made
 in that voice.</p>
@@ -1275,7 +1304,7 @@ words along each line.</p>
 
 <span class="w">    </span><span class="k">co_await</span><span class="w"> </span><span class="n">choreograph</span><span class="p">(</span>
 <span class="w">        </span><span class="n">narration</span><span class="p">.</span><span class="n">play</span><span class="p">(),</span><span class="w">                                   </span><span class="c1">// plays it through</span>
-<span class="w">        </span><span class="cm">/* ...whatever else the scene animates, at the same time... */</span><span class="w"> </span><span class="p">);</span>
+<span class="w">        </span><span class="cm">/* ...whatever else the scene animates, at the same time... */</span><span class="w"> </span><span class="n">wait_for</span><span class="p">(</span><span class="w"> </span><span class="n">stage</span><span class="p">,</span><span class="w"> </span><span class="mf">0.1</span><span class="n">s</span><span class="w"> </span><span class="p">)</span><span class="w"> </span><span class="p">);</span>
 <span class="p">}</span>
 </code></pre></div>
 <ul>
@@ -1289,15 +1318,23 @@ words along each line.</p>
 <h2 id="following-the-speech">Following the speech<a class="headerlink" href="#following-the-speech" title="Permanent link">&para;</a></h2>
 <p>Line breaks and markers in the script are the places to sync to, and they <strong>line up across languages</strong>.</p>
 <p><strong>Lines.</strong> Each line of the multi-line text starts a sync point:</p>
-<div class="highlight"><pre><span></span><code><span class="k">co_await</span><span class="w"> </span><span class="n">narration</span><span class="p">.</span><span class="n">until_line</span><span class="p">(</span><span class="w"> </span><span class="mi">2</span><span class="w"> </span><span class="p">);</span><span class="w">          </span><span class="c1">// when the third line starts</span>
+<div class="highlight"><pre><span></span><code><span class="k">auto</span><span class="w"> </span><span class="n">second_line</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span><span class="o">&amp;</span><span class="p">]()</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">Scene</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="k">co_await</span><span class="w"> </span><span class="n">narration</span><span class="p">.</span><span class="n">until_line</span><span class="p">(</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="p">);</span><span class="w">          </span><span class="c1">// when the second line starts</span>
+<span class="w">    </span><span class="n">mark</span><span class="p">.</span><span class="n">color</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">theme</span><span class="p">.</span><span class="n">palette</span><span class="p">().</span><span class="n">green</span><span class="p">;</span>
+<span class="p">};</span>
 </code></pre></div>
 <p>This is the robust choice: it is correct in every language and even when the shown text and the spoken text
 differ in length (<code>&lt;written|spoken&gt;</code>).</p>
 <p><strong>Markers.</strong> For finer points inside a line, write <code>{name}</code> in every language's text, then:</p>
-<div class="highlight"><pre><span></span><code><span class="k">co_await</span><span class="w"> </span><span class="n">narration</span><span class="p">.</span><span class="n">until_marker</span><span class="p">(</span><span class="w"> </span><span class="s">"a"</span><span class="w"> </span><span class="p">);</span>
-<span class="k">co_await</span><span class="w"> </span><span class="n">narration</span><span class="p">.</span><span class="n">track_markers</span><span class="p">(</span><span class="w"> </span><span class="s">"a"</span><span class="p">,</span><span class="w"> </span><span class="s">"b"</span><span class="p">,</span><span class="w"> </span><span class="p">[</span><span class="o">&amp;</span><span class="p">](</span><span class="w"> </span><span class="kt">float</span><span class="w"> </span><span class="n">t</span><span class="w"> </span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">morph</span><span class="p">.</span><span class="n">set</span><span class="p">(</span><span class="w"> </span><span class="n">t</span><span class="w"> </span><span class="p">);</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="p">);</span><span class="w">   </span><span class="c1">// t: 0 to 1 between the two</span>
-<span class="k">co_await</span><span class="w"> </span><span class="n">narration</span><span class="p">.</span><span class="n">track_to_end</span><span class="p">(</span><span class="w"> </span><span class="s">"b"</span><span class="p">,</span><span class="w"> </span><span class="p">[</span><span class="o">&amp;</span><span class="p">](</span><span class="w"> </span><span class="kt">float</span><span class="w"> </span><span class="n">t</span><span class="w"> </span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="p">...</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="p">);</span>
-<span class="kt">double</span><span class="w"> </span><span class="n">when</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">narration</span><span class="p">.</span><span class="n">marker_time</span><span class="p">(</span><span class="w"> </span><span class="s">"a"</span><span class="w"> </span><span class="p">);</span><span class="w">                  </span><span class="c1">// seconds, in the first language's narration</span>
+<div class="highlight"><pre><span></span><code><span class="k">auto</span><span class="w"> </span><span class="n">cues</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span><span class="o">&amp;</span><span class="p">]()</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">Scene</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="k">co_await</span><span class="w"> </span><span class="n">narration</span><span class="p">.</span><span class="n">until_marker</span><span class="p">(</span><span class="w"> </span><span class="s">"a"</span><span class="w"> </span><span class="p">);</span>
+<span class="w">    </span><span class="k">co_await</span><span class="w"> </span><span class="n">narration</span><span class="p">.</span><span class="n">track_markers</span><span class="p">(</span><span class="w"> </span><span class="s">"a"</span><span class="p">,</span><span class="w"> </span><span class="s">"b"</span><span class="p">,</span><span class="w"> </span><span class="p">[</span><span class="o">&amp;</span><span class="p">](</span><span class="w"> </span><span class="kt">float</span><span class="w"> </span><span class="n">t</span><span class="w"> </span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">dot</span><span class="p">.</span><span class="n">radius</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">0.5F</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">t</span><span class="p">;</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="p">);</span><span class="w">   </span><span class="c1">// t: 0 to 1 between the two</span>
+<span class="w">    </span><span class="k">co_await</span><span class="w"> </span><span class="n">narration</span><span class="p">.</span><span class="n">track_to_end</span><span class="p">(</span><span class="w"> </span><span class="s">"b"</span><span class="p">,</span><span class="w"> </span><span class="p">[</span><span class="o">&amp;</span><span class="p">](</span><span class="w"> </span><span class="kt">float</span><span class="w"> </span><span class="n">t</span><span class="w"> </span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">dot</span><span class="p">.</span><span class="n">radius</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">1.5F</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">t</span><span class="p">;</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="p">);</span>
+<span class="w">    </span><span class="kt">double</span><span class="w"> </span><span class="n">when</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">narration</span><span class="p">.</span><span class="n">marker_time</span><span class="p">(</span><span class="w"> </span><span class="s">"a"</span><span class="w"> </span><span class="p">);</span><span class="w">                  </span><span class="c1">// seconds, in the first language's narration</span>
+<span class="w">    </span><span class="p">(</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="p">)</span><span class="w"> </span><span class="n">when</span><span class="p">;</span>
+<span class="p">};</span>
 </code></pre></div>
 <p><code>track_markers</code> calls your function every frame with how far through the words between the markers the
 narration has got (and exactly 1 at the end): a morph tied to it lands on the words.</p>
@@ -1320,16 +1357,13 @@ picture) is an ordinary visual: show the line when <code>until_line( i )</code> 
 <div class="highlight"><pre><span></span><code><span class="k">using</span><span class="w"> </span><span class="k">namespace</span><span class="w"> </span><span class="nn">word_effects</span><span class="p">;</span>
 <span class="k">const</span><span class="w"> </span><span class="n">Palette</span><span class="w"> </span><span class="o">&amp;</span><span class="n">palette</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">theme</span><span class="p">.</span><span class="n">palette</span><span class="p">();</span>
 
-<span class="n">narration</span><span class="p">.</span><span class="n">speech</span><span class="p">(</span><span class="w"> </span><span class="s">"intro"</span><span class="w"> </span><span class="p">);</span>
 <span class="k">const</span><span class="w"> </span><span class="k">auto</span><span class="w"> </span><span class="n">lines</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">script</span><span class="p">.</span><span class="n">fetch</span><span class="p">(</span><span class="w"> </span><span class="n">lang</span><span class="p">,</span><span class="w"> </span><span class="s">"intro"</span><span class="w"> </span><span class="p">).</span><span class="n">as_multiline</span><span class="p">();</span>
 <span class="n">StyledText</span><span class="w"> </span><span class="nf">styled</span><span class="p">(</span><span class="w"> </span><span class="n">strip_markers</span><span class="p">(</span><span class="w"> </span><span class="n">lines</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="w"> </span><span class="p">)</span><span class="w"> </span><span class="p">);</span>
 <span class="n">styled</span><span class="p">.</span><span class="n">set_font_style</span><span class="p">(</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="n">styled</span><span class="p">.</span><span class="n">size</span><span class="p">(),</span><span class="w"> </span><span class="n">FontStyle</span><span class="p">{</span><span class="w"> </span><span class="n">Intent</span><span class="o">::</span><span class="n">PROSE</span><span class="w"> </span><span class="p">}.</span><span class="n">large</span><span class="p">()</span><span class="w"> </span><span class="p">);</span>
 <span class="k">auto</span><span class="w"> </span><span class="o">&amp;</span><span class="n">text</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">stage</span><span class="p">.</span><span class="n">visuals</span><span class="p">.</span><span class="n">add</span><span class="p">(</span><span class="w"> </span><span class="n">make_styled_text</span><span class="p">(</span><span class="w"> </span><span class="n">theme</span><span class="p">,</span><span class="w"> </span><span class="n">styled</span><span class="w"> </span><span class="p">)</span><span class="w"> </span><span class="p">);</span>
 <span class="n">center_group</span><span class="p">(</span><span class="w"> </span><span class="n">text</span><span class="w"> </span><span class="p">);</span>
 
-<span class="k">co_await</span><span class="w"> </span><span class="n">choreograph</span><span class="p">(</span>
-<span class="w">    </span><span class="n">narration</span><span class="p">.</span><span class="n">play</span><span class="p">(),</span>
-<span class="w">    </span><span class="n">narration</span><span class="p">.</span><span class="n">animate_words</span><span class="p">(</span><span class="w"> </span><span class="n">text</span><span class="p">,</span><span class="w"> </span><span class="n">all</span><span class="p">(</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">color</span><span class="p">(</span><span class="w"> </span><span class="n">palette</span><span class="p">.</span><span class="n">muted</span><span class="p">,</span><span class="w"> </span><span class="n">palette</span><span class="p">.</span><span class="n">yellow</span><span class="p">,</span><span class="w"> </span><span class="n">stage</span><span class="p">.</span><span class="n">foreground</span><span class="w"> </span><span class="p">),</span><span class="w"> </span><span class="n">pop</span><span class="p">(</span><span class="w"> </span><span class="mf">1.15F</span><span class="w"> </span><span class="p">)</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="p">)</span><span class="w"> </span><span class="p">)</span><span class="w"> </span><span class="p">);</span>
+<span class="k">auto</span><span class="w"> </span><span class="n">words</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">narration</span><span class="p">.</span><span class="n">animate_words</span><span class="p">(</span><span class="w"> </span><span class="n">text</span><span class="p">,</span><span class="w"> </span><span class="n">all</span><span class="p">(</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">color</span><span class="p">(</span><span class="w"> </span><span class="n">palette</span><span class="p">.</span><span class="n">muted</span><span class="p">,</span><span class="w"> </span><span class="n">palette</span><span class="p">.</span><span class="n">yellow</span><span class="p">,</span><span class="w"> </span><span class="n">stage</span><span class="p">.</span><span class="n">foreground</span><span class="w"> </span><span class="p">),</span><span class="w"> </span><span class="n">pop</span><span class="p">(</span><span class="w"> </span><span class="mf">1.15F</span><span class="w"> </span><span class="p">)</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="p">)</span><span class="w"> </span><span class="p">);</span>
 </code></pre></div>
 <p>Ready-made effects: <code>reveal()</code> (invisible until said, then fades in), <code>color( before, during, after )</code>,
 <code>pop( scale )</code>, <code>underline( color )</code>; <code>all( { ... } )</code> combines them. The colors are blended, so give the colors

@@ -49,6 +49,7 @@ AudioBuffer pluck( float frequency, float seconds = 2.F )
 // --8<-- [start:scene]
 Scene notes( Stage &stage, Script & )
 {
+	// --8<-- [start:music]
 	Sound music;
 	if ( const char *file = std::getenv( "VOXIMA_MUSIC" ); file != nullptr && std::filesystem::exists( file ) )
 	{
@@ -58,6 +59,7 @@ Scene notes( Stage &stage, Script & )
 	{
 		std::cerr << "No music: set VOXIMA_MUSIC to a sound file to have some\n";
 	}
+	// --8<-- [end:music]
 
 	const Palette &palette = stage.theme->palette();
 	const Color colors[] = { palette.blue, palette.green, palette.red };
@@ -71,14 +73,18 @@ Scene notes( Stage &stage, Script & )
 		auto &dot = stage.visuals.add( std::move( circle ) );
 		dot.position = { -3.F + 3.F * static_cast<float>( i ), 0.F };
 
+		// --8<-- [start:tie]
 		// The sound starts at the frame being made, so with the animation
 		stage.audio.play( pluck( notes[i] ), { .volume = -14.0 } );
 		co_await grow_in( stage, dot, 0.5s );
+		// --8<-- [end:tie]
 		co_await wait_for( stage, 0.4s );
 	}
 
 	co_await wait_for( stage, 2s );
+	// --8<-- [start:fade-out]
 	music.fade_out( 2s );
+	// --8<-- [end:fade-out]
 	co_await wait_for( stage, 2s );
 }
 // --8<-- [end:scene]

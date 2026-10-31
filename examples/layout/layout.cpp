@@ -19,6 +19,7 @@
 #include <visuals/CreateTable.h>
 #include <visuals/CreateText.h>
 #include <visuals/Panel.h>
+#include <visuals/Tags.h>
 
 #include <chrono>
 #include <cmath>
@@ -27,6 +28,85 @@
 using namespace std::chrono_literals;
 
 VOXIMA_PLUGIN();
+
+// The basics of the guide: shapes, groups, placement against each other, rows and grids, panels, lists, tables and tags
+Scene show_basics( Stage &stage, Script & )
+{
+	Theme &theme = *stage.theme;
+	const FontStyle style{ Intent::LABEL };
+
+	// --8<-- [start:shapes]
+	auto circle = std::make_unique<Circle>( 0.7F, theme.palette().blue );   // radius, color
+	auto &dot = stage.visuals.add( std::move( circle ) );
+	dot.position = { -3.F, 0.F };
+
+	auto &box = stage.visuals.add( std::make_unique<Rectangle>( 1.F, 0.5F, theme.palette().green ) );  // half width, half height
+	// --8<-- [end:shapes]
+	box.position = { -5.F, 0.F };
+
+	// --8<-- [start:groups]
+	auto &row = stage.visuals.add( std::make_unique<Group>() );
+	row.add( std::make_unique<Circle>( 0.4F ) );
+	row.add( std::make_unique<Circle>( 0.4F ) );
+	// --8<-- [end:groups]
+	row.position = { 0.F, -3.F };
+
+	auto &title = stage.visuals.add( make_text( theme, "Placing things", FontStyle{ Intent::TITLE } ) );
+	auto &label = stage.visuals.add( make_text( theme, "label", style ) );
+	auto &other = stage.visuals.add( std::make_unique<Circle>( 0.5F, theme.palette().red ) );
+	other.position = { 1.F, 1.F };
+	// --8<-- [start:panel]
+	auto &panel = stage.visuals.add( make_panel( make_text( theme, "Theorem", style ), { .padding = 0.5F } ) );
+	// --8<-- [end:panel]
+	// --8<-- [start:placement]
+	move_to( title, { 0.F, 3.5F }, Anchor::TOP );          // its top edge at y = 3.5
+	next_to( label, dot, Anchor::BOTTOM );                 // under it, a gap between
+	next_to( panel, other, Anchor::RIGHT, 1.0F );          // to its right, 1 unit apart
+	// --8<-- [end:placement]
+
+	auto &group = stage.visuals.add( std::make_unique<Group>() );
+	for ( int i = 0; i < 7; ++i )
+	{
+		group.add( std::make_unique<Rectangle>( 0.2F + 0.05F * static_cast<float>( i ), 0.2F, theme.palette().orange ) );
+	}
+	// --8<-- [start:arrange]
+	arrange_row( group, { .gap = 0.5F } );                     // left to right, centered on the origin
+	arrange_column( group, { .gap = 0.3F, .align = Align::START } );
+	arrange_grid( group, 3, { .column_gap = 0.4F, .row_gap = 0.2F } );   // rows of 3
+	distribute_row( group );                                   // equal spaces between, outer two stay put
+	align_edges( group, Anchor::LEFT );                        // line up on an edge
+	// --8<-- [end:arrange]
+	group.position = { 4.F, -2.F };
+
+	// --8<-- [start:keep-inside]
+	keep_inside( group, safe_area( stage.camera ) );   // moved the least it takes
+	fit_inside( group, safe_area( stage.camera ) );    // and scaled down if it is too big
+	// --8<-- [end:keep-inside]
+
+	// --8<-- [start:list]
+	auto &list = stage.visuals.add( make_list( theme, { "first", "second", "third" }, { .numbered = true } ) );
+	list.row( 1 );    // each row is a visual of its own, to show or light on its own
+	// --8<-- [end:list]
+	move_to( list, { -5.F, 2.F }, Anchor::LEFT );
+
+	// --8<-- [start:table]
+	const std::vector<std::vector<std::string>> rows = {
+		{ "Name", "Scale", "Use" },
+		{ "tiny", "0.5", "footnotes" },
+		{ "huge", "2.0", "titles" } };
+	auto &table = stage.visuals.add( make_table( theme, rows, { .striped = true, .max_width = 10.F } ) );
+	table.cell( 1, 2 );   // a cell is a visual
+	// --8<-- [end:table]
+	move_to( table, { 3.F, 1.5F }, Anchor::LEFT );
+
+	// --8<-- [start:tags]
+	tag_visual( dot, "hero" );
+	Visual *found = find_tag( stage.visuals, "hero" );
+	// --8<-- [end:tags]
+	found->color = theme.palette().yellow;
+
+	co_await wait_for( stage, 3s );
+}
 
 namespace
 {
@@ -132,5 +212,6 @@ Scene show_tables( Stage &stage, Script & )
 }
 }
 
+REGISTER_SCENE( "layout-basics", "Shapes, groups, placement, rows and grids, panels, lists, tables and tags", show_basics );
 REGISTER_SCENE( "layout", "Panels, a list and a table, and a row of shapes, placed against each other", show_layout );
 REGISTER_SCENE( "tables", "Tables that wrap, hold formulas, and tint their rows", show_tables );
