@@ -3,7 +3,7 @@ meta::
   inherit: null
 
 voices::
-  narrator: "chatterbox/fr-cml-tts-10087_11650_000028-0002.wav"
+  narrator: "chatterbox/fr-kyutai-donation-ssa150803.wav"
 
 labels::
   ease_cubic_in: "Cubique entrée"

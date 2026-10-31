@@ -2,7 +2,7 @@ meta::
   lang:: "de", "de-DE", "de-AT", "de-CH"
 
 voices::
-  narrator: "chatterbox/de-thorsten-voice-short.wav"
+  narrator: "chatterbox/de-librivox-friedrich.wav"
 
 labels::
   ease_cubic_in: "Kubisch Beschleunigen"

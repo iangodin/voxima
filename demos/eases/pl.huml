@@ -3,7 +3,7 @@ meta::
   inherit: null
 
 voices::
-  narrator: "chatterbox/pl-cml-tts-11295_11059_000062.wav"
+  narrator: "chatterbox/pl-librivox-gosia-leksandrowna.wav"
 
 labels::
   ease_cubic_in: "Sześcienna wejście"
