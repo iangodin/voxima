@@ -14,7 +14,7 @@ class VoximaConan(ConanFile):
   settings = "os", "compiler", "build_type", "arch"
   generators = "CMakeDeps"
   exports_sources = (
-    "CMakeLists.txt", "cmake/*", "src/*", "extern/*", "themes/*", "tools/*", "tests/*", "demos/*",
+    "CMakeLists.txt", "cmake/*", "src/*", "extern/*", "themes/*", "tools/*", "tests/*",
     "download_fonts.py", "download_models.py", "LICENSE", "THIRD_PARTY_NOTICES.md", "doc/*", "examples/*" )
 
   def requirements(self):

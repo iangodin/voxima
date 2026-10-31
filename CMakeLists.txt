@@ -239,9 +239,6 @@ target_link_libraries( voxima PUBLIC visuals )
 
 include( cmake/VoximaPlugin.cmake )
 
-# The demo, as a plugin: voxima --plugin build/Release/eases ...
-voxima_add_plugin( eases demos/eases/show_animation.cpp )
-
 # The examples, as plugins in build/Release/plugins (see examples/CMakeLists.txt)
 add_subdirectory( examples )
 

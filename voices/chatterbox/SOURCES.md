@@ -31,7 +31,7 @@ should be credited in the videos that use it.
   Archive.org (marked public domain there); clip from
   [Voice-Zero](https://github.com/OwenTyme/voice-zero), `robert_middleton.flac`
   (CC0, cleaned for voice cloning).
-- 44.1kHz mono, 11.2s. The default English narrator in `demos/eases/en.huml`.
+- 44.1kHz mono, 11.2s. The default English narrator in `examples/narration/scripts/en.huml`.
 
 ### en-voice-zero-douglas-harlon.wav
 
@@ -90,7 +90,7 @@ none requires it.
   `voice-donations/SSA150803.wav`. Language detected as French.
 - License: CC0. Consent story: purpose-built donation for voice cloning,
   explicit. The volunteer gave no name, so the credit uses the clip's name.
-- 32kHz mono, 10.0s. The default French narrator in `demos/eases/fr.huml`.
+- 32kHz mono, 10.0s. The default French narrator in `examples/narration/scripts/fr.huml`.
 
 ### fr-librivox-pauline-latournerie.wav
 
@@ -118,7 +118,7 @@ none requires it.
   [Archive.org](https://archive.org/details/daslebenderbienen_2404_librivox)
   `lebenderbienen_03_maeterlinck`, from 513.9s. The reader is credited on
   LibriVox by first name only.
-- 9.7s. The default German narrator in `demos/eases/de.huml`.
+- 9.7s. The default German narrator in `examples/narration/scripts/de.huml`.
 
 ### pl-librivox-gosia-leksandrowna.wav
 
@@ -127,7 +127,7 @@ none requires it.
 - Source: [LibriVox](https://librivox.org/ballady-i-romanse-by-adam-mickiewicz/),
   [Archive.org](https://archive.org/details/balladyiromanse_1703_librivox)
   `balladyiromanse_03_mickiewicz`, from 208.1s.
-- 10.4s. The default Polish narrator in `demos/eases/pl.huml`.
+- 10.4s. The default Polish narrator in `examples/narration/scripts/pl.huml`.
 
 ### pl-librivox-piotr-nater.wav
 

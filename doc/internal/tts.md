@@ -392,7 +392,7 @@ instead of talking capnp-over-socket to `edge_tts_server.py`. Design:
   file cache (one `.wav` per unique text/voice/language hash).
 - **`voices::` config is now a reference-clip path**, not an edge-tts ShortName.
   Resolved by `Narrator` against a `--tts-voice-dir` base directory (default
-  `voices`) supplied via `DubbingStage::setup()`. `demos/eases/*.huml` updated for
+  `voices`) supplied via `DubbingStage::setup()`. `examples/narration/scripts/*.huml` updated for
   en/fr/de (the languages with committed clips); `en-GB`/`fr-CA` now inherit their
   base language's clip instead of carrying a stale edge-tts-only override; `zh`/`jp`
   get an explicit comment that narration will fail for them (see the `ja` gap below).
@@ -410,7 +410,7 @@ instead of talking capnp-over-socket to `edge_tts_server.py`. Design:
   integration too, same as `zh` - confirmed against `model_specs/chatterbox.json`'s
   language allowlist (ar, da, de, el, en, es, fi, fr, hi, it, ko, ms, nl, no, pl, pt,
   sv, sw, tr - no `zh`, no `ja`). Folded into the same accepted-gap decision as
-  Chinese; `demos/eases/jp.huml` flagged with a comment, not a functional blocker
+  Chinese; `examples/narration/scripts/jp.huml` flagged with a comment, not a functional blocker
   since nothing renders it today.
 - **Retired**: `edge_tts_server.py`, `tts_client.py`, the `test_*.py` scripts,
   `protocol.capnp` and its generated sources, `asio_wrapper.h`, and
@@ -556,7 +556,7 @@ through `DubbingStage::setup()` to `TTSClient`'s existing (previously unused in 
 real call site) `aligner_model_path` constructor argument.
 
 **Real end-to-end verification** (not just unit-level): temporarily re-enabled
-`demos/eases/show_animation.cpp`'s narration scene (same approach phase 2's work used
+`examples/narration/narration.cpp`'s narration scene (same approach phase 2's work used
 - verified, then reverted back to the original committed/commented-out state
 afterward) and ran the actual `Producer`/`DubbingStage`/`Narrator` pipeline via
 `render.sh`'s invocation pattern (`--lang en --lang fr`, mkv container). Real output:
@@ -699,11 +699,11 @@ and words split by style ranges work, and math-alphabet remapping is accounted f
 groups sit at the origin, so glyph positions are unchanged. This requires the on-screen
 text to be the narrated lines as written.
 
-**Demo.** `demos/eases/show_animation.cpp`'s `show_karaoke` scene dims the narrated text
+**Demo.** `examples/narration/narration.cpp`'s `show_karaoke` scene dims the narrated text
 and lights each word yellow as it is spoken. Verified with a real render (Chatterbox +
 Qwen aligner): the highlight tracks the speech and the SRT cues agree.
 
-Checked on real renders (`demos/eases`, 24 fps; highlight timing measured from the
+Checked on real renders (`examples/narration`, 24 fps; highlight timing measured from the
 rendered frames, and which path each line took confirmed with a temporary debug print):
 
 | Render | Aligner | Words matched | Result |
@@ -723,7 +723,7 @@ not include Polish, but for the demo sentences it returned the right number of w
 plausible timings (also seen via `align_poc`), so `Narrator` takes the aligned path. Only
 two short sentences were checked, so treat Polish alignment as working but unverified
 beyond that; the proportional fallback is still there if it ever fails or miscounts.
-`demos/eases/pl.huml` was added for this check.
+`examples/narration/scripts/pl.huml` was added for this check.
 
 **Text layout options** (same change set). `make_styled_text()` / `make_text()` take a
 `TextLayout { align, line_spacing }`. Line spacing is now `1.2 x` the largest font size

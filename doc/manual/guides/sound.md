@@ -28,7 +28,7 @@ Volume changes are smooth ramps, so they do not click.
 
 ## Sounds made in code
 
-`play` also takes an `AudioBuffer` of samples your program made (any rate and channel count; it is made stereo at the track's rate). The eases demo (`demos/eases/show_animation.cpp`) makes a plucked note this way:
+`play` also takes an `AudioBuffer` of samples your program made (any rate and channel count; it is made stereo at the track's rate). The `sound` example (`examples/sound`) makes a plucked note this way:
 
 ```cpp
 AudioBuffer note = make_my_note( 440.F );                    // your own code fills the samples
