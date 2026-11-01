@@ -45,6 +45,12 @@ make debug
 ```
 
 
+## Commits
+
+Write commit messages in the imperative mood, as an instruction to the code ("Add the --version flag", "Drop the
+CUDA build from CI"), not as a description ("Added ...", "Adds ...", "CI: the CUDA build dropped"). The subject is
+one line and starts with a capital letter, without an `area:` prefix; details, if any, go in a body after a blank line.
+
 ## Versioning
 
 The version is written once, in `project( Voxima VERSION x.y.z )` in `CMakeLists.txt` (numbers only). `conanfile.py` reads
