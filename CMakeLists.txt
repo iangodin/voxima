@@ -41,6 +41,12 @@ endif()
 set( ENGINE_ENABLE_HIP OFF CACHE BOOL "" FORCE )
 set( ENGINE_ENABLE_VULKAN OFF CACHE BOOL "" FORCE )
 set( ENGINE_ENABLE_METAL OFF CACHE BOOL "" FORCE )
+if ( APPLE )
+	# Apple's clang has no OpenMP (it would need Homebrew's libomp), and audio.cpp makes it a requirement unless this is
+	# off. ggml does its own threading, so the speech still uses all the cores.
+	set( ENGINE_ENABLE_OPENMP OFF CACHE BOOL "" FORCE )
+	set( GGML_OPENMP OFF CACHE BOOL "" FORCE )
+endif()
 set( AUDIOCPP_BUILD_C_API ON CACHE BOOL "" FORCE )
 set( AUDIOCPP_MODEL_SET "custom" CACHE STRING "" FORCE )
 # chatterbox: narration synthesis. qwen3_forced_aligner: optional subtitle-
