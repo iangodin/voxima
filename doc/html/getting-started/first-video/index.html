@@ -1349,14 +1349,12 @@ cd my-video
   ask for another.</li>
 </ul>
 <h2 id="3-build-the-plugin">3. Build the plugin<a class="headerlink" href="#3-build-the-plugin" title="Permanent link">&para;</a></h2>
-<p>Plugins are built with CMake, against the installed Voxima (<code>&lt;voxima&gt;</code> is your checkout):</p>
-<div class="highlight"><pre><span></span><code>cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH=&lt;prefix&gt; \
-    -DCMAKE_TOOLCHAIN_FILE=&lt;voxima&gt;/build/Release/generators/conan_toolchain.cmake
+<p>Plugins are built with CMake, against the installed Voxima:</p>
+<div class="highlight"><pre><span></span><code>cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH=&lt;prefix&gt;
 cmake --build build
 </code></pre></div>
 <p>The build type, the compiler and the standard library must be those Voxima was built with, which they are
-if you use the same compiler. The Conan toolchain file gives CMake the libraries the headers include (lunasvg,
-FreeType, libsndfile); see <a href="../../guides/plugin-project/">Your own plugin project</a>.</p>
+if you use the same compiler; see <a href="../../guides/plugin-project/">Your own plugin project</a>.</p>
 <p>You now have <code>build/hello.so</code> (<code>build\hello.dll</code> on Windows).</p>
 <h2 id="4-preview-it">4. Preview it<a class="headerlink" href="#4-preview-it" title="Permanent link">&para;</a></h2>
 <div class="highlight"><pre><span></span><code>&lt;prefix&gt;/bin/voxima --plugin build/hello --script-dir scripts --lang en \

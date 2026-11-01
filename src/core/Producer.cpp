@@ -20,6 +20,8 @@
 #include <utils/ParseSequenceName.h>
 #include <utils/Timer.h>
 
+#include <lunasvg/lunasvg.h>
+
 std::string read_file( std::filesystem::path path )
 {
 	std::size_t size = std::filesystem::file_size( path );

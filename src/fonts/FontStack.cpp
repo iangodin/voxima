@@ -1,4 +1,8 @@
 #include "fonts/FontStack.h"
+
+#include <ft2build.h>
+#include FT_FREETYPE_H
+
 #include <stdexcept>
 #include <string>
 

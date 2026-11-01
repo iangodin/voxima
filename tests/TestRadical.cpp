@@ -9,6 +9,9 @@
 #include <visuals/Radical.h>
 #include "TestThemes.h"
 
+#include <ft2build.h>
+#include FT_FREETYPE_H
+
 TEST_CASE( "Radical scaling scales the whole radical", "[visuals]" )
 {
 	auto theme = test_academic_theme();

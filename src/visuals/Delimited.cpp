@@ -3,6 +3,10 @@
 #include "visuals/CreateMathLargeOperation.h"
 #include "visuals/Fraction.h"
 #include "visuals/MathMetrics.h"
+
+#include <ft2build.h>
+#include FT_FREETYPE_H
+
 #include <algorithm>
 
 namespace

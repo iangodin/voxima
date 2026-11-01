@@ -157,6 +157,7 @@ add_library( visuals SHARED
 	src/exporters/SVGWriter.cpp
 	src/exporters/FfmpegMux.cpp
 	src/exporters/FfmpegRender.cpp
+	src/exporters/PngRender.cpp
 	src/exporters/SubtitleWriter.cpp
 	src/fonts/FontStack.cpp
 	src/fonts/FontFamily.cpp
@@ -216,13 +217,12 @@ target_include_directories( visuals PUBLIC
 	$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
 	$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>
 	$<INSTALL_INTERFACE:include/voxima> )
-# Public: what its headers include. The rest is only in its own code.
-target_link_libraries( visuals PUBLIC
+# All private: no header of the core's includes a library's, so a plugin needs only the install (see
+# cmake/VoximaConfig.cmake.in). The headers only name their types, with forward declarations.
+target_link_libraries( visuals PRIVATE
 	lunasvg::lunasvg
 	Freetype::Freetype
 	SndFile::sndfile
-)
-target_link_libraries( visuals PRIVATE
 	plutovg::plutovg
 	harfbuzz::harfbuzz
 	CLI11::CLI11

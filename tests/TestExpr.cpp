@@ -20,6 +20,9 @@
 #include <stdexcept>
 #include "TestThemes.h"
 
+#include <ft2build.h>
+#include FT_FREETYPE_H
+
 using Catch::Approx;
 using namespace math;
 

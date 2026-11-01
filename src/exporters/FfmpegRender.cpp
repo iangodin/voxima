@@ -1,5 +1,7 @@
 #include "FfmpegRender.h"
 
+#include <lunasvg/lunasvg.h>
+
 #include <iostream>
 #include <sstream>
 #include <filesystem>

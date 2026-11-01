@@ -9,9 +9,6 @@
 
 #include <core/Palette.h>
 
-#include <ft2build.h>
-#include FT_FREETYPE_H
-
 #include <memory>
 #include <functional>
 #include <filesystem>
@@ -20,6 +17,8 @@
 #include <tuple>
 
 class Theme;
+
+struct FT_LibraryRec_; // FreeType's library (FT_Library is a pointer to it)
 
 struct FontKey
 {
@@ -116,7 +115,7 @@ public:
 private:
 	FontFace load_font_internal( const FontKey &key, float scale );
 
-	FT_Library _library = nullptr;
+	FT_LibraryRec_ *_library = nullptr;
 	std::map<FontKey, FontFacePtr> _faces;
 	std::map<FontStyle, FontStack> _cache;
 	std::map<std::string, FontFactory> _factories;

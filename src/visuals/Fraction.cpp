@@ -2,6 +2,10 @@
 #include "visuals/Tags.h"
 #include "visuals/Layout.h"
 #include "visuals/Rectangle.h"
+
+#include <ft2build.h>
+#include FT_FREETYPE_H
+
 #include <algorithm>
 
 namespace

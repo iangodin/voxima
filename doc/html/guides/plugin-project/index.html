@@ -963,17 +963,6 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#libraries-the-headers-use" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Libraries the headers use
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
   <a href="#several-plugins" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1225,17 +1214,6 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#libraries-the-headers-use" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Libraries the headers use
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
   <a href="#several-plugins" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1314,10 +1292,8 @@ coroutines, and names it <code>name.so</code> or <code>name.dll</code>. Exactly 
 <p><code>find_package( Voxima )</code> finds the Voxima you installed, and the plugin is built against its headers. A plugin is only
 good for that Voxima: one loaded by a <code>voxima</code> of another version is refused (see below). To insist on a version,
 write it (<code>find_package( Voxima 0.1.0 REQUIRED )</code>); only that exact version matches.</p>
-<p>Configure with the install folder as the prefix path, and the Conan toolchain of the Voxima build (it
-finds the libraries the headers use, see below):</p>
-<div class="highlight"><pre><span></span><code>cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH=&lt;prefix&gt; \
-    -DCMAKE_TOOLCHAIN_FILE=&lt;voxima&gt;/build/Release/generators/conan_toolchain.cmake
+<p>Configure with the install folder as the prefix path. The install is all a plugin needs:</p>
+<div class="highlight"><pre><span></span><code>cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH=&lt;prefix&gt;
 cmake --build build
 </code></pre></div>
 <h2 id="building-just-as-the-program-was">Building just as the program was<a class="headerlink" href="#building-just-as-the-program-was" title="Permanent link">&para;</a></h2>
@@ -1330,10 +1306,6 @@ cmake --build build
 </ul>
 <p>Each plugin records what it was built with. One that does not match is refused when loaded, naming both, rather
 than crashing in some distant way. On Linux a plugin should be built with the system's default libstdc++ ABI.</p>
-<h2 id="libraries-the-headers-use">Libraries the headers use<a class="headerlink" href="#libraries-the-headers-use" title="Permanent link">&para;</a></h2>
-<p>Voxima's headers include lunasvg, FreeType and libsndfile, so CMake has to be able to find them.
-The Conan toolchain file of the Voxima build, as above, has them: they are the very libraries Voxima was built
-with, which is also what keeps them compatible.</p>
 <h2 id="several-plugins">Several plugins<a class="headerlink" href="#several-plugins" title="Permanent link">&para;</a></h2>
 <p><code>--plugin</code> can be given more than once, and scene names from all of them are one list. <code>--plugin-dir &lt;folder&gt;</code>
 loads every plugin (<code>.so</code> or <code>.dll</code>) in a folder, in name order, so a folder of plugins is one command:</p>

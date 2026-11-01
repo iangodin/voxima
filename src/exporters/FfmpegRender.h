@@ -3,7 +3,11 @@
 #include <string>
 #include <cstdio>
 #include <cstdint>
-#include <lunasvg/lunasvg.h>
+
+namespace lunasvg
+{
+class Bitmap;
+}
 
 class FfmpegRender
 {

@@ -16,6 +16,9 @@
 
 #include <utils/Words.h>
 
+#include <ft2build.h>
+#include FT_FREETYPE_H
+
 #include <hb-ft.h>
 #include <hb-ot.h>
 #include <hb.h>

@@ -1,6 +1,10 @@
 #include "visuals/Matrix.h"
 #include "visuals/Tags.h"
 #include "visuals/MathMetrics.h"
+
+#include <ft2build.h>
+#include FT_FREETYPE_H
+
 #include <algorithm>
 #include <string>
 

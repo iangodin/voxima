@@ -3,10 +3,11 @@
 
 #include "AudioBuffer.h"
 
-#include <sndfile.h>
 #include <string>
 #include <string_view>
 #include <vector>
+
+struct sf_private_tag; // libsndfile's file (SNDFILE is this)
 
 class AudioMixer
 {
@@ -44,7 +45,7 @@ public:
 	static bool supported_codec( std::string_view codec );
 
 private:
-	SNDFILE *_sndfile = nullptr;
+	sf_private_tag *_sndfile = nullptr;
 	AudioBuffer _buffer;
 	bool _in_memory = false;
 	std::vector<float> _memory;

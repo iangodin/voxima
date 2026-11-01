@@ -15,6 +15,9 @@
 #include <algorithm>
 #include "TestThemes.h"
 
+#include <ft2build.h>
+#include FT_FREETYPE_H
+
 using Catch::Approx;
 
 namespace

@@ -1,12 +1,14 @@
 #pragma once
 
-#include <ft2build.h>
-#include FT_FREETYPE_H
-
+#include <cstddef>
+#include <cstdint>
 #include <memory>
 #include <string>
 
-using FontFacePtr = std::shared_ptr<std::remove_pointer_t<FT_Face>>;
+// FreeType's face (FT_Face is a pointer to it). Only Voxima's own code looks inside, so a plugin does not need FreeType.
+struct FT_FaceRec_;
+
+using FontFacePtr = std::shared_ptr<FT_FaceRec_>;
 
 struct FontFace
 {

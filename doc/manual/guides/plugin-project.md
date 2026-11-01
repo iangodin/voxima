@@ -23,12 +23,10 @@ coroutines, and names it `name.so` or `name.dll`. Exactly one of its source file
 good for that Voxima: one loaded by a `voxima` of another version is refused (see below). To insist on a version,
 write it (`find_package( Voxima 0.1.0 REQUIRED )`); only that exact version matches.
 
-Configure with the install folder as the prefix path, and the Conan toolchain of the Voxima build (it
-finds the libraries the headers use, see below):
+Configure with the install folder as the prefix path. The install is all a plugin needs:
 
 ```
-cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH=<prefix> \
-    -DCMAKE_TOOLCHAIN_FILE=<voxima>/build/Release/generators/conan_toolchain.cmake
+cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH=<prefix>
 cmake --build build
 ```
 
@@ -43,12 +41,6 @@ Scenes share the program's strings, functions and coroutines, so a plugin must b
 
 Each plugin records what it was built with. One that does not match is refused when loaded, naming both, rather
 than crashing in some distant way. On Linux a plugin should be built with the system's default libstdc++ ABI.
-
-## Libraries the headers use
-
-Voxima's headers include lunasvg, FreeType and libsndfile, so CMake has to be able to find them.
-The Conan toolchain file of the Voxima build, as above, has them: they are the very libraries Voxima was built
-with, which is also what keeps them compatible.
 
 ## Several plugins
 

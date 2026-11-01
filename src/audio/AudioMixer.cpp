@@ -1,5 +1,7 @@
 #include "AudioMixer.h"
 
+#include <sndfile.h>
+
 #include <algorithm>
 #include <iostream>
 #include <utility>

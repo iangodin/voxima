@@ -1,11 +1,5 @@
 @PACKAGE_INIT@
 
-# What the core's headers include (see Voxima::core in the CMakeLists.txt)
-include( CMakeFindDependencyMacro )
-find_dependency( lunasvg )
-find_dependency( Freetype )
-find_dependency( SndFile )
-
 include( "${CMAKE_CURRENT_LIST_DIR}/VoximaTargets.cmake" )
 include( "${CMAKE_CURRENT_LIST_DIR}/VoximaPlugin.cmake" )
 

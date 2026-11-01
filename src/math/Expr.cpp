@@ -13,6 +13,9 @@
 #include "visuals/Radical.h"
 #include "visuals/Scripts.h"
 
+#include <ft2build.h>
+#include FT_FREETYPE_H
+
 #include <algorithm>
 #include <stdexcept>
 

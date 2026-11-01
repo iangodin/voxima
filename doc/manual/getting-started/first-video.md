@@ -35,17 +35,15 @@ Read it top to bottom:
 
 ## 3. Build the plugin
 
-Plugins are built with CMake, against the installed Voxima (`<voxima>` is your checkout):
+Plugins are built with CMake, against the installed Voxima:
 
 ```
-cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH=<prefix> \
-    -DCMAKE_TOOLCHAIN_FILE=<voxima>/build/Release/generators/conan_toolchain.cmake
+cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH=<prefix>
 cmake --build build
 ```
 
 The build type, the compiler and the standard library must be those Voxima was built with, which they are
-if you use the same compiler. The Conan toolchain file gives CMake the libraries the headers include (lunasvg,
-FreeType, libsndfile); see [Your own plugin project](../guides/plugin-project.md).
+if you use the same compiler; see [Your own plugin project](../guides/plugin-project.md).
 
 You now have `build/hello.so` (`build\hello.dll` on Windows).
 

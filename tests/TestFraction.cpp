@@ -10,6 +10,9 @@
 #include <visuals/Rectangle.h>
 #include "TestThemes.h"
 
+#include <ft2build.h>
+#include FT_FREETYPE_H
+
 TEST_CASE( "Fraction layout", "[visuals]" )
 {
 	auto theme = test_academic_theme();

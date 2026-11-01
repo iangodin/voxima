@@ -192,3 +192,12 @@ jobs:
       - name: Run the installed program
         shell: bash
         run: '"$RUNNER_TEMP/voxima-install/bin/voxima" --version'
+
+      # A plugin project needs only the install: not the Conan toolchain, or any of the libraries Voxima is built with
+      - name: Build the examples against the install
+        shell: bash
+        run: |
+          cmake -S examples -B "$RUNNER_TEMP/voxima-examples" -G Ninja -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_PREFIX_PATH:PATH="$RUNNER_TEMP/voxima-install"
+          cmake --build "$RUNNER_TEMP/voxima-examples"
+          "$RUNNER_TEMP/voxima-install/bin/voxima" --plugin "$RUNNER_TEMP/voxima-examples/hello/hello" --list-scenes

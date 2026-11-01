@@ -31,10 +31,7 @@ public:
 	{
 		MathFont font;
 		float glyph_scale;
-		explicit Metrics( const FontFace &face )
-			: font( face ), glyph_scale( face.scale / static_cast<float>( face.face->units_per_EM ) )
-		{
-		}
+		explicit Metrics( const FontFace &face );
 	};
 	[[nodiscard]] const Metrics &metrics( MathStyle style ) const;
 

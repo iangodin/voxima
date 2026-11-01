@@ -1,7 +1,15 @@
 #include "math/Context.h"
 
+#include <ft2build.h>
+#include FT_FREETYPE_H
+
 namespace math
 {
+
+Context::Metrics::Metrics( const FontFace &face )
+	: font( face ), glyph_scale( face.scale / static_cast<float>( face.face->units_per_EM ) )
+{
+}
 
 Context::Context( Theme &theme, FontStyle body ) : _theme( &theme ), _body( std::move( body ) ) {}
 

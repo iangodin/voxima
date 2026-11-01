@@ -1,5 +1,9 @@
 #include "visuals/Row.h"
 #include "visuals/Layout.h"
+
+#include <ft2build.h>
+#include FT_FREETYPE_H
+
 #include <algorithm>
 
 namespace

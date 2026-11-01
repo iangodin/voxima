@@ -3,6 +3,9 @@
 #include "visuals/CreateText.h"
 #include "visuals/Tags.h"
 
+#include <ft2build.h>
+#include FT_FREETYPE_H
+
 #include <algorithm>
 #include <cstdio>
 #include <sstream>
