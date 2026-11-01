@@ -135,10 +135,13 @@ jobs:
         shell: bash
         run: make config
 
+      # For one GPU architecture, as PTX only (no ptxas): the runner has no GPU, so the job only checks that the
+      # backend compiles. audio.cpp's default is ten architectures, each of ggml's ~190 CUDA files built for every
+      # one, which takes hours on a runner.
       - name: Configure (CUDA)
         if: matrix.cuda
         shell: bash
-        run: make config CMAKE_ARGS=-DVOXIMA_TTS_CUDA=ON
+        run: make config CMAKE_ARGS="-DVOXIMA_TTS_CUDA=ON -DCMAKE_CUDA_ARCHITECTURES=80-virtual"
 
       # Saved now, not at the end of the job (where actions/cache would only save if every step had passed, so a build that
       # fails, as a new platform's does, would never keep the libraries it took an hour to build). Without the sources and
