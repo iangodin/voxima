@@ -36,6 +36,14 @@ configuration, with only the model families used (`AUDIOCPP_MODEL_SET=custom`,
 before Voxima's `-Werror` flags so they do not reach it. CPU by default; `VOXIMA_TTS_CUDA=ON` builds the CUDA backend
 (about 8-9 times faster than the CPU on an RTX 3070 Ti, where the CPU takes about 4 times real time with 4 threads).
 
+Its WAV and safetensors files (test audio and the weights of models Voxima does not use, about 84 MB) were taken out
+of the whole history, squashed commit included. Kept: `webui/native/demo_voices/*.wav` (its CMake reads them when
+configuring) and the two its C API path test loads (`assets/framework/models/silero_vad/`,
+`assets/resources/sample_16k.wav`). `git subtree pull --squash` would bring the rest back, in a commit that stays in
+the history even if a later one deletes them. Update it by hand instead: check out audio.cpp at the new commit
+elsewhere, copy its tree over `extern/audio.cpp` without those files (`rsync -a --delete --exclude .git`, then delete
+the `*.wav` and `*.safetensors` but the ones above), build, test, and commit, naming audio.cpp's commit in the message.
+
 `TTSClient` (`src/tts/`) calls audio.cpp's C API (`audiocpp.h`) in the same process:
 
 - Speech: task `"clon"` (Chatterbox only offers voice cloning here), `audiocpp_request_set_voice_audio` with the
