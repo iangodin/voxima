@@ -1,7 +1,7 @@
 
 cmake_minimum_required( VERSION 3.31 )
 
-project( Voxima VERSION 0.1.0 )
+project( Voxima VERSION 0.2.0 )
 
 # Compile with sccache when it is there (not the Conan packages, which are built on their own)
 find_program( VOXIMA_SCCACHE sccache )

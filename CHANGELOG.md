@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.2.0-alpha.1 (unreleased)
+## 0.2.0-alpha.1 (2026-11-01)
 
 ### Added
 
