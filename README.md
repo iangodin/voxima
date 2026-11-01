@@ -68,13 +68,16 @@ That plays a tour of every example in a window. Narration needs two models, whic
 python3 download_models.py
 ```
 
-Full instructions, including how to build your own plugin, are in the manual.
+Full instructions, including how to build your own plugin, are in the [manual](https://iangodin.github.io/voxima/).
 
 ## Documentation
 
-The developer manual is in `doc/manual` (Markdown), and `make docs` builds it as a web site in `doc/html`
-(`pip install -r doc/requirements.txt` first). Start with
-[Installing](doc/manual/getting-started/install.md) and [Your first video](doc/manual/getting-started/first-video.md).
+The developer manual is at **<https://iangodin.github.io/voxima/>**. Start with
+[Installing](https://iangodin.github.io/voxima/getting-started/install/) and
+[Your first video](https://iangodin.github.io/voxima/getting-started/first-video/).
+
+Its source is in `doc/manual` (Markdown), and `make docs` builds it as a web site in `doc/html`, which is also
+installed with Voxima (see `AGENTS.md` for the pinned tools).
 
 The [examples](examples) are small plugin projects, one per topic. The code in the manual is taken from them, and
 they are built with Voxima, so they stay working.
