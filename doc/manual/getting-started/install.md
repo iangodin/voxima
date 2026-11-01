@@ -134,7 +134,8 @@ script's `voices` section. The clips are looked for under `--tts-voice-dir`; wit
 [Narration](../guides/narration.md#voices); the clips that come with Voxima, and their licenses, are listed there
 too. A video with no narration needs none of these.
 
-You can use a GPU for the speech with `--tts-backend cuda` (the default, `best`, picks one that works), if CUDA
-was found when Voxima was configured. With `cpu`, `--tts-threads` sets how many threads it uses.
+The speech uses a GPU if it can: the default, `--tts-backend best`, picks one that works. That is CUDA if it was found when Voxima was
+configured (`make config CMAKE_ARGS=-DVOXIMA_TTS_CUDA=ON`), and Metal on a Mac (`-DVOXIMA_TTS_METAL=OFF` leaves it out). Name
+one with `cuda` or `metal`, or use `cpu`, where `--tts-threads` sets how many threads it uses.
 
 Go on to [Your first video](first-video.md).

@@ -48,7 +48,7 @@ OPTIONS:
                               $VOXIMA_TTS_CACHE, or tts-cache in the render directory)
           --tts-only          Make the speech and put it in the cache, and exit: no video, to get
                               the slow part done before working on the visuals
-          --tts-backend TEXT  TTS backend: best, cpu or cuda
+          --tts-backend TEXT  TTS backend: best (a GPU if there is one), cpu, cuda or metal
           --tts-threads INT   TTS CPU thread count
           --aligner-model TEXT 
                               Path to the Qwen3 Forced Aligner GGUF model, for subtitle timing

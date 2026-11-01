@@ -482,7 +482,7 @@ bool Producer::produce( int argc, char *argv[] )
 		"Make the speech and put it in the cache, and exit: no video, to get the slow part done before working on the visuals" );
 
 	std::string tts_backend = "best";
-	app.add_option( "--tts-backend", tts_backend, "TTS backend: best, cpu or cuda" );
+	app.add_option( "--tts-backend", tts_backend, "TTS backend: best (a GPU if there is one), cpu, cuda or metal" );
 
 	int tts_threads = 4;
 	app.add_option( "--tts-threads", tts_threads, "TTS CPU thread count" );

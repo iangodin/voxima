@@ -50,7 +50,15 @@ else()
 endif()
 set( ENGINE_ENABLE_HIP OFF CACHE BOOL "" FORCE )
 set( ENGINE_ENABLE_VULKAN OFF CACHE BOOL "" FORCE )
-set( ENGINE_ENABLE_METAL OFF CACHE BOOL "" FORCE )
+# On Apple, the GPU: Chatterbox is about 6x slower than real time on an M-series CPU. Its shaders are built into the library, so
+# what is installed needs nothing beside it.
+option( VOXIMA_TTS_METAL "Build audio.cpp's Metal backend, on Apple" ON )
+if ( APPLE AND VOXIMA_TTS_METAL )
+	set( ENGINE_ENABLE_METAL ON CACHE BOOL "" FORCE )
+	set( GGML_METAL_EMBED_LIBRARY ON CACHE BOOL "" FORCE )
+else()
+	set( ENGINE_ENABLE_METAL OFF CACHE BOOL "" FORCE )
+endif()
 if ( APPLE )
 	# Apple's clang has no OpenMP (it would need Homebrew's libomp), and audio.cpp makes it a requirement unless this is
 	# off. ggml does its own threading, so the speech still uses all the cores.
