@@ -113,12 +113,17 @@ jobs:
           print(path.read_text())
           PY
 
-      - name: Cache the Conan packages
-        uses: actions/cache@v4
+      # The Conan packages (the libraries, built from source the first time) are what takes the time. They are restored
+      # here, and saved after the configure step (see below), which is when they are all there.
+      - name: Restore the Conan packages
+        id: conan-cache
+        uses: actions/cache/restore@v4
         with:
           path: ~/.conan2/p
           key: conan-${{ matrix.cache }}-${{ hashFiles('conanfile.py') }}
-          restore-keys: conan-${{ matrix.cache }}-
+          restore-keys: |
+            conan-${{ matrix.cache }}-${{ hashFiles('conanfile.py') }}-
+            conan-${{ matrix.cache }}-
 
       # The libraries, then the Debug and Release builds
       - name: Configure
@@ -130,6 +135,30 @@ jobs:
         if: matrix.cuda
         shell: bash
         run: make config CMAKE_ARGS=-DVOXIMA_TTS_CUDA=ON
+
+      # Saved now, not at the end of the job (where actions/cache would only save if every step had passed, so a build that
+      # fails, as a new platform's does, would never keep the libraries it took an hour to build). Without the sources and
+      # build folders, which are most of it and not needed again. Only if there was no cache for this conanfile: one that
+      # exists cannot be written over, so a failed configure saves what it got to under another name, which the next
+      # run starts from.
+      - name: Clean the Conan cache
+        if: always() && steps.conan-cache.outputs.cache-hit != 'true'
+        shell: bash
+        run: conan cache clean "*" --source --build --download --temp
+
+      - name: Save the Conan packages
+        if: success() && steps.conan-cache.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: ~/.conan2/p
+          key: conan-${{ matrix.cache }}-${{ hashFiles('conanfile.py') }}
+
+      - name: Save the Conan packages so far
+        if: failure() && steps.conan-cache.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: ~/.conan2/p
+          key: conan-${{ matrix.cache }}-${{ hashFiles('conanfile.py') }}-partial-${{ github.run_id }}
 
       - name: Build
         shell: bash
