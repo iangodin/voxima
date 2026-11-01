@@ -1,14 +1,17 @@
 #! /usr/bin/env python3
 
-import sys
+import argparse
 
-# Where they go: assets/fonts (where voxima looks, run from here), or the directory given, such as an
-# installed Voxima's share/voxima/fonts. With --tests, only the fonts the tests need (about 23 MB, the test themes of
-# tests/data/themes), as CI does.
-arguments = sys.argv[1:]
-tests_only = "--tests" in arguments
-arguments = [ a for a in arguments if a != "--tests" ]
-output_dir = arguments[0] if arguments else "assets/fonts"
+parser = argparse.ArgumentParser(description = "Download the fonts Voxima's themes use (about 450 MB).", allow_abbrev = False)
+parser.add_argument("output_dir", nargs = "?", default = "assets/fonts",
+  help = "where they go: assets/fonts (where voxima looks, run from here; the default), or another directory, such as an installed Voxima's share/voxima/fonts")
+parser.add_argument("--tests", action = "store_true",
+  help = "only the fonts the tests need (about 23 MB, the test themes of tests/data/themes), as CI does")
+parser.add_argument("--list", action = "store_true", help = "only name what would be downloaded, and where")
+options = parser.parse_args()
+tests_only = options.tests
+list_only = options.list
+output_dir = options.output_dir
 
 # The fonts of the test themes (New Computer Modern and Academic Classic, without Source Han Serif)
 test_fonts = { "Amiri", "Adobe Not-Defined", "Symbola Emoji", "New Computer Modern" }
@@ -29,11 +32,14 @@ font_renames = {
 import os
 import io
 import zipfile
-import requests
 import posixpath
 from urllib.parse import urlparse
 
-os.makedirs(output_dir, exist_ok=True)
+if list_only:
+  print(f"To {output_dir}:")
+else:
+  import requests # (only now, so that --help and --list work without it)
+  os.makedirs(output_dir, exist_ok=True)
 
 # mirrors.ctan.org sends each request to a mirror picked at random, and some have a broken certificate chain or are
 # down: a failed request is tried again, which usually goes to another
@@ -50,6 +56,9 @@ def get(url, attempts = 5):
 
 def download_file(name, theurl, files = None):
   if tests_only and name not in test_fonts:
+    return
+  if list_only:
+    print(f"  {name}")
     return
   print(f"Downloading {name}")
 
@@ -72,6 +81,9 @@ def download_file(name, theurl, files = None):
 
 def download_zip(name, url, files = None):
   if tests_only and name not in test_fonts:
+    return
+  if list_only:
+    print(f"  {name}")
     return
   print(f"Downloading {name}")
   response = get(url)

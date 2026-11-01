@@ -2,25 +2,34 @@
 
 # Downloads the text-to-speech models (only needed for narration) from Hugging Face:
 #
-#     python3 download_models.py [output_dir] [--all]
+#     python3 download_models.py [output_dir] [--all] [--list]
 #
-# They go to output_dir (default "models", where voxima looks, run from here), in the folders voxima's defaults
-# expect. Files already there are skipped, and an interrupted download is resumed.
+# They go to output_dir, in the folders voxima expects. Without it they go where voxima looks: "models" here, in a
+# source tree, or share/voxima/models when this is the installed script. Files already there are skipped, and an
+# interrupted download is resumed.
 #
 # Both are Q8_0 GGUF conversions in https://huggingface.co/audio-cpp/audio.cpp-gguf. A conversion adds no terms
 # of its own; each model is under the license of the original: Chatterbox (MIT) and Qwen3-ForcedAligner (Apache-2.0).
 #
 # --all also downloads the F16 versions: larger and a little better, used with --tts-model / --aligner-model.
 
+import argparse
 import os
 import sys
-import requests
 
 repo = "https://huggingface.co/audio-cpp/audio.cpp-gguf/resolve/main/"
 
-args = [ a for a in sys.argv[1:] if not a.startswith("--") ]
-output_dir = args[0] if args else "models"
-get_all = "--all" in sys.argv
+# A source tree has the build next to this script; an installed one is in share/voxima, with the models beside it
+here = os.path.dirname(os.path.realpath(__file__))
+default_dir = "models" if os.path.exists(os.path.join(here, "CMakeLists.txt")) else os.path.join(here, "models")
+
+parser = argparse.ArgumentParser(description = "Download the text-to-speech models (only needed for narration).", allow_abbrev = False)
+parser.add_argument("output_dir", nargs = "?", default = default_dir, help = "where they go (default: %(default)s)")
+parser.add_argument("--all", action = "store_true", help = "also the larger F16 versions, used with --tts-model / --aligner-model")
+parser.add_argument("--list", action = "store_true", help = "only say what would be downloaded, and where")
+options = parser.parse_args()
+output_dir = options.output_dir
+get_all = options.all
 
 models = [
   ("Chatterbox speech model (Q8_0, 2.1 GB)", "Chatterbox-GGUF/chatterbox-q8_0.gguf"),
@@ -64,6 +73,13 @@ def download(name, path):
     sys.exit(f"  Incomplete: {part} is not {size} bytes; run again to resume")
   os.replace(part, destination)
   print(f"  Saved {destination}")
+
+if options.list:
+  for name, path in models:
+    print(f"{name}: {os.path.join(output_dir, path)}")
+  sys.exit()
+
+import requests # (only now, so that --help and --list work without it)
 
 for name, path in models:
   download(name, path)
