@@ -1070,8 +1070,13 @@ std::vector<ContourPair> match_contours( const OutlineShape &a, const OutlineSha
 		const float scale = box.empty() ? 1.F : std::max( 0.5F * std::hypot( box.width(), box.height() ), 1e-6F );
 		return std::pair{ center, scale };
 	};
-	const auto [center_a, scale_a] = frame_of( items_a );
-	const auto [center_b, scale_b] = frame_of( items_b );
+	// Plain variables, not structured bindings: Clang before 16 cannot capture those in a lambda
+	const auto frame_a = frame_of( items_a );
+	const auto frame_b = frame_of( items_b );
+	const Point center_a = frame_a.first;
+	const float scale_a = frame_a.second;
+	const Point center_b = frame_b.first;
+	const float scale_b = frame_b.second;
 
 	auto pair_cost = [&]( const Item &x, const Item &y )
 	{

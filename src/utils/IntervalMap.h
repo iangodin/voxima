@@ -100,7 +100,7 @@ public:
 
 		erase( start, end );
 
-		Interval new_interval( start, end, value );
+		Interval new_interval{ start, end, value };
 		auto it = std::lower_bound(
 			_intervals.begin(),
 			_intervals.end(),
@@ -169,12 +169,12 @@ public:
 				// Left remnant
 				if ( iv.start < start )
 				{
-					result.emplace_back( iv.start, start, iv.value );
+					result.push_back( Interval{ iv.start, start, iv.value } );
 				}
 				// Right remnant
 				if ( iv.end > end )
 				{
-					result.emplace_back( end, iv.end, iv.value );
+					result.push_back( Interval{ end, iv.end, iv.value } );
 				}
 			}
 		}
@@ -447,7 +447,7 @@ private:
 			auto it_prev = std::prev( it );
 			if ( it_prev->start < k && it_prev->end > k )
 			{
-				Interval right( k, it_prev->end, it_prev->value );
+				Interval right{ k, it_prev->end, it_prev->value };
 				it_prev->end = k;
 				_intervals.insert( it, right );
 			}
