@@ -25,7 +25,7 @@ jobs:
           all='[
             {"name": "linux",      "os": "ubuntu-24.04", "cache": "linux"},
             {"name": "windows",    "os": "windows-2022", "cache": "windows"},
-            {"name": "macos",      "os": "macos-14",     "cache": "macos"}
+            {"name": "macos",      "os": "macos-26",     "cache": "macos"}
           ]'
           matrix=$(jq -c --arg p "$PLATFORMS" '{include: [.[] | select($p == "all" or $p == .name)]}' <<< "$all")
           echo "$matrix"
