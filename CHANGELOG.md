@@ -28,3 +28,10 @@ The first release. The API will change between alphas.
   preview window with sound.
 - **Building**: `make install` gives a CMake package (`find_package( Voxima )`, `voxima_add_plugin`). Ten examples
   come as plugin projects, and the developer manual is in `doc/manual`.
+
+### Known limitations
+
+- The CUDA speech backend (`VOXIMA_TTS_CUDA=ON`) is not built or tested in CI, which builds and tests the CPU
+  backend on Linux, Windows and macOS.
+- Chinese and Japanese scripts are not spoken: audio.cpp's Chatterbox model does not list those languages.
+- Subtitle tracks have been checked in mkv files; in mp4 and webm files they have not.
