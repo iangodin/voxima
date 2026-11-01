@@ -72,7 +72,7 @@ jobs:
         if: matrix.name == 'windows'
         uses: ilammy/msvc-dev-cmd@v1
 
-      # nvcc, the runtime and cuBLAS, from NVIDIA's repository. 12.9, the first with GCC 14 as a host compiler
+      # nvcc, the runtime, cuBLAS and cuFFT (audio.cpp's CUDA backend), from NVIDIA's repository. 12.9, the first with GCC 14 as a host compiler
       # (VOXIMA_TTS_CUDA finds nvcc in /usr/local/cuda)
       - name: Install the CUDA toolkit
         if: matrix.cuda
@@ -81,7 +81,7 @@ jobs:
           wget -q https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2404/x86_64/cuda-keyring_1.1-1_all.deb
           sudo dpkg -i cuda-keyring_1.1-1_all.deb
           sudo apt-get update
-          sudo apt-get install -y cuda-nvcc-12-9 cuda-cudart-dev-12-9 cuda-cccl-12-9 libcublas-dev-12-9
+          sudo apt-get install -y cuda-nvcc-12-9 cuda-cudart-dev-12-9 cuda-cccl-12-9 libcublas-dev-12-9 libcufft-dev-12-9
           sudo ln -sfn /usr/local/cuda-12.9 /usr/local/cuda
           echo "/usr/local/cuda/bin" >> "$GITHUB_PATH"
 
@@ -108,6 +108,10 @@ jobs:
               # The libraries' own build dependencies (SDL's X11 headers, say) come from the system's packages
               "tools.system.package_manager:mode=install",
               "tools.system.package_manager:sudo=True",
+              # The libraries' sources come from their own sites, and some (freedesktop.org's: D-Bus, PulseAudio)
+              # time out on CI runners now and then: try for longer (the default is 2 more tries, 5 s apart)
+              "tools.files.download:retry=8",
+              "tools.files.download:retry_wait=30",
           ]
           path.write_text("\n".join(out) + "\n")
           print(path.read_text())
