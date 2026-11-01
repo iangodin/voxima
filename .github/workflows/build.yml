@@ -36,6 +36,8 @@ jobs:
     needs: plan
     runs-on: ${{ matrix.os }}
     timeout-minutes: 180
+    env:
+      SCCACHE_GHA_ENABLED: "true"
     strategy:
       fail-fast: false
       matrix: ${{ fromJSON(needs.plan.outputs.matrix) }}
@@ -115,10 +117,16 @@ jobs:
             conan-${{ matrix.cache }}-${{ hashFiles('conanfile.py') }}-
             conan-${{ matrix.cache }}-
 
+      # Voxima's own code comes from the compiler cache where it has not changed. The cache does not look at which CPU
+      # compiled a file, and runners differ, so nothing can be built for the runner's own CPU (-march=native), or a file
+      # compiled on one could crash on another.
+      - name: Set up sccache
+        uses: mozilla-actions/sccache-action@v0.0.11
+
       # The libraries, then the Debug and Release builds
       - name: Configure
         shell: bash
-        run: make config
+        run: make config CMAKE_ARGS=-DENGINE_ENABLE_NATIVE_CPU=OFF
 
       # Saved now, not at the end of the job (where actions/cache would only save if every step had passed, so a build that
       # fails, as a new platform's does, would never keep the libraries it took an hour to build). Without the sources and
