@@ -52,7 +52,7 @@ const char *name_of( Scale s )
 		case Scale::SMALL: return "small";
 		case Scale::MEDIUM: return "medium";
 		case Scale::LARGE: return "large";
-		case Scale::HUGE: return "huge";
+		case Scale::EXTRA_LARGE: return "huge";
 	}
 	return "?";
 }
@@ -67,7 +67,7 @@ std::string describe_stacks( Theme &theme )
 			for ( Slant slant: { Slant::UPRIGHT, Slant::ITALIC, Slant::OBLIQUE } )
 			{
 				// Tiny (like small: the smaller optical sizes), medium and huge
-				for ( Scale scale: { Scale::TINY, Scale::MEDIUM, Scale::HUGE } )
+				for ( Scale scale: { Scale::TINY, Scale::MEDIUM, Scale::EXTRA_LARGE } )
 				{
 					FontProperties properties;
 					properties.weight = weight;

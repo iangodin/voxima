@@ -38,7 +38,7 @@ enum class Scale
 	SMALL,
 	MEDIUM,
 	LARGE,
-	HUGE,
+	EXTRA_LARGE, // not HUGE: Apple's <math.h> defines it as a macro
 };
 
 enum class Width
@@ -225,7 +225,7 @@ public:
 
 	FontStyle &huge( void )
 	{
-		_scale = Scale::HUGE;
+		_scale = Scale::EXTRA_LARGE;
 		return *this;
 	}
 

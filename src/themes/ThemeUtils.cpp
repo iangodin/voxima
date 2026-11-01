@@ -15,7 +15,7 @@ float get_theme_font_size( Scale scale )
 			return 0.3F;
 		case Scale::LARGE:
 			return 0.75F;
-		case Scale::HUGE:
+		case Scale::EXTRA_LARGE:
 			return 1.5F;
 		default:
 			return 0.3F;
