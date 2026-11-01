@@ -167,3 +167,31 @@ std::unique_ptr<Group> make_angle( Theme &theme, Point vertex, Point a, Point b,
 	}
 	return group;
 }
+
+std::unique_ptr<Path> make_arc( Point center, float radius, float from_degrees, float to_degrees, const ArcOptions &options )
+{
+	auto arc = std::make_unique<Path>();
+	arc->color = { 1.F, 1.F, 1.F, 0.F };
+	arc->stroke_color = options.color;
+	arc->stroke_thickness = options.thickness;
+	arc->stroke_dash = options.dash;
+	arc->join = LineJoin::ROUND;
+
+	const auto on_circle = [&]( float radians ) { return center + Point{ std::cos( radians ), std::sin( radians ) } * radius; };
+	const float from = from_degrees * std::numbers::pi_v<float> / 180.F;
+	const float sweep = ( to_degrees - from_degrees ) * std::numbers::pi_v<float> / 180.F;
+	arc->commands.push_back( MoveTo{ on_circle( from ) } );
+
+	// Up to a quarter of a circle to a curve, which is then within a few parts in ten thousand of it
+	const int pieces = static_cast<int>( std::ceil( std::abs( sweep ) / ( std::numbers::pi_v<float> / 2.F ) ) );
+	const float step = pieces > 0 ? sweep / static_cast<float>( pieces ) : 0.F;
+	const float k = 4.F / 3.F * std::tan( step / 4.F ) * radius;
+	const auto tangent = []( float radians ) { return Point{ -std::sin( radians ), std::cos( radians ) }; };
+	for ( int i = 0; i < pieces; ++i )
+	{
+		const float a = from + step * static_cast<float>( i );
+		const float b = a + step;
+		arc->commands.push_back( CubicTo{ on_circle( b ), on_circle( a ) + tangent( a ) * k, on_circle( b ) - tangent( b ) * k } );
+	}
+	return arc;
+}

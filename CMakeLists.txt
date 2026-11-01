@@ -122,6 +122,7 @@ add_library( visuals SHARED
 	src/utils/ExecutablePath.cpp
 	src/utils/DataDirs.cpp
 	src/core/EaseCubic.cpp
+	src/core/EaseThereAndBack.cpp
 	src/core/EaseElastic.cpp
 	src/core/EaseBack.cpp
 	src/core/EaseLinear.cpp

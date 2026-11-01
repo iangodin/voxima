@@ -13,6 +13,7 @@ take it away. All take a length in seconds and, where it makes sense, an [ease](
 | `fade_in`, `fade_out` | From nothing to how it is, and back (it is left there, invisible: remove it if it should go) |
 | `fade_to( stage, v, opacity )` | To an opacity, and it stays there: dim with `0.3F`, bring back with `1.F` (`Visual::opacity`) |
 | `grow_in`, `shrink_out` | Grow from its own center, fading in; the reverse |
+| `grow_from_edge( stage, v, Anchor::BOTTOM, ...)` | Grow from one edge, which stays where it is: a bar of a chart, a gauge |
 | `slide_in( stage, v, offset, ...)`, `slide_out` | Come in from `offset` away (stage units), fading in; go out to it |
 | `move_by( stage, v, offset, ...)` | Move by an offset |
 | `move_along( stage, v, path, ... , turn )` | Follow a `Path`; with `turn`, face the way it is going |
@@ -43,6 +44,7 @@ overshooting, bouncing. It is a plain function of `t`, so any moment can be work
 | `ease_cubic_in`, `ease_cubic_out`, `ease_cubic_in_out` | Smooth: slow start, slow end, or both |
 | `ease_back_in`, `ease_back_out`, `ease_back_in_out` | Pull back first, or overshoot a little |
 | `ease_elastic_in`, `ease_elastic_out`, `ease_elastic_in_out` | Spring |
+| `ease_there_and_back`, `ease_there_and_back_with_pause( pause )` | Out to 1 and back to 0, for a pulse; with a stay at 1 for that part of the time. Include `core/EaseThereAndBack.h` |
 
 Pass one to a verb or to [`tween`](../concepts/coroutines.md#running-something-every-frame). Any function from
 float to float works (`EaseFunction` is `std::function<float( float )>`), so writing your own is one line:

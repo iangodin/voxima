@@ -125,6 +125,17 @@ baselines of text of any size.
 `box_of( visual )` and `point_at( visual, anchor )` give a visual's box and one of its points, in its parent's
 frame, for your own placement.
 
+## Frames and arcs
+
+`make_surround( visual, options )` makes a rectangle round a visual's box, without holding it as a panel does, and
+`make_arc( center, radius, from_degrees, to_degrees, options )` part of a circle as a stroked `Path`:
+
+```cpp
+--8<-- "examples/animation/animation.cpp:surround"
+```
+
+Add a frame to the group its visual is in. It stays where it is if the visual moves.
+
 ## Panels, lists and tables
 
 A **panel** is a rounded box fitted round something:

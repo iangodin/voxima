@@ -32,6 +32,17 @@ struct PolygonOptions
 // A polygon through the points, closed: a Group of its outline (child 0), then the labels
 std::unique_ptr<Group> make_polygon( Theme &theme, const std::vector<Point> &points, const PolygonOptions &options = {} );
 
+struct ArcOptions
+{
+	float thickness = 0.05F;
+	Color color = { 1.F, 1.F, 1.F, 1.F };
+	StrokeDash dash = {};
+};
+
+// Part of a circle, as a stroked Path: from `from_degrees` to `to_degrees` (0 is to the right, and it goes anticlockwise if
+// `to_degrees` is the greater, clockwise if not; it can go round more than once)
+std::unique_ptr<Path> make_arc( Point center, float radius, float from_degrees, float to_degrees, const ArcOptions &options = {} );
+
 struct AngleOptions
 {
 	float radius = 0.6F;

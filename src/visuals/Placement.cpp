@@ -376,8 +376,6 @@ void align_edges( Group &group, Anchor edge )
 	}
 }
 
-namespace
-{
 // The box a visual is drawn in, in its parent's frame: its box scaled about its origin, then moved
 AABB drawn_box( const Visual &visual )
 {
@@ -393,7 +391,6 @@ AABB drawn_box( const Visual &visual )
 	drawn.add( visual.position + Point{ low.x() * visual.scale_x, low.y() * visual.scale_y } );
 	drawn.add( visual.position + Point{ high.x() * visual.scale_x, high.y() * visual.scale_y } );
 	return drawn;
-}
 }
 
 AABB safe_area( const Camera &camera, float margin )

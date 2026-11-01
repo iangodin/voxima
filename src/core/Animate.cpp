@@ -152,6 +152,31 @@ Scene grow_in( const Stage &stage, Visual &visual, std::chrono::duration<double>
 		} );
 }
 
+Scene grow_from_edge( const Stage &stage, Visual &visual, Anchor edge, std::chrono::duration<double> duration, EaseFunction ease )
+{
+	const bool across = edge != Anchor::TOP && edge != Anchor::BOTTOM; // it grows along x
+	const bool up = edge != Anchor::LEFT && edge != Anchor::RIGHT;     // and along y
+	const Point position = visual.position;
+	const float scale_x = visual.scale_x;
+	const float scale_y = visual.scale_y;
+	// (the box is as drawn before scaling, so the edge's offset scales with it)
+	const Point offset = point_at( visual, edge ) - position;
+
+	const auto set = [&]( float factor )
+	{
+		visual.scale_x = across ? scale_x * factor : scale_x;
+		visual.scale_y = up ? scale_y * factor : scale_y;
+		visual.position = {
+			position.x() + offset.x() * ( scale_x - visual.scale_x ),
+			position.y() + offset.y() * ( scale_y - visual.scale_y ) };
+	};
+	set( 0.001F );
+	co_await tween( stage, duration, [&]( float t ) { return eased( ease, t ); }, [&]( float t ) { set( std::max( t, 0.001F ) ); } );
+	visual.scale_x = scale_x;
+	visual.scale_y = scale_y;
+	visual.position = position;
+}
+
 Scene shrink_out( const Stage &stage, Visual &visual, std::chrono::duration<double> duration, EaseFunction ease )
 {
 	const Alpha alpha( visual );

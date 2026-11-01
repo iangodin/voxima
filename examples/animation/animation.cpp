@@ -9,6 +9,7 @@
 
 #include <core/Animate.h>
 #include <core/CameraMove.h>
+#include <core/EaseThereAndBack.h>
 #include <core/Plugin.h>
 #include <core/SceneRegistry.h>
 #include <core/Script.h>
@@ -16,6 +17,8 @@
 #include <core/Wait.h>
 #include <plot/Graph.h>
 #include <visuals/Diagram.h>
+#include <visuals/Geometry.h>
+#include <visuals/Panel.h>
 #include <visuals/Placement.h>
 
 #include <chrono>
@@ -141,5 +144,40 @@ Scene show_camera( Stage &stage, Script & )
 }
 }
 
+// Frames round things, arcs, bars that grow from their base, and what is not the point dimmed
+Scene show_helpers( Stage &stage, Script & )
+{
+	Theme &theme = *stage.theme;
+	const Palette &palette = theme.palette();
+	auto &bars = stage.visuals.add( std::make_unique<Group>() );
+	bars.position = { -3.5F, -2.F };
+	for ( int i = 0; i < 4; ++i )
+	{
+		const float height = 0.8F + 0.7F * static_cast<float>( i );
+		auto &bar = bars.add( std::make_unique<Rectangle>( 0.4F, height, palette.blue ) );
+		bar.position = { 1.1F * static_cast<float>( i ), height };
+	}
+	// --8<-- [start:grow-from-edge]
+	co_await stagger( stage, children_of( bars ), 0.15s, [&]( Visual &bar ) { return grow_from_edge( stage, bar, Anchor::BOTTOM, 0.6s ); } );
+	// --8<-- [end:grow-from-edge]
+
+	auto &word = stage.visuals.add( make_text( theme, "Look here", FontStyle{ Intent::TITLE }.large() ) );
+	move_to( word, { 3.F, 1.F }, Anchor::CENTER );
+	// --8<-- [start:surround]
+	auto &frame = stage.visuals.add( make_surround( word, { .radius = 0.1F, .outline = palette.yellow } ) );
+	auto &arc = stage.visuals.add( make_arc( { 3.F, -1.5F }, 1.F, 0.F, 270.F, { .thickness = 0.08F, .color = palette.green } ) );
+	// --8<-- [end:surround]
+	co_await choreograph( fade_in( stage, frame, 0.5s ), draw_on( stage, arc, 1s ) );
+
+	// --8<-- [start:dim]
+	co_await fade_to( stage, bars, 0.3F );  // focus on the word ...
+	co_await wait_for( stage, 1s );
+	co_await fade_to( stage, bars, 1.F );   // ... and back
+	// --8<-- [end:dim]
+	co_await tween( stage, 0.8s, ease_there_and_back, [&]( float t ) { frame.stroke_thickness = 0.05F + 0.1F * t; } ); // a pulse
+	co_await wait_for( stage, 0.5s );
+}
+
 REGISTER_SCENE( "verbs", "Fade, slide, grow and indicate, with connectors following the moving circles", show_verbs );
+REGISTER_SCENE( "helpers", "A frame round a word, an arc, bars that grow from their base, and dimming", show_helpers );
 REGISTER_SCENE( "camera", "Zooming in on a graph, and panning along it", show_camera );

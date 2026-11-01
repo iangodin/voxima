@@ -755,6 +755,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#frames-and-arcs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Frames and arcs
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#panels-lists-and-tables" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1291,6 +1302,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#frames-and-arcs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Frames and arcs
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#panels-lists-and-tables" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1485,6 +1507,13 @@ baselines of text of any size.</p>
 <p><code>safe_area</code> is the picture's frame, at zoom 1, pulled in by a margin (0.5 units by default).</p>
 <p><code>box_of( visual )</code> and <code>point_at( visual, anchor )</code> give a visual's box and one of its points, in its parent's
 frame, for your own placement.</p>
+<h2 id="frames-and-arcs">Frames and arcs<a class="headerlink" href="#frames-and-arcs" title="Permanent link">&para;</a></h2>
+<p><code>make_surround( visual, options )</code> makes a rectangle round a visual's box, without holding it as a panel does, and
+<code>make_arc( center, radius, from_degrees, to_degrees, options )</code> part of a circle as a stroked <code>Path</code>:</p>
+<div class="highlight"><pre><span></span><code><span class="k">auto</span><span class="w"> </span><span class="o">&amp;</span><span class="n">frame</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">stage</span><span class="p">.</span><span class="n">visuals</span><span class="p">.</span><span class="n">add</span><span class="p">(</span><span class="w"> </span><span class="n">make_surround</span><span class="p">(</span><span class="w"> </span><span class="n">word</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="p">.</span><span class="n">radius</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">0.1F</span><span class="p">,</span><span class="w"> </span><span class="p">.</span><span class="n">outline</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">palette</span><span class="p">.</span><span class="n">yellow</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="p">)</span><span class="w"> </span><span class="p">);</span>
+<span class="k">auto</span><span class="w"> </span><span class="o">&amp;</span><span class="n">arc</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">stage</span><span class="p">.</span><span class="n">visuals</span><span class="p">.</span><span class="n">add</span><span class="p">(</span><span class="w"> </span><span class="n">make_arc</span><span class="p">(</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="mf">3.F</span><span class="p">,</span><span class="w"> </span><span class="mf">-1.5F</span><span class="w"> </span><span class="p">},</span><span class="w"> </span><span class="mf">1.F</span><span class="p">,</span><span class="w"> </span><span class="mf">0.F</span><span class="p">,</span><span class="w"> </span><span class="mf">270.F</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="p">.</span><span class="n">thickness</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">0.08F</span><span class="p">,</span><span class="w"> </span><span class="p">.</span><span class="n">color</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">palette</span><span class="p">.</span><span class="n">green</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="p">)</span><span class="w"> </span><span class="p">);</span>
+</code></pre></div>
+<p>Add a frame to the group its visual is in. It stays where it is if the visual moves.</p>
 <h2 id="panels-lists-and-tables">Panels, lists and tables<a class="headerlink" href="#panels-lists-and-tables" title="Permanent link">&para;</a></h2>
 <p>A <strong>panel</strong> is a rounded box fitted round something:</p>
 <div class="highlight"><pre><span></span><code><span class="k">auto</span><span class="w"> </span><span class="o">&amp;</span><span class="n">panel</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">stage</span><span class="p">.</span><span class="n">visuals</span><span class="p">.</span><span class="n">add</span><span class="p">(</span><span class="w"> </span><span class="n">make_panel</span><span class="p">(</span><span class="w"> </span><span class="n">make_text</span><span class="p">(</span><span class="w"> </span><span class="n">theme</span><span class="p">,</span><span class="w"> </span><span class="s">"Theorem"</span><span class="p">,</span><span class="w"> </span><span class="n">style</span><span class="w"> </span><span class="p">),</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="p">.</span><span class="n">padding</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">0.5F</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="p">)</span><span class="w"> </span><span class="p">);</span>

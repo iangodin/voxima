@@ -43,6 +43,9 @@ enum class Align
 // The box of a visual, in its parent's frame (empty if it draws nothing and has no extent)
 AABB box_of( const Visual &visual );
 
+// The same as it is drawn, its own scale applied (which box_of does not)
+AABB drawn_box( const Visual &visual );
+
 // A point of a visual's box (its center, the middle of a side, or a corner), in its parent's frame
 Point point_at( const Visual &visual, Anchor anchor );
 

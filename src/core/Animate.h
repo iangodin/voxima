@@ -5,6 +5,7 @@
 #include "core/Stage.h"
 #include "visuals/Group.h"
 #include "visuals/Path.h"
+#include "visuals/Placement.h"
 #include "visuals/Point.h"
 #include "visuals/Visual.h"
 
@@ -40,6 +41,10 @@ Scene fade_to( const Stage &stage, Visual &visual, float opacity, std::chrono::d
 // Grow from a point (its own center) to full size, fading in with it; and the reverse
 Scene grow_in( const Stage &stage, Visual &visual, std::chrono::duration<double> duration = std::chrono::milliseconds( 500 ), EaseFunction ease = {} );
 Scene shrink_out( const Stage &stage, Visual &visual, std::chrono::duration<double> duration = std::chrono::milliseconds( 500 ), EaseFunction ease = {} );
+
+// Grow from one of its edges to full size, that edge staying where it is: BOTTOM for a bar of a chart, LEFT for a gauge (a corner
+// grows both ways, and CENTER is grow_in with no fade). For what is not turned.
+Scene grow_from_edge( const Stage &stage, Visual &visual, Anchor edge, std::chrono::duration<double> duration = std::chrono::milliseconds( 500 ), EaseFunction ease = {} );
 
 // Come in from `offset` away (stage units) to where it is, fading in; and go out to `offset` away, fading out
 Scene slide_in( const Stage &stage, Visual &visual, Point offset, std::chrono::duration<double> duration = std::chrono::milliseconds( 500 ), EaseFunction ease = {} );

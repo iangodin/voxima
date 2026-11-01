@@ -40,6 +40,25 @@ struct PanelOptions
 	std::optional<ShadowOptions> shadow = {};
 };
 
+struct SurroundOptions
+{
+	// Room round the visual's box, and how rounded the corners are (stage units)
+	float padding = 0.2F;
+	float radius = 0.F;
+
+	// White is the theme's text color. See-through inside, by default.
+	Color fill = { 1.F, 1.F, 1.F, 0.F };
+	Color outline = { 1.F, 1.F, 1.F, 1.F };
+	float outline_width = 0.05F;
+	StrokeDash dash = {};
+};
+
+// A rectangle round a visual's box as it is drawn now, in the same frame as the visual (so add it to the same group). Unlike a
+// panel it does not hold the visual, and it stays where it is if the visual moves.
+//
+//     auto &frame = stage.visuals.add( make_surround( formula, { .radius = 0.1F, .outline = palette.yellow } ) );
+std::unique_ptr<RoundRectangle> make_surround( const Visual &visual, const SurroundOptions &options = {} );
+
 // A box round some content, fitted to it: a rounded rectangle behind the content, as big as its box (see box_of) and the padding.
 // Move, scale or fade the Panel and both go with it. If the content changes size or moves, fit() again.
 //

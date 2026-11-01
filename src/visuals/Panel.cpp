@@ -87,3 +87,24 @@ std::unique_ptr<Panel> make_panel( std::unique_ptr<Visual> content, const PanelO
 {
 	return std::make_unique<Panel>( std::move( content ), options );
 }
+
+std::unique_ptr<RoundRectangle> make_surround( const Visual &visual, const SurroundOptions &options )
+{
+	auto frame = std::make_unique<RoundRectangle>();
+	const AABB box = drawn_box( visual );
+	if ( box.empty() )
+	{
+		frame->position = visual.position;
+		return frame;
+	}
+	frame->position = ( box.min + box.max ) * 0.5F;
+	frame->half_width = ( box.max.x() - box.min.x() ) * 0.5F + options.padding;
+	frame->half_height = ( box.max.y() - box.min.y() ) * 0.5F + options.padding;
+	const float radius = std::clamp( options.radius, 0.F, std::min( frame->half_width, frame->half_height ) );
+	frame->top_left_radius = frame->top_right_radius = frame->bottom_left_radius = frame->bottom_right_radius = radius;
+	frame->color = options.fill;
+	frame->stroke_color = options.outline;
+	frame->stroke_thickness = options.outline_width;
+	frame->stroke_dash = options.dash;
+	return frame;
+}

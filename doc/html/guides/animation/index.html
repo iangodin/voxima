@@ -1241,6 +1241,10 @@ take it away. All take a length in seconds and, where it makes sense, an <a href
 <td>Grow from its own center, fading in; the reverse</td>
 </tr>
 <tr>
+<td><code>grow_from_edge( stage, v, Anchor::BOTTOM, ...)</code></td>
+<td>Grow from one edge, which stays where it is: a bar of a chart, a gauge</td>
+</tr>
+<tr>
 <td><code>slide_in( stage, v, offset, ...)</code>, <code>slide_out</code></td>
 <td>Come in from <code>offset</code> away (stage units), fading in; go out to it</td>
 </tr>
@@ -1306,6 +1310,10 @@ overshooting, bouncing. It is a plain function of <code>t</code>, so any moment 
 <tr>
 <td><code>ease_elastic_in</code>, <code>ease_elastic_out</code>, <code>ease_elastic_in_out</code></td>
 <td>Spring</td>
+</tr>
+<tr>
+<td><code>ease_there_and_back</code>, <code>ease_there_and_back_with_pause( pause )</code></td>
+<td>Out to 1 and back to 0, for a pulse; with a stay at 1 for that part of the time. Include <code>core/EaseThereAndBack.h</code></td>
 </tr>
 </tbody>
 </table>
