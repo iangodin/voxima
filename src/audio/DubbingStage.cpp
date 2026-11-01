@@ -60,7 +60,7 @@ tts::TTSClient &DubbingStage::tts()
 		{
 			throw std::runtime_error(
 				"narration needs a TTS model, and there is none at " + _tts_model.string() +
-				" (give one with --tts-model; see download_models.py)" );
+				" (give one with --tts-model or $VOXIMA_MODELS; see download_models.py)" );
 		}
 		_tts.emplace( _tts_model, _tts_backend, _tts_threads, _aligner_model );
 		_tts->setup( _tts_dir );

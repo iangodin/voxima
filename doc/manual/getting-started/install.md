@@ -57,8 +57,10 @@ prints every option. These are the other targets:
 | `make install PREFIX=<dir>` | Installs the Release build: the program, the core library, the headers and the CMake package |
 | `make clean` | Deletes `build/` (run `make config` again afterwards) |
 
-Run `voxima` from the folder of the checkout, since its default places for fonts, models and voices are
-relative to where it is run. (Or give them with options: `--font-dir`, `--tts-model`, `--tts-voice-dir`.)
+Run `voxima` from the folder of the checkout, where it finds `assets/fonts`, `models` and `voices`. From anywhere
+else it looks for them as described under [Fonts](#fonts) and
+[Speech models and voices](#speech-models-and-voices-only-for-narration), or you can give them with options
+(`--font-dir`, `--tts-model`, `--aligner-model`, `--tts-voice-dir`).
 
 ## Install it (to build plugins elsewhere)
 
@@ -78,6 +80,8 @@ The rest of this manual calls that folder `<prefix>`. It holds
 | `<prefix>/include/voxima/` | The headers your scenes are written against |
 | `<prefix>/lib/cmake/Voxima/` | The CMake package, for `find_package( Voxima )` |
 | `<prefix>/share/voxima/examples/` | Example plugin projects to start from, one folder each |
+| `<prefix>/share/voxima/voices/` | The reference voices for narration, with their sources and licenses |
+| `<prefix>/share/voxima/download_fonts.py`, `download_models.py` | The scripts that download the fonts and the speech models |
 | `<prefix>/share/doc/Voxima/` | The manual (as a web site, open `manual/index.html`) and the licenses |
 
 [Your own plugin project](../guides/plugin-project.md) shows how to build against it.
@@ -90,7 +94,8 @@ The fonts are large and are not in the repository. Download them once, from the 
 python3 download_fonts.py
 ```
 
-They go to `assets/fonts`. Voxima looks for fonts in the directory given with `--font-dir`, then in
+They go to `assets/fonts`, or to a directory you give the script (`--help` lists its options, and `--list` names
+the fonts without downloading anything). Voxima looks for fonts in the directory given with `--font-dir`, then in
 `assets/fonts` (relative to where you run it), then in `$VOXIMA_FONTS`, then in `<prefix>/share/voxima/fonts`
 (you can give the script that directory, to share the fonts between projects). Without the fonts, text cannot be
 drawn.
@@ -98,29 +103,36 @@ drawn.
 ## Speech models and voices (only for narration)
 
 Narration is made by a local text-to-speech model, which runs on your own machine: nothing is sent anywhere. The
-reference voices are in the repository, in `voices/`. The models are large (3.2 GB together) and are not; download
-them from the checkout:
+reference voices are in the repository, in `voices/`, and are installed with Voxima. The models are large (3.2 GB
+together) and are not; download them from the checkout:
 
 ```
 python3 download_models.py
 ```
 
-They go to `models/` (which git does not track), in the folders the defaults below expect. The script skips
-files you already have and resumes an interrupted download. `--all` also fetches the larger F16 versions. They
-are Q8_0 GGUF conversions in the Hugging Face repository
+They go to `models/` (which git does not track), in the folders Voxima expects. Run from an install
+(`<prefix>/share/voxima/download_models.py`), the script puts them in `<prefix>/share/voxima/models` instead, for
+every project to share; or give it a directory. It skips files you already have and resumes an interrupted
+download. `--all` also fetches the larger F16 versions, and `--list` says what it would fetch and where,
+without downloading anything. They are Q8_0 GGUF conversions in the Hugging Face repository
 [audio-cpp/audio.cpp-gguf](https://huggingface.co/audio-cpp/audio.cpp-gguf), under the licenses of the original
 models (Chatterbox: MIT; Qwen3-ForcedAligner: Apache-2.0):
 
-| File | Used for | Default path (relative to where you run `voxima`) | Option |
+| File | Used for | Path in the models folder | Option |
 |---|---|---|---|
-| [`chatterbox-q8_0.gguf`](https://huggingface.co/audio-cpp/audio.cpp-gguf/tree/main/Chatterbox-GGUF) | Speech | `models/Chatterbox-GGUF/chatterbox-q8_0.gguf` | `--tts-model` |
-| [`qwen3-forced-aligner-0.6b-q8_0.gguf`](https://huggingface.co/audio-cpp/audio.cpp-gguf/tree/main/Qwen3-ForcedAligner-0.6B-GGUF) | Timing of the subtitles to the words (optional) | `models/Qwen3-ForcedAligner-0.6B-GGUF/qwen3-forced-aligner-0.6b-q8_0.gguf` | `--aligner-model` |
+| [`chatterbox-q8_0.gguf`](https://huggingface.co/audio-cpp/audio.cpp-gguf/tree/main/Chatterbox-GGUF) | Speech | `Chatterbox-GGUF/chatterbox-q8_0.gguf` | `--tts-model` |
+| [`qwen3-forced-aligner-0.6b-q8_0.gguf`](https://huggingface.co/audio-cpp/audio.cpp-gguf/tree/main/Qwen3-ForcedAligner-0.6B-GGUF) | Timing of the subtitles to the words (optional) | `Qwen3-ForcedAligner-0.6B-GGUF/qwen3-forced-aligner-0.6b-q8_0.gguf` | `--aligner-model` |
 
-To download them yourself, take the two files from that repository (`Chatterbox-GGUF/` and
-`Qwen3-ForcedAligner-0.6B-GGUF/`) and put them at those paths. Each narrator speaks in the voice of a short
-**reference clip** (a few seconds of a real voice), named in your script's `voices` section and looked for under
-`--tts-voice-dir` (default `voices`). See [Narration](../guides/narration.md#voices); the clips that come with Voxima, and their licenses, are listed there too. A video with no narration
-needs none of these.
+Without its option, each model is looked for in `models` (relative to where you run `voxima`), then in
+`$VOXIMA_MODELS`, then in `<prefix>/share/voxima/models`, and the first folder that has the file is used. To download
+them yourself, take the two files from that repository (`Chatterbox-GGUF/` and
+`Qwen3-ForcedAligner-0.6B-GGUF/`) and put them at those paths in one of these folders.
+
+Each narrator speaks in the voice of a short **reference clip** (a few seconds of a real voice), named in your
+script's `voices` section. The clips are looked for under `--tts-voice-dir`; without it, under the first of `voices`
+(relative to where you run `voxima`), `$VOXIMA_VOICES` and `<prefix>/share/voxima/voices` that there is. See
+[Narration](../guides/narration.md#voices); the clips that come with Voxima, and their licenses, are listed there
+too. A video with no narration needs none of these.
 
 You can use a GPU for the speech with `--tts-backend cuda` (the default, `best`, picks one that works), if CUDA
 was found when Voxima was configured. With `cpu`, `--tts-threads` sets how many threads it uses.

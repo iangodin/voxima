@@ -110,6 +110,7 @@ set_property( DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS
 add_library( visuals SHARED
 	src/core/PluginLoader.cpp
 	src/utils/ExecutablePath.cpp
+	src/utils/DataDirs.cpp
 	src/core/EaseCubic.cpp
 	src/core/EaseElastic.cpp
 	src/core/EaseBack.cpp
@@ -315,9 +316,10 @@ install( FILES
 	cmake/VoximaPlugin.cmake
 	DESTINATION ${VOXIMA_CMAKE_DIR} COMPONENT Voxima )
 
-# The fonts are not installed (they are big): download_fonts.py <prefix>/share/voxima/fonts gets them, and
-# voxima looks there
+# The fonts and the speech models are not installed (they are big): download_fonts.py <prefix>/share/voxima/fonts and
+# download_models.py get them, and voxima looks there. The voices are small, and are.
 install( PROGRAMS download_fonts.py download_models.py DESTINATION ${CMAKE_INSTALL_DATADIR}/voxima COMPONENT Voxima )
+install( DIRECTORY voices/ DESTINATION ${CMAKE_INSTALL_DATADIR}/voxima/voices COMPONENT Voxima )
 
 # How to use it, and a plugin project to start from
 install( DIRECTORY doc/html/ DESTINATION ${CMAKE_INSTALL_DOCDIR}/manual COMPONENT Voxima )

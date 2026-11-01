@@ -16,11 +16,14 @@ voices::
   narrator: "chatterbox/en-voice-zero-robert-middleton.wav"
 ```
 
-The path is relative to `--tts-voice-dir` (default `voices`). Give each language its own clip, in a voice of that
+The path is relative to `--tts-voice-dir` (without it: `voices`, `$VOXIMA_VOICES`, or the installed
+`<prefix>/share/voxima/voices`, see [Speech models and voices](../getting-started/install.md#speech-models-and-voices-only-for-narration)).
+A project with its own clips can keep them in a `voices` folder, but then the installed ones are not looked at: copy
+any of them it also uses. Give each language its own clip, in a voice of that
 language, in that language's file. Use clips you have the right to use, and credit them as their licenses ask
 for (a voice's source and license should be kept next to it).
 
-The clips in Voxima's `voices/chatterbox/` are all CC0 or public domain (LibriVox recordings, the Kyutai voice
+The clips in Voxima's `voices/chatterbox/` (installed in `<prefix>/share/voxima/voices/chatterbox/`) are all CC0 or public domain (LibriVox recordings, the Kyutai voice
 donations and Voice-Zero), so no credit is needed, though crediting the readers is kind. The source of each is
 in `voices/chatterbox/SOURCES.md`.
 

@@ -21,7 +21,7 @@ audio.cpp also carries some model weights and test recordings (in `extern/audio.
 licenses of their original releases: see `extern/audio.cpp/docs/model_licenses.md`. They are not installed.
 
 The reference voice clips in `voices/` are CC0 or public domain, with their sources and attribution in
-`voices/chatterbox/SOURCES.md`. They are not installed.
+`voices/chatterbox/SOURCES.md`. They are installed in `share/voxima/voices`, with that file.
 
 ## Libraries from Conan
 

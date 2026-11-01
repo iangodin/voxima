@@ -1285,10 +1285,13 @@ in that voice.</p>
 <div class="highlight"><pre><span></span><code>voices::
   narrator: "chatterbox/en-voice-zero-robert-middleton.wav"
 </code></pre></div>
-<p>The path is relative to <code>--tts-voice-dir</code> (default <code>voices</code>). Give each language its own clip, in a voice of that
+<p>The path is relative to <code>--tts-voice-dir</code> (without it: <code>voices</code>, <code>$VOXIMA_VOICES</code>, or the installed
+<code>&lt;prefix&gt;/share/voxima/voices</code>, see <a href="../../getting-started/install/#speech-models-and-voices-only-for-narration">Speech models and voices</a>).
+A project with its own clips can keep them in a <code>voices</code> folder, but then the installed ones are not looked at: copy
+any of them it also uses. Give each language its own clip, in a voice of that
 language, in that language's file. Use clips you have the right to use, and credit them as their licenses ask
 for (a voice's source and license should be kept next to it).</p>
-<p>The clips in Voxima's <code>voices/chatterbox/</code> are all CC0 or public domain (LibriVox recordings, the Kyutai voice
+<p>The clips in Voxima's <code>voices/chatterbox/</code> (installed in <code>&lt;prefix&gt;/share/voxima/voices/chatterbox/</code>) are all CC0 or public domain (LibriVox recordings, the Kyutai voice
 donations and Voice-Zero), so no credit is needed, though crediting the readers is kind. The source of each is
 in <code>voices/chatterbox/SOURCES.md</code>.</p>
 <p>Chatterbox speaks many languages (English, French, German, Spanish and Polish among them). Chinese and

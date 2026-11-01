@@ -38,14 +38,16 @@ OPTIONS:
           --fps INT           Camera frame rate (24 by default; with --preview, the display's
                               refresh rate)
           --lang TEXT ...     Language to use (first one is master, multiple allowed)
-          --tts-model TEXT    Path to the Chatterbox GGUF model
+          --tts-model TEXT    Path to the Chatterbox GGUF model (without it: looked for in
+                              models, $VOXIMA_MODELS, and the installed share/voxima/models)
           --tts-voice-dir TEXT 
-                              Base directory for narrator reference-clip paths
+                              Base directory for narrator reference-clip paths (without it:
+                              voices, $VOXIMA_VOICES, or the installed share/voxima/voices)
           --tts-backend TEXT  TTS backend: best, cpu or cuda
           --tts-threads INT   TTS CPU thread count
           --aligner-model TEXT 
                               Path to the Qwen3 Forced Aligner GGUF model, for subtitle timing
-                              (optional)
+                              (optional; without it: looked for as --tts-model is)
           --scene TEXT ...    Scene to render; repeat it to play several in order (default:
                               "movie")
           --max-speedup FLOAT How much the other languages may be speeded up to keep in step

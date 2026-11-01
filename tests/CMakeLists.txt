@@ -66,6 +66,7 @@ add_executable( voxima_unit_tests
 	TestWordEffects.cpp
 	TestMissingGlyph.cpp
 	TestPlugin.cpp
+	TestDataDirs.cpp
 )
 
 target_link_libraries( voxima_unit_tests

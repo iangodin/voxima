@@ -15,7 +15,7 @@
 #include <optional>
 #include <core/ThemeFile.h>
 #include <core/Version.h>
-#include <utils/ExecutablePath.h>
+#include <utils/DataDirs.h>
 #include <utils/Language.h>
 #include <utils/ParseSequenceName.h>
 #include <utils/Timer.h>
@@ -319,37 +319,16 @@ bool Producer::render( const RenderJob &job )
 
 namespace
 {
-// Where the fonts are, without --font-dir: assets/fonts here (in the source tree, say), $VOXIMA_FONTS, or
-// those installed with the program (in share/voxima/fonts, which download_fonts.py fills). Nothing if none
-// of them is there, and the theme looks in assets/fonts as it always has.
-std::optional<std::filesystem::path> find_font_dir()
+// Where the speech models are, in the folders download_models.py makes in them; the same in each place it looks
+const char *const TTS_MODEL_FILE = "Chatterbox-GGUF/chatterbox-q8_0.gguf";
+const char *const ALIGNER_MODEL_FILE = "Qwen3-ForcedAligner-0.6B-GGUF/qwen3-forced-aligner-0.6b-q8_0.gguf";
+
+// A speech model without its option. When it is nowhere, this is where it is said to be missing from.
+std::string find_model( const char *file )
 {
-	std::error_code error;
-	if ( std::filesystem::is_directory( "assets/fonts", error ) )
-	{
-		return std::nullopt;
-	}
-#ifdef _MSC_VER
-#pragma warning( push )
-#pragma warning( disable : 4996 ) // getenv: only read, here
-#endif
-	const char *fonts = std::getenv( "VOXIMA_FONTS" );
-#ifdef _MSC_VER
-#pragma warning( pop )
-#endif
-	if ( fonts && *fonts )
-	{
-		return std::filesystem::path( fonts );
-	}
-	if ( const auto program = executable_path(); !program.empty() )
-	{
-		const auto installed = program.parent_path().parent_path() / "share" / "voxima" / "fonts";
-		if ( std::filesystem::is_directory( installed, error ) )
-		{
-			return installed;
-		}
-	}
-	return std::nullopt;
+	const auto places = DataPlaces::standard( "models", "VOXIMA_MODELS", "models" );
+	const auto found = find_data_file( places, file );
+	return found ? found->string() : ( places.local / file ).string();
 }
 
 std::string palette_names()
@@ -416,11 +395,15 @@ bool Producer::produce( int argc, char *argv[] )
 	std::vector<std::string> languages;
 	app.add_option( "--lang", languages, "Language to use (first one is master, multiple allowed)" );
 
-	std::string tts_model = "models/Chatterbox-GGUF/chatterbox-q8_0.gguf";
-	app.add_option( "--tts-model", tts_model, "Path to the Chatterbox GGUF model" );
+	std::optional<std::string> tts_model;
+	app.add_option(
+		"--tts-model", tts_model,
+		"Path to the Chatterbox GGUF model (without it: looked for in models, $VOXIMA_MODELS, and the installed share/voxima/models)" );
 
-	std::string tts_voice_dir = "voices";
-	app.add_option( "--tts-voice-dir", tts_voice_dir, "Base directory for narrator reference-clip paths" );
+	std::optional<std::string> tts_voice_dir;
+	app.add_option(
+		"--tts-voice-dir", tts_voice_dir,
+		"Base directory for narrator reference-clip paths (without it: voices, $VOXIMA_VOICES, or the installed share/voxima/voices)" );
 
 	std::string tts_backend = "best";
 	app.add_option( "--tts-backend", tts_backend, "TTS backend: best, cpu or cuda" );
@@ -428,10 +411,10 @@ bool Producer::produce( int argc, char *argv[] )
 	int tts_threads = 4;
 	app.add_option( "--tts-threads", tts_threads, "TTS CPU thread count" );
 
-	std::string aligner_model = "models/Qwen3-ForcedAligner-0.6B-GGUF/qwen3-forced-aligner-0.6b-q8_0.gguf";
+	std::optional<std::string> aligner_model;
 	app.add_option(
 		"--aligner-model", aligner_model,
-		"Path to the Qwen3 Forced Aligner GGUF model, for subtitle timing (optional)" );
+		"Path to the Qwen3 Forced Aligner GGUF model, for subtitle timing (optional; without it: looked for as --tts-model is)" );
 
 	std::vector<std::string> scene_names;
 	app.add_option( "--scene", scene_names, "Scene to render; repeat it to play several in order (default: \"movie\")" );
@@ -598,7 +581,7 @@ bool Producer::produce( int argc, char *argv[] )
 	{
 		_stage.theme->set_font_path( *font_path );
 	}
-	else if ( const auto found = find_font_dir() )
+	else if ( const auto found = find_data_dir( DataPlaces::standard( "assets/fonts", "VOXIMA_FONTS", "fonts" ) ) )
 	{
 		_stage.theme->set_font_path( found->string() );
 	}
@@ -623,16 +606,22 @@ bool Producer::produce( int argc, char *argv[] )
 		}
 	}
 
+	if ( !tts_voice_dir )
+	{
+		const auto found = find_data_dir( DataPlaces::standard( "voices", "VOXIMA_VOICES", "voices" ) );
+		tts_voice_dir = found ? found->string() : "voices";
+	}
+
 	_stage.audio.setup(
 		render_dir,
 		"flac",
 		audio_rate,
 		static_cast<size_t>( _stage.camera.frame_rate ),
-		tts_model,
-		tts_voice_dir,
+		tts_model ? *tts_model : find_model( TTS_MODEL_FILE ),
+		*tts_voice_dir,
 		tts_backend,
 		tts_threads,
-		aligner_model );
+		aligner_model ? *aligner_model : find_model( ALIGNER_MODEL_FILE ) );
 	_stage.audio.set_max_speedup( max_speedup );
 
 	// Text that could not be drawn was shown as magenta boxes; say what and where, so it can be fixed. This does not depend
