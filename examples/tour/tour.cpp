@@ -39,7 +39,7 @@ Scene movie( Stage &stage, Script &script )
 		stage,
 		script,
 		{ "hello", "coroutine-basics",
-		  "layout-basics", "layout", "tables",
+		  "layout-basics", "layout", "tables", "drawing-order",
 		  "text-basics", "styled-text", "formulas", "math-marks", "code",
 		  "verbs", "camera",
 		  "morph-basics", "morph-shapes", "morph-formula", "morph-text", "morph-strokes",

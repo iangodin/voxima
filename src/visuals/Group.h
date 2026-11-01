@@ -4,6 +4,7 @@
 #include "VisualVisitor.h"
 
 #include <algorithm>
+#include <cstddef>
 #include <memory>
 #include <vector>
 
@@ -36,6 +37,39 @@ public:
 	void clear( void )
 	{
 		_visuals.clear();
+	}
+
+	/// Add a child at a place in the drawing order: 0 is the back, and an index past the end is the front
+	template<typename Shape>
+	Shape &insert( size_t index, std::unique_ptr<Shape> &&visual )
+	{
+		auto *shape = visual.get();
+		_visuals.insert( _visuals.begin() + static_cast<std::ptrdiff_t>( std::min( index, _visuals.size() ) ), std::move( visual ) );
+		return *shape;
+	}
+
+	/// Move a direct child to the front or the back of the drawing order (in front of or behind all the others),
+	/// or one place forward or back. False, with nothing changed, if it is not a direct child of this group.
+	bool to_front( const Visual *child )
+	{
+		return move_child( child, _visuals.size() );
+	}
+
+	bool to_back( const Visual *child )
+	{
+		return move_child( child, 0 );
+	}
+
+	bool raise( const Visual *child )
+	{
+		const size_t at = index_of( child );
+		return move_child( child, at == _visuals.size() ? at : at + 1 );
+	}
+
+	bool lower( const Visual *child )
+	{
+		const size_t at = index_of( child );
+		return move_child( child, at == 0 ? 0 : at - 1 );
 	}
 
 	/// Swap the direct child `old` for `with`, keeping its place in the drawing order. Returns
@@ -101,4 +135,36 @@ public:
 
 protected:
 	std::vector<std::unique_ptr<Visual>> _visuals;
+
+private:
+	// Where a direct child is, or size() if it is not one
+	size_t index_of( const Visual *child ) const
+	{
+		size_t at = 0;
+		while ( at < _visuals.size() && _visuals[at].get() != child )
+		{
+			++at;
+		}
+		return at;
+	}
+
+	bool move_child( const Visual *child, size_t to )
+	{
+		const size_t at = index_of( child );
+		if ( at == _visuals.size() )
+		{
+			return false;
+		}
+		to = std::min( to, _visuals.size() - 1 );
+		const auto begin = _visuals.begin();
+		if ( to < at )
+		{
+			std::rotate( begin + static_cast<std::ptrdiff_t>( to ), begin + static_cast<std::ptrdiff_t>( at ), begin + static_cast<std::ptrdiff_t>( at + 1 ) );
+		}
+		else
+		{
+			std::rotate( begin + static_cast<std::ptrdiff_t>( at ), begin + static_cast<std::ptrdiff_t>( at + 1 ), begin + static_cast<std::ptrdiff_t>( to + 1 ) );
+		}
+		return true;
+	}
 };

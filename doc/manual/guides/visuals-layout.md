@@ -31,6 +31,18 @@ everything in it.
 Iterate a group with a range-for; `size()`, `clear()`, `remove( &child )` (hands the child back) and
 `replace( &old, new )` work on its direct children.
 
+## Drawing order
+
+A group draws its children in order, so what comes later is in front. To put something elsewhere in that order, use
+`insert( index, visual )` (0 is the back) instead of `add`, or move a child that is already there:
+
+```cpp
+--8<-- "examples/layout/layout.cpp:order"
+```
+
+`to_front`, `to_back`, `raise` and `lower` take a direct child, and return false if it is not one. All of these stay
+in front of the stage's background.
+
 ## Placing things against each other
 
 Hard-coded coordinates are fine for a couple of things. For anything more, place visuals **relative to each

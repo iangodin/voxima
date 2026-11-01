@@ -1219,8 +1219,8 @@ outlines, their parts are paired up and cut to match, and the shape is blended f
 </code></pre></div>
 <p>What happens to the visuals:</p>
 <ul>
-<li><code>from</code> must be a <strong>direct child of <code>stage.visuals</code></strong>. It is taken off the stage for the morph and <strong>dies with it</strong>:
-  do not use its reference afterwards.</li>
+<li><code>from</code> must be a <strong>direct child of <code>stage.visuals</code></strong>, or of the group given as <code>MorphOptions::parent</code>, with <code>to</code> made
+  for that group's frame. It is taken off for the morph and <strong>dies with it</strong>: do not use its reference afterwards.</li>
 <li><code>to</code> takes its place when the morph finishes, so the last frame is the real thing, not a flattened copy. Keep
   a raw pointer to it <em>before</em> you move it in if you will animate it next:</li>
 </ul>

@@ -212,6 +212,28 @@ Scene show_tables( Stage &stage, Script & )
 }
 }
 
+// What is drawn in front of what: a group draws its children in order
+Scene show_order( Stage &stage, Script & )
+{
+	const Palette &palette = stage.theme->palette();
+	auto &back = stage.visuals.add( std::make_unique<Rectangle>( 2.F, 1.2F, palette.blue ) );
+	back.position = { -1.F, 0.F };
+	auto &front = stage.visuals.add( std::make_unique<Circle>( 1.4F, palette.orange ) );
+	front.position = { 1.F, 0.F };
+	co_await wait_for( stage, 1s );
+
+	// --8<-- [start:order]
+	stage.visuals.to_front( &back );                                            // now the rectangle hides the circle
+	auto &behind = stage.visuals.insert( 0, std::make_unique<Circle>( 2.F, palette.green ) ); // behind them both
+	// --8<-- [end:order]
+	behind.position = { -3.F, 0.F };
+	co_await wait_for( stage, 1s );
+
+	stage.visuals.to_back( &back );
+	co_await wait_for( stage, 1s );
+}
+
 REGISTER_SCENE( "layout-basics", "Shapes, groups, placement, rows and grids, panels, lists, tables and tags", show_basics );
 REGISTER_SCENE( "layout", "Panels, a list and a table, and a row of shapes, placed against each other", show_layout );
 REGISTER_SCENE( "tables", "Tables that wrap, hold formulas, and tint their rows", show_tables );
+REGISTER_SCENE( "drawing-order", "Putting a shape in front of or behind the others", show_order );

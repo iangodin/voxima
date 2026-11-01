@@ -711,6 +711,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#drawing-order" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Drawing order
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#placing-things-against-each-other" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1214,6 +1225,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#drawing-order" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Drawing order
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#placing-things-against-each-other" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1324,6 +1346,14 @@ everything in it.</p>
 </code></pre></div>
 <p>Iterate a group with a range-for; <code>size()</code>, <code>clear()</code>, <code>remove( &amp;child )</code> (hands the child back) and
 <code>replace( &amp;old, new )</code> work on its direct children.</p>
+<h2 id="drawing-order">Drawing order<a class="headerlink" href="#drawing-order" title="Permanent link">&para;</a></h2>
+<p>A group draws its children in order, so what comes later is in front. To put something elsewhere in that order, use
+<code>insert( index, visual )</code> (0 is the back) instead of <code>add</code>, or move a child that is already there:</p>
+<div class="highlight"><pre><span></span><code><span class="n">stage</span><span class="p">.</span><span class="n">visuals</span><span class="p">.</span><span class="n">to_front</span><span class="p">(</span><span class="w"> </span><span class="o">&amp;</span><span class="n">back</span><span class="w"> </span><span class="p">);</span><span class="w">                                            </span><span class="c1">// now the rectangle hides the circle</span>
+<span class="k">auto</span><span class="w"> </span><span class="o">&amp;</span><span class="n">behind</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">stage</span><span class="p">.</span><span class="n">visuals</span><span class="p">.</span><span class="n">insert</span><span class="p">(</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">make_unique</span><span class="o">&lt;</span><span class="n">Circle</span><span class="o">&gt;</span><span class="p">(</span><span class="w"> </span><span class="mf">2.F</span><span class="p">,</span><span class="w"> </span><span class="n">palette</span><span class="p">.</span><span class="n">green</span><span class="w"> </span><span class="p">)</span><span class="w"> </span><span class="p">);</span><span class="w"> </span><span class="c1">// behind them both</span>
+</code></pre></div>
+<p><code>to_front</code>, <code>to_back</code>, <code>raise</code> and <code>lower</code> take a direct child, and return false if it is not one. All of these stay
+in front of the stage's background.</p>
 <h2 id="placing-things-against-each-other">Placing things against each other<a class="headerlink" href="#placing-things-against-each-other" title="Permanent link">&para;</a></h2>
 <p>Hard-coded coordinates are fine for a couple of things. For anything more, place visuals <strong>relative to each
 other</strong> (<code>visuals/Placement.h</code>), so a change in size or text does not make things overlap. The boxes used are

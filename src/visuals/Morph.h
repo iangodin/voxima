@@ -47,6 +47,10 @@ struct MorphOptions
 	// Shapes each part's own progress, 0 to 1 (on top of any easing that drives set()), such as a smoothstep.
 	// Applied while a part is between its start and end; beyond them it keeps extrapolating linearly.
 	std::function<float( float )> part_ease;
+
+	// For morph() and morph_driven(): the group `from` is a direct child of, when it is not stage.visuals. The morph
+	// takes its place there, in the drawing order, and `to` takes the morph's.
+	Group *parent = nullptr;
 };
 
 // A shape that changes from one visual into another. Both are flattened to cubic outlines, their

@@ -12,8 +12,8 @@ The code on this page is from the `morphing` and `narration` examples (`examples
 
 What happens to the visuals:
 
-- `from` must be a **direct child of `stage.visuals`**. It is taken off the stage for the morph and **dies with it**:
-  do not use its reference afterwards.
+- `from` must be a **direct child of `stage.visuals`**, or of the group given as `MorphOptions::parent`, with `to` made
+  for that group's frame. It is taken off for the morph and **dies with it**: do not use its reference afterwards.
 - `to` takes its place when the morph finishes, so the last frame is the real thing, not a flattened copy. Keep
   a raw pointer to it *before* you move it in if you will animate it next:
 
