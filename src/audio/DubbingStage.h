@@ -98,7 +98,7 @@ public:
 	// Accumulated subtitle cues for a language, in the order they were
 	// captioned. Empty (not an error) for a language with no narration or
 	// where alignment/synthesis isn't supported (e.g. Polish alignment, or
-	// zh/ja synthesis - see tts.md's accepted-gap notes).
+	// zh/ja synthesis - see doc/internal/tts.md, "Known gaps").
 	const std::vector<SubtitleCue> &subtitles( std::string_view lang ) const;
 
 	// How much the other languages' narration may be speeded up to keep them in step with the main one (see

@@ -49,8 +49,8 @@ if ( APPLE )
 endif()
 set( AUDIOCPP_BUILD_C_API ON CACHE BOOL "" FORCE )
 set( AUDIOCPP_MODEL_SET "custom" CACHE STRING "" FORCE )
-# chatterbox: narration synthesis. qwen3_forced_aligner: optional subtitle-
-# timing pass (see doc/internal/tts.md phase 4) - a separate, standalone family from
+# chatterbox: narration synthesis. qwen3_forced_aligner: optional word- and
+# subtitle-timing pass (see doc/internal/tts.md) - a separate, standalone family from
 # qwen3_tts/qwen3_asr, so this doesn't pull those in.
 set( AUDIOCPP_MODELS "chatterbox,qwen3_forced_aligner" CACHE STRING "" FORCE )
 add_subdirectory( extern/audio.cpp )

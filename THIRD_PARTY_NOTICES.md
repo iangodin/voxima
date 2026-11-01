@@ -34,5 +34,5 @@ changed versions of them.
 
 ## Not included
 
-The fonts (fetched by `download_fonts.py`) and the TTS models (see `tts.md`) are not part of Voxima, and
+The fonts (fetched by `download_fonts.py`) and the TTS models (fetched by `download_models.py`) are not part of Voxima, and
 keep their own licenses.

@@ -1,7 +1,8 @@
 # Reference voice clips
 
-Short speaker reference clips for Chatterbox voice cloning (see `tts.md`). Each
-entry names the source, license, and consent story per the table in `tts.md`.
+Short speaker reference clips for Chatterbox voice cloning (see `doc/internal/tts.md`). Each
+entry names the source, the license, and whether the speaker gave their voice for this (a donation) or it was
+recorded for something else (an audiobook).
 
 ## Licenses at a glance
 
@@ -147,8 +148,7 @@ and Thorsten Müller) were removed on 2026-10-30.
 
 ## Chinese (zh) — not sourced
 
-No reference voice was sourced for Chinese. See `tts.md` "Reference voices" —
-confirmed by direct test (2026-09-23): `tts_poc ... zh` fails outright with
+No reference voice was sourced for Chinese. Narrating it fails with
 `Error: run: unsupported Chatterbox language: zh`, a hard rejection from
 audio.cpp's own Chatterbox backend (matches `model_specs/chatterbox.json`,
 whose `languages` list omits `zh`), not silently-wrong output. Chinese is

@@ -89,7 +89,7 @@ double Narrator::speech( const std::vector<std::string> &text )
 		// Default cue span is the full synthesized line; refined below by
 		// forced alignment when available, trimming leading/trailing
 		// silence the model left in. Falls back gracefully for languages
-		// without alignment support (e.g. Polish - see tts.md).
+		// without alignment support (e.g. Polish - see doc/internal/tts.md).
 		double local_start = cumulative;
 		double local_end = cumulative + line_duration;
 		std::vector<TimedWord> line_words;
