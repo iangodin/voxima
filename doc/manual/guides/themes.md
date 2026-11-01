@@ -2,6 +2,7 @@
 
 A **theme** is the look of a video: which fonts text is set in, and the colors it starts with. Choose a built-in
 one with `--theme "Academic Classic"` (names below), or write your own (see [Theme files](#theme-files)).
+Without `--theme`, a `theme.huml` next to the scripts is used, or else Modern Technical.
 Colors can be changed apart from the fonts with `--palette`, so any palette goes with any theme.
 
 ## Built-in themes

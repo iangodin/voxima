@@ -14,6 +14,7 @@
 #include <cstdlib>
 #include <optional>
 #include <core/ThemeFile.h>
+#include <core/Version.h>
 #include <utils/ExecutablePath.h>
 #include <utils/Language.h>
 #include <utils/ParseSequenceName.h>
@@ -364,6 +365,7 @@ bool Producer::produce( int argc, char *argv[] )
 {
 	CLI::App app{ "Voxima" };
 	argv = app.ensure_utf8( argv );
+	app.set_version_flag( "--version", "Voxima " VOXIMA_VERSION, "Print the version and exit" );
 
 	std::string container = "mkv";
 	app.add_option( "-c,--container", container, "Container (mp4, mkv, webm)" );
@@ -393,7 +395,7 @@ bool Producer::produce( int argc, char *argv[] )
 	app.add_option( "--script-dir", script_path, "Directory containing scripts" );
 
 	std::optional<std::string> theme_name;
-	app.add_option( "--theme", theme_name, "Theme to use: a built-in one by name, or a theme file (a path, or <name>.huml in a --theme-dir). Without it, theme.huml in the script directory, if there is one" );
+	app.add_option( "--theme", theme_name, "Theme to use: a built-in one by name, or a theme file (a path, or <name>.huml in a --theme-dir). Without it, theme.huml in the script directory if there is one, or else Modern Technical" );
 
 	std::vector<std::string> theme_dirs;
 	app.add_option( "--theme-dir", theme_dirs, "Directory to look in for theme files, and for the themes they inherit (repeatable; the script directory is always searched)" );
@@ -550,7 +552,7 @@ bool Producer::produce( int argc, char *argv[] )
 	}
 
 	// The theme: a built-in one, or one from a file (see ThemeFile.h): by name in a theme directory, or a path; without --theme,
-	// theme.huml next to the scripts
+	// theme.huml next to the scripts, or else Modern Technical
 	std::vector<std::filesystem::path> theme_directories( theme_dirs.begin(), theme_dirs.end() );
 	theme_directories.push_back( script_path );
 	if ( theme_name )
@@ -566,6 +568,10 @@ bool Producer::produce( int argc, char *argv[] )
 	{
 		_loaded_theme.emplace( themes::load( file.string(), theme_directories ) );
 		_stage.theme = &*_loaded_theme;
+	}
+	else
+	{
+		_stage.theme = Theme::get_by_name( "Modern Technical" );
 	}
 
 	if ( _stage.theme == nullptr )

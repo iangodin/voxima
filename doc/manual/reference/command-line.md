@@ -11,6 +11,7 @@ build/Release/voxima [OPTIONS]
 
 OPTIONS:
   -h,     --help              Print this help message and exit
+          --version           Print the version and exit
   -c,     --container TEXT    Container (mp4, mkv, webm)
   -v,     --vcodec TEXT       Video codec (h264, h265, vp9 or av1)
   -a,     --acodec TEXT       Audio codec (flac, wav, aac, opus, vorbis)
@@ -24,7 +25,7 @@ OPTIONS:
           --script-dir TEXT   Directory containing scripts
           --theme TEXT        Theme to use: a built-in one by name, or a theme file (a path, or
                               <name>.huml in a --theme-dir). Without it, theme.huml in the
-                              script directory, if there is one
+                              script directory if there is one, or else Modern Technical
           --theme-dir TEXT ... 
                               Directory to look in for theme files, and for the themes they
                               inherit (repeatable; the script directory is always searched)

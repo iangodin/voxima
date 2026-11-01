@@ -13,8 +13,6 @@ renders the video.
 - **Subtitles** for every language of the video, made along with the narration.
 - **Music and sound effects**, mixed into every language's audio.
 
-> **Status: alpha.** The API will change. It is developed and tested on Linux; Windows has not been tried.
-
 ## A scene
 
 ```cpp
@@ -55,11 +53,10 @@ make
 python3 download_fonts.py
 ```
 
-Then try the examples (the `Academic Classic` theme has the most complete fonts):
+Then try the examples:
 
 ```
-build/Release/voxima --plugin-dir build/Release/plugins --script-dir examples/tour/scripts --lang en \
-    --theme "Academic Classic" --preview
+build/Release/voxima --plugin-dir build/Release/plugins --script-dir examples/tour/scripts --lang en --preview
 ```
 
 That plays a tour of every example in a window. Narration needs two models, which are not in the repository:
@@ -77,7 +74,7 @@ The developer manual is at **<https://iangodin.github.io/voxima/>**. Start with
 [Your first video](https://iangodin.github.io/voxima/getting-started/first-video/).
 
 Its source is in `doc/manual` (Markdown), and `make docs` builds it as a web site in `doc/html`, which is also
-installed with Voxima (see `AGENTS.md` for the pinned tools).
+installed with Voxima.
 
 The [examples](examples) are small plugin projects, one per topic. The code in the manual is taken from them, and
 they are built with Voxima, so they stay working.
