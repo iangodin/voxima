@@ -4,6 +4,7 @@
 #include <algorithm>
 #include <core/Theme.h>
 #include <themes/NewComputerModern.h>
+#include "TestThemes.h"
 #include <visuals/CreateList.h>
 #include <visuals/CreateTable.h>
 #include <visuals/CreateText.h>
@@ -65,7 +66,7 @@ TEST_CASE( "A panel's corners are never rounder than it is small, and fit() foll
 
 TEST_CASE( "A list has a row for each item, lined up, evenly spaced", "[list]" )
 {
-	Theme theme = NewComputerModern::create_theme();
+	Theme theme = test_theme();
 	const float em = theme.get_stack( FontStyle{ Intent::PROSE } ).font( 0 ).scale;
 
 	auto list = make_list( theme, { "first", "second", "gypsy quilt", "fourth" } ); // (descenders in one of them)
@@ -97,7 +98,7 @@ TEST_CASE( "A list has a row for each item, lined up, evenly spaced", "[list]" )
 
 TEST_CASE( "A numbered list lines its numbers up on the right, and an item can be several lines", "[list]" )
 {
-	Theme theme = NewComputerModern::create_theme();
+	Theme theme = test_theme();
 	const float em = theme.get_stack( FontStyle{ Intent::PROSE } ).font( 0 ).scale;
 
 	std::vector<std::string> items;
@@ -119,7 +120,7 @@ TEST_CASE( "A numbered list lines its numbers up on the right, and an item can b
 
 TEST_CASE( "A table's cells share a baseline in a row, and line up in their columns", "[table]" )
 {
-	Theme theme = NewComputerModern::create_theme();
+	Theme theme = test_theme();
 	const float em = theme.get_stack( FontStyle{ Intent::PROSE } ).font( 0 ).scale;
 
 	auto table = make_table(
@@ -152,7 +153,7 @@ TEST_CASE( "A table's cells share a baseline in a row, and line up in their colu
 
 TEST_CASE( "A table's rules are one path, drawn behind the text", "[table]" )
 {
-	Theme theme = NewComputerModern::create_theme();
+	Theme theme = test_theme();
 	const std::vector<std::vector<std::string>> rows = { { "a", "b" }, { "c", "d" }, { "e", "f" } };
 
 	auto count_lines = []( const Table &t )
@@ -187,7 +188,7 @@ TEST_CASE( "A table's rules are one path, drawn behind the text", "[table]" )
 
 TEST_CASE( "wrap_lines breaks text at spaces so no line is wider than asked", "[wrap]" )
 {
-	Theme theme = NewComputerModern::create_theme();
+	Theme theme = test_theme();
 	const std::string text = "the quick brown fox jumps over the lazy dog and keeps running";
 	const FontStyle style{ Intent::PROSE };
 
@@ -220,7 +221,7 @@ TEST_CASE( "wrap_lines breaks text at spaces so no line is wider than asked", "[
 
 TEST_CASE( "wrap_lines leaves a text that fits, and keeps a word too long on its own line", "[wrap]" )
 {
-	Theme theme = NewComputerModern::create_theme();
+	Theme theme = test_theme();
 	const FontStyle style{ Intent::PROSE };
 	CHECK( wrap_lines( theme, "short text", style, 100.F ) == "short text" );
 	CHECK( wrap_lines( theme, "a extraordinarily b", style, 0.5F ) == "a\nextraordinarily\nb" );
@@ -229,7 +230,7 @@ TEST_CASE( "wrap_lines leaves a text that fits, and keeps a word too long on its
 
 TEST_CASE( "a list wraps its items to a maximum width", "[list][wrap]" )
 {
-	Theme theme = NewComputerModern::create_theme();
+	Theme theme = test_theme();
 	const std::vector<std::string> items = { "a fairly long first item that will not fit on one line", "short" };
 	auto loose = make_list( theme, items );
 	const AABB loose_box = box_of( *loose );
@@ -272,7 +273,7 @@ TEST_CASE( "a panel's shadow is behind everything, offset, and fades out past th
 
 TEST_CASE( "a table wraps its widest columns to fit a maximum width", "[table][wrap]" )
 {
-	Theme theme = NewComputerModern::create_theme();
+	Theme theme = test_theme();
 	const std::vector<std::vector<std::string>> rows = {
 		{ "Name", "Notes" },
 		{ "one", "a long note that goes on and on for quite a while" },
@@ -302,7 +303,7 @@ TEST_CASE( "a table wraps its widest columns to fit a maximum width", "[table][w
 
 TEST_CASE( "a table's cells can be any visuals", "[table]" )
 {
-	Theme theme = NewComputerModern::create_theme();
+	Theme theme = test_theme();
 	std::vector<std::vector<std::unique_ptr<Visual>>> cells( 2 );
 	cells[0].push_back( box( 1.F, 0.5F ) );
 	cells[0].push_back( box( 3.F, 0.5F ) );
@@ -322,7 +323,7 @@ TEST_CASE( "a table's cells can be any visuals", "[table]" )
 
 TEST_CASE( "a table can tint its rows, behind everything", "[table]" )
 {
-	Theme theme = NewComputerModern::create_theme();
+	Theme theme = test_theme();
 	const std::vector<std::vector<std::string>> rows = { { "h" }, { "a" }, { "b" }, { "c" } };
 	auto plain = make_table( theme, rows );
 	const auto &plain_rules = dynamic_cast<const Group &>( **plain->begin() );
@@ -343,7 +344,7 @@ TEST_CASE( "a table can tint its rows, behind everything", "[table]" )
 
 TEST_CASE( "a row of tall cells is as tall as they are, above and below the baseline", "[table]" )
 {
-	Theme theme = NewComputerModern::create_theme();
+	Theme theme = test_theme();
 	auto make = [&]( float first_height ) {
 		std::vector<std::vector<std::unique_ptr<Visual>>> cells( 2 );
 		cells[0].push_back( box( 1.F, first_height ) ); // centered on its origin: reaches half its height each way

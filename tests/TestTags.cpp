@@ -14,6 +14,7 @@
 #include <visuals/Group.h>
 #include <visuals/Row.h>
 #include <visuals/Tags.h>
+#include "TestThemes.h"
 
 using namespace math;
 
@@ -21,7 +22,7 @@ namespace
 {
 struct Fixture
 {
-	Theme theme = NewComputerModern::create_theme();
+	Theme theme = test_theme();
 	Context context{ theme };
 };
 }

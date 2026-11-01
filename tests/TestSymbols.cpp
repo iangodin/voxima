@@ -13,6 +13,7 @@
 #include <regex>
 #include <string>
 #include <vector>
+#include "TestThemes.h"
 
 using Catch::Approx;
 using namespace math;
@@ -37,7 +38,7 @@ TEST_CASE( "every named math symbol is a glyph the math font has", "[math][symbo
 	}
 	CHECK( symbols.size() > 90 );
 
-	Theme theme = NewComputerModern::create_theme();
+	Theme theme = test_theme();
 	Context context{ theme };
 	clear_missing_glyph_reports();
 	for ( const auto &[name, glyphs]: symbols )
@@ -60,7 +61,7 @@ TEST_CASE( "named symbols are the characters they say", "[math][symbols]" )
 
 TEST_CASE( "upright text with spaces keeps its spaces (words in a formula)", "[math][symbols]" )
 {
-	Theme theme = NewComputerModern::create_theme();
+	Theme theme = test_theme();
 	Context context{ theme };
 	auto width = [&]( const Expr &e ) {
 		const AABB box = layout_extent( *e.build( context ) );
@@ -71,7 +72,7 @@ TEST_CASE( "upright text with spaces keeps its spaces (words in a formula)", "[m
 
 TEST_CASE( "primed puts prime marks up after its base, one for each", "[math][symbols]" )
 {
-	Theme theme = NewComputerModern::create_theme();
+	Theme theme = test_theme();
 	Context context{ theme };
 	auto width = [&]( const Expr &e ) {
 		const AABB box = layout_extent( *e.build( context ) );
@@ -87,7 +88,7 @@ TEST_CASE( "primed puts prime marks up after its base, one for each", "[math][sy
 
 TEST_CASE( "words is upright text", "[math][symbols]" )
 {
-	Theme theme = NewComputerModern::create_theme();
+	Theme theme = test_theme();
 	Context context{ theme };
 	const AABB a = layout_extent( *words( "if x" ).build( context ) );
 	const AABB b = layout_extent( *upright( "if x" ).build( context ) );
@@ -96,7 +97,7 @@ TEST_CASE( "words is upright text", "[math][symbols]" )
 
 TEST_CASE( "cancel takes no room, boxed takes the padding, colored colors", "[math][marks]" )
 {
-	Theme theme = NewComputerModern::create_theme();
+	Theme theme = test_theme();
 	Context context{ theme };
 	const AABB plain = layout_extent( *text( "xy" ).build( context ) );
 
@@ -123,7 +124,7 @@ TEST_CASE( "cancel takes no room, boxed takes the padding, colored colors", "[ma
 
 TEST_CASE( "aligned lines its cells up where the first and second meet", "[math][aligned]" )
 {
-	Theme theme = NewComputerModern::create_theme();
+	Theme theme = test_theme();
 	Context context{ theme };
 	auto grid = aligned( { { text( "x" ), row( { rel( "=" ), ord( "a + b + c" ) } ) },
 						   { text( "long name" ), row( { rel( "=" ), ord( "d" ) } ) } } )
@@ -147,7 +148,7 @@ TEST_CASE( "aligned lines its cells up where the first and second meet", "[math]
 
 TEST_CASE( "aligned numbers its lines, or uses the tags given", "[math][aligned]" )
 {
-	Theme theme = NewComputerModern::create_theme();
+	Theme theme = test_theme();
 	Context context{ theme };
 	auto count = [&]( AlignedOptions options ) {
 		auto grid = aligned( { { text( "a" ), text( "b" ) }, { text( "c" ), text( "d" ) } }, options ).build( context );
@@ -160,7 +161,7 @@ TEST_CASE( "aligned numbers its lines, or uses the tags given", "[math][aligned]
 
 TEST_CASE( "wide accents are as wide as what they are over, and stretch for a longer base", "[math][accents]" )
 {
-	Theme theme = NewComputerModern::create_theme();
+	Theme theme = test_theme();
 	Context context{ theme };
 	auto width = [&]( const Expr &e ) {
 		const AABB box = layout_extent( *e.build( context ) );
@@ -191,7 +192,7 @@ TEST_CASE( "wide accents are as wide as what they are over, and stretch for a lo
 
 TEST_CASE( "big delimiters have the size asked for, growing with the level", "[math][delimiters]" )
 {
-	Theme theme = NewComputerModern::create_theme();
+	Theme theme = test_theme();
 	Context context{ theme };
 	auto height = [&]( int level ) {
 		const AABB box = layout_extent( *big( U'(', level ).build( context ) );
@@ -206,7 +207,7 @@ TEST_CASE( "big delimiters have the size asked for, growing with the level", "[m
 
 TEST_CASE( "substack stacks lines, and a continued fraction nests", "[math][stacks]" )
 {
-	Theme theme = NewComputerModern::create_theme();
+	Theme theme = test_theme();
 	Context context{ theme };
 	auto size = [&]( const Expr &e ) {
 		const AABB box = layout_extent( *e.build( context ) );

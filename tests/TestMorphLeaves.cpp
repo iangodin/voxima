@@ -11,6 +11,7 @@
 #include <visuals/Tags.h>
 
 #include <algorithm>
+#include "TestThemes.h"
 
 using Catch::Approx;
 using Pairs = std::vector<LeafPair>;
@@ -293,7 +294,7 @@ TEST_CASE( "match_leaves handles empty visuals", "[morph]" )
 
 TEST_CASE( "to_outline gives leaves their tags and a geometry key", "[morph]" )
 {
-	Theme theme = NewComputerModern::create_theme();
+	Theme theme = test_theme();
 	math::Context context( theme );
 	using namespace math;
 
@@ -347,7 +348,7 @@ TEST_CASE( "to_outline gives leaves their tags and a geometry key", "[morph]" )
 
 TEST_CASE( "Morph of a formula keeps what did not change", "[morph]" )
 {
-	Theme theme = NewComputerModern::create_theme();
+	Theme theme = test_theme();
 	math::Context context( theme );
 	using namespace math;
 
@@ -414,7 +415,7 @@ TEST_CASE( "Morph of a formula keeps what did not change", "[morph]" )
 
 TEST_CASE( "Morph by tag follows the parts of a formula, wherever they moved", "[morph]" )
 {
-	Theme theme = NewComputerModern::create_theme();
+	Theme theme = test_theme();
 	math::Context context( theme );
 	using namespace math;
 
@@ -475,7 +476,7 @@ TEST_CASE( "is_word_tag recognises the tags of laid-out words", "[morph]" )
 
 TEST_CASE( "Text morphs match whole words", "[morph]" )
 {
-	Theme theme = NewComputerModern::create_theme();
+	Theme theme = test_theme();
 	const FontStyle style{ Intent::PROSE };
 	auto shapes = [&]( const char *s ) { return to_outline( *make_text( theme, s, style ) ); };
 
@@ -560,7 +561,7 @@ TEST_CASE( "Formulas made of several pieces of text are not mistaken for one wor
 {
 	// Every text() in a formula is laid out on its own, so each starts again at "word0". Matching by that
 	// name once paired the "(" of (a+b)^2 with a new b and made the old b fade.
-	Theme theme = NewComputerModern::create_theme();
+	Theme theme = test_theme();
 	math::Context context( theme );
 	using namespace math;
 

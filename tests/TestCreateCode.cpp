@@ -14,6 +14,7 @@
 
 #include <algorithm>
 #include <variant>
+#include "TestThemes.h"
 
 using Catch::Approx;
 
@@ -75,7 +76,7 @@ TEST_CASE( "CodePalette falls back from a kind to the kind it is a kind of, then
 
 TEST_CASE( "make_code lays out highlighted code, a line to a line, with the columns lined up", "[code]" )
 {
-	Theme theme = NewComputerModern::create_theme();
+	Theme theme = test_theme();
 	const CodePalette &palette = theme.code_palette();
 
 	auto code = make_code( theme, code::Language::CPP, R"cpp(
@@ -106,7 +107,7 @@ int main()
 	CHECK( code->line( 0 ).baseline > code->line( 1 ).baseline );
 }
 
-TEST_CASE( "Every theme lays code out in columns, in colors of its own", "[code]" )
+TEST_CASE( "Every theme lays code out in columns, in colors of its own", "[code][all-fonts]" )
 {
 	std::vector<Theme> themes;
 	themes.push_back( NewComputerModern::create_theme() );

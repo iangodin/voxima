@@ -1,0 +1,13 @@
+# New Computer Modern without its CJK fallback (Source Han Serif, 166 MB), so the tests need only the fonts that
+# download_fonts.py --tests fetches. Everything else, metrics included, is New Computer Modern's.
+meta::
+  name: "Test"
+  inherit: "New Computer Modern"
+
+stacks::
+  fallbacks:: "devanagari", "amiri", "symbola", "notdef"
+  prose:: "newcm", "...fallbacks"
+  code:: "newcm_mono", "...fallbacks"
+  title:: "newcm_uncial", "...fallbacks"
+  label:: "newcm_sans", "...fallbacks"
+  math:: "newcm_math", "...fallbacks"

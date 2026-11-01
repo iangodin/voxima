@@ -10,6 +10,7 @@
 #include <visuals/Layout.h>
 #include <visuals/Radical.h>
 #include <visuals/Scripts.h>
+#include "TestThemes.h"
 
 using Catch::Approx;
 
@@ -30,7 +31,7 @@ TEST_CASE( "FontStyle size factor", "[fonts]" )
 
 TEST_CASE( "Theme honours the size factor", "[fonts]" )
 {
-	auto theme = AcademicClassic::create_theme();
+	auto theme = test_academic_theme();
 	FontStyle body = FontStyle{ Intent::MATH }.large();
 
 	const float base = theme.get_stack( body ).font( 0 ).scale;
@@ -40,7 +41,7 @@ TEST_CASE( "Theme honours the size factor", "[fonts]" )
 
 TEST_CASE( "script_style uses the font's MATH constants", "[fonts]" )
 {
-	auto theme = AcademicClassic::create_theme();
+	auto theme = test_academic_theme();
 	FontStyle body = FontStyle{ Intent::MATH }.large();
 	MathFonts math_fonts = theme.get_math( body );
 	MathFont font( math_fonts.roman() );
@@ -135,7 +136,7 @@ namespace
 {
 struct StyleFixture
 {
-	Theme theme = AcademicClassic::create_theme();
+	Theme theme = test_academic_theme();
 	MathFonts math_fonts = theme.get_math( FontStyle{ Intent::MATH } );
 	MathFont font{ math_fonts.roman() };
 	float s = math_fonts.roman().scale / static_cast<float>( math_fonts.roman().face->units_per_EM );

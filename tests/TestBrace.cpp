@@ -6,6 +6,7 @@
 #include <visuals/Rectangle.h>
 
 #include <variant>
+#include "TestThemes.h"
 
 using Catch::Approx;
 
@@ -73,7 +74,7 @@ TEST_CASE( "a brace beside a visual stands out away from it", "[brace]" )
 
 TEST_CASE( "a labeled brace puts its label beyond the brace's point", "[brace]" )
 {
-	Theme theme = NewComputerModern::create_theme();
+	Theme theme = test_theme();
 	Rectangle box;
 	box.half_width = 2.F;
 	box.half_height = 1.F;

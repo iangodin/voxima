@@ -17,6 +17,7 @@
 
 #include <cmath>
 #include <numbers>
+#include "TestThemes.h"
 
 using Catch::Approx;
 
@@ -425,7 +426,7 @@ TEST_CASE( "reversed walks a contour the other way", "[outline]" )
 
 TEST_CASE( "to_outline gives a glyph with a hole two opposite contours", "[outline]" )
 {
-	auto theme = AcademicClassic::create_theme();
+	auto theme = test_academic_theme();
 
 	SECTION( "o has an outer and a hole" )
 	{

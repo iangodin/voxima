@@ -4,12 +4,13 @@
 #include <plot/NumberLine.h>
 #include <themes/NewComputerModern.h>
 #include <visuals/Placement.h>
+#include "TestThemes.h"
 
 using Catch::Approx;
 
 TEST_CASE( "a number line puts values along its length, the middle of the range at the origin", "[numberline]" )
 {
-	Theme theme = NewComputerModern::create_theme();
+	Theme theme = test_theme();
 	auto line = make_number_line( theme, { .range = { 0.0, 10.0 }, .length = 10.F } );
 	CHECK( line->at( 5.0 ).x() == Approx( 0.F ) );
 	CHECK( line->at( 0.0 ).x() == Approx( -5.F ) );
@@ -19,7 +20,7 @@ TEST_CASE( "a number line puts values along its length, the middle of the range 
 
 TEST_CASE( "marks and intervals sit on their values", "[numberline]" )
 {
-	Theme theme = NewComputerModern::create_theme();
+	Theme theme = test_theme();
 	auto line = make_number_line( theme, { .range = { 0.0, 10.0 }, .length = 10.F } );
 
 	Group &mark = line->add_mark( theme, 7.0, "x", Color{ 1.F, 0.F, 0.F, 1.F } );

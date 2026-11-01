@@ -7,6 +7,7 @@
 #include <visuals/CreateText.h>
 #include <visuals/Group.h>
 #include <visuals/Layout.h>
+#include "TestThemes.h"
 
 using Catch::Approx;
 
@@ -68,7 +69,7 @@ TEST_CASE( "layout_extent of groups", "[visuals]" )
 
 TEST_CASE( "text layout uses advance widths, not painted width", "[visuals]" )
 {
-	auto theme = AcademicClassic::create_theme();
+	auto theme = test_academic_theme();
 	auto text = make_text( theme, "l. ", FontStyle{ Intent::PROSE } );
 
 	AABB layout = layout_extent( *text );

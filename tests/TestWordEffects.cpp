@@ -9,6 +9,7 @@
 #include <visuals/Tags.h>
 
 #include <vector>
+#include "TestThemes.h"
 
 using Catch::Approx;
 
@@ -17,7 +18,7 @@ namespace
 // Three words of laid-out text and a clock the test moves by hand
 struct Fixture
 {
-	Theme theme = NewComputerModern::create_theme();
+	Theme theme = test_theme();
 	std::unique_ptr<Group> text = make_text( theme, "one two three", FontStyle{ Intent::PROSE } );
 	double now = 0.0;
 	bool over = false;

@@ -164,35 +164,39 @@ jobs:
         shell: bash
         run: make
 
-      # The tests set text, so they need the fonts (not in the repository, about 450 MB). Kept in the cache, and fetched
-      # again only when download_fonts.py changes.
-      - name: Restore the fonts
+      # The tests set text, so they need fonts (not in the repository): only the test themes' (download_fonts.py
+      # --tests, about 25 MB, see tests/data/themes). Kept in the cache, since CTAN's mirrors are not always up, and
+      # fetched again when download_fonts.py changes.
+      - name: Restore the test fonts
         id: fonts-cache
         if: ${{ !matrix.cuda }}
         uses: actions/cache/restore@v4
         with:
           path: assets/fonts
-          key: fonts-${{ runner.os }}-${{ hashFiles('download_fonts.py') }}
+          key: test-fonts-${{ runner.os }}-${{ hashFiles('download_fonts.py') }}
 
-      - name: Download the fonts
+      - name: Download the test fonts
         if: ${{ !matrix.cuda && steps.fonts-cache.outputs.cache-hit != 'true' }}
         shell: bash
         run: |
           python -m pip install requests
-          python download_fonts.py
+          python download_fonts.py --tests
 
-      - name: Save the fonts
+      - name: Save the test fonts
         if: ${{ !matrix.cuda && steps.fonts-cache.outputs.cache-hit != 'true' }}
         uses: actions/cache/save@v4
         with:
           path: assets/fonts
           key: ${{ steps.fonts-cache.outputs.cache-primary-key }}
 
-      # Builds the Debug build, and runs the tests
+      # Builds the Debug build, and runs the tests: not the ones of the built-in themes (label all-fonts), which need
+      # every font
       - name: Test
         if: ${{ !matrix.cuda }}
         shell: bash
-        run: make test
+        run: |
+          make debug
+          ctest --preset conan-debug --output-on-failure -LE all-fonts
 
       # The examples are built with Voxima: check that they load and can be listed
       - name: List the examples' scenes

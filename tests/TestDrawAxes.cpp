@@ -8,6 +8,7 @@
 #include <visuals/Tags.h>
 
 #include <chrono>
+#include "TestThemes.h"
 
 using Catch::Approx;
 using namespace std::chrono_literals;
@@ -55,7 +56,7 @@ Snapshot snapshot( Axes &axes )
 
 TEST_CASE( "draw_axes leaves the axes exactly as they were", "[drawaxes]" )
 {
-	Theme theme = NewComputerModern::create_theme();
+	Theme theme = test_theme();
 	Stage stage;
 	auto axes = make( theme );
 	const Snapshot before = snapshot( *axes );
@@ -81,7 +82,7 @@ TEST_CASE( "draw_axes leaves the axes exactly as they were", "[drawaxes]" )
 
 TEST_CASE( "draw_axes starts from nothing, and the lines grow out from where they cross", "[drawaxes]" )
 {
-	Theme theme = NewComputerModern::create_theme();
+	Theme theme = test_theme();
 	Stage stage;
 	auto axes = make( theme );
 
@@ -116,7 +117,7 @@ TEST_CASE( "draw_axes starts from nothing, and the lines grow out from where the
 
 TEST_CASE( "draw_axes brings the ticks in from the crossing outward", "[drawaxes]" )
 {
-	Theme theme = NewComputerModern::create_theme();
+	Theme theme = test_theme();
 	Stage stage;
 	auto axes = make( theme );
 

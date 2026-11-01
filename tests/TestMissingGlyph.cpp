@@ -12,6 +12,7 @@
 #include <visuals/Tags.h>
 
 #include <algorithm>
+#include "TestThemes.h"
 
 using Catch::Approx;
 
@@ -21,7 +22,7 @@ constexpr char32_t ABSENT = 0x10FFFD; // a private-use character no font here ha
 
 struct Fixture
 {
-	Theme theme = NewComputerModern::create_theme();
+	Theme theme = test_theme();
 	FontStack stack = theme.get_stack( FontStyle{ Intent::PROSE } );
 
 	Fixture()

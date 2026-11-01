@@ -5,6 +5,7 @@
 #include <visuals/Circle.h>
 #include <visuals/Layout.h>
 #include <visuals/Row.h>
+#include "TestThemes.h"
 
 using Catch::Approx;
 
@@ -12,7 +13,7 @@ namespace
 {
 struct Fixture
 {
-	Theme theme = AcademicClassic::create_theme();
+	Theme theme = test_academic_theme();
 	MathFonts math_fonts = theme.get_math( FontStyle{ Intent::MATH } );
 	MathFont font{ math_fonts.roman() };
 	float s = math_fonts.roman().scale / static_cast<float>( math_fonts.roman().face->units_per_EM );

@@ -7,6 +7,7 @@
 #include <visuals/Glyph.h>
 
 #include <algorithm>
+#include "TestThemes.h"
 
 using Catch::Approx;
 
@@ -90,7 +91,7 @@ TEST_CASE( "typing_schedule gives the bytes of a character one time", "[typing]"
 
 TEST_CASE( "Typewriter shows what has been typed, fading each character in", "[typing]" )
 {
-	Theme theme = NewComputerModern::create_theme();
+	Theme theme = test_theme();
 	auto listing = make_code( theme, code::Language::CPP, SOURCE );
 	REQUIRE( listing->glyphs.size() == SOURCE.size() - 3 ); // every character but the three newlines has a glyph
 
@@ -137,7 +138,7 @@ TEST_CASE( "Typewriter shows what has been typed, fading each character in", "[t
 
 TEST_CASE( "make_code's glyphs are in the order of the source, with their lines and columns", "[typing]" )
 {
-	Theme theme = NewComputerModern::create_theme();
+	Theme theme = test_theme();
 	auto listing = make_code( theme, code::Language::CPP, SOURCE );
 	for ( size_t i = 1; i < listing->glyphs.size(); ++i )
 	{

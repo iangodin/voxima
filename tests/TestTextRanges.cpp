@@ -6,10 +6,11 @@
 #include <visuals/CreateText.h>
 
 #include <themes/NewComputerModern.h>
+#include "TestThemes.h"
 
 SCENARIO( "Text splitting" )
 {
-	Theme theme = NewComputerModern::create_theme();
+	Theme theme = test_theme();
 	FontStack font = theme.get_stack( FontStyle{ "prose" } );
 
 	GIVEN( "a string with fallback characters" )
@@ -27,7 +28,7 @@ SCENARIO( "Text splitting" )
 				CHECK( ranges[0].start == 0 );
 				CHECK( ranges[0].length == 6 );
 
-				CHECK( ranges[1].font_index == 4 );
+				CHECK( ranges[1].font_index == 3 ); // Symbola, after New CM, Devanagari and Amiri (see tests/data/themes)
 				CHECK( ranges[1].start == 6 );
 				CHECK( ranges[1].length == 4 );
 			}

@@ -6,6 +6,7 @@
 #include <themes/NewComputerModern.h>
 #include <visuals/Fraction.h>
 #include <visuals/Layout.h>
+#include "TestThemes.h"
 
 using Catch::Approx;
 using namespace math;
@@ -22,7 +23,7 @@ float width( const Context &context, const Expr &e )
 
 TEST_CASE( "operators build the rows written by hand", "[math][operators]" )
 {
-	Theme theme = NewComputerModern::create_theme();
+	Theme theme = test_theme();
 	Context context{ theme };
 
 	CHECK( width( context, "a"_m + "b"_m ) == Approx( width( context, row( { ord( text( "a" ) ), bin( "+" ), ord( text( "b" ) ) } ) ) ) );
@@ -37,7 +38,7 @@ TEST_CASE( "operators build the rows written by hand", "[math][operators]" )
 
 TEST_CASE( "operators nest as C++ precedence says", "[math][operators]" )
 {
-	Theme theme = NewComputerModern::create_theme();
+	Theme theme = test_theme();
 	Context context{ theme };
 
 	// a b + c d: the products bind tighter
@@ -56,7 +57,7 @@ TEST_CASE( "operators nest as C++ precedence says", "[math][operators]" )
 
 TEST_CASE( "relations by name", "[math][operators]" )
 {
-	Theme theme = NewComputerModern::create_theme();
+	Theme theme = test_theme();
 	Context context{ theme };
 	for ( auto make: { eq, lt, gt, leq, geq, neq } )
 	{

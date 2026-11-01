@@ -116,7 +116,7 @@ std::string read_file( const std::string &path )
 
 }
 
-TEST_CASE( "The themes load the fonts they always have", "[themes][fonts]" )
+TEST_CASE( "The themes load the fonts they always have", "[themes][fonts][all-fonts]" )
 {
 	std::vector<Theme> themes;
 	themes.push_back( NewComputerModern::create_theme() );

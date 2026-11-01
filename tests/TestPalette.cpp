@@ -13,6 +13,7 @@
 
 #include <algorithm>
 #include <sstream>
+#include "TestThemes.h"
 
 using Catch::Approx;
 
@@ -114,7 +115,7 @@ TEST_CASE( "The code colors come from a palette's accents", "[palette]" )
 
 TEST_CASE( "A theme keeps its own palette, whole, and any palette can be used with it", "[palette]" )
 {
-	Theme theme = AcademicClassic::create_theme();
+	Theme theme = test_academic_theme();
 	CHECK( theme.palette().name == "academic" );
 	CHECK( theme.palette().background == Palette::get( "academic" ).background );
 
@@ -179,7 +180,7 @@ TEST_CASE( "A morph blends what has no color as the color it is seen in", "[pale
 
 TEST_CASE( "Curves on the same axes take the palette's accents in turn", "[palette]" )
 {
-	Theme theme = NewComputerModern::create_theme();
+	Theme theme = test_theme();
 	theme.set_palette( Palette::get( "github-light" ) );
 	auto axes = make_axes( theme );
 	const Palette &p = theme.palette();
@@ -200,7 +201,7 @@ TEST_CASE( "Curves on the same axes take the palette's accents in turn", "[palet
 
 TEST_CASE( "The axes are drawn in the text color, whatever the palette", "[palette]" )
 {
-	Theme theme = NewComputerModern::create_theme();
+	Theme theme = test_theme();
 	auto axes = make_axes( theme );
 	CHECK( axes->options().color == Color{ 1.F, 1.F, 1.F, 1.F } ); // white: the text color, dark on a light background
 }

@@ -8,10 +8,11 @@
 #include <visuals/Fraction.h>
 #include <visuals/Layout.h>
 #include <visuals/Rectangle.h>
+#include "TestThemes.h"
 
 TEST_CASE( "Fraction layout", "[visuals]" )
 {
-	auto theme = AcademicClassic::create_theme();
+	auto theme = test_academic_theme();
 	MathFonts math_fonts = theme.get_math( FontStyle{ Intent::MATH } );
 	MathFont font( math_fonts.roman() );
 	const float s =

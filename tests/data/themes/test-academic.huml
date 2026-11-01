@@ -1,0 +1,11 @@
+# Academic Classic without its CJK fallback (Source Han Serif, 166 MB), so the tests need only the fonts that
+# download_fonts.py --tests fetches. Everything else is Academic Classic's.
+meta::
+  name: "Test Academic"
+  inherit: "Academic Classic"
+
+stacks::
+  fallbacks:: "amiri", "symbola", "newcm_mono_regular", "notdef"
+  prose:: "newcm", "...fallbacks"
+  code:: "newcm_mono", "...fallbacks"
+  math:: "newcm_math", "...fallbacks"

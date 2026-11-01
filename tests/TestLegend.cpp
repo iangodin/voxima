@@ -7,6 +7,7 @@
 #include <visuals/Placement.h>
 
 #include <cmath>
+#include "TestThemes.h"
 
 using Catch::Approx;
 
@@ -22,7 +23,7 @@ std::vector<LegendEntry> three()
 
 TEST_CASE( "a legend has a swatch and a name for each entry, the names in a column", "[legend]" )
 {
-	Theme theme = NewComputerModern::create_theme();
+	Theme theme = test_theme();
 	auto legend = make_legend( theme, three() );
 	REQUIRE( legend->entry_count() == 3 );
 	REQUIRE( legend->panel() != nullptr );
@@ -46,7 +47,7 @@ TEST_CASE( "a legend has a swatch and a name for each entry, the names in a colu
 
 TEST_CASE( "a legend can lie side by side, or go without its panel", "[legend]" )
 {
-	Theme theme = NewComputerModern::create_theme();
+	Theme theme = test_theme();
 	auto across = make_legend( theme, three(), { .horizontal = true, .panel = false } );
 	CHECK( across->panel() == nullptr );
 	CHECK( across->swatch_center( 0 ).x() < across->swatch_center( 1 ).x() );
@@ -56,7 +57,7 @@ TEST_CASE( "a legend can lie side by side, or go without its panel", "[legend]" 
 
 TEST_CASE( "a legend is even round its entries, whatever letters they hold", "[legend]" )
 {
-	Theme theme = NewComputerModern::create_theme();
+	Theme theme = test_theme();
 	auto legend = make_legend( theme, { { "gy", { 1.F, 0.F, 0.F, 1.F } }, { "ab", { 0.F, 1.F, 0.F, 1.F } } } );
 	const AABB panel = box_of( *legend->panel() );
 	const float above = panel.max.y() - legend->swatch_center( 0 ).y();
@@ -67,7 +68,7 @@ TEST_CASE( "a legend is even round its entries, whatever letters they hold", "[l
 
 TEST_CASE( "entries come from what is plotted, in its colors", "[legend]" )
 {
-	Theme theme = NewComputerModern::create_theme();
+	Theme theme = test_theme();
 	AxesOptions options;
 	options.numbers = false;
 	auto axes = make_axes( theme, options );
@@ -103,7 +104,7 @@ TEST_CASE( "entries come from what is plotted, in its colors", "[legend]" )
 
 TEST_CASE( "add_legend puts a legend in a corner of the plot, inset", "[legend]" )
 {
-	Theme theme = NewComputerModern::create_theme();
+	Theme theme = test_theme();
 	AxesOptions options;
 	options.width = 8.F;
 	options.height = 5.F;

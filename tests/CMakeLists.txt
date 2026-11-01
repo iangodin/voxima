@@ -83,6 +83,11 @@ target_compile_definitions( voxima_unit_tests PRIVATE
 	VOXIMA_TEST_PLUGIN="$<TARGET_FILE:test_plugin>"
 	VOXIMA_TEST_PLUGIN_WRONG_ABI="$<TARGET_FILE:test_plugin_wrong_abi>" )
 
-add_test( NAME unit_tests COMMAND voxima_unit_tests WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}" )
+# Most tests set text in the test themes (tests/data/themes), which need only the fonts of download_fonts.py --tests.
+# The ones of the built-in themes themselves need all the fonts, and are a test of their own (label all-fonts), so
+# CI can leave them out: ctest -LE all-fonts.
+add_test( NAME unit_tests COMMAND voxima_unit_tests "~[all-fonts]" WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}" )
+add_test( NAME unit_tests_all_fonts COMMAND voxima_unit_tests "[all-fonts]" WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}" )
+set_tests_properties( unit_tests_all_fonts PROPERTIES LABELS all-fonts )
 
 copy_runtime_dlls( voxima_unit_tests )

@@ -12,6 +12,7 @@
 
 #include <cmath>
 #include <variant>
+#include "TestThemes.h"
 
 using Catch::Approx;
 
@@ -72,7 +73,7 @@ TEST_CASE( "Axes put data points on the plot area", "[plot]" )
 
 TEST_CASE( "make_axes ticks every value but the origin and the one under an arrow", "[plot]" )
 {
-	Theme theme = NewComputerModern::create_theme();
+	Theme theme = test_theme();
 	AxesOptions options;
 	options.x = { -3.0, 3.0 };
 	options.y = { -2.0, 2.0 };
@@ -179,7 +180,7 @@ TEST_CASE( "A graph can be drawn part of the way along", "[plot]" )
 
 TEST_CASE( "Layers, bottom up: grid, axes, plots, then numbers", "[plot]" )
 {
-	Theme theme = NewComputerModern::create_theme();
+	Theme theme = test_theme();
 	AxesOptions options;
 	options.grid = true;
 	auto axes = make_axes( theme, options );
@@ -200,7 +201,7 @@ TEST_CASE( "Layers, bottom up: grid, axes, plots, then numbers", "[plot]" )
 
 TEST_CASE( "A number has a halo under it, in the color asked for, and none by default", "[plot]" )
 {
-	Theme theme = NewComputerModern::create_theme();
+	Theme theme = test_theme();
 	AxesOptions options;
 	options.x = { -2.0, 2.0 };
 	options.y = { -1.0, 1.0 };
@@ -237,7 +238,7 @@ TEST_CASE( "A number has a halo under it, in the color asked for, and none by de
 
 TEST_CASE( "Axes along the edges are at the low ends, and keep every tick", "[plot]" )
 {
-	Theme theme = NewComputerModern::create_theme();
+	Theme theme = test_theme();
 	AxesOptions options;
 	options.x = { -3.0, 3.0 };
 	options.y = { -2.0, 2.0 };
@@ -277,7 +278,7 @@ TEST_CASE( "Axes along the edges are at the low ends, and keep every tick", "[pl
 
 TEST_CASE( "The grid is one stroked path, so its lines do not blend twice where they cross", "[plot]" )
 {
-	Theme theme = NewComputerModern::create_theme();
+	Theme theme = test_theme();
 	AxesOptions options;
 	options.x = { -2.0, 2.0 };
 	options.y = { -1.0, 1.0 };
@@ -307,7 +308,7 @@ TEST_CASE( "The grid is one stroked path, so its lines do not blend twice where 
 
 TEST_CASE( "an axis line stops at the base of its arrow tip, not the point", "[plot]" )
 {
-	Theme theme = NewComputerModern::create_theme();
+	Theme theme = test_theme();
 	AxesOptions options;
 	options.x = { -3.0, 3.0 };
 	options.y = { -2.0, 2.0 };
@@ -346,7 +347,7 @@ TEST_CASE( "an axis line stops at the base of its arrow tip, not the point", "[p
 
 TEST_CASE( "ticks of your own replace the ones at even steps, with their own texts", "[plot]" )
 {
-	Theme theme = NewComputerModern::create_theme();
+	Theme theme = test_theme();
 	AxesOptions options;
 	options.x = { 0.0, 3.0 };
 	options.y = { 0.0, 4.0 };
@@ -377,7 +378,7 @@ TEST_CASE( "ticks of your own replace the ones at even steps, with their own tex
 
 TEST_CASE( "the parts of axes are tagged, a tick and its number sharing a tag", "[plot]" )
 {
-	Theme theme = NewComputerModern::create_theme();
+	Theme theme = test_theme();
 	AxesOptions options;
 	options.x = { -2.0, 2.0 };
 	options.y = { -1.0, 1.0 };

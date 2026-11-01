@@ -18,6 +18,7 @@
 #include <algorithm>
 #include <optional>
 #include <stdexcept>
+#include "TestThemes.h"
 
 using Catch::Approx;
 using namespace math;
@@ -26,7 +27,7 @@ namespace
 {
 struct Fixture
 {
-	Theme theme = NewComputerModern::create_theme();
+	Theme theme = test_theme();
 	Context context{ theme };
 	const Context::Metrics &body = context.metrics( MathStyle::text() );
 	float script_percent = body.font.script_percent_scale_down() / 100.F;

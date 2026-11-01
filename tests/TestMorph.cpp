@@ -20,6 +20,7 @@
 #include <limits>
 #include <numbers>
 #include <variant>
+#include "TestThemes.h"
 
 using Catch::Approx;
 
@@ -230,7 +231,7 @@ TEST_CASE( "point_contour is a contour that is one point", "[morph]" )
 
 TEST_CASE( "match_contours pairs holes with holes and outers with outers", "[morph]" )
 {
-	auto theme = AcademicClassic::create_theme();
+	auto theme = test_academic_theme();
 	const FontStyle style{ Intent::PROSE };
 
 	auto o = to_outline( *make_text( theme, "o", style ) );
@@ -265,7 +266,7 @@ TEST_CASE( "match_contours makes windings agree", "[morph]" )
 
 TEST_CASE( "match_contours shrinks a contour with no partner into a point", "[morph]" )
 {
-	auto theme = AcademicClassic::create_theme();
+	auto theme = test_academic_theme();
 	const FontStyle style{ Intent::PROSE };
 	auto o = to_outline( *make_text( theme, "o", style ) );
 	auto x = to_outline( *make_text( theme, "x", style ) );
@@ -351,7 +352,7 @@ TEST_CASE( "Morph starts as the source and ends as the target", "[morph]" )
 
 TEST_CASE( "Morph between glyphs", "[morph]" )
 {
-	auto theme = AcademicClassic::create_theme();
+	auto theme = test_academic_theme();
 	const FontStyle style{ Intent::PROSE };
 
 	auto glyph = [&]( const char *s ) { return make_text( theme, s, style ); };
@@ -415,7 +416,7 @@ TEST_CASE( "Morph between glyphs", "[morph]" )
 
 TEST_CASE( "Morph handles visuals with different numbers of leaves", "[morph]" )
 {
-	auto theme = AcademicClassic::create_theme();
+	auto theme = test_academic_theme();
 	auto one = make_text( theme, "a", FontStyle{ Intent::PROSE } );
 	auto two = make_text( theme, "ab", FontStyle{ Intent::PROSE } );
 
@@ -1032,7 +1033,7 @@ float closest( const Contour &original, const std::vector<ContourPair> &pairs, b
 
 TEST_CASE( "match_contours cuts glyphs without changing their shape", "[morph]" )
 {
-	auto theme = AcademicClassic::create_theme();
+	auto theme = test_academic_theme();
 	const FontStyle style = FontStyle{ Intent::PROSE }.huge();
 
 	const char *letters[] = { "a", "e", "8", "x", "g", "S" };
@@ -1092,7 +1093,7 @@ TEST_CASE( "Morph with stagger goes on smoothly past its ends (for eases that ov
 
 TEST_CASE( "Morph draws the outlines as they are at its ends, not cut to match", "[morph]" )
 {
-	auto theme = AcademicClassic::create_theme();
+	auto theme = test_academic_theme();
 	const FontStyle style{ Intent::PROSE };
 	auto a = make_text( theme, "a", style );
 	auto e = make_text( theme, "e", style );

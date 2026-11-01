@@ -3,8 +3,15 @@
 import sys
 
 # Where they go: assets/fonts (where voxima looks, run from here), or the directory given, such as an
-# installed Voxima's share/voxima/fonts
-output_dir = sys.argv[1] if len(sys.argv) > 1 else "assets/fonts"
+# installed Voxima's share/voxima/fonts. With --tests, only the fonts the tests need (about 23 MB, the test themes of
+# tests/data/themes), as CI does.
+arguments = sys.argv[1:]
+tests_only = "--tests" in arguments
+arguments = [ a for a in arguments if a != "--tests" ]
+output_dir = arguments[0] if arguments else "assets/fonts"
+
+# The fonts of the test themes (New Computer Modern and Academic Classic, without Source Han Serif)
+test_fonts = { "Amiri", "Adobe Not-Defined", "Symbola Emoji", "New Computer Modern" }
 
 font_renames = {
   "IBM Plex Serif Var-Italic.ttf": "IBMPlexSerif-Italic-Variable.ttf",
@@ -28,7 +35,22 @@ from urllib.parse import urlparse
 
 os.makedirs(output_dir, exist_ok=True)
 
+# mirrors.ctan.org sends each request to a mirror picked at random, and some have a broken certificate chain or are
+# down: a failed request is tried again, which usually goes to another
+def get(url, attempts = 5):
+  for attempt in range(1, attempts + 1):
+    try:
+      response = requests.get(url, timeout = 120)
+      response.raise_for_status()
+      return response
+    except requests.RequestException as error:
+      if attempt == attempts:
+        raise
+      print(f"  Retrying ({error.__class__.__name__})")
+
 def download_file(name, theurl, files = None):
+  if tests_only and name not in test_fonts:
+    return
   print(f"Downloading {name}")
 
   urls = []
@@ -39,8 +61,7 @@ def download_file(name, theurl, files = None):
     urls = [ theurl + file for file in files ]
 
   for url in urls:
-    response = requests.get(url)
-    response.raise_for_status()
+    response = get(url)
     filename = urlparse(url).path.split("/")[-1]
     if filename in font_renames:
       filename = font_renames[filename]
@@ -50,9 +71,10 @@ def download_file(name, theurl, files = None):
     print(f"  Saved {filename}")
 
 def download_zip(name, url, files = None):
+  if tests_only and name not in test_fonts:
+    return
   print(f"Downloading {name}")
-  response = requests.get(url)
-  response.raise_for_status()
+  response = get(url)
 
   zip_buffer = io.BytesIO(response.content)
   with zipfile.ZipFile(zip_buffer) as the_zip:

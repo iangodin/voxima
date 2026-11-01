@@ -157,7 +157,7 @@ intents::
 	CHECK_THROWS_WITH( theme.get_stack( FontStyle( "code" ) ), ContainsSubstring( "code" ) );
 }
 
-TEST_CASE( "A theme that inherits changes only what it says", "[themes]" )
+TEST_CASE( "A theme that inherits changes only what it says", "[themes][all-fonts]" )
 {
 	Theme base = themes::load( "Modern Technical" );
 	Theme mine = themes::from_text( R"huml(
@@ -208,7 +208,7 @@ TEST_CASE( "A theme file says where and what is wrong", "[themes]" )
 	CHECK_THAT( first_error( [] { themes::from_text( "meta::\n  name: \"T\"\n  inherit: \"Nonesuch\"\n" ); } ), ContainsSubstring( "no theme 'Nonesuch'" ) );
 }
 
-TEST_CASE( "Themes are found in directories, and can inherit each other", "[themes]" )
+TEST_CASE( "Themes are found in directories, and can inherit each other", "[themes][all-fonts]" )
 {
 	const auto directory = std::filesystem::temp_directory_path() / "voxima-theme-test";
 	std::filesystem::create_directories( directory );

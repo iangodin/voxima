@@ -7,10 +7,11 @@
 #include <visuals/Circle.h>
 #include <visuals/Layout.h>
 #include <visuals/Radical.h>
+#include "TestThemes.h"
 
 TEST_CASE( "Radical scaling scales the whole radical", "[visuals]" )
 {
-	auto theme = AcademicClassic::create_theme();
+	auto theme = test_academic_theme();
 	MathFonts math_fonts = theme.get_math( FontStyle{ Intent::MATH } );
 	MathFont math_font( math_fonts.roman() );
 	const float glyph_scale =
@@ -35,7 +36,7 @@ TEST_CASE( "Radical scaling scales the whole radical", "[visuals]" )
 
 TEST_CASE( "Radical layout box", "[visuals]" )
 {
-	auto theme = AcademicClassic::create_theme();
+	auto theme = test_academic_theme();
 	MathFonts math_fonts = theme.get_math( FontStyle{ Intent::MATH } );
 	MathFont math_font( math_fonts.roman() );
 	const float glyph_scale =
@@ -54,7 +55,7 @@ TEST_CASE( "Radical layout box", "[visuals]" )
 
 TEST_CASE( "Radical with an index", "[visuals]" )
 {
-	auto theme = AcademicClassic::create_theme();
+	auto theme = test_academic_theme();
 	MathFonts math_fonts = theme.get_math( FontStyle{ Intent::MATH } );
 	MathFont math_font( math_fonts.roman() );
 	const float s =
@@ -102,7 +103,7 @@ TEST_CASE( "Radical with an index", "[visuals]" )
 
 TEST_CASE( "Radical index of any width", "[visuals]" )
 {
-	auto theme = AcademicClassic::create_theme();
+	auto theme = test_academic_theme();
 	MathFonts math_fonts = theme.get_math( FontStyle{ Intent::MATH } );
 	MathFont math_font( math_fonts.roman() );
 	const float s =

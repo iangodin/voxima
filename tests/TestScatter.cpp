@@ -7,6 +7,7 @@
 #include <visuals/Circle.h>
 #include <visuals/Path.h>
 #include <visuals/Placement.h>
+#include "TestThemes.h"
 
 using Catch::Approx;
 
@@ -28,7 +29,7 @@ std::unique_ptr<Axes> small_axes( Theme &theme )
 
 TEST_CASE( "a scatter has a marker for each point, where the point is", "[scatter]" )
 {
-	Theme theme = NewComputerModern::create_theme();
+	Theme theme = test_theme();
 	auto axes = small_axes( theme );
 	auto points = scatter( *axes, { { 2.0, 1.0 }, { 5.0, 4.0 }, { 8.0, 2.5 } } );
 
@@ -44,7 +45,7 @@ TEST_CASE( "a scatter has a marker for each point, where the point is", "[scatte
 
 TEST_CASE( "a point outside the plot is skipped but keeps its place, and breaks the line", "[scatter]" )
 {
-	Theme theme = NewComputerModern::create_theme();
+	Theme theme = test_theme();
 	auto axes = small_axes( theme );
 	auto points = scatter( *axes, { { 1.0, 1.0 }, { 2.0, 2.0 }, { 50.0, 1.0 }, { 4.0, 3.0 }, { 5.0, 4.0 } }, { .line = JoinStyle::STRAIGHT } );
 
@@ -62,7 +63,7 @@ TEST_CASE( "a point outside the plot is skipped but keeps its place, and breaks 
 
 TEST_CASE( "scatter markers of every kind, and lines of every style", "[scatter]" )
 {
-	Theme theme = NewComputerModern::create_theme();
+	Theme theme = test_theme();
 	auto axes = small_axes( theme );
 	for ( MarkerShape kind: { MarkerShape::CIRCLE, MarkerShape::SQUARE, MarkerShape::DIAMOND, MarkerShape::TRIANGLE, MarkerShape::CROSS, MarkerShape::PLUS } )
 	{
@@ -84,7 +85,7 @@ TEST_CASE( "scatter markers of every kind, and lines of every style", "[scatter]
 
 TEST_CASE( "scatter series take the axes' colors in turn, or the one given", "[scatter]" )
 {
-	Theme theme = NewComputerModern::create_theme();
+	Theme theme = test_theme();
 	auto axes = small_axes( theme );
 	const Color first = scatter( *axes, { { 1.0, 1.0 } } )->series_color();
 	const Color second = scatter( *axes, { { 1.0, 1.0 } } )->series_color();

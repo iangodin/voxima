@@ -7,6 +7,7 @@
 #include <visuals/Layout.h>
 #include <visuals/Scripts.h>
 #include <themes/NewComputerModern.h>
+#include "TestThemes.h"
 
 using Catch::Approx;
 
@@ -14,7 +15,7 @@ namespace
 {
 struct Fixture
 {
-	Theme theme = AcademicClassic::create_theme();
+	Theme theme = test_academic_theme();
 	FontStyle body = FontStyle{ Intent::MATH }.large();
 	MathFonts math_fonts = theme.get_math( body );
 	MathFont font{ math_fonts.roman() };
@@ -159,7 +160,7 @@ TEST_CASE( "Scripts scale as a unit", "[visuals]" )
 
 TEST_CASE( "Math text carries italic corrections and Scripts uses them", "[visuals]" )
 {
-	auto theme = NewComputerModern::create_theme();
+	auto theme = test_theme();
 	FontStyle body = FontStyle{ Intent::MATH }.large();
 	MathFonts math_fonts = theme.get_math( body );
 	MathFont font( math_fonts.roman() );

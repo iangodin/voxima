@@ -9,6 +9,7 @@
 #include <visuals/Rectangle.h>
 
 #include <sstream>
+#include "TestThemes.h"
 
 using Catch::Approx;
 using namespace std::chrono_literals;
@@ -66,7 +67,7 @@ std::vector<std::pair<float, float>> bands_of( CodeListing &listing )
 
 TEST_CASE( "A highlight dims the other lines, and none dims nothing", "[highlight]" )
 {
-	Theme theme = NewComputerModern::create_theme();
+	Theme theme = test_theme();
 	auto listing = make_code( theme, code::Language::C, SOURCE );
 	REQUIRE( listing->line_count() == 6 );
 
@@ -90,7 +91,7 @@ TEST_CASE( "A highlight dims the other lines, and none dims nothing", "[highligh
 
 TEST_CASE( "A highlight puts one band behind each run of lines", "[highlight]" )
 {
-	Theme theme = NewComputerModern::create_theme();
+	Theme theme = test_theme();
 	auto listing = make_code( theme, code::Language::C, SOURCE );
 	LineHighlight pointer( *listing, theme );
 	const float pitch = listing->line_pitch;
@@ -129,7 +130,7 @@ TEST_CASE( "A highlight puts one band behind each run of lines", "[highlight]" )
 
 TEST_CASE( "A highlight can be dimming only, and can have a band of its own color", "[highlight]" )
 {
-	Theme theme = NewComputerModern::create_theme();
+	Theme theme = test_theme();
 	auto listing = make_code( theme, code::Language::C, SOURCE );
 
 	HighlightOptions dimming;
@@ -151,7 +152,7 @@ TEST_CASE( "A highlight can be dimming only, and can have a band of its own colo
 
 TEST_CASE( "blend moves the band and the dimming from some lines to others", "[highlight]" )
 {
-	Theme theme = NewComputerModern::create_theme();
+	Theme theme = test_theme();
 	auto listing = make_code( theme, code::Language::C, SOURCE );
 	LineHighlight pointer( *listing, theme );
 	const float pitch = listing->line_pitch;
@@ -183,7 +184,7 @@ TEST_CASE( "blend moves the band and the dimming from some lines to others", "[h
 
 TEST_CASE( "to moves the highlight over a length of time, and ends exactly there", "[highlight]" )
 {
-	Theme theme = NewComputerModern::create_theme();
+	Theme theme = test_theme();
 	auto listing = make_code( theme, code::Language::C, SOURCE );
 	LineHighlight pointer( *listing, theme );
 	Stage stage;
@@ -211,7 +212,7 @@ TEST_CASE( "to moves the highlight over a length of time, and ends exactly there
 
 TEST_CASE( "A dimmed line's glyphs are drawn fainter in the picture, and the band is behind the text", "[highlight]" )
 {
-	Theme theme = NewComputerModern::create_theme();
+	Theme theme = test_theme();
 	auto listing = make_code( theme, code::Language::C, "int a;\nint b;" );
 	LineHighlight pointer( *listing, theme );
 	pointer.set( Lines( 1 ) );
@@ -234,7 +235,7 @@ TEST_CASE( "A dimmed line's glyphs are drawn fainter in the picture, and the ban
 
 TEST_CASE( "Lines past the end of the listing are ignored", "[highlight]" )
 {
-	Theme theme = NewComputerModern::create_theme();
+	Theme theme = test_theme();
 	auto listing = make_code( theme, code::Language::C, SOURCE ); // 6 lines
 	LineHighlight pointer( *listing, theme );
 

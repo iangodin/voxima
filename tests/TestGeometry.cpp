@@ -6,6 +6,7 @@
 #include <visuals/Placement.h>
 
 #include <variant>
+#include "TestThemes.h"
 
 using Catch::Approx;
 
@@ -19,7 +20,7 @@ TEST_CASE( "angle_between measures the smaller angle in degrees", "[geometry]" )
 
 TEST_CASE( "a polygon is closed and its labels stand outside its corners", "[geometry]" )
 {
-	Theme theme = NewComputerModern::create_theme();
+	Theme theme = test_theme();
 	auto triangle = make_polygon( theme, { { -2.F, -1.F }, { 2.F, -1.F }, { 0.F, 2.F } }, { .labels = { "A", "B", "C" } } );
 	REQUIRE( triangle->size() == 4 ); // the outline, three labels
 
@@ -37,7 +38,7 @@ TEST_CASE( "a polygon is closed and its labels stand outside its corners", "[geo
 
 TEST_CASE( "an angle is an arc, or a square for a right angle, with its label past it", "[geometry]" )
 {
-	Theme theme = NewComputerModern::create_theme();
+	Theme theme = test_theme();
 
 	auto arc = make_angle( theme, { 0.F, 0.F }, { 3.F, 0.F }, { 3.F, 3.F }, { .radius = 1.F, .label = "θ" } );
 	REQUIRE( arc->size() == 2 );

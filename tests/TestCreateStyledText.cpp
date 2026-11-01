@@ -8,6 +8,7 @@
 #include <visuals/Tags.h>
 #include <core/Theme.h>
 #include <themes/AcademicClassic.h>
+#include "TestThemes.h"
 
 namespace
 {
@@ -32,7 +33,7 @@ size_t glyph_count( const Visual &visual )
 
 TEST_CASE( "make_styled_text basic rendering", "[visuals]" )
 {
-	auto theme = AcademicClassic::create_theme();
+	auto theme = test_academic_theme();
 
 	StyledText text( "Hello World" );
 	text.set_color( 0, 5, { 1.0f, 0.0f, 0.0f, 1.0f } ); // "Hello" in red
@@ -122,7 +123,7 @@ std::vector<const Group *> word_groups( const Group &line )
 
 TEST_CASE( "make_styled_text groups each word's glyphs and tags them", "[visuals]" )
 {
-	auto theme = AcademicClassic::create_theme();
+	auto theme = test_academic_theme();
 
 	SECTION( "words become tagged groups, spaces stay in the line" )
 	{
@@ -235,7 +236,7 @@ float baseline_gap( const Group &root )
 
 TEST_CASE( "make_styled_text line spacing follows the font size", "[visuals]" )
 {
-	auto theme = AcademicClassic::create_theme();
+	auto theme = test_academic_theme();
 
 	SECTION( "bigger text gets more room between lines" )
 	{
@@ -271,7 +272,7 @@ TEST_CASE( "make_styled_text line spacing follows the font size", "[visuals]" )
 
 TEST_CASE( "make_styled_text aligns lines within the widest one", "[visuals]" )
 {
-	auto theme = AcademicClassic::create_theme();
+	auto theme = test_academic_theme();
 	const std::string text = "A much longer first line\nab";
 	const FontStyle style{ Intent::PROSE };
 

@@ -6,6 +6,7 @@
 #include <visuals/CreateStyledText.h>
 #include <visuals/CreateText.h>
 #include <visuals/Glyph.h>
+#include "TestThemes.h"
 
 TEST_CASE( "math alphabet: Latin letters", "[fonts]" )
 {
@@ -125,7 +126,7 @@ std::vector<uint32_t> glyphs_of( const Visual &visual )
 
 TEST_CASE( "make_text applies the math alphabet", "[fonts]" )
 {
-	auto theme = NewComputerModern::create_theme();
+	auto theme = test_theme();
 	MathFonts fonts = theme.get_math( FontStyle{ Intent::MATH } );
 	MathFont font( fonts.roman() );
 

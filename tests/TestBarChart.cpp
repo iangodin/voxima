@@ -5,12 +5,13 @@
 #include <plot/BarChart.h>
 #include <themes/NewComputerModern.h>
 #include <visuals/Placement.h>
+#include "TestThemes.h"
 
 using Catch::Approx;
 
 TEST_CASE( "bars stand on the baseline, as tall as their values say", "[barchart]" )
 {
-	Theme theme = NewComputerModern::create_theme();
+	Theme theme = test_theme();
 	auto chart = make_bar_chart( theme, { .categories = { "a", "b", "c" }, .series = { { "s", { 2, 4, 3 } } }, .width = 6.F, .height = 4.F } );
 
 	REQUIRE( chart->series_count() == 1 );
@@ -37,7 +38,7 @@ TEST_CASE( "bars stand on the baseline, as tall as their values say", "[barchart
 
 TEST_CASE( "several series are side by side in a category, or stacked", "[barchart]" )
 {
-	Theme theme = NewComputerModern::create_theme();
+	Theme theme = test_theme();
 	BarChartOptions options;
 	options.categories = { "a", "b" };
 	options.series = { { "x", { 3, 1 } }, { "y", { 2, 2 } } };
@@ -61,7 +62,7 @@ TEST_CASE( "several series are side by side in a category, or stacked", "[barcha
 
 TEST_CASE( "horizontal bars run across, the first category at the top", "[barchart]" )
 {
-	Theme theme = NewComputerModern::create_theme();
+	Theme theme = test_theme();
 	auto chart = make_bar_chart( theme, { .categories = { "first", "second" }, .series = { { "s", { 4, 2 } } }, .horizontal = true } );
 	const Rectangle &first = *chart->bar( 0, 0 );
 	const Rectangle &second = *chart->bar( 0, 1 );
@@ -73,7 +74,7 @@ TEST_CASE( "horizontal bars run across, the first category at the top", "[barcha
 
 TEST_CASE( "negative values hang below a zero line, and the range takes them in", "[barchart]" )
 {
-	Theme theme = NewComputerModern::create_theme();
+	Theme theme = test_theme();
 	auto chart = make_bar_chart( theme, { .categories = { "a", "b" }, .series = { { "s", { 3, -2 } } } } );
 	CHECK( chart->value_range().min <= -2.0 );
 	CHECK( chart->value_range().max >= 3.0 );
@@ -83,7 +84,7 @@ TEST_CASE( "negative values hang below a zero line, and the range takes them in"
 
 TEST_CASE( "a series shorter than the categories leaves bars out, and colors follow the series or the category", "[barchart]" )
 {
-	Theme theme = NewComputerModern::create_theme();
+	Theme theme = test_theme();
 	auto chart = make_bar_chart( theme, { .categories = { "a", "b", "c" }, .series = { { "s", { 1, 2 } }, { "t", { 2, 1, 3 } } } } );
 	CHECK( chart->bar( 0, 2 ) == nullptr );
 	CHECK( chart->bar( 1, 2 ) != nullptr );
