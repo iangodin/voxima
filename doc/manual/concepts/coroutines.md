@@ -63,6 +63,23 @@ An animation refers to the visual it works on, by reference. The visual **must s
 animation is over**. In particular, do not `clear()` the stage or morph a visual away while an animation that
 uses it is still running in a `choreograph`.
 
+## When something goes wrong
+
+An exception in a scene goes to what is waiting for it, as if the scene were a function: through the `co_await` and any
+`choreograph`, so a scene can catch it there and carry on. One that nothing catches ends the render with its message and a status of
+1, and in a preview is shown in the window's title, for you to fix and reload.
+
+```cpp
+try
+{
+    co_await risky_scene( stage );
+}
+catch ( const std::exception &error )
+{
+    std::cerr << "skipping it: " << error.what() << '\n';
+}
+```
+
 ## Frame rate and length
 
 Nothing in a scene depends on the frame rate: times are in seconds, rounded to the nearest whole frame. A time

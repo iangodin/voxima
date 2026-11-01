@@ -78,11 +78,14 @@ video is in more than one.
     Narration in another language takes a different time. Animations that wait on `until_line` and
     `until_marker` follow whatever each language takes; fixed `wait_for` times do not.
 
+A word that is written one way and said another can be spelled out where it appears (`<written|spoken>`), or once for the
+whole language in the script's `pronounce` section (see [The script](../concepts/script.md#written-and-spoken-text)).
+
 ## Subtitles
 
 Subtitles are made for every narrated line, in every language, from the written text (`<written|spoken>` shows
 the written side). They are written as `subtitles.<lang>.srt` and `.vtt` in the render directory, and put in the
-video as one subtitle track per language. A subtitle that you want on the screen *itself* (a caption in the
+video as one subtitle track per language (`mov_text` in mp4, `srt` in mkv, `webvtt` in webm). A subtitle that you want on the screen *itself* (a caption in the
 picture) is an ordinary visual: show the line when `until_line( i )` is reached.
 
 ## Word effects

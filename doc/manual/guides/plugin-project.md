@@ -21,7 +21,7 @@ coroutines, and names it `name.so` or `name.dll`. Exactly one of its source file
 
 `find_package( Voxima )` finds the Voxima you installed, and the plugin is built against its headers. A plugin is only
 good for that Voxima: one loaded by a `voxima` of another version is refused (see below). To insist on a version,
-write it (`find_package( Voxima 0.1.0 REQUIRED )`); only that exact version matches.
+write it (`find_package( Voxima <version> REQUIRED )`); only that exact version matches.
 
 Configure with the install folder as the prefix path. The install is all a plugin needs:
 
@@ -29,6 +29,9 @@ Configure with the install folder as the prefix path. The install is all a plugi
 cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH=<prefix>
 cmake --build build
 ```
+
+Voxima's headers do not need the libraries it is built with. A plugin that uses one itself (FreeType, say, to look inside a
+`FontFace`) finds and links it itself, and should use the same version.
 
 ## Building just as the program was
 

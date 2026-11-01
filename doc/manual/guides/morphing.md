@@ -47,7 +47,12 @@ Here the `a` and `b` slide into place; everything else matches by glyph, and the
 --8<-- "examples/morphing/morphing.cpp:options"
 ```
 
-`stagger` makes a word change letter by letter, left to right.
+`stagger` makes a word change letter by letter, left to right. `parent` is the group the morph happens in, if that is not
+the stage.
+
+Fills, strokes, [dashes](visuals-layout.md#dashed-lines) and [gradients](visuals-layout.md#gradients) are blended as well as the
+shapes. What has an `opacity` has it put into its colors for the morph, so what overlaps inside a dimmed group can show through
+until the morph ends.
 
 ## Driving a morph yourself
 

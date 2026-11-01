@@ -39,6 +39,8 @@ steps::
 - `meta` says which language the file is, and what it builds on (`inherit`, below).
 - `voices` names the narrators (see [Narration](../guides/narration.md#voices)).
 - `labels` is the usual place for short on-screen text: titles, captions, names.
+- `pronounce` says how words are said, wherever they appear (see [below](#written-and-spoken-text)).
+- `chapters` names the scenes that are chapters of the video (see [Chapters](../guides/rendering.md#chapters)).
 - Everything else is yours: name sections and keys as you like.
 
 ## Reading it from a scene

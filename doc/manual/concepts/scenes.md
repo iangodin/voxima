@@ -49,11 +49,13 @@ voxima --plugin build/myvideo --list-scenes   # the registered scenes and what t
 voxima ...                                  # renders the scene called "movie"
 voxima ... --scene morph-text               # one scene
 voxima ... --scene morph-shapes --scene karaoke   # several, in the order given (a movie made on the spot)
+voxima ... --start-at morph-text --stop-at karaoke   # part of the movie (see Rendering)
 ```
 
 An unknown name is reported (with the list) before any model or font is loaded, and exits with status 1. If no
 scene is called "movie" and there is no `--scene`, the only registered scene is used; with several and no
-"movie", the list is shown as an error.
+"movie", the list is shown as an error. [Rendering](../guides/rendering.md#choose-scenes) has more on part of a movie, and a movie's
+scenes are its [chapters](../guides/rendering.md#chapters).
 
 ## Plugins: scenes outside the program
 

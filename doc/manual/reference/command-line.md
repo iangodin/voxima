@@ -46,8 +46,8 @@ OPTIONS:
           --tts-cache-dir TEXT 
                               Where speech is kept once made, to use it again (without it:
                               $VOXIMA_TTS_CACHE, or tts-cache in the render directory)
-          --tts-only          Make the speech and put it in the cache, and exit: no video, to get
-                              the slow part done before working on the visuals
+          --tts-only          Make the speech and put it in the cache, and exit: no video, to
+                              get the slow part done before working on the visuals
           --tts-backend TEXT  TTS backend: best (a GPU if there is one), cpu, cuda or metal
           --tts-threads INT   TTS CPU thread count
           --aligner-model TEXT 
@@ -55,9 +55,9 @@ OPTIONS:
                               (optional; without it: looked for as --tts-model is)
           --scene TEXT ...    Scene to render; repeat it to play several in order (default:
                               "movie")
-          --start-at TEXT     Where to start: a scene played in the movie, or a frame number. All
-                              before it runs, with its speech, so everything is as it would be,
-                              but nothing of it is drawn
+          --start-at TEXT     Where to start: a scene played in the movie, or a frame number.
+                              All before it runs, with its speech, so everything is as it would
+                              be, but nothing of it is drawn
           --stop-at TEXT      Where to stop: the end of a scene played in the movie, or a frame
                               number (included)
           --max-speedup FLOAT How much the other languages may be speeded up to keep in step

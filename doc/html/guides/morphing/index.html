@@ -1256,7 +1256,11 @@ an arrow that turns) is carried there whole.</p>
 <span class="n">options</span><span class="p">.</span><span class="n">part_ease</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">smooth</span><span class="p">;</span><span class="w">            </span><span class="c1">// an ease for each part's own progress</span>
 <span class="k">co_await</span><span class="w"> </span><span class="n">morph</span><span class="p">(</span><span class="w"> </span><span class="n">stage</span><span class="p">,</span><span class="w"> </span><span class="o">*</span><span class="n">shown</span><span class="p">,</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">move</span><span class="p">(</span><span class="w"> </span><span class="n">target</span><span class="w"> </span><span class="p">),</span><span class="w"> </span><span class="mf">1.7</span><span class="n">s</span><span class="p">,</span><span class="w"> </span><span class="n">ease_cubic_in_out</span><span class="p">,</span><span class="w"> </span><span class="n">options</span><span class="w"> </span><span class="p">);</span>
 </code></pre></div>
-<p><code>stagger</code> makes a word change letter by letter, left to right.</p>
+<p><code>stagger</code> makes a word change letter by letter, left to right. <code>parent</code> is the group the morph happens in, if that is not
+the stage.</p>
+<p>Fills, strokes, <a href="../visuals-layout/#dashed-lines">dashes</a> and <a href="../visuals-layout/#gradients">gradients</a> are blended as well as the
+shapes. What has an <code>opacity</code> has it put into its colors for the morph, so what overlaps inside a dimmed group can show through
+until the morph ends.</p>
 <h2 id="driving-a-morph-yourself">Driving a morph yourself<a class="headerlink" href="#driving-a-morph-yourself" title="Permanent link">&para;</a></h2>
 <p><code>morph_driven</code> takes the thing that decides <em>when</em>: a scene that calls <code>morph.set( t )</code> as it goes. That is how a
 morph is tied to narration:</p>

@@ -1268,10 +1268,12 @@ visuals stay on the stage.</p>
 voxima ...                                  # renders the scene called "movie"
 voxima ... --scene morph-text               # one scene
 voxima ... --scene morph-shapes --scene karaoke   # several, in the order given (a movie made on the spot)
+voxima ... --start-at morph-text --stop-at karaoke   # part of the movie (see Rendering)
 </code></pre></div>
 <p>An unknown name is reported (with the list) before any model or font is loaded, and exits with status 1. If no
 scene is called "movie" and there is no <code>--scene</code>, the only registered scene is used; with several and no
-"movie", the list is shown as an error.</p>
+"movie", the list is shown as an error. <a href="../../guides/rendering/#choose-scenes">Rendering</a> has more on part of a movie, and a movie's
+scenes are its <a href="../../guides/rendering/#chapters">chapters</a>.</p>
 <h2 id="plugins-scenes-outside-the-program">Plugins: scenes outside the program<a class="headerlink" href="#plugins-scenes-outside-the-program" title="Permanent link">&para;</a></h2>
 <p><code>voxima</code> itself has no scenes: they are in <strong>plugins</strong>, shared libraries (a <code>.dll</code>, or a <code>.so</code>) loaded with
 <code>--plugin</code> (repeatable; the extension may be left out). A plugin is its scenes, registered as above, and one line

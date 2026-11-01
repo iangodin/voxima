@@ -1350,10 +1350,12 @@ video is in more than one.</p>
 <p>Narration in another language takes a different time. Animations that wait on <code>until_line</code> and
 <code>until_marker</code> follow whatever each language takes; fixed <code>wait_for</code> times do not.</p>
 </div>
+<p>A word that is written one way and said another can be spelled out where it appears (<code>&lt;written|spoken&gt;</code>), or once for the
+whole language in the script's <code>pronounce</code> section (see <a href="../../concepts/script/#written-and-spoken-text">The script</a>).</p>
 <h2 id="subtitles">Subtitles<a class="headerlink" href="#subtitles" title="Permanent link">&para;</a></h2>
 <p>Subtitles are made for every narrated line, in every language, from the written text (<code>&lt;written|spoken&gt;</code> shows
 the written side). They are written as <code>subtitles.&lt;lang&gt;.srt</code> and <code>.vtt</code> in the render directory, and put in the
-video as one subtitle track per language. A subtitle that you want on the screen <em>itself</em> (a caption in the
+video as one subtitle track per language (<code>mov_text</code> in mp4, <code>srt</code> in mkv, <code>webvtt</code> in webm). A subtitle that you want on the screen <em>itself</em> (a caption in the
 picture) is an ordinary visual: show the line when <code>until_line( i )</code> is reached.</p>
 <h2 id="word-effects">Word effects<a class="headerlink" href="#word-effects" title="Permanent link">&para;</a></h2>
 <p>Light up each word as it is said (karaoke), pop it, underline it:</p>

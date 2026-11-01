@@ -23,15 +23,15 @@ language, so one set of scenes serves every language.
 
 ## Guides
 
-- [Visuals and layout](guides/visuals-layout.md): shapes, groups, placing, panels, lists and tables.
+- [Visuals and layout](guides/visuals-layout.md): shapes, groups, drawing order, dashes, gradients, placing, panels, lists and tables.
 - [Text and math](guides/text-math.md): styled text, formulas, and code listings.
 - [Animation verbs and the camera](guides/animation.md): fade, slide, draw on, easing, and zooming.
 - [Morphing](guides/morphing.md): turning one thing into another.
-- [Charts and diagrams](guides/charts-diagrams.md): axes, plots, bars, diagrams and geometry.
+- [Charts and diagrams](guides/charts-diagrams.md): axes, plots, bars, diagrams, arrows and geometry.
 - [Narration, subtitles and languages](guides/narration.md): speech, syncing to it, and several languages.
 - [Music and sound effects](guides/sound.md)
 - [Themes](guides/themes.md): fonts and colors, and your own theme files.
-- [Rendering and previewing](guides/rendering.md): output, live preview, missing glyphs.
+- [Rendering and previewing](guides/rendering.md): output, chapters, part of a movie, live preview, missing glyphs.
 - [Your own plugin project](guides/plugin-project.md): CMake, and building to match the program.
 
 ## Reference

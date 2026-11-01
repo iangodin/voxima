@@ -70,8 +70,9 @@ Any shape can be filled with a linear or radial gradient instead of a plain colo
 --8<-- "examples/layout/layout.cpp:gradients"
 ```
 
-A gradient is placed in the visual's own coordinates, so it moves, turns and scales with the visual. `Gradient::across`
-fits a linear one to a box at an angle (0 goes to the right, 90 up); `box_of` gives that box only while the visual is
+`Gradient::linear( start, end, stops )` goes from one point to another, and `Gradient::radial( center, radius, focus, stops )`
+out from a point to a circle (the focus can be left out). A gradient is placed in the visual's own coordinates, so it moves, turns
+and scales with the visual. `Gradient::across` fits a linear one to a box at an angle (0 goes to the right, 90 up); `box_of` gives that box only while the visual is
 still at its origin, so use it before placing the visual. Stops are at offsets from 0 to 1. The visual's
 `color` tints the gradient and its alpha fades it, and white in a stop is the theme's text color, as everywhere.
 
@@ -123,7 +124,7 @@ baselines of text of any size.
 `safe_area` is the picture's frame, at zoom 1, pulled in by a margin (0.5 units by default).
 
 `box_of( visual )` and `point_at( visual, anchor )` give a visual's box and one of its points, in its parent's
-frame, for your own placement.
+frame, for your own placement. `box_of` leaves out the visual's own scale; `drawn_box( visual )` is the box with it.
 
 ## Frames and arcs
 
@@ -134,7 +135,9 @@ frame, for your own placement.
 --8<-- "examples/animation/animation.cpp:surround"
 ```
 
-Add a frame to the group its visual is in. It stays where it is if the visual moves.
+Add a frame to the group its visual is in. It stays where it is if the visual moves. `SurroundOptions` has `padding`, `radius`,
+`fill`, `outline`, `outline_width` and `dash`, as a panel's options do, and `ArcOptions` has `thickness`, `color` and `dash`. An arc
+is also what a curved arrow can follow (see [Arrows](charts-diagrams.md#arrows)).
 
 ## Panels, lists and tables
 

@@ -8,9 +8,9 @@ manual is taken from, and they are built with Voxima, so they keep working.
 |---|---|---|
 | `hello` | One scene: a title and a circle (the only scene of its plugin, so it plays by default) | [Your first video](first-video.md) |
 | `coroutines` | Waiting, doing things together, a change every frame, an updater | [Animation and coroutines](../concepts/coroutines.md) |
-| `layout` | Shapes, groups, placement, panels, lists, tables, tags | [Visuals and layout](../guides/visuals-layout.md) |
+| `layout` | Shapes, groups, drawing order, dashes, gradients, placement, panels, lists, tables, tags | [Visuals and layout](../guides/visuals-layout.md) |
 | `text-math` | Text, styled and right-to-left text, formulas, code, missing glyphs | [Text and math](../guides/text-math.md) |
-| `animation` | The animation verbs, connectors that follow, the camera | [Animation verbs and the camera](../guides/animation.md) |
+| `animation` | The animation verbs, connectors that follow, free arrows, frames and arcs, dimming, the camera | [Animation verbs and the camera](../guides/animation.md) |
 | `morphing` | Shapes, letters, formulas, sentences and strokes that morph | [Morphing](../guides/morphing.md) |
 | `charts` | Plots, scatter plots, bar charts, diagrams, geometry | [Charts and diagrams](../guides/charts-diagrams.md) |
 | `narration` | Speech in several languages; words, lines and markers followed | [Narration and languages](../guides/narration.md) |

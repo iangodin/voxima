@@ -30,6 +30,19 @@ direct children:
 --8<-- "examples/animation/animation.cpp:stagger"
 ```
 
+`grow_from_edge` keeps one edge where it is, so bars grow from their base:
+
+```cpp
+--8<-- "examples/animation/animation.cpp:grow-from-edge"
+```
+
+`fade_to` is for "focus on this, dim the rest": it sets `Visual::opacity`, which is apart from the alpha of the colors that
+`fade_in` and `fade_out` change, and goes on the group as a whole, so what overlaps inside it does not show through:
+
+```cpp
+--8<-- "examples/animation/animation.cpp:dim"
+```
+
 `draw_on`, `circumscribe` and `flash` draw their outlines in the group the visual is a child of (give it as the
 last argument if that is not the stage), so the visual has to be a direct child of that group.
 

@@ -1291,11 +1291,13 @@ A starting point is in <code>&lt;prefix&gt;/share/voxima/examples</code> (or <co
 coroutines, and names it <code>name.so</code> or <code>name.dll</code>. Exactly one of its source files must contain <code>VOXIMA_PLUGIN();</code>.</p>
 <p><code>find_package( Voxima )</code> finds the Voxima you installed, and the plugin is built against its headers. A plugin is only
 good for that Voxima: one loaded by a <code>voxima</code> of another version is refused (see below). To insist on a version,
-write it (<code>find_package( Voxima 0.1.0 REQUIRED )</code>); only that exact version matches.</p>
+write it (<code>find_package( Voxima &lt;version&gt; REQUIRED )</code>); only that exact version matches.</p>
 <p>Configure with the install folder as the prefix path. The install is all a plugin needs:</p>
 <div class="highlight"><pre><span></span><code>cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH=&lt;prefix&gt;
 cmake --build build
 </code></pre></div>
+<p>Voxima's headers do not need the libraries it is built with. A plugin that uses one itself (FreeType, say, to look inside a
+<code>FontFace</code>) finds and links it itself, and should use the same version.</p>
 <h2 id="building-just-as-the-program-was">Building just as the program was<a class="headerlink" href="#building-just-as-the-program-was" title="Permanent link">&para;</a></h2>
 <p>Scenes share the program's strings, functions and coroutines, so a plugin must be built with:</p>
 <ul>

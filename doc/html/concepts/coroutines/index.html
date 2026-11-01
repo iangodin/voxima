@@ -590,6 +590,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#when-something-goes-wrong" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        When something goes wrong
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#frame-rate-and-length" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1225,6 +1236,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#when-something-goes-wrong" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        When something goes wrong
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#frame-rate-and-length" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1307,6 +1329,19 @@ first.</p>
 <p>An animation refers to the visual it works on, by reference. The visual <strong>must stay on the stage until the
 animation is over</strong>. In particular, do not <code>clear()</code> the stage or morph a visual away while an animation that
 uses it is still running in a <code>choreograph</code>.</p>
+<h2 id="when-something-goes-wrong">When something goes wrong<a class="headerlink" href="#when-something-goes-wrong" title="Permanent link">&para;</a></h2>
+<p>An exception in a scene goes to what is waiting for it, as if the scene were a function: through the <code>co_await</code> and any
+<code>choreograph</code>, so a scene can catch it there and carry on. One that nothing catches ends the render with its message and a status of
+1, and in a preview is shown in the window's title, for you to fix and reload.</p>
+<div class="highlight"><pre><span></span><code><span class="k">try</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="k">co_await</span><span class="w"> </span><span class="n">risky_scene</span><span class="p">(</span><span class="w"> </span><span class="n">stage</span><span class="w"> </span><span class="p">);</span>
+<span class="p">}</span>
+<span class="k">catch</span><span class="w"> </span><span class="p">(</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">exception</span><span class="w"> </span><span class="o">&amp;</span><span class="n">error</span><span class="w"> </span><span class="p">)</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">cerr</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">"skipping it: "</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">error</span><span class="p">.</span><span class="n">what</span><span class="p">()</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="sc">'\n'</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div>
 <h2 id="frame-rate-and-length">Frame rate and length<a class="headerlink" href="#frame-rate-and-length" title="Permanent link">&para;</a></h2>
 <p>Nothing in a scene depends on the frame rate: times are in seconds, rounded to the nearest whole frame. A time
 that is not a whole number of frames (half a second at 25 fps) is a frame more or less. The render's length is
