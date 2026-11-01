@@ -405,6 +405,11 @@ bool Producer::produce( int argc, char *argv[] )
 		"--tts-voice-dir", tts_voice_dir,
 		"Base directory for narrator reference-clip paths (without it: voices, $VOXIMA_VOICES, or the installed share/voxima/voices)" );
 
+	std::optional<std::string> tts_cache_dir;
+	app.add_option(
+		"--tts-cache-dir", tts_cache_dir,
+		"Where speech is kept once made, to use it again (without it: $VOXIMA_TTS_CACHE, or tts-cache in the render directory)" );
+
 	std::string tts_backend = "best";
 	app.add_option( "--tts-backend", tts_backend, "TTS backend: best, cpu or cuda" );
 
@@ -621,7 +626,8 @@ bool Producer::produce( int argc, char *argv[] )
 		*tts_voice_dir,
 		tts_backend,
 		tts_threads,
-		aligner_model ? *aligner_model : find_model( ALIGNER_MODEL_FILE ) );
+		aligner_model ? *aligner_model : find_model( ALIGNER_MODEL_FILE ),
+		tts_cache_dir ? std::filesystem::path( *tts_cache_dir ) : find_data_dir( DataPlaces{ {}, "VOXIMA_TTS_CACHE", {} } ).value_or( std::filesystem::path{} ) );
 	_stage.audio.set_max_speedup( max_speedup );
 
 	// Text that could not be drawn was shown as magenta boxes; say what and where, so it can be fixed. This does not depend

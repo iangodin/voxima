@@ -17,7 +17,8 @@ void DubbingStage::setup(
 	std::filesystem::path tts_voice_dir,
 	const std::string &tts_backend,
 	int tts_threads,
-	const std::filesystem::path &aligner_model )
+	const std::filesystem::path &aligner_model,
+	const std::filesystem::path &tts_cache_dir )
 {
 	if ( audio_rate % video_rate != 0 )
 	{
@@ -32,7 +33,7 @@ void DubbingStage::setup(
 	_codec = codec;
 	_tts_voice_dir = std::move( tts_voice_dir );
 
-	_tts_dir = render_dir; // where it keeps what it made, though begin() may render elsewhere
+	_tts_cache_dir = tts_cache_dir.empty() ? render_dir / "tts-cache" : tts_cache_dir; // (begin() may render elsewhere)
 	_tts_model = tts_model;
 	_tts_backend = tts_backend;
 	_tts_threads = tts_threads;
@@ -63,7 +64,7 @@ tts::TTSClient &DubbingStage::tts()
 				" (give one with --tts-model or $VOXIMA_MODELS; see download_models.py)" );
 		}
 		_tts.emplace( _tts_model, _tts_backend, _tts_threads, _aligner_model );
-		_tts->setup( _tts_dir );
+		_tts->setup( _tts_cache_dir );
 	}
 	return *_tts;
 }

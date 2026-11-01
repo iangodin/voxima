@@ -8,8 +8,11 @@
 #include <cstdint>
 #include <iomanip>
 #include <iostream>
+#include <random>
 #include <sstream>
 #include <stdexcept>
+#include <string>
+#include <system_error>
 #include <vector>
 
 namespace tts
@@ -191,9 +194,9 @@ TTSClient::~TTSClient() = default;
 TTSClient::TTSClient( TTSClient && ) noexcept = default;
 TTSClient &TTSClient::operator=( TTSClient && ) noexcept = default;
 
-void TTSClient::setup( const std::filesystem::path &render_dir )
+void TTSClient::setup( const std::filesystem::path &cache_dir )
 {
-	_cache_dir = render_dir / "tts-cache";
+	_cache_dir = cache_dir;
 }
 
 SynthesisResult TTSClient::synthesize(
@@ -294,7 +297,16 @@ SynthesisResult TTSClient::synthesize(
 
 		if ( cache_path )
 		{
-			write_wav( *cache_path, result.audio.value() );
+			// Under another name until it is whole: a cache can be shared, and a render reading it must not find half a file
+			std::filesystem::path partial = *cache_path;
+			partial += "." + std::to_string( std::random_device{}() ) + ".tmp";
+			write_wav( partial, result.audio.value() );
+			std::error_code error;
+			std::filesystem::rename( partial, *cache_path, error );
+			if ( error )
+			{
+				std::filesystem::remove( partial, error );
+			}
 		}
 	}
 	catch ( const std::exception &e )

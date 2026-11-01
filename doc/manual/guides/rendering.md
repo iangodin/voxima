@@ -36,8 +36,11 @@ With `--separate`, each language is in its own folder, `<render-dir>/<lang>/`, w
 
 `--save-svg` and `--save-png` also keep every frame as an SVG or PNG file (a lot of files; handy for stills).
 
-Speech is **cached** in a `tts-cache` folder inside the render directory, so rendering again after a change to the
-animation (not the words) does not have to make the speech again. Keep that folder between renders.
+Speech is **cached**, so rendering again after a change to the animation (not the words) does not have to make the
+speech again. It is kept in a `tts-cache` folder inside the render directory, or wherever `--tts-cache-dir` or
+`$VOXIMA_TTS_CACHE` says. Pointing them at one folder lets renders into different directories (a draft and a final,
+`--separate` runs, CI) share the speech, even at the same time. A voice is known by its path as given, so use the same
+`--tts-voice-dir` for them to share.
 
 ## Choose scenes
 

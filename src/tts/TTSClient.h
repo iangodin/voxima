@@ -61,7 +61,8 @@ public:
 	TTSClient( const TTSClient & ) = delete;
 	TTSClient &operator=( const TTSClient & ) = delete;
 
-	void setup( const std::filesystem::path &render_dir );
+	// Where speech is kept once made, to be used again when the same words are wanted in the same voice
+	void setup( const std::filesystem::path &cache_dir );
 
 	// Whether an aligner_model_path was configured at construction. Check
 	// this before calling align() for languages/renders where subtitle

@@ -43,6 +43,9 @@ OPTIONS:
           --tts-voice-dir TEXT 
                               Base directory for narrator reference-clip paths (without it:
                               voices, $VOXIMA_VOICES, or the installed share/voxima/voices)
+          --tts-cache-dir TEXT 
+                              Where speech is kept once made, to use it again (without it:
+                              $VOXIMA_TTS_CACHE, or tts-cache in the render directory)
           --tts-backend TEXT  TTS backend: best, cpu or cuda
           --tts-threads INT   TTS CPU thread count
           --aligner-model TEXT 

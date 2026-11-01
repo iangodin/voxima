@@ -22,7 +22,8 @@ public:
 	// load, tts_voice_dir is the base directory reference-clip paths in
 	// scripts' voices:: blocks resolve against. aligner_model is optional
 	// (empty = no subtitle timing available) - the Qwen3 Forced Aligner GGUF
-	// used to produce word-level timestamps for subtitle cues.
+	// used to produce word-level timestamps for subtitle cues. tts_cache_dir is
+	// where speech is kept once made (empty = tts-cache in the render directory).
 	void setup(
 		const std::filesystem::path &render_dir,
 		std::string_view codec,
@@ -32,7 +33,8 @@ public:
 		std::filesystem::path tts_voice_dir,
 		const std::string &tts_backend,
 		int tts_threads,
-		const std::filesystem::path &aligner_model = {} );
+		const std::filesystem::path &aligner_model = {},
+		const std::filesystem::path &tts_cache_dir = {} );
 
 	// Start a fresh set of tracks, one per language, writing into render_dir (created if need be): what a render
 	// does, after setup() has loaded the models once. Everything from a previous render (mixers, subtitles) is dropped.
@@ -122,7 +124,7 @@ private:
 	std::filesystem::path _render_dir;
 	std::filesystem::path _tts_voice_dir;
 	std::optional<tts::TTSClient> _tts;
-	std::filesystem::path _tts_dir;
+	std::filesystem::path _tts_cache_dir;
 	std::filesystem::path _tts_model;
 	std::string _tts_backend;
 	int _tts_threads = 0;
