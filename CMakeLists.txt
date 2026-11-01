@@ -311,7 +311,7 @@ install( DIRECTORY examples/ DESTINATION ${CMAKE_INSTALL_DATADIR}/voxima/example
 
 # The licenses: Voxima's, and those of what it is built with, in share/doc/Voxima/licenses (see
 # THIRD_PARTY_NOTICES.md)
-install( FILES LICENSE THIRD_PARTY_NOTICES.md DESTINATION ${CMAKE_INSTALL_DOCDIR} COMPONENT Voxima )
+install( FILES LICENSE THIRD_PARTY_NOTICES.md CHANGELOG.md DESTINATION ${CMAKE_INSTALL_DOCDIR} COMPONENT Voxima )
 set( VOXIMA_LICENSES ${CMAKE_INSTALL_DOCDIR}/licenses )
 set( AUDIOCPP_EXTERNAL extern/audio.cpp/external )
 foreach( license

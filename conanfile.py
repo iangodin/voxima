@@ -15,7 +15,7 @@ class VoximaConan(ConanFile):
   generators = "CMakeDeps"
   exports_sources = (
     "CMakeLists.txt", "cmake/*", "src/*", "extern/*", "themes/*", "tools/*", "tests/*",
-    "download_fonts.py", "download_models.py", "LICENSE", "THIRD_PARTY_NOTICES.md", "doc/*", "examples/*" )
+    "download_fonts.py", "download_models.py", "LICENSE", "THIRD_PARTY_NOTICES.md", "CHANGELOG.md", "doc/*", "examples/*" )
 
   # The version is the one in CMakeLists.txt's project(), the one place it is written
   def set_version(self):
