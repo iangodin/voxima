@@ -74,6 +74,14 @@ find_package( soxr 0.1.3 REQUIRED SYSTEM )
 find_package( fribidi 1.0.13 REQUIRED SYSTEM )
 find_package( clipper2 2 REQUIRED SYSTEM )
 find_package( SDL3 REQUIRED SYSTEM )
+# SDL opens these sound libraries itself as it runs (dlopen), and only if the machine has them, so nothing links to
+# them. Conan's packages still say to: that would make a program need Conan's copies. Also, libpulsecommon exports
+# the libsndfile it is built with, which would be used instead of ours.
+foreach( sdl_opens pulseaudio::pulseaudio sndio::sndio )
+	if ( TARGET ${sdl_opens} )
+		set_property( TARGET ${sdl_opens} PROPERTY INTERFACE_LINK_LIBRARIES "" )
+	endif()
+endforeach()
 find_package( tree-sitter 0.26 REQUIRED SYSTEM )
 find_package( tree-sitter-c REQUIRED SYSTEM )
 find_package( tree-sitter-cpp REQUIRED SYSTEM )
