@@ -12,8 +12,6 @@ function( voxima_add_plugin name )
 	if ( CMAKE_CXX_COMPILER_ID STREQUAL "GNU" )
 		# Otherwise its inline functions' statics are "unique" symbols, and it is never really unloaded, so a
 		# rebuilt one could not be loaded in its place
-		target_compile_options( ${name} PRIVATE -fcoroutines -fno-gnu-unique )
-	elseif ( NOT MSVC )
-		target_compile_options( ${name} PRIVATE -fcoroutines )
+		target_compile_options( ${name} PRIVATE -fno-gnu-unique )
 	endif()
 endfunction()

@@ -202,9 +202,6 @@ set_target_properties( visuals PROPERTIES
 	WINDOWS_EXPORT_ALL_SYMBOLS ON
 	POSITION_INDEPENDENT_CODE ON )
 target_compile_features( visuals PUBLIC cxx_std_20 )
-if ( NOT MSVC )
-	target_compile_options( visuals PUBLIC -fcoroutines )
-endif()
 target_include_directories( visuals PUBLIC
 	$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src>
 	$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/extern>
@@ -238,9 +235,6 @@ endif()
 
 add_executable( voxima tools/main.cpp )
 target_compile_features( voxima PUBLIC cxx_std_20 )
-if ( NOT MSVC )
-	target_compile_options( voxima PUBLIC -fcoroutines )
-endif()
 target_link_libraries( voxima PUBLIC visuals )
 
 include( cmake/VoximaPlugin.cmake )

@@ -5,6 +5,8 @@
 #include <lunasvg/lunasvg.h>
 
 #include <algorithm>
+#include <atomic>
+#include <functional>
 #include <iomanip>
 #include <iostream>
 #include <limits>
@@ -14,6 +16,35 @@
 
 namespace
 {
+
+// A thread that is asked to stop and joined when it is replaced or destroyed, as std::jthread is (which Apple's libc++
+// does not have everywhere yet). The function polls the flag it is given.
+class StoppableThread
+{
+public:
+	StoppableThread() = default;
+	StoppableThread( const StoppableThread & ) = delete;
+	StoppableThread &operator=( const StoppableThread & ) = delete;
+	~StoppableThread() { stop(); }
+
+	void start( std::function<void( const std::atomic<bool> &stop )> function )
+	{
+		stop();
+		_stop = false;
+		_thread = std::thread( [this, function = std::move( function )]() { function( _stop ); } );
+	}
+
+	void stop()
+	{
+		_stop = true;
+		if ( _thread.joinable() )
+			_thread.join();
+	}
+
+private:
+	std::atomic<bool> _stop{ false };
+	std::thread _thread;
+};
 
 // SDL objects, released however preview() is left
 struct SdlWindow
@@ -111,10 +142,10 @@ bool Producer::preview( const std::string &language )
 
 	// The producer: runs the scenes as fast as it can, and the player takes the frames as it needs them. It
 	// stops when asked (on leaving, or to reload), or when the scenes end, or fail (the player reports it).
-	std::jthread producer;
+	StoppableThread producer;
 	auto start_producer = [&]()
 	{
-		producer = std::jthread( [&]( std::stop_token stop )
+		producer.start( [&]( const std::atomic<bool> &stop )
 		{
 			try
 			{
@@ -136,7 +167,7 @@ bool Producer::preview( const std::string &language )
 				_screenplay = _director( _stage, _script );
 				_screenplay.handle.promise().producer_ptr = this;
 
-				while ( !stop.stop_requested() && tick() )
+				while ( !stop && tick() )
 				{
 					std::ostringstream svg;
 					_stage.save_svg( svg );
@@ -408,7 +439,7 @@ bool Producer::preview( const std::string &language )
 
 		// Nothing the plugins made may outlive them: their coroutines, their visuals, what they tied to them, and
 		// any error (its type may be theirs)
-		producer = std::jthread();
+		producer.stop();
 		_screenplay = Screenplay();
 		_stage.visuals.clear();
 		_stage.updaters.clear();
