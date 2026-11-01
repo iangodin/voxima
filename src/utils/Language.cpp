@@ -28,6 +28,35 @@ std::string primary_subtag( std::string_view tag )
 	return to_lower( primary );
 }
 
+std::string container_language( std::string_view tag, bool bibliographic )
+{
+	struct Codes
+	{
+		std::string_view two;
+		std::string_view terminology;
+		std::string_view biblio;
+	};
+	// What the speech model speaks, and other common ones
+	static constexpr Codes codes[] = {
+		{ "ar", "ara", "ara" }, { "bn", "ben", "ben" }, { "ca", "cat", "cat" }, { "cs", "ces", "cze" }, { "da", "dan", "dan" },
+		{ "de", "deu", "ger" }, { "el", "ell", "gre" }, { "en", "eng", "eng" }, { "es", "spa", "spa" }, { "fa", "fas", "per" },
+		{ "fi", "fin", "fin" }, { "fr", "fra", "fre" }, { "he", "heb", "heb" }, { "hi", "hin", "hin" }, { "hu", "hun", "hun" },
+		{ "id", "ind", "ind" }, { "it", "ita", "ita" }, { "ja", "jpn", "jpn" }, { "ko", "kor", "kor" }, { "ms", "msa", "may" },
+		{ "nb", "nob", "nob" }, { "nl", "nld", "dut" }, { "no", "nor", "nor" }, { "pl", "pol", "pol" }, { "pt", "por", "por" },
+		{ "ro", "ron", "rum" }, { "ru", "rus", "rus" }, { "sv", "swe", "swe" }, { "sw", "swa", "swa" }, { "ta", "tam", "tam" },
+		{ "th", "tha", "tha" }, { "tr", "tur", "tur" }, { "uk", "ukr", "ukr" }, { "vi", "vie", "vie" }, { "zh", "zho", "chi" },
+	};
+	const std::string primary = primary_subtag( tag );
+	for ( const Codes &code: codes )
+	{
+		if ( code.two == primary )
+		{
+			return std::string( bibliographic ? code.biblio : code.terminology );
+		}
+	}
+	return primary;
+}
+
 std::vector<std::string> fallback_chain( std::string_view tag )
 {
 	std::vector<std::string> chain;

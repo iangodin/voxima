@@ -13,10 +13,14 @@ namespace language
 {
 
 // Normalized (lowercased) primary language subtag, e.g. "en-GB" -> "en",
-// "zh-Hans-CN" -> "zh", "en" -> "en". This is the ISO 639-1 code most
-// consumers (TTS language allowlists, container "language" metadata) want,
-// as opposed to the full regional/script tag.
+// "zh-Hans-CN" -> "zh", "en" -> "en". This is the ISO 639-1 code TTS language
+// allowlists want, as opposed to the full regional/script tag.
 std::string primary_subtag( std::string_view tag );
+
+// The three-letter ISO 639-2 code of a tag's language, which is what containers label their tracks with: "en-GB" -> "eng". mp4 takes
+// the terminology form, and Matroska the bibliographic one, which differ for a few languages ("deu" and "ger"). A language that is
+// not known is its primary subtag, as it is.
+std::string container_language( std::string_view tag, bool bibliographic );
 
 // Fallback chain from most to least specific: the tag itself first (used
 // verbatim, preserving whatever case it was given, since it may also be a

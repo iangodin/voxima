@@ -27,7 +27,8 @@ Not every container takes every codec; if a combination is refused, try another 
 
 ## What is in the render directory
 
-- `final.<container>`: the video, with an audio and a subtitle track for every language.
+- `final.<container>`: the video, with an audio and a subtitle track for every language, labeled with the language. In
+  mp4 the subtitles are `mov_text`, in mkv `srt` and in webm `webvtt`.
 - `subtitles.<lang>.srt` and `subtitles.<lang>.vtt`: the subtitles, for each language, to use on their own
   (YouTube takes `.srt` or `.vtt`).
 - The pieces it was made from, such as each language's audio, and the `tts-cache` folder (see below).

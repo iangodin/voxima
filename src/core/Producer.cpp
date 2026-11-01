@@ -283,15 +283,15 @@ bool Producer::render( const RenderJob &job )
 			}
 		}
 
+		// A container labels its tracks with an ISO 639-2 code: mp4 drops anything else, leaving them with no language at all
+		const bool bibliographic = job.container != "mp4";
+
 		FfmpegMux mux( final_filename, job.acodec, any_subtitles ? job.scodec : std::string{} );
 		mux.add_video_track( video_filename );
 		for ( const auto &lang: job.languages )
 		{
-			// Container "language" metadata is conventionally a bare ISO 639
-			// code, not a full BCP-47 regional tag - "en-GB" isn't itself a
-			// valid value the way "en" is.
 			mux.add_audio_track(
-				_stage.audio.output( lang ), language::primary_subtag( lang ), {},
+				_stage.audio.output( lang ), language::container_language( lang, bibliographic ), {},
 				lang == job.languages.front() );
 		}
 		for ( const auto &lang: job.languages )
@@ -308,7 +308,7 @@ bool Producer::render( const RenderJob &job )
 			write_vtt( vtt_path, cues );
 
 			mux.add_subtitle_track(
-				job.subtitle_ext == "vtt" ? vtt_path : srt_path, language::primary_subtag( lang ), {},
+				job.subtitle_ext == "vtt" ? vtt_path : srt_path, language::container_language( lang, bibliographic ), {},
 				lang == job.languages.front() );
 		}
 		mux.mux();

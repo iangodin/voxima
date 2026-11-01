@@ -1315,7 +1315,8 @@
 <p>Not every container takes every codec; if a combination is refused, try another (<code>mkv</code> takes nearly all of them).</p>
 <h2 id="what-is-in-the-render-directory">What is in the render directory<a class="headerlink" href="#what-is-in-the-render-directory" title="Permanent link">&para;</a></h2>
 <ul>
-<li><code>final.&lt;container&gt;</code>: the video, with an audio and a subtitle track for every language.</li>
+<li><code>final.&lt;container&gt;</code>: the video, with an audio and a subtitle track for every language, labeled with the language. In
+  mp4 the subtitles are <code>mov_text</code>, in mkv <code>srt</code> and in webm <code>webvtt</code>.</li>
 <li><code>subtitles.&lt;lang&gt;.srt</code> and <code>subtitles.&lt;lang&gt;.vtt</code>: the subtitles, for each language, to use on their own
   (YouTube takes <code>.srt</code> or <code>.vtt</code>).</li>
 <li>The pieces it was made from, such as each language's audio, and the <code>tts-cache</code> folder (see below).</li>

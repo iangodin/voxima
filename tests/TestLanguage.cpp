@@ -28,3 +28,16 @@ TEST_CASE( "Language: fallback_chain", "[language]" )
 		CHECK( chain.front() == "en-GB" );
 	}
 }
+
+TEST_CASE( "A container's language label is the three-letter code", "[language]" )
+{
+	CHECK( language::container_language( "en", false ) == "eng" );
+	CHECK( language::container_language( "en-GB", true ) == "eng" );
+	CHECK( language::container_language( "FR-ca", false ) == "fra" );
+	CHECK( language::container_language( "fr", true ) == "fre" );
+	CHECK( language::container_language( "de", false ) == "deu" );
+	CHECK( language::container_language( "de", true ) == "ger" );
+	CHECK( language::container_language( "zh-Hans-CN", false ) == "zho" );
+	// One that is not known stays as it is
+	CHECK( language::container_language( "xx-YY", false ) == "xx" );
+}
