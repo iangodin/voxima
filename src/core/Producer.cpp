@@ -464,7 +464,15 @@ bool Producer::produce( int argc, char *argv[] )
 		plugin_directories,
 		"A directory of plugins: every plugin in it (a .dll or .so) is loaded, in name order (repeatable). One that cannot be loaded is skipped, with a warning. With --preview, they are loaded again when rebuilt" );
 
-	CLI11_PARSE( app, argc, argv );
+	// Not CLI11_PARSE: that returns an exit code (0 for --help or --version), and this returns whether it went well
+	try
+	{
+		app.parse( argc, argv );
+	}
+	catch ( const CLI::ParseError &e )
+	{
+		return app.exit( e ) == 0;
+	}
 
 	// Their scenes register as they load, so before anything looks for one
 	for ( const auto &path: plugin_paths )
