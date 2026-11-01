@@ -87,6 +87,7 @@ meta::
   inherit: "Modern Technical"     # a built-in theme, or <name>.huml in a --theme-dir (or next to the scripts)
 
 palette: "github-light"           # the colors it starts with, whole (see Palettes; --palette changes it)
+                                  # or the colors themselves, see below
 
 fonts::                           # families: what a style becomes a file through
   plex_mono::
@@ -100,6 +101,22 @@ stacks::                          # lists of families: what the first has no gly
 intents::                         # which stack each kind of text uses
   code: "code"
 ```
+
+A theme file can hold **its own colors** instead of naming a palette, so a project's theme file is all it needs for its
+look, with no `Palette::add` or `use_palette` in the scenes:
+
+```huml
+palette::
+  inherit: "one-dark"             # optional: the colors it does not give
+  name: "my-colors"               # optional: the theme's name otherwise
+  background: "#101820"
+  blue: "#4FB3FF"
+```
+
+Colors are `"#RRGGBB"`: `background`, `text`, `muted`, and the accents `red orange yellow green cyan blue purple pink`. Without
+`inherit` it has to give all eleven. A palette added with `Palette::add` in a plugin is not there yet when the theme file is
+read, so `inherit` names a built-in palette. The code's colors are worked out from the accents again (see `derive_code_palette`), and
+two theme files that inherit one another merge their `palette::` key by key. `--palette` still replaces it all.
 
 Use it with `--theme my-course.huml` (or `--theme my-course` with `--theme-dir` pointing at it), or call it `theme.huml` in the
 script directory and it is used when no `--theme` is given.

@@ -229,3 +229,75 @@ TEST_CASE( "Themes are found in directories, and can inherit each other", "[them
 	CHECK_THAT( first_error( [&] { themes::load( "loop", { directory } ); } ), ContainsSubstring( "inherits itself" ) );
 	std::filesystem::remove_all( directory );
 }
+
+TEST_CASE( "A theme file can hold its palette's colors", "[themes]" )
+{
+	const std::string colors = R"huml(
+  background: "#010203"
+  text: "#E0E0E0"
+  muted: "#808080"
+  red: "#FF0000"
+  orange: "#FF8000"
+  yellow: "#FFFF00"
+  green: "#00FF00"
+  cyan: "#00FFFF"
+  blue: "#0000FF"
+  purple: "#8000FF"
+  pink: "#FF00FF"
+)huml";
+	const std::string head = "meta::\n  name: \"Mine\"\n\npalette::";
+
+	SECTION( "all of them" )
+	{
+		const Theme theme = themes::from_text( head + colors );
+		CHECK( theme.palette().name == "Mine" );
+		CHECK( theme.palette().background == Color::rgb( 1, 2, 3 ) );
+		CHECK( theme.palette().blue == Color::hex( 0x0000FF ) );
+		// The code's colors go with them
+		CHECK( theme.code_palette().style_for( "keyword" ).color == Color::hex( 0x8000FF ) );
+	}
+	SECTION( "only those that differ from a palette it inherits" )
+	{
+		const Theme theme = themes::from_text( head + "\n  inherit: \"one-dark\"\n  name: \"Ours\"\n  blue: \"#123456\"\n" );
+		const Palette &base = Palette::get( "one-dark" );
+		CHECK( theme.palette().name == "Ours" );
+		CHECK( theme.palette().blue == Color::hex( 0x123456 ) );
+		CHECK( theme.palette().red == base.red );
+		CHECK( theme.palette().background == base.background );
+		CHECK( theme.code_palette().style_for( "function" ).color == Color::hex( 0x123456 ) );
+	}
+	SECTION( "inheriting with no changes keeps what it inherits, code colors and all" )
+	{
+		const Theme theme = themes::from_text( head + "\n  inherit: \"github-light\"\n" );
+		CHECK( theme.code_palette().style_for( "keyword" ).color == Palette::get( "github-light" ).code.style_for( "keyword" ).color );
+	}
+	SECTION( "it changes no palette that is there" )
+	{
+		const Color before = Palette::get( "one-dark" ).blue;
+		themes::from_text( head + "\n  inherit: \"one-dark\"\n  blue: \"#123456\"\n" );
+		CHECK( Palette::get( "one-dark" ).blue == before );
+	}
+	SECTION( "mistakes say what is wrong" )
+	{
+		CHECK_THROWS_WITH( themes::from_text( head + "\n  blue: \"#123456\"\n" ), ContainsSubstring( "has no background" ) );
+		CHECK_THROWS_WITH( themes::from_text( head + "\n  inherit: \"no-such\"\n" ), ContainsSubstring( "no-such" ) );
+		CHECK_THROWS_WITH( themes::from_text( head + "\n  inherit: \"one-dark\"\n  blu: \"#123456\"\n" ), ContainsSubstring( "unknown palette key 'blu'" ) );
+		CHECK_THROWS_WITH( themes::from_text( head + "\n  inherit: \"one-dark\"\n  blue: \"blue\"\n" ), ContainsSubstring( "#RRGGBB" ) );
+		CHECK_THROWS_WITH( themes::from_text( head + "\n  inherit: \"one-dark\"\n  blue: \"#12345\"\n" ), ContainsSubstring( "#RRGGBB" ) );
+		CHECK_THROWS_WITH( themes::from_text( "meta::\n  name: \"Mine\"\n\npalette: 5\n" ), ContainsSubstring( "palette" ) );
+	}
+}
+
+TEST_CASE( "A theme that inherits merges its palette's colors", "[themes]" )
+{
+	const auto directory = std::filesystem::temp_directory_path() / "voxima-test-theme-palette";
+	std::filesystem::create_directories( directory );
+	{
+		std::ofstream( directory / "base.huml" ) << "meta::\n  name: \"Base\"\n\npalette::\n  inherit: \"paper\"\n  blue: \"#111111\"\n  red: \"#222222\"\n";
+	}
+	const Theme theme = themes::from_text( "meta::\n  name: \"Mine\"\n  inherit: \"base\"\n\npalette::\n  red: \"#333333\"\n", { directory } );
+	CHECK( theme.palette().blue == Color::hex( 0x111111 ) );
+	CHECK( theme.palette().red == Color::hex( 0x333333 ) );
+	CHECK( theme.palette().background == Palette::get( "paper" ).background );
+	std::filesystem::remove_all( directory );
+}

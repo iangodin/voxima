@@ -17,6 +17,11 @@
 //
 //     palette: "github-light"           # the colors it starts with, whole - background included (see Palette)
 //
+//     palette::                         # or the colors themselves, "#RRGGBB": all eleven (background, text, muted and the
+//       inherit: "one-dark"             # eight accents), or only those that differ from a palette it inherits
+//       background: "#101820"
+//       blue: "#4FB3FF"
+//
 //     fonts::                           # families (see FontFamily): what a style becomes a file through
 //       plex_mono::
 //         regular: "IBMPlexMono-Regular.otf"

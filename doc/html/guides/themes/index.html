@@ -1240,6 +1240,7 @@ what it likes:</p>
   inherit: "Modern Technical"     # a built-in theme, or &lt;name&gt;.huml in a --theme-dir (or next to the scripts)
 
 palette: "github-light"           # the colors it starts with, whole (see Palettes; --palette changes it)
+                                  # or the colors themselves, see below
 
 fonts::                           # families: what a style becomes a file through
   plex_mono::
@@ -1253,6 +1254,18 @@ stacks::                          # lists of families: what the first has no gly
 intents::                         # which stack each kind of text uses
   code: "code"
 </code></pre></div>
+<p>A theme file can hold <strong>its own colors</strong> instead of naming a palette, so a project's theme file is all it needs for its
+look, with no <code>Palette::add</code> or <code>use_palette</code> in the scenes:</p>
+<div class="highlight"><pre><span></span><code>palette::
+  inherit: "one-dark"             # optional: the colors it does not give
+  name: "my-colors"               # optional: the theme's name otherwise
+  background: "#101820"
+  blue: "#4FB3FF"
+</code></pre></div>
+<p>Colors are <code>"#RRGGBB"</code>: <code>background</code>, <code>text</code>, <code>muted</code>, and the accents <code>red orange yellow green cyan blue purple pink</code>. Without
+<code>inherit</code> it has to give all eleven. A palette added with <code>Palette::add</code> in a plugin is not there yet when the theme file is
+read, so <code>inherit</code> names a built-in palette. The code's colors are worked out from the accents again (see <code>derive_code_palette</code>), and
+two theme files that inherit one another merge their <code>palette::</code> key by key. <code>--palette</code> still replaces it all.</p>
 <p>Use it with <code>--theme my-course.huml</code> (or <code>--theme my-course</code> with <code>--theme-dir</code> pointing at it), or call it <code>theme.huml</code> in the
 script directory and it is used when no <code>--theme</code> is given.</p>
 <p><strong>Families</strong> are one of four forms (see <code>FontFamily.h</code>):</p>

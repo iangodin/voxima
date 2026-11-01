@@ -6,10 +6,13 @@
 #include <themes/ThemeUtils.h>
 #include <utils/Huml.h>
 
+#include <algorithm>
+#include <cctype>
 #include <format>
 #include <fstream>
 #include <map>
 #include <memory>
+#include <optional>
 #include <set>
 #include <sstream>
 #include <stdexcept>
@@ -118,10 +121,100 @@ huml::Value resolve( const huml::Value &file, const std::string &where, const st
 	return huml::merge( parent, file );
 }
 
+// "#RRGGBB"
+Color parse_color( const huml::Value &value, const std::string &key, const std::string &where )
+{
+	const std::string text = value.is_string() ? value.as_string() : std::string{};
+	const bool well_formed = text.size() == 7 && text[0] == '#' &&
+		std::all_of( text.begin() + 1, text.end(), []( unsigned char c ) { return std::isxdigit( c ) != 0; } );
+	if ( !well_formed )
+	{
+		fail( where, std::format( "palette color '{}' is written \"#RRGGBB\", in quotes", key ) );
+	}
+	return Color::hex( static_cast<unsigned int>( std::stoul( text.substr( 1 ), nullptr, 16 ) ) );
+}
+
+// A palette written in the file: its colors, on top of those of the palette it inherits if it says one
+Palette parse_palette( const huml::Value &value, const std::string &theme_name, const std::string &where )
+{
+	Palette palette;
+	palette.name = theme_name;
+	const std::vector<std::pair<std::string, Color Palette::*>> colors{
+		{ "background", &Palette::background },
+		{ "text", &Palette::text },
+		{ "muted", &Palette::muted },
+		{ "red", &Palette::red },
+		{ "orange", &Palette::orange },
+		{ "yellow", &Palette::yellow },
+		{ "green", &Palette::green },
+		{ "cyan", &Palette::cyan },
+		{ "blue", &Palette::blue },
+		{ "purple", &Palette::purple },
+		{ "pink", &Palette::pink } };
+
+	const huml::Value &inherit = value["inherit"];
+	if ( !inherit.is_missing() )
+	{
+		if ( !inherit.is_string() )
+		{
+			fail( where, "the palette's `inherit` is the name of a palette, in quotes" );
+		}
+		const std::string name = palette.name;
+		palette = Palette::get( inherit.as_string() ); // a name that is not there throws, saying which are
+		palette.name = name;
+	}
+
+	bool any_color = false;
+	for ( const auto &[key, entry]: value.as_dict() )
+	{
+		if ( key == "inherit" )
+		{
+			continue;
+		}
+		if ( key == "name" )
+		{
+			if ( !entry.is_string() )
+			{
+				fail( where, "the palette's `name` is in quotes" );
+			}
+			palette.name = entry.as_string();
+			continue;
+		}
+		const auto color = std::find_if( colors.begin(), colors.end(), [&key]( const auto &known ) { return known.first == key; } );
+		if ( color == colors.end() )
+		{
+			fail( where, std::format( "unknown palette key '{}' (inherit, name, background, text, muted, red, orange, yellow, green, cyan, blue, purple, pink)", key ) );
+		}
+		palette.*( color->second ) = parse_color( entry, key, where );
+		any_color = true;
+	}
+	if ( inherit.is_missing() )
+	{
+		std::string missing;
+		for ( const auto &[key, member]: colors )
+		{
+			if ( value[key].is_missing() )
+			{
+				missing += ( missing.empty() ? "" : ", " ) + key;
+			}
+		}
+		if ( !missing.empty() )
+		{
+			fail( where, std::format( "the palette has no {} (give all the colors, or `inherit` a palette for those it does not)", missing ) );
+		}
+	}
+	// The code's colors follow the accents. A palette that changes nothing keeps what it inherits, adjustments and all.
+	if ( any_color )
+	{
+		palette.code = derive_code_palette( palette );
+	}
+	return palette;
+}
+
 struct Spec
 {
 	std::string name;
-	std::string palette;
+	std::optional<Palette> palette;
 	std::map<std::string, FontFamily> families;
 	std::map<std::string, std::vector<std::string>> stacks;
 	std::map<std::string, std::string> intents;
@@ -181,12 +274,18 @@ Theme build( const huml::Value &root, const std::string &where )
 	const huml::Value &palette = root["palette"];
 	if ( !palette.is_missing() )
 	{
-		if ( !palette.is_string() )
+		if ( palette.is_string() )
 		{
-			fail( where, "`palette` is the name of a palette, in quotes" );
+			spec->palette = Palette::get( palette.as_string() ); // a name that is not there throws, saying which are
 		}
-		spec->palette = palette.as_string();
-		Palette::get( spec->palette ); // a name that is not there throws, saying which are
+		else if ( palette.is_dict() )
+		{
+			spec->palette = parse_palette( palette, spec->name, where );
+		}
+		else
+		{
+			fail( where, "`palette` is the name of a palette, in quotes, or `palette::` with its colors" );
+		}
 	}
 
 	const huml::Value &fonts = root["fonts"];
@@ -242,11 +341,11 @@ Theme build( const huml::Value &root, const std::string &where )
 	}
 
 	Theme theme( spec->name );
-	if ( !spec->palette.empty() )
+	if ( spec->palette )
 	{
-		// A theme that names a palette uses it whole, background included; black is only what a theme with
+		// A theme that has a palette uses it whole, background included; black is only what a theme with
 		// no palette at all starts with (Theme's own default, Palette::house( "one-dark" )).
-		theme.set_palette( Palette::get( spec->palette ) );
+		theme.set_palette( *spec->palette );
 	}
 	for ( const auto &[intent, stack]: spec->intents )
 	{
