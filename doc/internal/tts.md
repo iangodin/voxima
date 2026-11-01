@@ -225,6 +225,9 @@ reference-clip path per named voice.
 
 ## Proof-of-concept scope (before any Narrator/TTSClient integration)
 
+> `tools/tts_poc.cpp` and `tools/align_poc.cpp`, mentioned below, were removed once narration was built into `voxima`
+> (see the git history, before 2026-11). `voxima --scene ...` with a narrated scene does the same end to end.
+
 Small standalone CLI tool, `tools/tts_poc.cpp` (or similar): takes a plain text file
 as input, synthesizes English speech via the Chatterbox Multilingual GGUF backend
 through audio.cpp's C ABI, writes a `.wav` file. CPU only. No forced-alignment/timing,

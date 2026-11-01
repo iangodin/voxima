@@ -254,18 +254,6 @@ add_executable( test_huml tools/test_huml.cpp )
 target_compile_features( test_huml PUBLIC cxx_std_20 )
 target_link_libraries( test_huml PUBLIC visuals )
 
-add_executable( tts_poc tools/tts_poc.cpp )
-target_compile_features( tts_poc PUBLIC cxx_std_20 )
-target_link_libraries( tts_poc PUBLIC audiocpp SndFile::sndfile )
-if ( NOT MSVC )
-	# audiocpp.h has a "/*" inside a doc comment that -Wcomment flags; not our header to fix.
-	target_compile_options( tts_poc PRIVATE -Wno-comment )
-endif()
-
-add_executable( align_poc tools/align_poc.cpp )
-target_compile_features( align_poc PUBLIC cxx_std_20 )
-target_link_libraries( align_poc PUBLIC visuals )
-
 # Windows has no rpath: audio.cpp puts audiocpp.dll in bin/, so copy it (and any other shared library) next to the program
 function( copy_runtime_dlls program )
 	if ( WIN32 )
@@ -275,7 +263,7 @@ function( copy_runtime_dlls program )
 	endif()
 endfunction()
 
-foreach( program voxima test_huml tts_poc align_poc )
+foreach( program voxima test_huml )
 	copy_runtime_dlls( ${program} )
 endforeach()
 
