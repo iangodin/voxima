@@ -90,6 +90,18 @@ plain (`make_brace( from, to )`, `make_brace_beside( visual, side )`) and labele
 
 A connector's line can be dashed with `ConnectorOptions::dash` (see [Dashed lines](visuals-layout.md#dashed-lines)).
 
+## Arrows
+
+A connector joins two visuals. For an arrow between points, or along a curve, use `make_arrow`, which takes the same options
+(but for `gap`) and stays where it is put. `draw` plays it on, the line and then the head:
+
+```cpp
+--8<-- "examples/animation/animation.cpp:arrow"
+```
+
+A curved arrow follows a `Path`, such as one from `make_arc`, and uses its first piece. An arrow too short for its head
+has none. `arrow.set_drawn( fraction )` draws it as far as you like, for tying it to something else.
+
 ## Geometry
 
 ```cpp

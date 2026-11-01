@@ -878,6 +878,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#arrows" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Arrows
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#geometry" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1291,6 +1302,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#arrows" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Arrows
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#geometry" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1412,6 +1434,17 @@ visual as the content. Edges are connectors: <code>flow.edge( i )</code>, <code>
 <p>A callout is a panel with a pointer to a target; after moving either, call <code>note.update()</code>. Braces come in
 plain (<code>make_brace( from, to )</code>, <code>make_brace_beside( visual, side )</code>) and labeled forms.</p>
 <p>A connector's line can be dashed with <code>ConnectorOptions::dash</code> (see <a href="../visuals-layout/#dashed-lines">Dashed lines</a>).</p>
+<h2 id="arrows">Arrows<a class="headerlink" href="#arrows" title="Permanent link">&para;</a></h2>
+<p>A connector joins two visuals. For an arrow between points, or along a curve, use <code>make_arrow</code>, which takes the same options
+(but for <code>gap</code>) and stays where it is put. <code>draw</code> plays it on, the line and then the head:</p>
+<div class="highlight"><pre><span></span><code><span class="k">auto</span><span class="w"> </span><span class="o">&amp;</span><span class="n">straight</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">stage</span><span class="p">.</span><span class="n">visuals</span><span class="p">.</span><span class="n">add</span><span class="p">(</span><span class="w"> </span><span class="n">make_arrow</span><span class="p">(</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="mf">-5.F</span><span class="p">,</span><span class="w"> </span><span class="mf">-1.F</span><span class="w"> </span><span class="p">},</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="mf">-1.F</span><span class="p">,</span><span class="w"> </span><span class="mf">1.F</span><span class="w"> </span><span class="p">},</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="p">.</span><span class="n">color</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">palette</span><span class="p">.</span><span class="n">blue</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="p">)</span><span class="w"> </span><span class="p">);</span>
+<span class="k">auto</span><span class="w"> </span><span class="o">&amp;</span><span class="n">curved</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">stage</span><span class="p">.</span><span class="n">visuals</span><span class="p">.</span><span class="n">add</span><span class="p">(</span><span class="w"> </span><span class="n">make_arrow</span><span class="p">(</span><span class="w"> </span><span class="o">*</span><span class="n">make_arc</span><span class="p">(</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="mf">3.F</span><span class="p">,</span><span class="w"> </span><span class="mf">-1.F</span><span class="w"> </span><span class="p">},</span><span class="w"> </span><span class="mf">2.F</span><span class="p">,</span><span class="w"> </span><span class="mf">180.F</span><span class="p">,</span><span class="w"> </span><span class="mf">0.F</span><span class="w"> </span><span class="p">),</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="p">.</span><span class="n">arrow_at_start</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">true</span><span class="p">,</span><span class="w"> </span><span class="p">.</span><span class="n">color</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">palette</span><span class="p">.</span><span class="n">orange</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="p">)</span><span class="w"> </span><span class="p">);</span>
+<span class="n">curved</span><span class="p">.</span><span class="n">set_drawn</span><span class="p">(</span><span class="w"> </span><span class="mf">0.F</span><span class="w"> </span><span class="p">);</span><span class="w">                 </span><span class="c1">// (not there until it is its turn)</span>
+<span class="k">co_await</span><span class="w"> </span><span class="n">draw</span><span class="p">(</span><span class="w"> </span><span class="n">stage</span><span class="p">,</span><span class="w"> </span><span class="n">straight</span><span class="p">,</span><span class="w"> </span><span class="mf">0.8</span><span class="n">s</span><span class="w"> </span><span class="p">);</span>
+<span class="k">co_await</span><span class="w"> </span><span class="n">draw</span><span class="p">(</span><span class="w"> </span><span class="n">stage</span><span class="p">,</span><span class="w"> </span><span class="n">curved</span><span class="p">,</span><span class="w"> </span><span class="mf">1.2</span><span class="n">s</span><span class="w"> </span><span class="p">);</span>
+</code></pre></div>
+<p>A curved arrow follows a <code>Path</code>, such as one from <code>make_arc</code>, and uses its first piece. An arrow too short for its head
+has none. <code>arrow.set_drawn( fraction )</code> draws it as far as you like, for tying it to something else.</p>
 <h2 id="geometry">Geometry<a class="headerlink" href="#geometry" title="Permanent link">&para;</a></h2>
 <div class="highlight"><pre><span></span><code><span class="n">stage</span><span class="p">.</span><span class="n">visuals</span><span class="p">.</span><span class="n">add</span><span class="p">(</span><span class="w"> </span><span class="n">make_polygon</span><span class="p">(</span><span class="w"> </span><span class="n">theme</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">a</span><span class="p">,</span><span class="w"> </span><span class="n">b</span><span class="p">,</span><span class="w"> </span><span class="n">c</span><span class="w"> </span><span class="p">},</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="p">.</span><span class="n">fill</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Color</span><span class="p">{</span><span class="w"> </span><span class="n">palette</span><span class="p">.</span><span class="n">blue</span><span class="p">.</span><span class="n">r</span><span class="p">,</span><span class="w"> </span><span class="n">palette</span><span class="p">.</span><span class="n">blue</span><span class="p">.</span><span class="n">g</span><span class="p">,</span><span class="w"> </span><span class="n">palette</span><span class="p">.</span><span class="n">blue</span><span class="p">.</span><span class="n">b</span><span class="p">,</span><span class="w"> </span><span class="mf">0.2F</span><span class="w"> </span><span class="p">},</span><span class="w"> </span><span class="p">.</span><span class="n">labels</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="s">"A"</span><span class="p">,</span><span class="w"> </span><span class="s">"B"</span><span class="p">,</span><span class="w"> </span><span class="s">"C"</span><span class="w"> </span><span class="p">},</span><span class="w"> </span><span class="p">.</span><span class="n">dots</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">true</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="p">)</span><span class="w"> </span><span class="p">);</span>
 <span class="n">stage</span><span class="p">.</span><span class="n">visuals</span><span class="p">.</span><span class="n">add</span><span class="p">(</span><span class="w"> </span><span class="n">make_angle</span><span class="p">(</span><span class="w"> </span><span class="n">theme</span><span class="p">,</span><span class="w"> </span><span class="n">b</span><span class="p">,</span><span class="w"> </span><span class="n">a</span><span class="p">,</span><span class="w"> </span><span class="n">c</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="p">.</span><span class="n">radius</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">0.5F</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="p">)</span><span class="w"> </span><span class="p">);</span>

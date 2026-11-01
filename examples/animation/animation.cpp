@@ -16,6 +16,7 @@
 #include <core/Stage.h>
 #include <core/Wait.h>
 #include <plot/Graph.h>
+#include <visuals/Arrow.h>
 #include <visuals/Diagram.h>
 #include <visuals/Geometry.h>
 #include <visuals/Panel.h>
@@ -179,5 +180,20 @@ Scene show_helpers( Stage &stage, Script & )
 }
 
 REGISTER_SCENE( "verbs", "Fade, slide, grow and indicate, with connectors following the moving circles", show_verbs );
+// Arrows between points and along a curve, drawn on
+Scene show_arrows( Stage &stage, Script & )
+{
+	const Palette &palette = stage.theme->palette();
+	// --8<-- [start:arrow]
+	auto &straight = stage.visuals.add( make_arrow( { -5.F, -1.F }, { -1.F, 1.F }, { .color = palette.blue } ) );
+	auto &curved = stage.visuals.add( make_arrow( *make_arc( { 3.F, -1.F }, 2.F, 180.F, 0.F ), { .arrow_at_start = true, .color = palette.orange } ) );
+	curved.set_drawn( 0.F );                 // (not there until it is its turn)
+	co_await draw( stage, straight, 0.8s );
+	co_await draw( stage, curved, 1.2s );
+	// --8<-- [end:arrow]
+	co_await wait_for( stage, 1s );
+}
+
+REGISTER_SCENE( "arrows", "Arrows between points and along a curve, drawn on", show_arrows );
 REGISTER_SCENE( "helpers", "A frame round a word, an arc, bars that grow from their base, and dimming", show_helpers );
 REGISTER_SCENE( "camera", "Zooming in on a graph, and panning along it", show_camera );

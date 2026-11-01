@@ -41,7 +41,7 @@ Scene movie( Stage &stage, Script &script )
 		{ "hello", "coroutine-basics",
 		  "layout-basics", "layout", "tables", "drawing-order", "dashes", "gradients",
 		  "text-basics", "styled-text", "formulas", "math-marks", "code",
-		  "verbs", "helpers", "camera",
+		  "verbs", "helpers", "arrows", "camera",
 		  "morph-basics", "morph-shapes", "morph-formula", "morph-text", "morph-strokes",
 		  "plot", "plot-edge", "charts", "diagram", "geometry",
 		  "notes" },

@@ -153,6 +153,7 @@ add_library( visuals SHARED
 	src/visuals/Placement.cpp
 	src/visuals/Panel.cpp
 	src/visuals/Connector.cpp
+	src/visuals/Arrow.cpp
 	src/visuals/Callout.cpp
 	src/visuals/Brace.cpp
 	src/visuals/Geometry.cpp

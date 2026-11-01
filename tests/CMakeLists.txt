@@ -72,6 +72,7 @@ add_executable( voxima_unit_tests
 	TestGradient.cpp
 	TestOpacity.cpp
 	TestHelpers.cpp
+	TestArrow.cpp
 )
 
 target_link_libraries( voxima_unit_tests
