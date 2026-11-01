@@ -42,7 +42,7 @@ language, so one set of scenes serves every language.
 
 ## Getting started
 
-Voxima is distributed as source. You need a C++20 compiler (GCC 14 or newer), CMake 3.31+, Ninja, Conan 2, Python 3,
+Voxima is distributed as source. You need a C++20 compiler (GCC 14 or newer on Linux, MSVC 19.4 or newer on Windows, Apple clang on macOS), CMake 3.31+, Ninja, Conan 2, Python 3,
 git and ffmpeg.
 
 ```

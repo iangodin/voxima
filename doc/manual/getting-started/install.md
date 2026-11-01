@@ -13,7 +13,7 @@ than crashing.
 
 | | |
 |---|---|
-| A C++20 compiler | GCC 14 or newer on Linux; MSVC 19.4 or newer on Windows |
+| A C++20 compiler | GCC 14 or newer on Linux; MSVC 19.4 or newer on Windows; Apple clang on macOS (21 is known to work) |
 | CMake | 3.31 or newer |
 | Ninja | The build uses it |
 | Conan | Version 2. It downloads and builds the libraries Voxima uses (`pip install conan`) |

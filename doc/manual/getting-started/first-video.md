@@ -45,7 +45,7 @@ cmake --build build
 The build type, the compiler and the standard library must be those Voxima was built with, which they are
 if you use the same compiler; see [Your own plugin project](../guides/plugin-project.md).
 
-You now have `build/hello.so` (`build\hello.dll` on Windows).
+You now have `build/hello.so` (`build\hello.dll` on Windows; it is `.so` on macOS too, not `.dylib`).
 
 ## 4. Preview it
 

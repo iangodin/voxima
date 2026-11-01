@@ -1,5 +1,5 @@
 # voxima_add_plugin( <name> <sources>... ): a plugin of scenes, for voxima --plugin (see core/Plugin.h).
-# One of its files needs VOXIMA_PLUGIN();. It is built as <name>.dll on Windows, <name>.so elsewhere.
+# One of its files needs VOXIMA_PLUGIN();. It is built as <name>.dll on Windows, <name>.so elsewhere (macOS too).
 function( voxima_add_plugin name )
 	add_library( ${name} MODULE ${ARGN} )
 	target_link_libraries( ${name} PRIVATE Voxima::core )

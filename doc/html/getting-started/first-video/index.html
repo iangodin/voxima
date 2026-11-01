@@ -1355,7 +1355,7 @@ cmake --build build
 </code></pre></div>
 <p>The build type, the compiler and the standard library must be those Voxima was built with, which they are
 if you use the same compiler; see <a href="../../guides/plugin-project/">Your own plugin project</a>.</p>
-<p>You now have <code>build/hello.so</code> (<code>build\hello.dll</code> on Windows).</p>
+<p>You now have <code>build/hello.so</code> (<code>build\hello.dll</code> on Windows; it is <code>.so</code> on macOS too, not <code>.dylib</code>).</p>
 <h2 id="4-preview-it">4. Preview it<a class="headerlink" href="#4-preview-it" title="Permanent link">&para;</a></h2>
 <div class="highlight"><pre><span></span><code>&lt;prefix&gt;/bin/voxima --plugin build/hello --script-dir scripts --lang en \
     --theme "Academic Classic" --preview

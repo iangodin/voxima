@@ -1275,7 +1275,7 @@
 
 
 <h1 id="your-own-plugin-project">Your own plugin project<a class="headerlink" href="#your-own-plugin-project" title="Permanent link">&para;</a></h1>
-<p>Scenes live in a <strong>plugin</strong>: a shared library (<code>.so</code> on Linux, <code>.dll</code> on Windows) that <code>voxima</code> loads with
+<p>Scenes live in a <strong>plugin</strong>: a shared library (<code>.so</code> on Linux and macOS, <code>.dll</code> on Windows) that <code>voxima</code> loads with
 <code>--plugin</code>. A plugin project is a small CMake project built against your Voxima build, installed with
 <code>make install PREFIX=&lt;prefix&gt;</code> (see <a href="../../getting-started/install/#install-it-to-build-plugins-elsewhere">Installing</a>).
 A starting point is in <code>&lt;prefix&gt;/share/voxima/examples</code> (or <code>examples/</code> in the checkout), one folder per example.</p>
