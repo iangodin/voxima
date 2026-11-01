@@ -10,6 +10,32 @@
 
 using namespace huml;
 
+namespace
+{
+Pronunciations read_pronunciations( const Value &root, const std::string &file )
+{
+	Pronunciations list;
+	const Value &section = root["pronounce"];
+	if ( section.is_missing() )
+	{
+		return list;
+	}
+	if ( !section.is_dict() )
+	{
+		throw std::runtime_error( file + ".huml: `pronounce::` is a dict of what is written and how it is said, in quotes" );
+	}
+	for ( const auto &[written, spoken]: section.as_dict() )
+	{
+		if ( written.empty() || !spoken.is_string() )
+		{
+			throw std::runtime_error( file + ".huml: in `pronounce::`, '" + written + "' has to be said as some text, in quotes" );
+		}
+		list.emplace_back( written, spoken.as_string() );
+	}
+	return list;
+}
+}
+
 bool Script::load( std::string lang )
 {
 	if ( _native_scripts.find( lang ) != _native_scripts.end() )
@@ -30,17 +56,19 @@ bool Script::load( std::string lang )
 	// on what was requested rather than silently rewritten.
 	for ( const auto &candidate: language::fallback_chain( lang ) )
 	{
+		Value root;
 		try
 		{
-			Value root = load_recursive( candidate );
-			_native_scripts[lang] = root;
-			_languages.push_back( lang );
-			return true;
+			root = load_recursive( candidate );
 		}
 		catch ( ... )
 		{
 			continue;
 		}
+		_pronunciations[lang] = read_pronunciations( root, candidate ); // (a mistake here is a mistake, not a reason to look further)
+		_native_scripts[lang] = root;
+		_languages.push_back( lang );
+		return true;
 	}
 
 	return false;

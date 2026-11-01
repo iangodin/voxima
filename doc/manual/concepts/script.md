@@ -124,5 +124,19 @@ The source lives in <src|source>, and we built <C++|see plus plus> in a weekend.
 - Subtitles use the written text.
 - `<<`, `>>` and `||` are a literal `<`, `>` and `|`. A `<` with no `>` after it is ordinary text ("a < b").
 
+A word said the same way everywhere does not have to be written that way everywhere. The `pronounce` section of a language's
+file lists them, so the narration stays readable and says them the same way each time:
+
+```huml
+pronounce::
+  "cd/m²": "candelas per square meter"
+  OETF: "oh ee tee eff"
+  "BT.2100": "bee tee twenty one hundred"
+```
+
+It applies to what is spoken and never to what is shown or to the subtitles. It goes by whole words, so `OETF` is not found in
+`OETFs`, and case matters. Where more than one could apply the longest is used. A `<written|spoken>` in the text says what it
+says, whatever the list has. Like the rest of a file, the section is merged over one that `meta.inherit` names.
+
 The `Vector shapes<,>` in the first listing is this form: the comma is shown in the subtitle but is not part of
 what is said.

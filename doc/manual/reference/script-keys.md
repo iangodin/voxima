@@ -9,6 +9,7 @@ The keys Voxima itself reads in a script file. Everything else in a script is yo
 | `meta.inherit` | text or `null` | Another script file (without `.huml`) this one is merged over; `null` for none |
 | `voices.<name>` | text | The reference clip for the narrator `<name>`, relative to the voice directory (see `--tts-voice-dir`) |
 | `labels.<key>` | text | Short on-screen text, by convention (`script.label( lang, key )`) |
+| `pronounce.<written>` | text | How a word is said wherever it appears in narrated text (see [the script](../concepts/script.md#written-and-spoken-text)) |
 
 ## Text syntax in narrated and shown text
 

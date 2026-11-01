@@ -1352,6 +1352,16 @@ other:</p>
 <li>Subtitles use the written text.</li>
 <li><code>&lt;&lt;</code>, <code>&gt;&gt;</code> and <code>||</code> are a literal <code>&lt;</code>, <code>&gt;</code> and <code>|</code>. A <code>&lt;</code> with no <code>&gt;</code> after it is ordinary text ("a &lt; b").</li>
 </ul>
+<p>A word said the same way everywhere does not have to be written that way everywhere. The <code>pronounce</code> section of a language's
+file lists them, so the narration stays readable and says them the same way each time:</p>
+<div class="highlight"><pre><span></span><code>pronounce::
+  "cd/m²": "candelas per square meter"
+  OETF: "oh ee tee eff"
+  "BT.2100": "bee tee twenty one hundred"
+</code></pre></div>
+<p>It applies to what is spoken and never to what is shown or to the subtitles. It goes by whole words, so <code>OETF</code> is not found in
+<code>OETFs</code>, and case matters. Where more than one could apply the longest is used. A <code>&lt;written|spoken&gt;</code> in the text says what it
+says, whatever the list has. Like the rest of a file, the section is merged over one that <code>meta.inherit</code> names.</p>
 <p>The <code>Vector shapes&lt;,&gt;</code> in the first listing is this form: the comma is shown in the subtitle but is not part of
 what is said.</p>
 

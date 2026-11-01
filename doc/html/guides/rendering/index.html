@@ -1322,8 +1322,14 @@
 </ul>
 <p>With <code>--separate</code>, each language is in its own folder, <code>&lt;render-dir&gt;/&lt;lang&gt;/</code>, with its own <code>final.&lt;container&gt;</code>.</p>
 <p><code>--save-svg</code> and <code>--save-png</code> also keep every frame as an SVG or PNG file (a lot of files; handy for stills).</p>
-<p>Speech is <strong>cached</strong> in a <code>tts-cache</code> folder inside the render directory, so rendering again after a change to the
-animation (not the words) does not have to make the speech again. Keep that folder between renders.</p>
+<p>Speech is <strong>cached</strong>, so rendering again after a change to the animation (not the words) does not have to make the
+speech again. It is kept in a <code>tts-cache</code> folder inside the render directory, or wherever <code>--tts-cache-dir</code> or
+<code>$VOXIMA_TTS_CACHE</code> says. Pointing them at one folder lets renders into different directories (a draft and a final,
+<code>--separate</code> runs, CI) share the speech, even at the same time. A voice is known by its path as given, so use the same
+<code>--tts-voice-dir</code> for them to share.</p>
+<p>Each line of speech that has to be made is reported as it is (<code>TTS en 12: 'The OETF is…' 3.1 s, took 18.2 s</code>), with what
+it all came to at the end. <code>--tts-only</code> makes the speech and exits, with no video, to get the slow part over with
+before working on the visuals (overnight, say). It does not work out word timings, which are not cached.</p>
 <h2 id="choose-scenes">Choose scenes<a class="headerlink" href="#choose-scenes" title="Permanent link">&para;</a></h2>
 <div class="highlight"><pre><span></span><code>voxima --plugin build/hello --list-scenes                  # what the plugin has
 voxima --plugin build/hello ... --scene intro              # one scene

@@ -46,7 +46,7 @@ double Narrator::speech( const std::vector<std::string> &text )
 	for ( const auto &raw: text )
 	{
 		// What is shown can differ from what is said (see utils/AltText.h: <written>, <written|spoken>)
-		const AltText alt = parse_alt_text( raw );
+		const AltText alt = parse_alt_text( raw, _script->pronunciations( _language ) );
 
 		// Markers are cue points, not words: they are taken out before anything is spoken, aligned or shown
 		const MarkedText marked = parse_markers( alt.spoken );

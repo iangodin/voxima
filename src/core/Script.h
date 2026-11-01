@@ -2,6 +2,7 @@
 #pragma once
 
 #include <utils/Huml.h>
+#include <utils/Pronounce.h>
 
 #include <filesystem>
 #include <string>
@@ -47,6 +48,15 @@ public:
 		return std::string( fetch( lang, "labels", key ).as_string( fallback ) );
 	}
 
+	// The script's "pronounce" section for a language: how words are said, wherever they appear (see utils/Pronounce.h).
+	// Checked when the script is loaded.
+	const Pronunciations &pronunciations( std::string_view lang ) const
+	{
+		static const Pronunciations none;
+		const auto found = _pronunciations.find( lang );
+		return found == _pronunciations.end() ? none : found->second;
+	}
+
 	const auto &languages( void ) const
 	{
 		return _languages;
@@ -73,6 +83,7 @@ private:
 	std::vector<std::string> _languages;
 	huml::Value load_recursive( const std::string &lang );
 	std::map<std::string,huml::Value, std::less<>> _native_scripts;
+	std::map<std::string, Pronunciations, std::less<>> _pronunciations;
 	huml::Value _missing = { huml::Missing{} };
 	std::filesystem::path _directory;
 };

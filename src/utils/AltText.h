@@ -1,5 +1,7 @@
 #pragma once
 
+#include "utils/Pronounce.h"
+
 #include <string>
 #include <string_view>
 
@@ -16,15 +18,25 @@
 //
 // A doubled delimiter is the literal character: "<<" is "<", ">>" is ">", "||" is "|". A "<" with no
 // matching ">" is left as ordinary text (so "a < b" is unaffected).
+//
+// `pronunciations` (a script's `pronounce` section, see utils/Pronounce.h) apply to what is said, but for what a <written|spoken>
+// says itself: that is how it is to be said there.
 struct AltText
 {
 	std::string written; // for display and subtitles
 	std::string spoken;  // for TTS synthesis and alignment
 };
 
-inline AltText parse_alt_text( std::string_view text )
+inline AltText parse_alt_text( std::string_view text, const Pronunciations &pronunciations = {} )
 {
 	AltText out;
+	// What is said as it is written, up to the next tag, for the pronunciations to go over
+	std::string as_written;
+	const auto flush = [&]()
+	{
+		out.spoken += apply_pronunciations( as_written, pronunciations );
+		as_written.clear();
+	};
 	size_t i = 0;
 	while ( i < text.size() )
 	{
@@ -32,7 +44,7 @@ inline AltText parse_alt_text( std::string_view text )
 		if ( ( c == '<' || c == '>' || c == '|' ) && i + 1 < text.size() && text[i + 1] == c )
 		{
 			out.written += c;
-			out.spoken += c;
+			as_written += c;
 			i += 2;
 			continue;
 		}
@@ -45,11 +57,12 @@ inline AltText parse_alt_text( std::string_view text )
 			{
 				// no matching '>': not a tag after all
 				out.written += c;
-				out.spoken += c;
+				as_written += c;
 				++i;
 				continue;
 			}
 
+			flush();
 			if ( pipe != std::string_view::npos && pipe < close )
 			{
 				out.written += text.substr( i + 1, pipe - ( i + 1 ) );
@@ -65,9 +78,10 @@ inline AltText parse_alt_text( std::string_view text )
 		}
 
 		out.written += c;
-		out.spoken += c;
+		as_written += c;
 		++i;
 	}
+	flush();
 
 	// An unspoken span can leave a doubled space, or one at either end, in the spoken text
 	std::string squeezed;
