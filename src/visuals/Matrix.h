@@ -15,7 +15,7 @@ enum class ColumnAlign
 
 struct MatrixOptions
 {
-	std::vector<ColumnAlign> align;  // per column; columns beyond the list are centered
+	std::vector<ColumnAlign> align = {};  // per column; columns beyond the list are centered
 	float column_sep_em = 1.F;       // between columns (amsmath: twice \arraycolsep, 5pt)
 	float baseline_skip_em = 1.2F;   // between row baselines (TeX's \baselineskip, 12pt at 10pt)
 };

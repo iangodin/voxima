@@ -17,11 +17,11 @@ struct PolygonOptions
 	float thickness = 0.04F;
 
 	// Filled, in this color (it is often a tint: alpha under 1); none by default
-	std::optional<Color> fill;
+	std::optional<Color> fill = {};
 
 	// The vertices' names ("A", "B", ...), one for each, set in math italic just outside each corner, away from the middle of
 	// the shape. Fewer than the vertices is fine: the rest are left unnamed.
-	std::vector<std::string> labels;
+	std::vector<std::string> labels = {};
 	FontStyle label_style = FontStyle{ Intent::MATH };
 	float label_gap = 0.25F;
 
@@ -42,7 +42,7 @@ struct AngleOptions
 	bool square_for_right = true;
 
 	// Its size (the name of the angle: "θ", "60°"), set just past the arc on the line that halves the angle; empty for none
-	std::string label;
+	std::string label = {};
 	FontStyle label_style = FontStyle{ Intent::MATH }.small();
 	float label_gap = 0.25F;
 };

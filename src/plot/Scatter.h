@@ -39,13 +39,13 @@ struct ScatterOptions
 	float size = 0.12F;
 
 	// The color of the markers and the line; by default the next of the axes' series colors, as a graph's is
-	std::optional<Color> color;
+	std::optional<Color> color = {};
 
 	JoinStyle line = JoinStyle::NONE;
 	float thickness = 0.04F;
 
 	// What the series is called, for a legend
-	std::string name;
+	std::string name = {};
 };
 
 // Points on a pair of axes (scatter()): a marker for each, and a line through them if asked for. A Group: the line first (if

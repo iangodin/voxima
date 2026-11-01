@@ -9,7 +9,7 @@
 
 struct CalloutOptions
 {
-	PanelOptions panel;
+	PanelOptions panel = {};
 
 	// The pointer from the panel to what it is about: how it looks, and how close it comes to it
 	ConnectorOptions pointer = { .gap = 0.15F, .thickness = 0.04F };

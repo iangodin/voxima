@@ -58,7 +58,7 @@ struct PointOutOptions
 	float thickness = 0.06F;
 
 	// Default: the palette's yellow
-	std::optional<Color> color;
+	std::optional<Color> color = {};
 };
 
 // Draw a line round a visual, as if with a pen, and let it fade; the visual is left as it was. `parent` is as for draw_on.

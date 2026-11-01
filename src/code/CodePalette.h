@@ -12,8 +12,8 @@
 struct CodeStyle
 {
 	Color color;
-	std::optional<Weight> weight;
-	std::optional<Slant> slant;
+	std::optional<Weight> weight = {};
+	std::optional<Slant> slant = {};
 };
 
 // The colors of syntax highlighting: a style for each kind of code the highlighter names (see

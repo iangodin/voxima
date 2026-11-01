@@ -37,7 +37,7 @@ struct PanelOptions
 	float outline_width = 0.03F;
 
 	// None by default. When there is one it is the panel's first child, behind the background.
-	std::optional<ShadowOptions> shadow;
+	std::optional<ShadowOptions> shadow = {};
 };
 
 // A box round some content, fitted to it: a rounded rectangle behind the content, as big as its box (see box_of) and the padding.

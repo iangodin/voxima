@@ -79,7 +79,7 @@ struct HighlightOptions
 
 	// The band behind the lines pointed out: the theme's code palette gives its color (Theme is not asked: give
 	// the color here to use another); with `bar` false, there is none and only the dimming shows
-	std::optional<Color> band;
+	std::optional<Color> band = {};
 	bool bar = true;
 
 	// How far the band goes past the text on each side, in ems

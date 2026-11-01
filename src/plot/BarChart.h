@@ -14,19 +14,19 @@
 struct BarSeries
 {
 	// What the series is called, for a legend
-	std::string name;
+	std::string name = {};
 
 	// One value for each category (a short series leaves the last categories without a bar)
-	std::vector<double> values;
+	std::vector<double> values = {};
 
 	// By default the next of the palette's accents, as plotted graphs take theirs
-	std::optional<Color> color;
+	std::optional<Color> color = {};
 };
 
 struct BarChartOptions
 {
-	std::vector<std::string> categories;
-	std::vector<BarSeries> series;
+	std::vector<std::string> categories = {};
+	std::vector<BarSeries> series = {};
 
 	// Several series side by side in each category (the default), or stacked, one on top of the next
 	bool stacked = false;
@@ -43,7 +43,7 @@ struct BarChartOptions
 	float bar_gap = 0.1F;
 
 	// The values shown, by default from 0 (or the lowest value below it) up to the highest, rounded out to the tick steps
-	std::optional<Range> values;
+	std::optional<Range> values = {};
 	double value_step = 0.0; // 0 to choose
 
 	// The number on each bar (in each part, for stacked bars)

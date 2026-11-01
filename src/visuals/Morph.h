@@ -37,7 +37,7 @@ struct MorphOptions
 	// What pure white is drawn as (Stage::foreground): what has no color is blended as the color it is seen in. morph() and
 	// morph_driven() set it from the stage.
 	Color foreground = { 1.F, 1.F, 1.F, 1.F };
-	AlignCosts costs;
+	AlignCosts costs = {};
 
 	// Spread the start of the parts over this fraction of the morph, in drawing order (so left to right
 	// through a word): 0 moves everything together, 0.5 has the last part start halfway through, each

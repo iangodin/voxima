@@ -34,7 +34,7 @@ struct TableOptions
 	// tint of it suits any palette). Behind the rules and the text.
 	bool striped = false;
 	Color stripe_color = { 1.F, 1.F, 1.F, 0.06F };
-	std::optional<Color> header_fill;
+	std::optional<Color> header_fill = {};
 
 	// The most the table may be wide (stage units; the gaps between columns included). A table wider than that has its widest
 	// columns narrowed until it fits, their cells wrapped onto more lines (each column keeps at least a few letters' width).

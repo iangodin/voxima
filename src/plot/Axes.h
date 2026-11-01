@@ -60,8 +60,8 @@ struct AxesOptions
 
 	// Ticks at chosen places with chosen texts, in place of the ticks at even steps and their numbers (an axis with none of these
 	// has the numbers as before). The values are in data units.
-	std::vector<TickLabel> x_tick_labels;
-	std::vector<TickLabel> y_tick_labels;
+	std::vector<TickLabel> x_tick_labels = {};
+	std::vector<TickLabel> y_tick_labels = {};
 
 	// Numbers at the ticks, arrow tips at the positive ends, faint lines across at every tick
 	bool numbers = true;
@@ -86,7 +86,7 @@ struct AxesOptions
 
 	// An outline in the background's color around each number, so a curve that passes through it leaves it readable
 	// (for the stage's black: Color{ 0, 0, 0, 1 }). None by default: the numbers are drawn over the curves as they are.
-	std::optional<Color> number_halo;
+	std::optional<Color> number_halo = {};
 	float halo_width = 0.08F;
 	FontStyle label_style = FontStyle{ Intent::MATH };
 };

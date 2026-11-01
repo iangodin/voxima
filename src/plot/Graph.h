@@ -17,17 +17,17 @@ struct Stage;
 struct GraphOptions
 {
 	// Where on x the function is drawn (by default, the whole of the axes' x range)
-	std::optional<Range> x;
+	std::optional<Range> x = {};
 
 	// How many times the function is worked out across it
 	size_t samples = 400;
 
 	// The curve's color; by default the next of the axes' series colors (the palette's blue, then orange, green ...)
-	std::optional<Color> color;
+	std::optional<Color> color = {};
 	float thickness = 0.05F;
 
 	// What the curve is called, for a legend
-	std::string name;
+	std::string name = {};
 };
 
 // The graph of a function on a pair of axes (plot()): a smooth stroked curve through samples of it, in the axes'

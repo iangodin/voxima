@@ -251,7 +251,7 @@ struct AlignedOptions
 	// A number at the right of each line, "(1)", "(2)" ... (numbered), or the text given for it, one for each row, in `tags`:
 	// a row whose tag is empty has none. Tags override the numbering for their rows.
 	bool numbered = false;
-	std::vector<std::string> tags;
+	std::vector<std::string> tags = {};
 	float number_gap_em = 3.F;
 };
 

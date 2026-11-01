@@ -59,7 +59,7 @@ if ( WIN32 )
 	add_compile_definitions( WIN32_LEAN_AND_MEAN NOGDI _WIN32_WINNT=0x0601 )
 	add_compile_options( /utf-8 /EHsc /W4 )
 else()
-	add_compile_options( -Werror -Wall -Wextra -Wno-missing-field-initializers )
+	add_compile_options( -Werror -Wall -Wextra )
 endif()
 
 find_package( lunasvg 3.5.0 REQUIRED SYSTEM )
