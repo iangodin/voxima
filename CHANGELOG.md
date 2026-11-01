@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.1.0-alpha.1 (unreleased)
+## 0.1.0-alpha.1 (2026-10-31)
 
 The first release. The API will change between alphas.
 
