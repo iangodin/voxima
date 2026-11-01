@@ -189,14 +189,13 @@ jobs:
           path: assets/fonts
           key: ${{ steps.fonts-cache.outputs.cache-primary-key }}
 
-      # Builds the Debug build, and runs the tests: not the ones of the built-in themes (label all-fonts), which need
-      # every font
+      # The tests of the Release build just made (make builds them too), so the job does not build everything again in
+      # Debug; make test still runs the Debug ones locally. Not the tests of the built-in themes (label all-fonts),
+      # which need every font.
       - name: Test
         if: ${{ !matrix.cuda }}
         shell: bash
-        run: |
-          make debug
-          ctest --preset conan-debug --output-on-failure -LE all-fonts
+        run: ctest --preset conan-release --output-on-failure -LE all-fonts
 
       # The examples are built with Voxima: check that they load and can be listed
       - name: List the examples' scenes
