@@ -5,7 +5,11 @@
 #include "Rectangle.h"
 #include "RoundRectangle.h"
 #include "Path.h"
+#include "Line.h"
+#include "ArrowTip.h"
 #include "Glyph.h"
+#include "Ellipse.h"
+#include "Image.h"
 #include "Group.h"
 #include "MathAssembly.h"
 #include <functional>
