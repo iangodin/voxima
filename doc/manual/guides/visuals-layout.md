@@ -16,6 +16,7 @@ Every visual has the same properties:
 | `rotation`, `scale_x`, `scale_y` | Turned and scaled about its origin |
 | `color` | Fill color (alpha makes it see-through) |
 | `fill_gradient` | A fill that changes color across it, instead (see [Gradients](#gradients)) |
+| `opacity` | How see-through it is as a whole, 0 to 1: unlike the colors' alpha, what overlaps inside a group does not show through |
 | `stroke_thickness`, `stroke_color`, `stroke_dash` | Its outline (see [Dashed lines](#dashed-lines)) |
 | `tags` | Names for finding it again (see [Tags](#tags)) |
 

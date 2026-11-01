@@ -717,13 +717,19 @@ bool SVGWriter::open_g( const Visual &v, bool force_g )
 		_scale *= std::sqrt( std::abs( v.scale_x * v.scale_y ) );
 	}
 
-	if ( parts.empty() && !force_g )
+	// Nearly opaque is written as opaque: it takes the rasteriser a layer, and a picture would jump a pixel (see visit( Image ))
+	const bool see_through = v.opacity < 0.999F;
+	if ( parts.empty() && !force_g && !see_through )
 	{
 		_open_g_count.push_back( false );
 		return true;
 	}
 
 	_out << indent() << "<g";
+	if ( see_through )
+	{
+		_out << " opacity=\"" << std::clamp( v.opacity, 0.F, 1.F ) << "\"";
+	}
 	if ( !parts.empty() )
 	{
 		_out << " transform=\"";

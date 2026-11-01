@@ -132,6 +132,14 @@ Scene fade_out( const Stage &stage, Visual &visual, std::chrono::duration<double
 	co_await tween( stage, duration, [&]( float t ) { return eased( ease, t ); }, [&]( float t ) { alpha.set( visual, 1.F - t ); } );
 }
 
+Scene fade_to( const Stage &stage, Visual &visual, float opacity, std::chrono::duration<double> duration, EaseFunction ease )
+{
+	const float from = visual.opacity;
+	const float to = std::clamp( opacity, 0.F, 1.F );
+	co_await tween( stage, duration, [&]( float t ) { return eased( ease, t ); }, [&]( float t ) { visual.opacity = from + ( to - from ) * t; } );
+	visual.opacity = to;
+}
+
 Scene grow_in( const Stage &stage, Visual &visual, std::chrono::duration<double> duration, EaseFunction ease )
 {
 	const Alpha alpha( visual );

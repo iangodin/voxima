@@ -11,6 +11,7 @@ take it away. All take a length in seconds and, where it makes sense, an [ease](
 | Verb | Does |
 |---|---|
 | `fade_in`, `fade_out` | From nothing to how it is, and back (it is left there, invisible: remove it if it should go) |
+| `fade_to( stage, v, opacity )` | To an opacity, and it stays there: dim with `0.3F`, bring back with `1.F` (`Visual::opacity`) |
 | `grow_in`, `shrink_out` | Grow from its own center, fading in; the reverse |
 | `slide_in( stage, v, offset, ...)`, `slide_out` | Come in from `offset` away (stage units), fading in; go out to it |
 | `move_by( stage, v, offset, ...)` | Move by an offset |

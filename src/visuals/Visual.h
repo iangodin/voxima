@@ -22,6 +22,10 @@ struct Visual
 	Color color = { 1.F, 1.F, 1.F, 1.F };
 	std::optional<Gradient> fill_gradient = {}; // fills it instead of a plain color, which then tints and fades it
 
+	// How see-through it is as a whole, 0 to 1 (see fade_to). Unlike the colors' alpha, which multiplies down to each child, this
+	// is applied to the group once it is drawn, so where its children overlap the ones behind do not show through.
+	float opacity = 1.F;
+
 	float stroke_thickness = 0.F;
 	Color stroke_color = { 1.F, 1.F, 1.F, 1.F };
 	StrokeDash stroke_dash = {}; // a whole line unless it is given a pattern

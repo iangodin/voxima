@@ -70,6 +70,7 @@ add_executable( voxima_unit_tests
 	TestGroupOrder.cpp
 	TestStrokeDash.cpp
 	TestGradient.cpp
+	TestOpacity.cpp
 )
 
 target_link_libraries( voxima_unit_tests

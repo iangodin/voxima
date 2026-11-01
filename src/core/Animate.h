@@ -29,6 +29,14 @@
 Scene fade_in( const Stage &stage, Visual &visual, std::chrono::duration<double> duration = std::chrono::milliseconds( 500 ), EaseFunction ease = {} );
 Scene fade_out( const Stage &stage, Visual &visual, std::chrono::duration<double> duration = std::chrono::milliseconds( 500 ), EaseFunction ease = {} );
 
+// Fade to an opacity and stay there: to dim what is not the point, and then bring it back with an opacity of 1. It sets the visual's
+// opacity (Visual::opacity), which fade_in and fade_out leave alone, so a group fades as one, without what overlaps in it
+// showing through.
+//
+//     co_await fade_to( stage, rest_of_it, 0.3F );           // focus on this ...
+//     co_await fade_to( stage, rest_of_it, 1.F );            // ... and back
+Scene fade_to( const Stage &stage, Visual &visual, float opacity, std::chrono::duration<double> duration = std::chrono::milliseconds( 500 ), EaseFunction ease = {} );
+
 // Grow from a point (its own center) to full size, fading in with it; and the reverse
 Scene grow_in( const Stage &stage, Visual &visual, std::chrono::duration<double> duration = std::chrono::milliseconds( 500 ), EaseFunction ease = {} );
 Scene shrink_out( const Stage &stage, Visual &visual, std::chrono::duration<double> duration = std::chrono::milliseconds( 500 ), EaseFunction ease = {} );

@@ -349,8 +349,8 @@ public:
 			std::atan2( m.b, m.a ) * 180.F / std::numbers::pi_v<float>,
 			sx,
 			sy };
-		shape.fill = ( _color * image.color ).resolved( foreground );
-		shape.stroke = ( _stroke * image.stroke_color ).resolved( foreground );
+		shape.fill = with_opacity( _color * image.color, image ).resolved( foreground );
+		shape.stroke = with_opacity( _stroke * image.stroke_color, image ).resolved( foreground );
 		shape.word = _word;
 		shape.tags = _tags;
 		shape.tags.insert( shape.tags.end(), image.tags.begin(), image.tags.end() );
@@ -376,6 +376,13 @@ public:
 	}
 
 private:
+	// A flattened shape has no group to be see-through as a whole, so its opacity goes in with its colors'
+	static Color with_opacity( Color color, const Visual &v )
+	{
+		color.a *= std::clamp( v.opacity, 0.F, 1.F );
+		return color;
+	}
+
 	Affine leaf_transform( const Visual &v ) const
 	{
 		return _xf * local_transform( v );
@@ -436,14 +443,14 @@ private:
 		{
 			return;
 		}
-		shape.fill = ( _color * v.color ).resolved( foreground );
+		shape.fill = with_opacity( _color * v.color, v ).resolved( foreground );
 		if ( stroke_only )
 		{
 			shape.fill.a = 0.F;
 		}
 		else if ( v.fill_gradient && !v.fill_gradient->stops.empty() )
 		{
-			const Color seen = _color * v.color;
+			const Color seen = with_opacity( _color * v.color, v );
 			const Color tint{ seen.r, seen.g, seen.b, 1.F };
 			const Affine m = leaf_transform( v );
 			Gradient gradient = *v.fill_gradient;
@@ -456,7 +463,7 @@ private:
 			shape.fill = gradient.average();
 			shape.gradient = std::move( gradient );
 		}
-		shape.stroke = ( _stroke * v.stroke_color ).resolved( foreground );
+		shape.stroke = with_opacity( _stroke * v.stroke_color, v ).resolved( foreground );
 		const float stroke_scale = leaf_transform( v ).scale();
 		shape.stroke_thickness = v.stroke_thickness * stroke_scale;
 		shape.dash = v.stroke_dash;
@@ -487,8 +494,8 @@ private:
 			_word = _next_word++;
 		}
 		_xf = _xf * local_transform( group );
-		_color = _color * group.color;
-		_stroke = _stroke * group.stroke_color;
+		_color = with_opacity( _color * group.color, group );
+		_stroke = with_opacity( _stroke * group.stroke_color, group );
 		for ( const auto &child: group )
 		{
 			child->accept( *this );
