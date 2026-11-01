@@ -187,3 +187,8 @@ jobs:
       - name: Install
         shell: bash
         run: make install PREFIX="$RUNNER_TEMP/voxima-install"
+
+      # The installed program has to find its libraries by itself, without the build tree's rpath
+      - name: Run the installed program
+        shell: bash
+        run: '"$RUNNER_TEMP/voxima-install/bin/voxima" --version'
