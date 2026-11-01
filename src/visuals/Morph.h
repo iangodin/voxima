@@ -121,6 +121,14 @@ private:
 		float thickness_a = 0.F;
 		float thickness_b = 0.F;
 		float delay = 0.F; // when the part starts, as a fraction of the whole morph
+		// The dashes at each end, then what is blended on the way, cut to the same number of lengths (see prepare_dashes in
+		// Morph.cpp). None between the ends: a whole line, there.
+		StrokeDash dash_a, dash_b;
+		std::vector<float> pattern_a, pattern_b;
+		float offset_a = 0.F;
+		float offset_b = 0.F;
+		LineCap cap_a = LineCap::BUTT;
+		LineCap cap_b = LineCap::BUTT;
 		bool bevel = false; // a stroke becoming a fill, or the other way: bevelled joins in between (see Morph())
 	};
 

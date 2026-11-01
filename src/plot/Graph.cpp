@@ -116,6 +116,7 @@ std::unique_ptr<FunctionGraph> plot( const Axes &axes, const std::function<doubl
 	graph->color = { 1.F, 1.F, 1.F, 0.F }; // a line, not a filled shape
 	graph->stroke_color = options.color ? *options.color : axes.next_series_color(); // (only takes the next series color if it is needed)
 	graph->stroke_thickness = options.thickness;
+	graph->stroke_dash = options.dash;
 	graph->_name = options.name;
 	graph->join = LineJoin::ROUND;
 	graph->set_drawn( 1.F );

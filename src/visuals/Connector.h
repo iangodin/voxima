@@ -20,6 +20,9 @@ struct ConnectorOptions
 
 	// White is the theme's text color, as everywhere
 	Color color = { 1.F, 1.F, 1.F, 1.F };
+
+	// The line's dashes, if any (not the arrow heads')
+	StrokeDash dash = {};
 };
 
 // A line, with arrow heads if wanted, from one visual to another: it starts where the straight line between the two boxes'

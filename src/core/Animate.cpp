@@ -217,6 +217,7 @@ Scene draw_on( Stage &stage, Visual &visual, std::chrono::duration<double> durat
 		path->color = { 1.F, 1.F, 1.F, 0.F };
 		path->stroke_color = shape.stroke.a > 0.F && shape.stroke_thickness > 0.F ? shape.stroke : shape.fill;
 		path->stroke_thickness = shape.stroke_thickness > 0.F ? shape.stroke_thickness : 0.03F;
+		path->stroke_dash = shape.stroke_thickness > 0.F ? shape.dash : StrokeDash{};
 		path->join = LineJoin::ROUND;
 		traced.push_back( { &overlay.add( std::move( path ) ), std::move( shape.contours ) } );
 	}

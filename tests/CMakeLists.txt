@@ -68,14 +68,17 @@ add_executable( voxima_unit_tests
 	TestPlugin.cpp
 	TestDataDirs.cpp
 	TestGroupOrder.cpp
+	TestStrokeDash.cpp
 )
 
 target_link_libraries( voxima_unit_tests
 	Catch2::Catch2WithMain
 	visuals
-	# What the tests look at directly: fonts' metrics, and the sound files they write
+	# What the tests look at directly: fonts' metrics, the sound files they write, and how shapes are drawn
 	Freetype::Freetype
 	SndFile::sndfile
+	lunasvg::lunasvg
+	plutovg::plutovg
 )
 
 target_compile_definitions( voxima_unit_tests PRIVATE TEST_DATA_DIR="${CMAKE_CURRENT_SOURCE_DIR}/data" )

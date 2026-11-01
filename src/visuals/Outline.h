@@ -63,6 +63,7 @@ struct OutlineShape
 	Color fill;
 	Color stroke;
 	float stroke_thickness = 0.F;
+	StrokeDash dash = {}; // scaled as the thickness is
 
 	// Every tag on the leaf and on the groups above it (within the visual that was flattened), so
 	// leaves can be matched by the names the composites give their parts
@@ -88,7 +89,7 @@ struct OutlineShape
 // its parent: the visual's own position/rotation/scale and those of its groups are baked in
 // (same order as the SVG writer: translate, rotate, scale) and group colors are multiplied down.
 // Leaves come out in drawing order, one OutlineShape each. Lines, arrow tips and images have no
-// filled outline. (A Line becomes an open contour with no fill, only a stroke; an ArrowTip is its triangle;
+// filled outline. (A Line, or a Path with a stroke and no fill, becomes an open contour; an ArrowTip is its triangle;
 // an Image is a shape with `image` set and no contours.) Left out, and counted in `skipped` if it is given:
 // an image placed with a shear, which an Image cannot be drawn as.
 //

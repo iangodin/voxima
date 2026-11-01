@@ -15,7 +15,7 @@ Every visual has the same properties:
 | `position` | Where its origin is, in its parent's frame (stage units, y up) |
 | `rotation`, `scale_x`, `scale_y` | Turned and scaled about its origin |
 | `color` | Fill color (alpha makes it see-through) |
-| `stroke_thickness`, `stroke_color` | Its outline |
+| `stroke_thickness`, `stroke_color`, `stroke_dash` | Its outline (see [Dashed lines](#dashed-lines)) |
 | `tags` | Names for finding it again (see [Tags](#tags)) |
 
 `Line` has a `start` and `end`; a `Path` is made of `MoveTo` and `CubicTo` commands; `Group` holds other visuals.
@@ -42,6 +42,23 @@ A group draws its children in order, so what comes later is in front. To put som
 
 `to_front`, `to_back`, `raise` and `lower` take a direct child, and return false if it is not one. All of these stay
 in front of the stage's background.
+
+## Dashed lines
+
+Any stroke can be dashed or dotted, with a `StrokeDash`:
+
+```cpp
+--8<-- "examples/layout/layout.cpp:dashes"
+```
+
+A `pattern` is lengths on and off in turn, in the visual's own units, so it scales with the visual just as its stroke
+does (and stretches with it under an uneven scale). `offset` starts it further along; tween it for dashes that march.
+Each piece of a path (each `MoveTo`) starts the pattern again. A pattern under half a pixel is drawn as a whole line.
+
+`ConnectorOptions::dash` dashes a connector's line and not its arrow heads, and `GraphOptions::dash` a graph's curve.
+Dashes stay as they are in `draw_on`, and a morph blends them: between two patterns, or with the gaps opening
+from a whole line. The exception is a line that becomes a filled shape: it is drawn as a whole line on the way, so the
+gaps close as soon as it starts.
 
 ## Placing things against each other
 

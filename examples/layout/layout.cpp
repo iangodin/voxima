@@ -12,6 +12,7 @@
 #include <core/SceneRegistry.h>
 #include <core/Script.h>
 #include <core/Stage.h>
+#include <core/EaseLinear.h>
 #include <core/Tween.h>
 #include <core/Wait.h>
 #include <math/Operators.h>
@@ -233,7 +234,32 @@ Scene show_order( Stage &stage, Script & )
 	co_await wait_for( stage, 1s );
 }
 
+// Strokes cut into dashes and dots, and dashes that move
+Scene show_dashes( Stage &stage, Script & )
+{
+	const Palette &palette = stage.theme->palette();
+
+	// --8<-- [start:dashes]
+	auto &line = stage.visuals.add( std::make_unique<Line>() );
+	line.start = { -5.F, 2.F };
+	line.end = { 5.F, 2.F };
+	line.stroke_thickness = 0.06F;
+	line.stroke_dash = StrokeDash::dashed( 0.4F, 0.2F ); // 0.4 on, 0.2 off
+
+	auto &ring = stage.visuals.add( std::make_unique<Circle>( 1.2F, Color{ 1.F, 1.F, 1.F, 0.F } ) );
+	ring.stroke_thickness = 0.12F;
+	ring.stroke_dash = StrokeDash::dotted( 0.3F );       // round dots, 0.3 apart
+
+	co_await tween( stage, 3s, ease_linear, [&]( float t ) { ring.stroke_dash.offset = -3.F * t; } ); // they march
+	// --8<-- [end:dashes]
+
+	line.stroke_color = palette.blue;
+	ring.stroke_color = palette.orange;
+	co_await wait_for( stage, 1s );
+}
+
 REGISTER_SCENE( "layout-basics", "Shapes, groups, placement, rows and grids, panels, lists, tables and tags", show_basics );
 REGISTER_SCENE( "layout", "Panels, a list and a table, and a row of shapes, placed against each other", show_layout );
 REGISTER_SCENE( "tables", "Tables that wrap, hold formulas, and tint their rows", show_tables );
 REGISTER_SCENE( "drawing-order", "Putting a shape in front of or behind the others", show_order );
+REGISTER_SCENE( "dashes", "Dashed and dotted strokes, and dashes that march", show_dashes );

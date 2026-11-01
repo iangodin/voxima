@@ -38,6 +38,7 @@ Connector::Connector( const Visual &from, const Visual &to, const ConnectorOptio
 	_line = &add( std::make_unique<Line>() );
 	_line->stroke_color = options.color;
 	_line->stroke_thickness = options.thickness;
+	_line->stroke_dash = options.dash;
 
 	auto tip = [&]()
 	{

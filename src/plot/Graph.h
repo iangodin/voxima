@@ -26,6 +26,9 @@ struct GraphOptions
 	std::optional<Color> color = {};
 	float thickness = 0.05F;
 
+	// The curve's dashes, if any
+	StrokeDash dash = {};
+
 	// What the curve is called, for a legend
 	std::string name = {};
 };

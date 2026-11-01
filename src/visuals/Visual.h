@@ -4,6 +4,7 @@
 #include "visuals/Point.h"
 #include "visuals/Color.h"
 #include "visuals/AABB.h"
+#include "visuals/StrokeDash.h"
 
 #include <optional>
 #include <string>
@@ -21,6 +22,7 @@ struct Visual
 
 	float stroke_thickness = 0.F;
 	Color stroke_color = { 1.F, 1.F, 1.F, 1.F };
+	StrokeDash stroke_dash = {}; // a whole line unless it is given a pattern
 
 	// Math layout anchors, as y-offsets in this visual's own local coordinate
 	// space (added to `position` to get the anchor in the parent's frame),

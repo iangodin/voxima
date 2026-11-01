@@ -136,20 +136,23 @@ uint64_t hash_commands( const std::vector<PathCommand> &list )
 class ContourBuilder
 {
 public:
-	explicit ContourBuilder( const Affine &xf ) :
-		_xf( xf )
+	// `open_strokes`: a contour with no close stays open, as what is only stroked is drawn. Otherwise it is closed, as a
+	// fill closes it.
+	explicit ContourBuilder( const Affine &xf, bool open_strokes = false ) :
+		_xf( xf ),
+		_open_strokes( open_strokes )
 	{
 	}
 
 	std::vector<Contour> &contours()
 	{
-		finish( true );
+		finish( !_open_strokes );
 		return _contours;
 	}
 
 	void move_to( Point p )
 	{
-		finish( true );
+		finish( !_open_strokes );
 		_current.start = _xf( p );
 		_cur = _current.start;
 		_open = true;
@@ -217,6 +220,7 @@ private:
 	}
 
 	Affine _xf;
+	bool _open_strokes = false;
 	Contour _current;
 	Point _cur;
 	bool _open = false;
@@ -391,7 +395,7 @@ private:
 
 	void commands( const Visual &v, const std::vector<PathCommand> &list, LeafKind kind )
 	{
-		ContourBuilder b( leaf_transform( v ) );
+		ContourBuilder b( leaf_transform( v ), v.color.a <= 0.F && v.stroke_thickness > 0.F );
 		for ( const auto &command: list )
 		{
 			std::visit(
@@ -438,7 +442,14 @@ private:
 			shape.fill.a = 0.F;
 		}
 		shape.stroke = ( _stroke * v.stroke_color ).resolved( foreground );
-		shape.stroke_thickness = v.stroke_thickness * leaf_transform( v ).scale();
+		const float stroke_scale = leaf_transform( v ).scale();
+		shape.stroke_thickness = v.stroke_thickness * stroke_scale;
+		shape.dash = v.stroke_dash;
+		for ( float &length: shape.dash.pattern )
+		{
+			length *= stroke_scale;
+		}
+		shape.dash.offset *= stroke_scale;
 		shape.word = _word;
 		shape.tags = _tags;
 		shape.tags.insert( shape.tags.end(), v.tags.begin(), v.tags.end() );

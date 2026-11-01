@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <cmath>
+#include <numeric>
 
 namespace
 {
@@ -24,6 +25,67 @@ Color lerp( const Color &a, const Color &b, float t )
 		return std::clamp( lerp( x, y, t ), 0.F, 1.F );
 	};
 	return { channel( a.r, b.r ), channel( a.g, b.g ), channel( a.b, b.b ), channel( a.a, b.a ) };
+}
+
+size_t open_contours( const OutlineShape &shape )
+{
+	return static_cast<size_t>( std::count_if( shape.contours.begin(), shape.contours.end(), []( const Contour &c ) { return !c.closed; } ) );
+}
+
+// Lengths on and off, repeated up to `size`
+std::vector<float> dash_lengths( const std::vector<float> &pattern, size_t size )
+{
+	std::vector<float> out( size );
+	for ( size_t i = 0; i < size; ++i )
+	{
+		out[i] = pattern[i % pattern.size()];
+	}
+	return out;
+}
+
+// How many lengths it takes to get back to a dash: an odd number of them only repeats after twice that
+size_t even_size( const std::vector<float> &pattern )
+{
+	return pattern.size() % 2 == 0 ? pattern.size() : pattern.size() * 2;
+}
+
+// What the dashes are blended between. A whole line is the other side's dashes with no gaps, so gaps open up or close. Two
+// patterns are repeated to the same number of lengths. Where a line becomes a filled shape it is drawn as a loop out and back
+// (see closed_loop), whose dashes would fall on each other's gaps and look like a whole line anyway, so it is one.
+template<typename Part>
+void prepare_dashes( Part &part, const StrokeDash &a, const StrokeDash &b, bool loop )
+{
+	part.dash_a = a;
+	part.dash_b = b;
+	if ( loop || ( a.solid() && b.solid() ) )
+	{
+		return;
+	}
+	const auto no_gaps = []( std::vector<float> lengths )
+	{
+		for ( size_t i = 1; i < lengths.size(); i += 2 )
+		{
+			lengths[i] = 0.F;
+		}
+		return lengths;
+	};
+	if ( a.solid() || b.solid() )
+	{
+		const StrokeDash &dashes = a.solid() ? b : a;
+		const auto lengths = dash_lengths( dashes.pattern, even_size( dashes.pattern ) );
+		part.pattern_a = a.solid() ? no_gaps( lengths ) : lengths;
+		part.pattern_b = b.solid() ? no_gaps( lengths ) : lengths;
+		part.offset_a = part.offset_b = dashes.offset;
+		part.cap_a = part.cap_b = dashes.cap;
+		return;
+	}
+	const size_t size = std::lcm( even_size( a.pattern ), even_size( b.pattern ) );
+	part.pattern_a = dash_lengths( a.pattern, size );
+	part.pattern_b = dash_lengths( b.pattern, size );
+	part.offset_a = a.offset;
+	part.offset_b = b.offset;
+	part.cap_a = a.cap;
+	part.cap_b = b.cap;
 }
 
 // The same outline, invisible
@@ -191,6 +253,7 @@ Morph::Morph( const Visual &from, const Visual &to, const MorphOptions &options 
 			part.stroke_b = b.stroke;
 			part.thickness_a = a.stroke_thickness;
 			part.thickness_b = b.stroke_thickness;
+			prepare_dashes( part, a.dash, b.dash, open_contours( a ) != open_contours( b ) );
 		}
 		else if ( pair.a >= 0 )
 		{
@@ -205,6 +268,7 @@ Morph::Morph( const Visual &from, const Visual &to, const MorphOptions &options 
 			part.stroke_a = a.stroke;
 			part.stroke_b = transparent( a.stroke );
 			part.thickness_a = part.thickness_b = a.stroke_thickness;
+			prepare_dashes( part, a.dash, a.dash, false );
 		}
 		else
 		{
@@ -218,6 +282,7 @@ Morph::Morph( const Visual &from, const Visual &to, const MorphOptions &options 
 			part.stroke_a = transparent( b.stroke );
 			part.stroke_b = b.stroke;
 			part.thickness_a = part.thickness_b = b.stroke_thickness;
+			prepare_dashes( part, b.dash, b.dash, false );
 		}
 		auto path = std::make_unique<Path>();
 		// A stroke (a Line, an open path) turning into or out of a filled shape is drawn as a loop out and back,
@@ -281,6 +346,20 @@ void Morph::set( float t )
 		path.color = lerp( part.fill_a, part.fill_b, progress );
 		path.stroke_color = lerp( part.stroke_a, part.stroke_b, progress );
 		path.stroke_thickness = std::max( 0.F, lerp( part.thickness_a, part.thickness_b, progress ) );
+		if ( progress == 0.F || progress == 1.F )
+		{
+			path.stroke_dash = progress == 0.F ? part.dash_a : part.dash_b;
+		}
+		else
+		{
+			path.stroke_dash.pattern.resize( part.pattern_a.size() );
+			for ( size_t i = 0; i < part.pattern_a.size(); ++i )
+			{
+				path.stroke_dash.pattern[i] = std::max( 0.F, lerp( part.pattern_a[i], part.pattern_b[i], progress ) );
+			}
+			path.stroke_dash.offset = lerp( part.offset_a, part.offset_b, progress );
+			path.stroke_dash.cap = progress < 0.5F ? part.cap_a : part.cap_b;
+		}
 
 		path.commands.clear();
 

@@ -96,6 +96,9 @@ public:
 };
 }
 
+// Control-point distance that makes a cubic follow a quarter circle (to_outline's, too)
+constexpr float ELLIPSE_KAPPA = 0.5522847498F;
+
 SVGWriter::SVGWriter( std::ostream &out, int indent_level, float flatness, const Color &foreground )
     : _out( out ), _indent( indent_level ), _flatness( flatness ), _foreground( foreground )
 {
@@ -121,9 +124,16 @@ void SVGWriter::visit( const Circle &circle )
 		Color final_color = _current_color * circle.color;
 		Color final_stroke_color = _current_stroke_color * circle.stroke_color;
 
-		_out << indent() << "<circle cx=\"0\" cy=\"0\" r=\"" << circle.radius << "\" "
-		     << color_attributes( final_color.resolved( _foreground ) ) << " "
-		     << stroke_attributes( circle.stroke_thickness, final_stroke_color.resolved( _foreground ) ) << " />\n";
+		if ( dashed_outline( circle ) )
+		{
+			write_dashed_ellipse( circle, circle.radius, circle.radius, final_color, final_stroke_color );
+		}
+		else
+		{
+			_out << indent() << "<circle cx=\"0\" cy=\"0\" r=\"" << circle.radius << "\" "
+			     << color_attributes( final_color.resolved( _foreground ) ) << " "
+			     << stroke_of( circle, final_stroke_color ) << " />\n";
+		}
 
 		close_g();
 	}
@@ -144,7 +154,7 @@ void SVGWriter::visit( const Rectangle &rectangle )
 		     << "\" width=\"" << hw * 2.0f
 		     << "\" height=\"" << hh * 2.0f << "\" "
 		     << color_attributes( final_color.resolved( _foreground ) ) << " "
-		     << stroke_attributes( rectangle.stroke_thickness, final_stroke_color.resolved( _foreground ) ) << " />\n";
+		     << stroke_of( rectangle, final_stroke_color ) << " />\n";
 
 		close_g();
 	}
@@ -169,7 +179,7 @@ void SVGWriter::visit( const RoundRectangle &rect )
 			_out << indent() << "<rect x=\"" << -hw << "\" y=\"" << -hh
 			     << "\" width=\"" << hw * 2.0f << "\" height=\"" << hh * 2.0f << "\" "
 			     << color_attributes( final_color.resolved( _foreground ) ) << " "
-			     << stroke_attributes( rect.stroke_thickness, final_stroke_color.resolved( _foreground ) ) << " />\n";
+			     << stroke_of( rect, final_stroke_color ) << " />\n";
 		}
 		else
 		{
@@ -183,7 +193,7 @@ void SVGWriter::visit( const RoundRectangle &rect )
 			     << " L " << -hw << "," << hh - tl
 			     << " A " << tl << "," << tl << " 0 0 0 " << -hw + tl << "," << hh
 			     << " Z\" " << color_attributes( final_color.resolved( _foreground ) ) << " "
-			     << stroke_attributes( rect.stroke_thickness, final_stroke_color.resolved( _foreground ) ) << " />\n";
+			     << stroke_of( rect, final_stroke_color ) << " />\n";
 		}
 
 		close_g();
@@ -197,10 +207,17 @@ void SVGWriter::visit( const Ellipse &ellipse )
 		Color final_color = _current_color * ellipse.color;
 		Color final_stroke_color = _current_stroke_color * ellipse.stroke_color;
 
-		_out << indent() << "<ellipse cx=\"0\" cy=\"0\" rx=\"" << ellipse.half_width
-		     << "\" ry=\"" << ellipse.half_height << "\" "
-		     << color_attributes( final_color.resolved( _foreground ) ) << " "
-		     << stroke_attributes( ellipse.stroke_thickness, final_stroke_color.resolved( _foreground ) ) << " />\n";
+		if ( dashed_outline( ellipse ) )
+		{
+			write_dashed_ellipse( ellipse, ellipse.half_width, ellipse.half_height, final_color, final_stroke_color );
+		}
+		else
+		{
+			_out << indent() << "<ellipse cx=\"0\" cy=\"0\" rx=\"" << ellipse.half_width
+			     << "\" ry=\"" << ellipse.half_height << "\" "
+			     << color_attributes( final_color.resolved( _foreground ) ) << " "
+			     << stroke_of( ellipse, final_stroke_color ) << " />\n";
+		}
 
 		close_g();
 	}
@@ -216,7 +233,7 @@ void SVGWriter::visit( const Path &path )
 		_out << indent() << "<path d=\"";
 		emit_path_data( path.commands, _out );
 		_out << "\" " << color_attributes( final_color.resolved( _foreground ) ) << " "
-		     << stroke_attributes( path.stroke_thickness, final_stroke_color.resolved( _foreground ) );
+		     << stroke_of( path, final_stroke_color );
 		if ( path.stroke_thickness > 0.F && path.join != LineJoin::MITER )
 		{
 			_out << " stroke-linejoin=\"" << ( path.join == LineJoin::BEVEL ? "bevel" : "round" ) << "\"";
@@ -245,7 +262,7 @@ void SVGWriter::visit( const Glyph &glyph )
 
 		_out << indent() << "<use href=\"#glyph_" << id << "\" "
 		     << color_attributes( final_color.resolved( _foreground ) ) << " "
-		     << stroke_attributes( glyph.stroke_thickness, final_stroke_color.resolved( _foreground ) ) << " />\n";
+		     << stroke_of( glyph, final_stroke_color ) << " />\n";
 
 		close_g();
 	}
@@ -259,7 +276,7 @@ void SVGWriter::visit( const Line &line )
 
 		_out << indent() << "<line x1=\"" << line.start.x() << "\" y1=\"" << line.start.y()
 		     << "\" x2=\"" << line.end.x() << "\" y2=\"" << line.end.y() << "\" "
-		     << stroke_attributes( line.stroke_thickness, final_stroke_color.resolved( _foreground ) ) << " />\n";
+		     << stroke_of( line, final_stroke_color ) << " />\n";
 
 		close_g();
 	}
@@ -297,7 +314,7 @@ void SVGWriter::visit( const ArrowTip &arrow )
 			     << " L " << p2x << "," << p2y
 			     << " L " << p3x << "," << p3y << " Z\" "
 			     << color_attributes( final_color.resolved( _foreground ) ) << " "
-			     << stroke_attributes( arrow.stroke_thickness, final_stroke_color.resolved( _foreground ) ) << " />\n";
+			     << stroke_of( arrow, final_stroke_color ) << " />\n";
 		}
 
 		close_g();
@@ -431,6 +448,72 @@ std::string SVGWriter::stroke_attributes( float thickness, const Color &c )
 	return oss.str();
 }
 
+bool SVGWriter::dashed_outline( const Visual &v )
+{
+	return v.stroke_thickness > 0.F && !v.stroke_dash.solid();
+}
+
+// The rasteriser's <circle> and <ellipse> do not begin where to_outline's do, so their dashes would jump when a morph or a
+// draw_on took over from them. So where dashes show it, it is written as the curves to_outline gives.
+void SVGWriter::write_dashed_ellipse( const Visual &v, float rx, float ry, const Color &fill, const Color &stroke )
+{
+	const float kx = rx * ELLIPSE_KAPPA;
+	const float ky = ry * ELLIPSE_KAPPA;
+	_out << indent() << "<path d=\"";
+	emit_path_data( {
+		MoveTo{ { rx, 0.F } },
+		CubicTo{ { 0.F, ry }, { rx, ky }, { kx, ry } },
+		CubicTo{ { -rx, 0.F }, { -kx, ry }, { -rx, ky } },
+		CubicTo{ { 0.F, -ry }, { -rx, -ky }, { -kx, -ry } },
+		CubicTo{ { rx, 0.F }, { kx, -ry }, { rx, -ky } },
+		Close{} }, _out );
+	_out << "\" " << color_attributes( fill.resolved( _foreground ) ) << " " << stroke_of( v, stroke ) << " />\n";
+}
+
+std::string SVGWriter::stroke_of( const Visual &v, const Color &color ) const
+{
+	std::string out = stroke_attributes( v.stroke_thickness, color.resolved( _foreground ) );
+	if ( out.empty() || v.stroke_dash.solid() )
+	{
+		return out;
+	}
+
+	// A pattern with a bad length in it is not a pattern (SVG draws a whole line, too)
+	float period = 0.F;
+	for ( const float length: v.stroke_dash.pattern )
+	{
+		if ( !std::isfinite( length ) || length < 0.F )
+		{
+			return out;
+		}
+		period += length;
+	}
+	// Nor is one too small to see, and it would not just look like a whole line: the rasteriser makes every dash, so it takes
+	// seconds at a tenth of a pixel, and much smaller ones never finish. Half a pixel, where that is known.
+	const float smallest = _flatness > 0.F ? _flatness * 12.5F : 1e-3F;
+	if ( !( period * _scale >= smallest ) )
+	{
+		return out;
+	}
+
+	std::ostringstream dash;
+	dash << " stroke-dasharray=\"";
+	for ( size_t i = 0; i < v.stroke_dash.pattern.size(); ++i )
+	{
+		dash << ( i > 0 ? " " : "" ) << v.stroke_dash.pattern[i];
+	}
+	dash << "\"";
+	if ( v.stroke_dash.offset != 0.F && std::isfinite( v.stroke_dash.offset ) )
+	{
+		dash << " stroke-dashoffset=\"" << v.stroke_dash.offset << "\"";
+	}
+	if ( v.stroke_dash.cap != LineCap::BUTT )
+	{
+		dash << " stroke-linecap=\"" << ( v.stroke_dash.cap == LineCap::ROUND ? "round" : "square" ) << "\"";
+	}
+	return out + dash.str();
+}
+
 namespace
 {
 // Distance from p to the line through a and b (or to a, if they are the same point)
@@ -543,6 +626,7 @@ std::string SVGWriter::indent() const
 
 bool SVGWriter::open_g( const Visual &v, bool force_g )
 {
+	_scales.push_back( _scale );
 	std::vector<std::string> parts;
 	if ( v.position.x() != 0.F || v.position.y() != 0.F )
 	{
@@ -566,6 +650,7 @@ bool SVGWriter::open_g( const Visual &v, bool force_g )
 		std::ostringstream oss;
 		oss << "scale(" << v.scale_x << "," << v.scale_y << ")";
 		parts.push_back( oss.str() );
+		_scale *= std::sqrt( std::abs( v.scale_x * v.scale_y ) );
 	}
 
 	if ( parts.empty() && !force_g )
@@ -599,4 +684,6 @@ void SVGWriter::close_g()
 		_out << indent() << "</g>\n";
 	}
 	_open_g_count.pop_back();
+	_scale = _scales.back();
+	_scales.pop_back();
 }

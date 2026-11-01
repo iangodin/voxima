@@ -722,6 +722,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#dashed-lines" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Dashed lines
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#placing-things-against-each-other" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1236,6 +1247,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#dashed-lines" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Dashed lines
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#placing-things-against-each-other" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1327,8 +1349,8 @@
 <td>Fill color (alpha makes it see-through)</td>
 </tr>
 <tr>
-<td><code>stroke_thickness</code>, <code>stroke_color</code></td>
-<td>Its outline</td>
+<td><code>stroke_thickness</code>, <code>stroke_color</code>, <code>stroke_dash</code></td>
+<td>Its outline (see <a href="#dashed-lines">Dashed lines</a>)</td>
 </tr>
 <tr>
 <td><code>tags</code></td>
@@ -1354,6 +1376,27 @@ everything in it.</p>
 </code></pre></div>
 <p><code>to_front</code>, <code>to_back</code>, <code>raise</code> and <code>lower</code> take a direct child, and return false if it is not one. All of these stay
 in front of the stage's background.</p>
+<h2 id="dashed-lines">Dashed lines<a class="headerlink" href="#dashed-lines" title="Permanent link">&para;</a></h2>
+<p>Any stroke can be dashed or dotted, with a <code>StrokeDash</code>:</p>
+<div class="highlight"><pre><span></span><code><span class="k">auto</span><span class="w"> </span><span class="o">&amp;</span><span class="n">line</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">stage</span><span class="p">.</span><span class="n">visuals</span><span class="p">.</span><span class="n">add</span><span class="p">(</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">make_unique</span><span class="o">&lt;</span><span class="n">Line</span><span class="o">&gt;</span><span class="p">()</span><span class="w"> </span><span class="p">);</span>
+<span class="n">line</span><span class="p">.</span><span class="n">start</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="mf">-5.F</span><span class="p">,</span><span class="w"> </span><span class="mf">2.F</span><span class="w"> </span><span class="p">};</span>
+<span class="n">line</span><span class="p">.</span><span class="n">end</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="mf">5.F</span><span class="p">,</span><span class="w"> </span><span class="mf">2.F</span><span class="w"> </span><span class="p">};</span>
+<span class="n">line</span><span class="p">.</span><span class="n">stroke_thickness</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">0.06F</span><span class="p">;</span>
+<span class="n">line</span><span class="p">.</span><span class="n">stroke_dash</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">StrokeDash</span><span class="o">::</span><span class="n">dashed</span><span class="p">(</span><span class="w"> </span><span class="mf">0.4F</span><span class="p">,</span><span class="w"> </span><span class="mf">0.2F</span><span class="w"> </span><span class="p">);</span><span class="w"> </span><span class="c1">// 0.4 on, 0.2 off</span>
+
+<span class="k">auto</span><span class="w"> </span><span class="o">&amp;</span><span class="n">ring</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">stage</span><span class="p">.</span><span class="n">visuals</span><span class="p">.</span><span class="n">add</span><span class="p">(</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">make_unique</span><span class="o">&lt;</span><span class="n">Circle</span><span class="o">&gt;</span><span class="p">(</span><span class="w"> </span><span class="mf">1.2F</span><span class="p">,</span><span class="w"> </span><span class="n">Color</span><span class="p">{</span><span class="w"> </span><span class="mf">1.F</span><span class="p">,</span><span class="w"> </span><span class="mf">1.F</span><span class="p">,</span><span class="w"> </span><span class="mf">1.F</span><span class="p">,</span><span class="w"> </span><span class="mf">0.F</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="p">)</span><span class="w"> </span><span class="p">);</span>
+<span class="n">ring</span><span class="p">.</span><span class="n">stroke_thickness</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">0.12F</span><span class="p">;</span>
+<span class="n">ring</span><span class="p">.</span><span class="n">stroke_dash</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">StrokeDash</span><span class="o">::</span><span class="n">dotted</span><span class="p">(</span><span class="w"> </span><span class="mf">0.3F</span><span class="w"> </span><span class="p">);</span><span class="w">       </span><span class="c1">// round dots, 0.3 apart</span>
+
+<span class="k">co_await</span><span class="w"> </span><span class="n">tween</span><span class="p">(</span><span class="w"> </span><span class="n">stage</span><span class="p">,</span><span class="w"> </span><span class="mi">3</span><span class="n">s</span><span class="p">,</span><span class="w"> </span><span class="n">ease_linear</span><span class="p">,</span><span class="w"> </span><span class="p">[</span><span class="o">&amp;</span><span class="p">](</span><span class="w"> </span><span class="kt">float</span><span class="w"> </span><span class="n">t</span><span class="w"> </span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">ring</span><span class="p">.</span><span class="n">stroke_dash</span><span class="p">.</span><span class="n">offset</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">-3.F</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">t</span><span class="p">;</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="p">);</span><span class="w"> </span><span class="c1">// they march</span>
+</code></pre></div>
+<p>A <code>pattern</code> is lengths on and off in turn, in the visual's own units, so it scales with the visual just as its stroke
+does (and stretches with it under an uneven scale). <code>offset</code> starts it further along; tween it for dashes that march.
+Each piece of a path (each <code>MoveTo</code>) starts the pattern again. A pattern under half a pixel is drawn as a whole line.</p>
+<p><code>ConnectorOptions::dash</code> dashes a connector's line and not its arrow heads, and <code>GraphOptions::dash</code> a graph's curve.
+Dashes stay as they are in <code>draw_on</code>, and a morph blends them: between two patterns, or with the gaps opening
+from a whole line. The exception is a line that becomes a filled shape: it is drawn as a whole line on the way, so the
+gaps close as soon as it starts.</p>
 <h2 id="placing-things-against-each-other">Placing things against each other<a class="headerlink" href="#placing-things-against-each-other" title="Permanent link">&para;</a></h2>
 <p>Hard-coded coordinates are fine for a couple of things. For anything more, place visuals <strong>relative to each
 other</strong> (<code>visuals/Placement.h</code>), so a change in size or text does not make things overlap. The boxes used are

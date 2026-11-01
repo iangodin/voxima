@@ -53,6 +53,12 @@ public:
 private:
 	void emit_path_data( const std::vector<PathCommand> &commands, std::ostream &out ) const;
 
+	static bool dashed_outline( const Visual &v );
+	void write_dashed_ellipse( const Visual &v, float rx, float ry, const Color &fill, const Color &stroke );
+
+	// The stroke's attributes, dashes and all
+	std::string stroke_of( const Visual &v, const Color &color ) const;
+
 	std::string indent() const;
 	bool open_g( const Visual &v, bool force_g );
 	void close_g();
@@ -68,4 +74,7 @@ private:
 	std::map<std::string, size_t> _glyph_ids;
 	std::vector<std::string> _glyph_paths;
 	std::vector<bool> _open_g_count;
+	// How much the groups open now scale what is in them, and what that was as each one opened
+	float _scale = 1.F;
+	std::vector<float> _scales;
 };

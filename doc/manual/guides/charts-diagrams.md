@@ -24,6 +24,8 @@ series (blue, orange, green, purple, ...) unless you give one.
 `axes.at( x, y )` converts a point of the graph to a stage point: put things on the graph, or aim the camera at a
 peak with it.
 
+A graph's curve can be dashed with `GraphOptions::dash` (see [Dashed lines](visuals-layout.md#dashed-lines)).
+
 ## Scatter plots
 
 ```cpp
@@ -85,6 +87,8 @@ Build a diagram up on screen by staggering nodes then edges:
 
 A callout is a panel with a pointer to a target; after moving either, call `note.update()`. Braces come in
 plain (`make_brace( from, to )`, `make_brace_beside( visual, side )`) and labeled forms.
+
+A connector's line can be dashed with `ConnectorOptions::dash` (see [Dashed lines](visuals-layout.md#dashed-lines)).
 
 ## Geometry
 
