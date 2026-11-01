@@ -15,12 +15,15 @@
 #include <optional>
 #include <core/ThemeFile.h>
 #include <core/Version.h>
+#include <core/Chapters.h>
 #include <utils/DataDirs.h>
 #include <utils/Language.h>
 #include <utils/ParseSequenceName.h>
 #include <utils/Timer.h>
 
 #include <lunasvg/lunasvg.h>
+
+#include <utility>
 
 std::string read_file( std::filesystem::path path )
 {
@@ -190,6 +193,26 @@ bool Producer::render( const RenderJob &job )
 	}
 
 	size_t frame = 0;
+
+	// Which scenes were played, in which frames, for the chapters
+	std::vector<PlayedScene> played;
+	std::vector<size_t> open_scenes;
+	std::string next_chapter;
+	_stage.chapter_event = [&]( const std::string &title ) { next_chapter = title; };
+	_stage.scene_event = [&]( const std::string &name, bool started )
+	{
+		if ( started )
+		{
+			played.push_back( { name, std::exchange( next_chapter, {} ), static_cast<int>( open_scenes.size() ), static_cast<int64_t>( frame ), -1 } );
+			open_scenes.push_back( played.size() - 1 );
+		}
+		else if ( !open_scenes.empty() )
+		{
+			played[open_scenes.back()].end = static_cast<int64_t>( frame );
+			open_scenes.pop_back();
+		}
+	};
+
 	Timer timer_total;
 	while ( true )
 	{
@@ -262,6 +285,8 @@ bool Producer::render( const RenderJob &job )
 		++frame;
 	}
 	timer_total.message( "Total render " + std::to_string( frame ) + " frames: ", frame );
+	_stage.scene_event = nullptr;
+	_stage.chapter_event = nullptr;
 
 	if ( ffmpeg )
 	{
@@ -310,6 +335,24 @@ bool Producer::render( const RenderJob &job )
 			mux.add_subtitle_track(
 				job.subtitle_ext == "vtt" ? vtt_path : srt_path, language::container_language( lang, bibliographic ), {},
 				lang == job.languages.front() );
+		}
+
+		std::vector<Chapter> chapters = choose_chapters( played, static_cast<int64_t>( frame ) );
+		if ( !chapters.empty() )
+		{
+			// Named by the script's `chapters` section, or else by what the scene says it is
+			for ( Chapter &chapter: chapters )
+			{
+				if ( chapter.title.empty() )
+				{
+					const huml::Value &named = _script.fetch( job.languages.front(), "chapters", chapter.name );
+					const SceneEntry *entry = SceneEntry::get_by_name( chapter.name );
+					chapter.title = named.is_string() ? named.as_string() : entry && !entry->description().empty() ? entry->description() : chapter.name;
+				}
+			}
+			const std::string chapters_path = job.render_dir + "/chapters.txt";
+			std::ofstream( chapters_path ) << chapter_metadata( chapters, static_cast<double>( _stage.camera.frame_rate ) );
+			mux.add_chapters( chapters_path );
 		}
 		mux.mux();
 	}

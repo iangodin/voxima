@@ -79,6 +79,10 @@ struct PlayOptions
 	// and the new scene fades in over its first moments, as it goes on. Both 0 is a cut, as it has been.
 	std::chrono::duration<double> fade_out{ 0.0 };
 	std::chrono::duration<double> fade_in{ 0.0 };
+
+	// A chapter of the video starts here, with this title. If any scene is marked so, those are the only chapters; if not, the
+	// movie's top-level scenes are (see Chapters.h).
+	std::string chapter = {};
 };
 
 // Play the registered scene called `name`, and finish when it does. An unknown name is a mistake in the

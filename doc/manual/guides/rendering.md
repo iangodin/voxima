@@ -31,6 +31,7 @@ Not every container takes every codec; if a combination is refused, try another 
   mp4 the subtitles are `mov_text`, in mkv `srt` and in webm `webvtt`.
 - `subtitles.<lang>.srt` and `subtitles.<lang>.vtt`: the subtitles, for each language, to use on their own
   (YouTube takes `.srt` or `.vtt`).
+- `chapters.txt`: the chapters, if there are any (see [Chapters](#chapters)).
 - The pieces it was made from, such as each language's audio, and the `tts-cache` folder (see below).
 
 With `--separate`, each language is in its own folder, `<render-dir>/<lang>/`, with its own `final.<container>`.
@@ -46,6 +47,19 @@ speech again. It is kept in a `tts-cache` folder inside the render directory, or
 Each line of speech that has to be made is reported as it is (`TTS en 12: 'The OETF is…' 3.1 s, took 18.2 s`), with what
 it all came to at the end. `--tts-only` makes the speech and exits, with no video, to get the slow part over with
 before working on the visuals (overnight, say). It does not work out word timings, which are not cached.
+
+## Chapters
+
+A video of more than one scene gets chapters, which players and YouTube show. They are the movie's top-level scenes: the
+outermost level with more than one scene, so a movie that plays parts that play sections has its parts as chapters. To
+choose them yourself, mark scenes with `PlayOptions::chapter`, and then only those are chapters:
+
+```cpp
+co_await play( stage, script, "intro", { .chapter = "Introduction" } );
+```
+
+A chapter's title is that, or else the scene's name in the script's `chapters` section (of the first language), or else the
+scene's description. The chapters are also kept as `chapters.txt` in the render directory.
 
 ## Choose scenes
 

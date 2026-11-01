@@ -96,6 +96,10 @@ Scene play( Stage &stage, Script &script, std::string name, PlayOptions options 
 			} );
 	}
 
+	if ( !options.chapter.empty() && stage.chapter_event )
+	{
+		stage.chapter_event( options.chapter );
+	}
 	if ( stage.scene_event )
 	{
 		stage.scene_event( name, true );

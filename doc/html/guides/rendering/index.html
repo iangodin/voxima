@@ -935,6 +935,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#chapters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Chapters
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#choose-scenes" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1203,6 +1214,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#chapters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Chapters
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#choose-scenes" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1319,6 +1341,7 @@
   mp4 the subtitles are <code>mov_text</code>, in mkv <code>srt</code> and in webm <code>webvtt</code>.</li>
 <li><code>subtitles.&lt;lang&gt;.srt</code> and <code>subtitles.&lt;lang&gt;.vtt</code>: the subtitles, for each language, to use on their own
   (YouTube takes <code>.srt</code> or <code>.vtt</code>).</li>
+<li><code>chapters.txt</code>: the chapters, if there are any (see <a href="#chapters">Chapters</a>).</li>
 <li>The pieces it was made from, such as each language's audio, and the <code>tts-cache</code> folder (see below).</li>
 </ul>
 <p>With <code>--separate</code>, each language is in its own folder, <code>&lt;render-dir&gt;/&lt;lang&gt;/</code>, with its own <code>final.&lt;container&gt;</code>.</p>
@@ -1331,6 +1354,14 @@ speech again. It is kept in a <code>tts-cache</code> folder inside the render di
 <p>Each line of speech that has to be made is reported as it is (<code>TTS en 12: 'The OETF is…' 3.1 s, took 18.2 s</code>), with what
 it all came to at the end. <code>--tts-only</code> makes the speech and exits, with no video, to get the slow part over with
 before working on the visuals (overnight, say). It does not work out word timings, which are not cached.</p>
+<h2 id="chapters">Chapters<a class="headerlink" href="#chapters" title="Permanent link">&para;</a></h2>
+<p>A video of more than one scene gets chapters, which players and YouTube show. They are the movie's top-level scenes: the
+outermost level with more than one scene, so a movie that plays parts that play sections has its parts as chapters. To
+choose them yourself, mark scenes with <code>PlayOptions::chapter</code>, and then only those are chapters:</p>
+<div class="highlight"><pre><span></span><code><span class="k">co_await</span><span class="w"> </span><span class="n">play</span><span class="p">(</span><span class="w"> </span><span class="n">stage</span><span class="p">,</span><span class="w"> </span><span class="n">script</span><span class="p">,</span><span class="w"> </span><span class="s">"intro"</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="p">.</span><span class="n">chapter</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"Introduction"</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="p">);</span>
+</code></pre></div>
+<p>A chapter's title is that, or else the scene's name in the script's <code>chapters</code> section (of the first language), or else the
+scene's description. The chapters are also kept as <code>chapters.txt</code> in the render directory.</p>
 <h2 id="choose-scenes">Choose scenes<a class="headerlink" href="#choose-scenes" title="Permanent link">&para;</a></h2>
 <div class="highlight"><pre><span></span><code>voxima --plugin build/hello --list-scenes                  # what the plugin has
 voxima --plugin build/hello ... --scene intro              # one scene

@@ -44,6 +44,9 @@ struct Stage
 	// tick that does it, so the producer can note the frames it spans. Left empty, nothing is told.
 	std::function<void( const std::string &name, bool started )> scene_event;
 
+	// Told, just before scene_event says a scene starts, that it was marked as a chapter (PlayOptions::chapter), and its title
+	std::function<void( const std::string &title )> chapter_event;
+
 	void save_svg( std::ostream &file ) const
 	{
 		if ( !file ) return;

@@ -70,6 +70,13 @@ void FfmpegMux::add_subtitle_track(
 	++_subtitle_tracks;
 }
 
+void FfmpegMux::add_chapters( std::string_view metadata )
+{
+	_command << " -i " << '"' << metadata << '"';
+	_maps << " -map_chapters " << _input_files;
+	++_input_files;
+}
+
 void FfmpegMux::mux()
 {
 	std::stringstream output;

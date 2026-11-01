@@ -22,6 +22,11 @@ public:
 	void add_subtitle_track(
 		std::string_view subtitle, std::string_view lang, std::string_view title, bool is_default = false );
 
+	// Chapters, from a file in ffmpeg's metadata format (see core/Chapters.h)
+
+	void add_chapters( std::string_view metadata );
+
+
 	void mux();
 
 private:

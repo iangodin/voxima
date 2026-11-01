@@ -160,6 +160,7 @@ add_library( visuals SHARED
 	src/visuals/Gradient.cpp
 	src/visuals/Diagram.cpp
 	src/core/Animate.cpp
+	src/core/Chapters.cpp
 	src/visuals/Trim.cpp
 	src/visuals/WrapText.cpp
 	src/visuals/CreateList.cpp
