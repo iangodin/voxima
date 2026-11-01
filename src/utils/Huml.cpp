@@ -3,10 +3,34 @@
 
 #include <limits>
 #include <charconv>
+#include <cctype>
+#include <locale>
+#include <sstream>
 
 namespace
 {
-constexpr huml::Value missing{ huml::Missing{} };
+const huml::Value missing{ huml::Missing{} };
+
+// A double from all of text, as std::from_chars reads it (no leading space or '+', any locale). Apple's libc++ has
+// from_chars for integers only, so it falls back to a stream in the classic locale.
+bool parse_double( std::string_view text, double &result )
+{
+#if defined( __cpp_lib_to_chars ) && __cpp_lib_to_chars >= 201611L
+	const auto [end, ec] = std::from_chars( text.data(), text.data() + text.size(), result );
+	return ec == std::errc{} && end == text.data() + text.size();
+#else
+	if ( text.empty() || text.front() == '+' || std::isspace( static_cast<unsigned char>( text.front() ) ) )
+		return false;
+	std::istringstream stream{ std::string( text ) };
+	stream.imbue( std::locale::classic() );
+	double value = 0.0;
+	stream >> std::noskipws >> value;
+	if ( stream.fail() || stream.peek() != std::char_traits<char>::eof() )
+		return false;
+	result = value;
+	return true;
+#endif
+}
 }
 
 namespace huml
@@ -456,10 +480,8 @@ std::optional<Value> Parser::parse_number( std::string_view &view )
 	if ( base == 10 )
 	{
 		double d_result = 0.0;
-		// Use the full cleaned string 's' to include the sign for from_chars.
-		auto [d_ptr, d_ec] = std::from_chars( s.data(), s.data() + s.size(), d_result );
-
-		if ( d_ec == std::errc{} && d_ptr == s.data() + s.size() )
+		// The full cleaned string 's', to include the sign
+		if ( parse_double( s, d_result ) )
 		{
 			return Value{ d_result };
 		}

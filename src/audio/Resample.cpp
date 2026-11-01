@@ -1,6 +1,7 @@
 #include "Resample.h"
 #include <soxr.h>
 #include <stdexcept>
+#include <string>
 #include <cmath>
 
 AudioBuffer resample( const AudioBuffer &input, size_t new_rate )
