@@ -50,6 +50,10 @@ private:
 	// produce()) once for all the renders.
 	bool render( const RenderJob &job );
 
+	// Play the scene(s) through for these languages for nothing but the speech, writing no video or sound, so that it is
+	// all in the cache for later (--tts-only)
+	bool make_speech( const std::vector<std::string> &languages );
+
 	// Play the scene(s) live in a window, with sound, for one language, writing nothing. The narration is
 	// synthesised first (silently, so it is in the cache), then it plays in real time. What has been played is
 	// kept in memory (see FrameStore.h), so it can be played backwards and stepped through:

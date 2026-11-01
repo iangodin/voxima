@@ -42,6 +42,10 @@ speech again. It is kept in a `tts-cache` folder inside the render directory, or
 `--separate` runs, CI) share the speech, even at the same time. A voice is known by its path as given, so use the same
 `--tts-voice-dir` for them to share.
 
+Each line of speech that has to be made is reported as it is (`TTS en 12: 'The OETF is…' 3.1 s, took 18.2 s`), with what
+it all came to at the end. `--tts-only` makes the speech and exits, with no video, to get the slow part over with
+before working on the visuals (overnight, say). It does not work out word timings, which are not cached.
+
 ## Choose scenes
 
 ```

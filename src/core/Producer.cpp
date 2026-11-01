@@ -317,6 +317,29 @@ bool Producer::render( const RenderJob &job )
 	return true;
 }
 
+bool Producer::make_speech( const std::vector<std::string> &languages )
+{
+	_script.select_languages( languages );
+	_stage.visuals.clear();
+	_stage.updaters.clear();
+	_stage.audio.set_speech_only( true );
+	_stage.audio.begin( std::filesystem::temp_directory_path(), languages, true );
+	_current_frame = -1;
+
+	_screenplay = _director( _stage, _script );
+	_screenplay.handle.promise().producer_ptr = this;
+	while ( tick() )
+	{
+		_stage.audio.write_audio();
+		for ( const auto &lang: languages )
+		{
+			_stage.audio.take_audio( lang ); // (it is the speech that is wanted, and it is in the cache)
+		}
+	}
+	_stage.audio.set_speech_only( false );
+	return true;
+}
+
 namespace
 {
 // Where the speech models are, in the folders download_models.py makes in them; the same in each place it looks
@@ -409,6 +432,11 @@ bool Producer::produce( int argc, char *argv[] )
 	app.add_option(
 		"--tts-cache-dir", tts_cache_dir,
 		"Where speech is kept once made, to use it again (without it: $VOXIMA_TTS_CACHE, or tts-cache in the render directory)" );
+
+	bool tts_only = false;
+	app.add_flag(
+		"--tts-only", tts_only,
+		"Make the speech and put it in the cache, and exit: no video, to get the slow part done before working on the visuals" );
 
 	std::string tts_backend = "best";
 	app.add_option( "--tts-backend", tts_backend, "TTS backend: best, cpu or cuda" );
@@ -649,9 +677,25 @@ bool Producer::produce( int argc, char *argv[] )
 		return true;
 	};
 
+	const auto report_speech = [&]()
+	{
+		if ( const std::string speech = tts::describe_speech( _stage.audio.speech_stats() ); !speech.empty() )
+		{
+			std::cout << "Speech: " << speech << '\n';
+		}
+	};
+
+	if ( tts_only )
+	{
+		const bool ok = make_speech( languages );
+		report_speech();
+		return ok;
+	}
+
 	if ( live_preview )
 	{
 		const bool ok = preview( languages.front() );
+		report_speech();
 		return report_missing_glyphs() && ok;
 	}
 
@@ -670,6 +714,7 @@ bool Producer::produce( int argc, char *argv[] )
 		ok = render( { languages, render_dir, container, vcodec, acodec, scodec, subtitle_ext, save_png, save_svg } );
 	}
 
+	report_speech();
 	if ( !report_missing_glyphs() )
 	{
 		return false;

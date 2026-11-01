@@ -73,6 +73,7 @@ add_executable( voxima_unit_tests
 	TestOpacity.cpp
 	TestHelpers.cpp
 	TestArrow.cpp
+	TestSpeechProgress.cpp
 )
 
 target_link_libraries( voxima_unit_tests

@@ -93,7 +93,7 @@ double Narrator::speech( const std::vector<std::string> &text )
 		double local_start = cumulative;
 		double local_end = cumulative + line_duration;
 		std::vector<TimedWord> line_words;
-		if ( !silent && _tts->has_aligner() )
+		if ( !silent && _tts->has_aligner() && !_stage->speech_only() )
 		{
 			try
 			{

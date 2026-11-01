@@ -30,6 +30,22 @@ struct WordTimestamp
 	float confidence;
 };
 
+// How much speech has been asked for so far
+struct SpeechStats
+{
+	size_t lines_made = 0;
+	size_t lines_cached = 0;
+	double seconds_made = 0.0;   // of speech
+	double seconds_cached = 0.0;
+	double making_time = 0.0;    // how long it took to make, in seconds
+};
+
+// "412 lines, 28.0 min of speech: 390 from the cache, 22 made in 6.1 min", or empty if there has been none
+std::string describe_speech( const SpeechStats &stats );
+
+// A line of text cut short for showing in progress, at a character boundary: "The OETF is…"
+std::string short_line( const std::string &text, size_t bytes = 40 );
+
 // Loaded registry/model/session are opaque here so callers don't need to see
 // audiocpp.h - defined in TTSClient.cpp. unique_ptr<incomplete> requires the
 // destructor (and move ops, since declaring the dtor suppresses the implicit
@@ -82,6 +98,11 @@ public:
 		const std::string &language,
 		float rate = 1.0f );
 
+	const SpeechStats &stats() const
+	{
+		return _stats;
+	}
+
 	// Forced-alignment pass over already-synthesized audio: returns
 	// word-level timestamps grounded in the actual waveform. Requires
 	// aligner_model_path to have been set at construction; throws otherwise.
@@ -99,6 +120,7 @@ private:
 	std::unique_ptr<ModelHandle> _model;
 	std::unique_ptr<SessionHandle> _session;
 	std::filesystem::path _cache_dir;
+	SpeechStats _stats;
 
 	std::filesystem::path _aligner_model_path;
 	std::unique_ptr<ModelHandle> _aligner_model;

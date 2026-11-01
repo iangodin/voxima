@@ -5,6 +5,7 @@
 #include <sndfile.h>
 
 #include <algorithm>
+#include <chrono>
 #include <cstdint>
 #include <iomanip>
 #include <iostream>
@@ -103,6 +104,52 @@ void write_wav( const std::filesystem::path &path, const AudioBuffer &buffer )
 	sf_close( sndfile );
 }
 
+}
+
+std::string short_line( const std::string &text, size_t bytes )
+{
+	if ( text.size() <= bytes )
+	{
+		return text;
+	}
+	// (not in the middle of a character: the bytes that go on with one are 10xxxxxx)
+	size_t end = bytes;
+	while ( end > 0 && ( static_cast<unsigned char>( text[end] ) & 0xC0 ) == 0x80 )
+	{
+		--end;
+	}
+	return text.substr( 0, end ) + "…";
+}
+
+std::string describe_speech( const SpeechStats &stats )
+{
+	const size_t lines = stats.lines_made + stats.lines_cached;
+	if ( lines == 0 )
+	{
+		return {};
+	}
+	const auto time = []( double seconds )
+	{
+		std::ostringstream out;
+		out << std::fixed << std::setprecision( 1 );
+		if ( seconds < 60.0 )
+		{
+			out << seconds << " s";
+		}
+		else
+		{
+			out << seconds / 60.0 << " min";
+		}
+		return out.str();
+	};
+	std::ostringstream out;
+	out << lines << ( lines == 1 ? " line, " : " lines, " ) << time( stats.seconds_made + stats.seconds_cached ) << " of speech: "
+		<< stats.lines_cached << " from the cache, " << stats.lines_made << " made";
+	if ( stats.lines_made > 0 )
+	{
+		out << " in " << time( stats.making_time );
+	}
+	return out.str();
 }
 
 struct RegistryDeleter
@@ -229,6 +276,8 @@ SynthesisResult TTSClient::synthesize(
 					result.success = true;
 					result.status = "success";
 					result.audio = std::move( cached );
+					++_stats.lines_cached;
+					_stats.seconds_cached += result.audio->duration();
 					return result;
 				}
 			}
@@ -241,6 +290,7 @@ SynthesisResult TTSClient::synthesize(
 
 	try
 	{
+		const auto started = std::chrono::steady_clock::now();
 		int voice_rate = 0;
 		int voice_channels = 0;
 		std::vector<float> voice_ref = read_reference_clip( voice_ref_path, voice_rate, voice_channels );
@@ -294,6 +344,15 @@ SynthesisResult TTSClient::synthesize(
 		result.success = true;
 		result.status = "success";
 		result.audio = std::move( buffer );
+
+		// The first time can take a long while, so say how it is going. How many lines there will be is not known: the scenes
+		// ask as they run.
+		const double took = std::chrono::duration<double>( std::chrono::steady_clock::now() - started ).count();
+		++_stats.lines_made;
+		_stats.seconds_made += result.audio->duration();
+		_stats.making_time += took;
+		std::cout << std::fixed << std::setprecision( 1 ) << "TTS " << language << " " << _stats.lines_made + _stats.lines_cached
+				  << ": '" << short_line( text ) << "' " << result.audio->duration() << " s, took " << took << " s" << std::endl;
 
 		if ( cache_path )
 		{

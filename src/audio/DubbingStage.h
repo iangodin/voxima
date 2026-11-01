@@ -87,6 +87,23 @@ public:
 	// Loaded by setup() if the model is there, or else on first use (narration), which throws if it is still not
 	tts::TTSClient &tts();
 
+	// How much speech has been asked for so far, as TTSClient::stats (nothing if the model was never needed)
+	tts::SpeechStats speech_stats() const
+	{
+		return _tts ? _tts->stats() : tts::SpeechStats{};
+	}
+
+	// Only for making speech (--tts-only): what takes the time besides the speech itself, which is not kept, is not done
+	void set_speech_only( bool only )
+	{
+		_speech_only = only;
+	}
+
+	bool speech_only() const
+	{
+		return _speech_only;
+	}
+
 	const std::filesystem::path &voice_dir() const
 	{
 		return _tts_voice_dir;
@@ -135,6 +152,7 @@ private:
 	std::map<std::string, std::vector<SubtitleCue>, std::less<>> _subtitles;
 	std::string _codec;
 	double _max_speedup = 1.0;
+	bool _speech_only = false;
 
 	std::map<std::string, std::shared_ptr<const AudioBuffer>> _sound_files; // read, stereo, at the audio rate
 	std::vector<std::shared_ptr<PlayingSound>> _playing;
