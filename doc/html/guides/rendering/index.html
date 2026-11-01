@@ -1368,6 +1368,18 @@ voxima --plugin build/hello ... --scene intro              # one scene
 voxima --plugin build/hello ... --scene intro --scene end  # several, in order
 </code></pre></div>
 <p>An unknown scene name is reported (with the list) before any model or font is loaded.</p>
+<p><strong>Part of a movie.</strong> <code>--start-at</code> and <code>--stop-at</code> take a scene played in the movie, or a frame number (anything all digits is a
+frame number):</p>
+<div class="highlight"><pre><span></span><code>voxima ... --start-at section-12                       # from where that scene starts, to the end
+voxima ... --start-at section-12 --stop-at section-12  # just that scene
+voxima ... --start-at 1200 --stop-at 1500              # those frames, both included
+</code></pre></div>
+<p>The scenes before the start still run, frame by frame, with nothing drawn or written, so a section that carries on from the
+one before (<code>clear_stage = false</code>) finds everything as it would be, however it got there. That is much faster than rendering them,
+but they are still spoken: their timing depends on the speech, so any that is not in the cache is made first. Music goes on playing
+through them, and is where it should be at the start. Subtitles and chapters are for the part that is kept. It also works with
+<code>--preview</code>, which then cannot go back before the start. A scene played more than once counts the first time.
+With <code>--tts-only</code>, <code>--stop-at</code> still stops it, and all the speech before a <code>--start-at</code> is made.</p>
 <h2 id="preview">Preview<a class="headerlink" href="#preview" title="Permanent link">&para;</a></h2>
 <div class="highlight"><pre><span></span><code>voxima --plugin build/hello --script-dir scripts --lang en --theme "Academic Classic" --preview
 </code></pre></div>

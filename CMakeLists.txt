@@ -169,6 +169,7 @@ add_library( visuals SHARED
 	src/visuals/Diagram.cpp
 	src/core/Animate.cpp
 	src/core/Chapters.cpp
+	src/core/PlayRange.cpp
 	src/visuals/Trim.cpp
 	src/visuals/WrapText.cpp
 	src/visuals/CreateList.cpp

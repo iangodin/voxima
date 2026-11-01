@@ -71,6 +71,22 @@ voxima --plugin build/hello ... --scene intro --scene end  # several, in order
 
 An unknown scene name is reported (with the list) before any model or font is loaded.
 
+**Part of a movie.** `--start-at` and `--stop-at` take a scene played in the movie, or a frame number (anything all digits is a
+frame number):
+
+```
+voxima ... --start-at section-12                       # from where that scene starts, to the end
+voxima ... --start-at section-12 --stop-at section-12  # just that scene
+voxima ... --start-at 1200 --stop-at 1500              # those frames, both included
+```
+
+The scenes before the start still run, frame by frame, with nothing drawn or written, so a section that carries on from the
+one before (`clear_stage = false`) finds everything as it would be, however it got there. That is much faster than rendering them,
+but they are still spoken: their timing depends on the speech, so any that is not in the cache is made first. Music goes on playing
+through them, and is where it should be at the start. Subtitles and chapters are for the part that is kept. It also works with
+`--preview`, which then cannot go back before the start. A scene played more than once counts the first time.
+With `--tts-only`, `--stop-at` still stops it, and all the speech before a `--start-at` is made.
+
 ## Preview
 
 ```

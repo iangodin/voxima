@@ -2,6 +2,7 @@
 #pragma once
 
 #include "Director.h"
+#include "PlayRange.h"
 #include "PluginLoader.h"
 #include "Screenplay.h"
 #include "Stage.h"
@@ -93,6 +94,8 @@ private:
 	Screenplay _screenplay;
 	Stage _stage = {};
 	std::optional<Theme> _loaded_theme; // one from a file, which the stage points at
+	std::optional<PlayPoint> _start_at; // which part of the movie is wanted (see PlayRange.h)
+	std::optional<PlayPoint> _stop_at;
 	Script _script = {};
 	int64_t _current_frame = -1;
 };

@@ -76,6 +76,7 @@ add_executable( voxima_unit_tests
 	TestSpeechProgress.cpp
 	TestChapters.cpp
 	TestSceneErrors.cpp
+	TestPlayRange.cpp
 )
 
 target_link_libraries( voxima_unit_tests

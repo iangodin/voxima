@@ -193,6 +193,8 @@ bool Producer::render( const RenderJob &job )
 	}
 
 	size_t frame = 0;
+	PlayRange range( _start_at, _stop_at );
+	int64_t skipped = 0; // frames gone past before the start
 
 	// Which scenes were played, in which frames, for the chapters
 	std::vector<PlayedScene> played;
@@ -201,6 +203,7 @@ bool Producer::render( const RenderJob &job )
 	_stage.chapter_event = [&]( const std::string &title ) { next_chapter = title; };
 	_stage.scene_event = [&]( const std::string &name, bool started )
 	{
+		range.scene_event( name, started );
 		if ( started )
 		{
 			played.push_back( { name, std::exchange( next_chapter, {} ), static_cast<int>( open_scenes.size() ), static_cast<int64_t>( frame ), -1 } );
@@ -225,6 +228,21 @@ bool Producer::render( const RenderJob &job )
 				timer_frame.abort();
 				break;
 			}
+		}
+
+		// Before the start, the scenes run, and speak and sound, but nothing is drawn or written
+		range.frame_made( _current_frame );
+		if ( range.stopping() )
+		{
+			timer_frame.abort();
+			break;
+		}
+		if ( range.skipping() )
+		{
+			timer_frame.abort();
+			_stage.audio.skip_audio();
+			++skipped;
+			continue;
 		}
 
 		std::ostringstream svg;
@@ -288,6 +306,25 @@ bool Producer::render( const RenderJob &job )
 	_stage.scene_event = nullptr;
 	_stage.chapter_event = nullptr;
 
+	if ( range.skipping() )
+	{
+		throw std::runtime_error( "--start-at: the scenes ended before " + range.start()->describe() );
+	}
+	if ( frame == 0 )
+	{
+		throw std::runtime_error( "nothing to render: --start-at and --stop-at leave no frames" );
+	}
+	if ( range.stop() && !range.stopping() )
+	{
+		std::cerr << "--stop-at: the scenes ended before " << range.stop()->describe() << '\n';
+	}
+
+	// Subtitles were timed from the very start: to what was kept
+	const double frame_rate = static_cast<double>( _stage.camera.frame_rate );
+	const double kept_from = static_cast<double>( skipped ) / frame_rate;
+	const double kept_to = kept_from + static_cast<double>( frame ) / frame_rate;
+	const auto kept_cues = [&]( const std::string &lang ) { return cues_between( _stage.audio.subtitles( lang ), kept_from, kept_to ); };
+
 	if ( ffmpeg )
 	{
 		ffmpeg->close();
@@ -301,7 +338,7 @@ bool Producer::render( const RenderJob &job )
 		bool any_subtitles = false;
 		for ( const auto &lang: job.languages )
 		{
-			if ( !_stage.audio.subtitles( lang ).empty() )
+			if ( !kept_cues( lang ).empty() )
 			{
 				any_subtitles = true;
 				break;
@@ -321,7 +358,7 @@ bool Producer::render( const RenderJob &job )
 		}
 		for ( const auto &lang: job.languages )
 		{
-			const auto &cues = _stage.audio.subtitles( lang );
+			const auto cues = kept_cues( lang );
 			if ( cues.empty() )
 			{
 				continue;
@@ -369,16 +406,26 @@ bool Producer::make_speech( const std::vector<std::string> &languages )
 	_stage.audio.begin( std::filesystem::temp_directory_path(), languages, true );
 	_current_frame = -1;
 
+	// What is before a --start-at is spoken as well, so that it is the right length: only a --stop-at matters
+	PlayRange range( std::nullopt, _stop_at );
+	_stage.scene_event = [&]( const std::string &name, bool started ) { range.scene_event( name, started ); };
+
 	_screenplay = _director( _stage, _script );
 	_screenplay.handle.promise().producer_ptr = this;
 	while ( tick() )
 	{
+		range.frame_made( _current_frame );
+		if ( range.stopping() )
+		{
+			break;
+		}
 		_stage.audio.write_audio();
 		for ( const auto &lang: languages )
 		{
 			_stage.audio.take_audio( lang ); // (it is the speech that is wanted, and it is in the cache)
 		}
 	}
+	_stage.scene_event = nullptr;
 	_stage.audio.set_speech_only( false );
 	return true;
 }
@@ -495,6 +542,16 @@ bool Producer::produce( int argc, char *argv[] )
 	std::vector<std::string> scene_names;
 	app.add_option( "--scene", scene_names, "Scene to render; repeat it to play several in order (default: \"movie\")" );
 
+	std::optional<std::string> start_at;
+	app.add_option(
+		"--start-at", start_at,
+		"Where to start: a scene played in the movie, or a frame number. All before it runs, with its speech, so everything is as it would be, but nothing of it is drawn" );
+
+	std::optional<std::string> stop_at;
+	app.add_option(
+		"--stop-at", stop_at,
+		"Where to stop: the end of a scene played in the movie, or a frame number (included)" );
+
 	double max_speedup = 1.0;
 	app.add_option(
 		"--max-speedup",
@@ -557,6 +614,17 @@ bool Producer::produce( int argc, char *argv[] )
 	clear_missing_glyph_reports();
 
 	// Decide what to render before anything slow (models, fonts) loads
+	_start_at = start_at ? std::optional( PlayPoint::parse( *start_at ) ) : std::nullopt;
+	_stop_at = stop_at ? std::optional( PlayPoint::parse( *stop_at ) ) : std::nullopt;
+	( void )PlayRange( _start_at, _stop_at ); // (that it makes sense)
+	for ( const auto &point: { _start_at, _stop_at } )
+	{
+		if ( point && !point->frame && !SceneEntry::get_by_name( point->scene ) )
+		{
+			throw std::runtime_error( "unknown scene: " + point->scene + "\nScenes:\n" + describe_scenes() );
+		}
+	}
+
 	if ( !scene_names.empty() )
 	{
 		const auto unknown = unknown_scenes( scene_names );

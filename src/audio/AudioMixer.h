@@ -27,6 +27,9 @@ public:
 	void add_audio( const AudioBuffer &buffer );
 	void write_audio( void );
 
+	// Go on past a block, as write_audio() would, without keeping it: what a --start-at goes past
+	void skip_audio( void );
+
 	size_t rate( void ) const
 	{
 		return _buffer.rate();

@@ -74,6 +74,10 @@ public:
 	// Save current audio buffer (corresponding to one video frame)
 	void write_audio();
 
+	// Go on past the current audio buffer without saving it, with the time and the sounds carrying on: what a --start-at goes past.
+	// Subtitles keep the time from the very start (see cues_between).
+	void skip_audio();
+
 	size_t rate() const
 	{
 		return _audio_rate;
@@ -159,4 +163,7 @@ private:
 	AudioBuffer _sound_block; // what the sounds add to one frame
 
 	Sound start( std::shared_ptr<const AudioBuffer> audio, const SoundOptions &options );
+
+	// The sounds' next block into _sound_block; false if there are none
+	bool mix_sounds();
 };

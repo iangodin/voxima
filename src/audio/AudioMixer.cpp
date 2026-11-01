@@ -126,6 +126,12 @@ void AudioMixer::write_audio( void )
 	std::fill( _buffer.begin(), _buffer.end(), 0.F );
 }
 
+void AudioMixer::skip_audio( void )
+{
+	_frames_written += _buffer.frames();
+	std::fill( _buffer.begin(), _buffer.end(), 0.F );
+}
+
 bool AudioMixer::supported_codec( std::string_view codec )
 {
 	return codec == "wav" || codec == "flac";

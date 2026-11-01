@@ -157,24 +157,45 @@ bool Producer::preview( const std::string &language )
 				_stage.updaters.clear();
 				_stage.audio.begin( scratch, languages, true );
 				_current_frame = -1;
+				// The player's frames start at the --start-at, so it only hears of scenes from there
+				PlayRange range( _start_at, _stop_at );
+				int64_t kept = 0;
 				_stage.scene_event = [&]( const std::string &name, bool started )
 				{
+					range.scene_event( name, started );
+					if ( range.skipping() )
+						return;
 					if ( started )
-						store.scene_started( name, _current_frame );
+						store.scene_started( name, kept );
 					else
-						store.scene_ended( _current_frame );
+						store.scene_ended( kept );
 				};
 				_screenplay = _director( _stage, _script );
 				_screenplay.handle.promise().producer_ptr = this;
 
 				while ( !stop && tick() )
 				{
+					range.frame_made( _current_frame );
+					if ( range.stopping() )
+					{
+						break;
+					}
+					if ( range.skipping() )
+					{
+						_stage.audio.skip_audio();
+						continue;
+					}
 					std::ostringstream svg;
 					_stage.save_svg( svg );
 					_stage.audio.write_audio();
 					store.append( svg.str(), _stage.audio.take_audio( language ) );
+					++kept;
 				}
 				_stage.scene_event = nullptr;
+				if ( !stop && range.skipping() )
+				{
+					throw std::runtime_error( "--start-at: the scenes ended before " + range.start()->describe() );
+				}
 				store.finish();
 			}
 			catch ( ... )

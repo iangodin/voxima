@@ -55,6 +55,11 @@ OPTIONS:
                               (optional; without it: looked for as --tts-model is)
           --scene TEXT ...    Scene to render; repeat it to play several in order (default:
                               "movie")
+          --start-at TEXT     Where to start: a scene played in the movie, or a frame number. All
+                              before it runs, with its speech, so everything is as it would be,
+                              but nothing of it is drawn
+          --stop-at TEXT      Where to stop: the end of a scene played in the movie, or a frame
+                              number (included)
           --max-speedup FLOAT How much the other languages may be speeded up to keep in step
                               with the first, in one video (1.0: not at all, they are padded
                               with silence; 1.15: up to 15%; needs ffmpeg)

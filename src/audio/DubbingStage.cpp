@@ -185,22 +185,30 @@ void DubbingStage::stop_sounds()
 	_playing.clear();
 }
 
+bool DubbingStage::mix_sounds()
+{
+	if ( _playing.empty() )
+	{
+		return false;
+	}
+	if ( !_sound_block.same( AudioBuffer( _block_size, _audio_rate, 2 ) ) )
+	{
+		_sound_block = AudioBuffer( _block_size, _audio_rate, 2 );
+	}
+	std::fill( _sound_block.begin(), _sound_block.end(), 0.F );
+	for ( auto &playing: _playing )
+	{
+		playing->mix_into( _sound_block );
+	}
+	std::erase_if( _playing, []( const auto &playing ) { return playing->done(); } );
+	return true;
+}
+
 void DubbingStage::write_audio( void )
 {
 	// The sounds' next block, the same in every language
-	if ( !_playing.empty() )
+	if ( mix_sounds() )
 	{
-		if ( !_sound_block.same( AudioBuffer( _block_size, _audio_rate, 2 ) ) )
-		{
-			_sound_block = AudioBuffer( _block_size, _audio_rate, 2 );
-		}
-		std::fill( _sound_block.begin(), _sound_block.end(), 0.F );
-		for ( auto &playing: _playing )
-		{
-			playing->mix_into( _sound_block );
-		}
-		std::erase_if( _playing, []( const auto &playing ) { return playing->done(); } );
-
 		for ( auto &[lang, mixer]: _mixers )
 		{
 			mixer.add_audio( _sound_block );
@@ -210,6 +218,15 @@ void DubbingStage::write_audio( void )
 	for ( auto &[lang, mixer]: _mixers )
 	{
 		mixer.write_audio();
+	}
+}
+
+void DubbingStage::skip_audio( void )
+{
+	mix_sounds(); // (so that music is where it should be when what is kept begins)
+	for ( auto &[lang, mixer]: _mixers )
+	{
+		mixer.skip_audio();
 	}
 }
 
