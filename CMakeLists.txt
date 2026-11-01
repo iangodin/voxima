@@ -274,8 +274,14 @@ include( GNUInstallDirs )
 include( CMakePackageConfigHelpers )
 
 if ( NOT WIN32 )
-	set_target_properties( voxima PROPERTIES INSTALL_RPATH "$ORIGIN/../${CMAKE_INSTALL_LIBDIR}" )
-	set_target_properties( visuals PROPERTIES INSTALL_RPATH "$ORIGIN" )
+	# "The directory of the file itself": $ORIGIN is ELF's name for it, and dyld does not know it
+	if ( APPLE )
+		set( VOXIMA_ORIGIN "@loader_path" )
+	else()
+		set( VOXIMA_ORIGIN "$ORIGIN" )
+	endif()
+	set_target_properties( voxima PROPERTIES INSTALL_RPATH "${VOXIMA_ORIGIN}/../${CMAKE_INSTALL_LIBDIR}" )
+	set_target_properties( visuals PROPERTIES INSTALL_RPATH "${VOXIMA_ORIGIN}" )
 endif()
 
 install( TARGETS voxima visuals EXPORT VoximaTargets COMPONENT Voxima
