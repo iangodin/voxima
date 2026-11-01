@@ -155,6 +155,7 @@ add_library( visuals SHARED
 	src/visuals/Callout.cpp
 	src/visuals/Brace.cpp
 	src/visuals/Geometry.cpp
+	src/visuals/Gradient.cpp
 	src/visuals/Diagram.cpp
 	src/core/Animate.cpp
 	src/visuals/Trim.cpp

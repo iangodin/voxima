@@ -15,6 +15,7 @@ Every visual has the same properties:
 | `position` | Where its origin is, in its parent's frame (stage units, y up) |
 | `rotation`, `scale_x`, `scale_y` | Turned and scaled about its origin |
 | `color` | Fill color (alpha makes it see-through) |
+| `fill_gradient` | A fill that changes color across it, instead (see [Gradients](#gradients)) |
 | `stroke_thickness`, `stroke_color`, `stroke_dash` | Its outline (see [Dashed lines](#dashed-lines)) |
 | `tags` | Names for finding it again (see [Tags](#tags)) |
 
@@ -59,6 +60,36 @@ Each piece of a path (each `MoveTo`) starts the pattern again. A pattern under h
 Dashes stay as they are in `draw_on`, and a morph blends them: between two patterns, or with the gaps opening
 from a whole line. The exception is a line that becomes a filled shape: it is drawn as a whole line on the way, so the
 gaps close as soon as it starts.
+
+## Gradients
+
+Any shape can be filled with a linear or radial gradient instead of a plain color:
+
+```cpp
+--8<-- "examples/layout/layout.cpp:gradients"
+```
+
+A gradient is placed in the visual's own coordinates, so it moves, turns and scales with the visual. `Gradient::across`
+fits a linear one to a box at an angle (0 goes to the right, 90 up); `box_of` gives that box only while the visual is
+still at its origin, so use it before placing the visual. Stops are at offsets from 0 to 1. The visual's
+`color` tints the gradient and its alpha fades it, and white in a stop is the theme's text color, as everywhere.
+
+**Text** has a gradient per glyph, not one across a word: `fill_each_with_gradient` gives each shape below a visual its
+own, across that shape.
+
+Colors blend as they are written, in sRGB and not in linear light; add stops to follow any other curve. A frame has 8
+bits a channel and gradients are not dithered, so a long, dark ramp shows bands (from 0 to 16 across 1600 pixels: 17
+bands, each about 94 pixels wide). Between stops with different alpha, Voxima's renderer blends colors
+premultiplied, so a color fading out does not pick up the hue of the transparent stop, as it would in a browser
+looking at the same SVG. A gradient that goes nowhere (its ends the same, or a radius of 0) is drawn in its last color.
+
+**A morph** blends gradients: a plain fill and a gradient turn into one another, and two of a kind blend their stops and
+their places. A linear and a radial one cannot become one another, so they pass through a plain color, the average
+of the two:
+
+```cpp
+--8<-- "examples/layout/layout.cpp:gradient-morph"
+```
 
 ## Placing things against each other
 

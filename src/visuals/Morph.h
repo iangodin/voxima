@@ -24,6 +24,9 @@ struct Similarity
 	// Where p is when a fraction t of the way: the turn and the scale go on evenly (a spiral about the pivot)
 	Point apply( Point p, float t ) const;
 
+	// The same, as a transform
+	GradientTransform transform( float t ) const;
+
 	// The similarity that takes the points of `a` onto those of `b` (same contours, point for point), if one
 	// does to within a hair of their size
 	static std::optional<Similarity> between( const std::vector<Contour> &a, const std::vector<Contour> &b );
@@ -54,8 +57,8 @@ struct MorphOptions
 };
 
 // A shape that changes from one visual into another. Both are flattened to cubic outlines, their
-// contours are paired and cut to match (see MorphMatch.h), and set( t ) blends the control points, colors
-// and stroke widths: t = 0 is `from`, t = 1 is `to`, and values outside that extrapolate (elastic and
+// contours are paired and cut to match (see MorphMatch.h), and set( t ) blends the control points, colors,
+// gradients, dashes and stroke widths: t = 0 is `from`, t = 1 is `to`, and values outside that extrapolate (elastic and
 // back easing overshoot).
 //
 // A picture (Image) is not an outline: it can only turn into the same picture, moving to where that is, and
@@ -117,6 +120,9 @@ private:
 		// carried there whole instead of point by point, which would cut across the turn and squash it
 		std::optional<Similarity> carry;
 		Color fill_a, fill_b;
+		// Fills that are gradients, instead of those colors (see blended_gradient in Morph.cpp). Each is what it comes to
+		// overall in the color beside it.
+		std::optional<Gradient> gradient_a, gradient_b;
 		Color stroke_a, stroke_b;
 		float thickness_a = 0.F;
 		float thickness_b = 0.F;

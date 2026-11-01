@@ -441,6 +441,21 @@ private:
 		{
 			shape.fill.a = 0.F;
 		}
+		else if ( v.fill_gradient && !v.fill_gradient->stops.empty() )
+		{
+			const Color seen = _color * v.color;
+			const Color tint{ seen.r, seen.g, seen.b, 1.F };
+			const Affine m = leaf_transform( v );
+			Gradient gradient = *v.fill_gradient;
+			gradient.transform = GradientTransform{ m.a, m.b, m.c, m.d, m.tx, m.ty } * gradient.transform;
+			for ( GradientStop &stop: gradient.stops )
+			{
+				stop.color = ( stop.color * tint ).resolved( foreground );
+				stop.color.a *= seen.a;
+			}
+			shape.fill = gradient.average();
+			shape.gradient = std::move( gradient );
+		}
 		shape.stroke = ( _stroke * v.stroke_color ).resolved( foreground );
 		const float stroke_scale = leaf_transform( v ).scale();
 		shape.stroke_thickness = v.stroke_thickness * stroke_scale;

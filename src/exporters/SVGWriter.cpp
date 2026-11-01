@@ -107,12 +107,16 @@ SVGWriter::SVGWriter( std::ostream &out, int indent_level, float flatness, const
 
 void SVGWriter::write_defs( std::ostream &out )
 {
-	if ( _glyph_paths.empty() ) return;
+	if ( _glyph_paths.empty() && _gradients.empty() ) return;
 
 	out << "  <defs>\n";
 	for ( size_t id = 0; id < _glyph_paths.size(); ++id )
 	{
 		out << "    <path id=\"glyph_" << id << "\" d=\"" << _glyph_paths[id] << "\" />\n";
+	}
+	for ( const std::string &gradient: _gradients )
+	{
+		out << "    " << gradient << "\n";
 	}
 	out << "  </defs>\n";
 }
@@ -131,7 +135,7 @@ void SVGWriter::visit( const Circle &circle )
 		else
 		{
 			_out << indent() << "<circle cx=\"0\" cy=\"0\" r=\"" << circle.radius << "\" "
-			     << color_attributes( final_color.resolved( _foreground ) ) << " "
+			     << fill_of( circle, final_color ) << " "
 			     << stroke_of( circle, final_stroke_color ) << " />\n";
 		}
 
@@ -153,7 +157,7 @@ void SVGWriter::visit( const Rectangle &rectangle )
 		     << "\" y=\"" << -hh
 		     << "\" width=\"" << hw * 2.0f
 		     << "\" height=\"" << hh * 2.0f << "\" "
-		     << color_attributes( final_color.resolved( _foreground ) ) << " "
+		     << fill_of( rectangle, final_color ) << " "
 		     << stroke_of( rectangle, final_stroke_color ) << " />\n";
 
 		close_g();
@@ -178,7 +182,7 @@ void SVGWriter::visit( const RoundRectangle &rect )
 		{
 			_out << indent() << "<rect x=\"" << -hw << "\" y=\"" << -hh
 			     << "\" width=\"" << hw * 2.0f << "\" height=\"" << hh * 2.0f << "\" "
-			     << color_attributes( final_color.resolved( _foreground ) ) << " "
+			     << fill_of( rect, final_color ) << " "
 			     << stroke_of( rect, final_stroke_color ) << " />\n";
 		}
 		else
@@ -192,7 +196,7 @@ void SVGWriter::visit( const RoundRectangle &rect )
 			     << " A " << bl << "," << bl << " 0 0 0 " << -hw << "," << -hh + bl
 			     << " L " << -hw << "," << hh - tl
 			     << " A " << tl << "," << tl << " 0 0 0 " << -hw + tl << "," << hh
-			     << " Z\" " << color_attributes( final_color.resolved( _foreground ) ) << " "
+			     << " Z\" " << fill_of( rect, final_color ) << " "
 			     << stroke_of( rect, final_stroke_color ) << " />\n";
 		}
 
@@ -215,7 +219,7 @@ void SVGWriter::visit( const Ellipse &ellipse )
 		{
 			_out << indent() << "<ellipse cx=\"0\" cy=\"0\" rx=\"" << ellipse.half_width
 			     << "\" ry=\"" << ellipse.half_height << "\" "
-			     << color_attributes( final_color.resolved( _foreground ) ) << " "
+			     << fill_of( ellipse, final_color ) << " "
 			     << stroke_of( ellipse, final_stroke_color ) << " />\n";
 		}
 
@@ -232,7 +236,7 @@ void SVGWriter::visit( const Path &path )
 
 		_out << indent() << "<path d=\"";
 		emit_path_data( path.commands, _out );
-		_out << "\" " << color_attributes( final_color.resolved( _foreground ) ) << " "
+		_out << "\" " << fill_of( path, final_color ) << " "
 		     << stroke_of( path, final_stroke_color );
 		if ( path.stroke_thickness > 0.F && path.join != LineJoin::MITER )
 		{
@@ -261,7 +265,7 @@ void SVGWriter::visit( const Glyph &glyph )
 		Color final_stroke_color = _current_stroke_color * glyph.stroke_color;
 
 		_out << indent() << "<use href=\"#glyph_" << id << "\" "
-		     << color_attributes( final_color.resolved( _foreground ) ) << " "
+		     << fill_of( glyph, final_color ) << " "
 		     << stroke_of( glyph, final_stroke_color ) << " />\n";
 
 		close_g();
@@ -313,7 +317,7 @@ void SVGWriter::visit( const ArrowTip &arrow )
 			_out << indent() << "<path d=\"M " << p1x << "," << p1y
 			     << " L " << p2x << "," << p2y
 			     << " L " << p3x << "," << p3y << " Z\" "
-			     << color_attributes( final_color.resolved( _foreground ) ) << " "
+			     << fill_of( arrow, final_color ) << " "
 			     << stroke_of( arrow, final_stroke_color ) << " />\n";
 		}
 
@@ -448,6 +452,66 @@ std::string SVGWriter::stroke_attributes( float thickness, const Color &c )
 	return oss.str();
 }
 
+std::string SVGWriter::fill_of( const Visual &v, const Color &color )
+{
+	if ( !v.fill_gradient || v.fill_gradient->stops.empty() )
+	{
+		return color_attributes( color.resolved( _foreground ) );
+	}
+	const Gradient &gradient = *v.fill_gradient;
+	const std::vector<GradientStop> stops = gradient.ordered_stops();
+
+	// What tints it goes into the stops, and what fades it goes on the fill, so that a fade has the one definition
+	const Color tint{ color.r, color.g, color.b, 1.F };
+	const auto seen = [&]( const GradientStop &stop ) { return ( stop.color * tint ).resolved( _foreground ); };
+
+	if ( !gradient.drawable() )
+	{
+		Color last = seen( stops.back() );
+		last.a *= color.a;
+		return color_attributes( last );
+	}
+
+	std::ostringstream attributes;
+	attributes << " gradientUnits=\"userSpaceOnUse\"";
+	if ( gradient.kind == GradientKind::LINEAR )
+	{
+		attributes << " x1=\"" << gradient.start.x() << "\" y1=\"" << gradient.start.y() << "\" x2=\"" << gradient.end.x() << "\" y2=\"" << gradient.end.y() << "\"";
+	}
+	else
+	{
+		attributes << " cx=\"" << gradient.center.x() << "\" cy=\"" << gradient.center.y() << "\" r=\"" << gradient.radius << "\" fx=\"" << gradient.focus.x() << "\" fy=\"" << gradient.focus.y() << "\"";
+	}
+	if ( !( gradient.transform == GradientTransform{} ) )
+	{
+		const GradientTransform &m = gradient.transform;
+		attributes << " gradientTransform=\"matrix(" << m.a << " " << m.b << " " << m.c << " " << m.d << " " << m.tx << " " << m.ty << ")\"";
+	}
+	attributes << ">";
+	for ( const GradientStop &stop: stops )
+	{
+		const Color c = seen( stop );
+		attributes << "<stop offset=\"" << stop.offset << "\" stop-color=\"rgb(" << static_cast<int>( c.r * 255 ) << "," << static_cast<int>( c.g * 255 ) << "," << static_cast<int>( c.b * 255 ) << ")\"";
+		if ( c.a < 1.F )
+		{
+			attributes << " stop-opacity=\"" << c.a << "\"";
+		}
+		attributes << "/>";
+	}
+
+	const std::string tag = gradient.kind == GradientKind::LINEAR ? "linearGradient" : "radialGradient";
+	const auto [entry, is_new] = _gradient_ids.emplace( tag + attributes.str(), _gradient_ids.size() );
+	const std::string id = "gradient_" + std::to_string( entry->second );
+	if ( is_new )
+	{
+		_gradients.push_back( "<" + tag + " id=\"" + id + "\"" + attributes.str() + "</" + tag + ">" );
+	}
+
+	std::ostringstream fill;
+	fill << "fill=\"url(#" << id << ")\" fill-opacity=\"" << color.a << "\"";
+	return fill.str();
+}
+
 bool SVGWriter::dashed_outline( const Visual &v )
 {
 	return v.stroke_thickness > 0.F && !v.stroke_dash.solid();
@@ -467,7 +531,7 @@ void SVGWriter::write_dashed_ellipse( const Visual &v, float rx, float ry, const
 		CubicTo{ { 0.F, -ry }, { -rx, -ky }, { -kx, -ry } },
 		CubicTo{ { rx, 0.F }, { kx, -ry }, { rx, -ky } },
 		Close{} }, _out );
-	_out << "\" " << color_attributes( fill.resolved( _foreground ) ) << " " << stroke_of( v, stroke ) << " />\n";
+	_out << "\" " << fill_of( v, fill ) << " " << stroke_of( v, stroke ) << " />\n";
 }
 
 std::string SVGWriter::stroke_of( const Visual &v, const Color &color ) const

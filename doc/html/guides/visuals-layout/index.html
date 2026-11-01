@@ -733,6 +733,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#gradients" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Gradients
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#placing-things-against-each-other" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1258,6 +1269,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#gradients" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Gradients
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#placing-things-against-each-other" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1349,6 +1371,10 @@
 <td>Fill color (alpha makes it see-through)</td>
 </tr>
 <tr>
+<td><code>fill_gradient</code></td>
+<td>A fill that changes color across it, instead (see <a href="#gradients">Gradients</a>)</td>
+</tr>
+<tr>
 <td><code>stroke_thickness</code>, <code>stroke_color</code>, <code>stroke_dash</code></td>
 <td>Its outline (see <a href="#dashed-lines">Dashed lines</a>)</td>
 </tr>
@@ -1379,12 +1405,14 @@ in front of the stage's background.</p>
 <h2 id="dashed-lines">Dashed lines<a class="headerlink" href="#dashed-lines" title="Permanent link">&para;</a></h2>
 <p>Any stroke can be dashed or dotted, with a <code>StrokeDash</code>:</p>
 <div class="highlight"><pre><span></span><code><span class="k">auto</span><span class="w"> </span><span class="o">&amp;</span><span class="n">line</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">stage</span><span class="p">.</span><span class="n">visuals</span><span class="p">.</span><span class="n">add</span><span class="p">(</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">make_unique</span><span class="o">&lt;</span><span class="n">Line</span><span class="o">&gt;</span><span class="p">()</span><span class="w"> </span><span class="p">);</span>
+<span class="n">line</span><span class="p">.</span><span class="n">stroke_color</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">palette</span><span class="p">.</span><span class="n">blue</span><span class="p">;</span>
 <span class="n">line</span><span class="p">.</span><span class="n">start</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="mf">-5.F</span><span class="p">,</span><span class="w"> </span><span class="mf">2.F</span><span class="w"> </span><span class="p">};</span>
 <span class="n">line</span><span class="p">.</span><span class="n">end</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="mf">5.F</span><span class="p">,</span><span class="w"> </span><span class="mf">2.F</span><span class="w"> </span><span class="p">};</span>
 <span class="n">line</span><span class="p">.</span><span class="n">stroke_thickness</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">0.06F</span><span class="p">;</span>
 <span class="n">line</span><span class="p">.</span><span class="n">stroke_dash</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">StrokeDash</span><span class="o">::</span><span class="n">dashed</span><span class="p">(</span><span class="w"> </span><span class="mf">0.4F</span><span class="p">,</span><span class="w"> </span><span class="mf">0.2F</span><span class="w"> </span><span class="p">);</span><span class="w"> </span><span class="c1">// 0.4 on, 0.2 off</span>
 
 <span class="k">auto</span><span class="w"> </span><span class="o">&amp;</span><span class="n">ring</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">stage</span><span class="p">.</span><span class="n">visuals</span><span class="p">.</span><span class="n">add</span><span class="p">(</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">make_unique</span><span class="o">&lt;</span><span class="n">Circle</span><span class="o">&gt;</span><span class="p">(</span><span class="w"> </span><span class="mf">1.2F</span><span class="p">,</span><span class="w"> </span><span class="n">Color</span><span class="p">{</span><span class="w"> </span><span class="mf">1.F</span><span class="p">,</span><span class="w"> </span><span class="mf">1.F</span><span class="p">,</span><span class="w"> </span><span class="mf">1.F</span><span class="p">,</span><span class="w"> </span><span class="mf">0.F</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="p">)</span><span class="w"> </span><span class="p">);</span>
+<span class="n">ring</span><span class="p">.</span><span class="n">stroke_color</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">palette</span><span class="p">.</span><span class="n">orange</span><span class="p">;</span>
 <span class="n">ring</span><span class="p">.</span><span class="n">stroke_thickness</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">0.12F</span><span class="p">;</span>
 <span class="n">ring</span><span class="p">.</span><span class="n">stroke_dash</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">StrokeDash</span><span class="o">::</span><span class="n">dotted</span><span class="p">(</span><span class="w"> </span><span class="mf">0.3F</span><span class="w"> </span><span class="p">);</span><span class="w">       </span><span class="c1">// round dots, 0.3 apart</span>
 
@@ -1397,6 +1425,36 @@ Each piece of a path (each <code>MoveTo</code>) starts the pattern again. A patt
 Dashes stay as they are in <code>draw_on</code>, and a morph blends them: between two patterns, or with the gaps opening
 from a whole line. The exception is a line that becomes a filled shape: it is drawn as a whole line on the way, so the
 gaps close as soon as it starts.</p>
+<h2 id="gradients">Gradients<a class="headerlink" href="#gradients" title="Permanent link">&para;</a></h2>
+<p>Any shape can be filled with a linear or radial gradient instead of a plain color:</p>
+<div class="highlight"><pre><span></span><code><span class="k">auto</span><span class="w"> </span><span class="o">&amp;</span><span class="n">bar</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">stage</span><span class="p">.</span><span class="n">visuals</span><span class="p">.</span><span class="n">add</span><span class="p">(</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">make_unique</span><span class="o">&lt;</span><span class="n">Rectangle</span><span class="o">&gt;</span><span class="p">(</span><span class="w"> </span><span class="mf">1.F</span><span class="p">,</span><span class="w"> </span><span class="mf">2.F</span><span class="w"> </span><span class="p">)</span><span class="w"> </span><span class="p">);</span>
+<span class="n">bar</span><span class="p">.</span><span class="n">fill_gradient</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Gradient</span><span class="o">::</span><span class="n">across</span><span class="p">(</span><span class="w"> </span><span class="n">box_of</span><span class="p">(</span><span class="w"> </span><span class="n">bar</span><span class="w"> </span><span class="p">),</span><span class="w"> </span><span class="mf">90.F</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="mf">0.F</span><span class="p">,</span><span class="w"> </span><span class="n">Color</span><span class="o">::</span><span class="n">hex</span><span class="p">(</span><span class="w"> </span><span class="mh">0x101010</span><span class="w"> </span><span class="p">)</span><span class="w"> </span><span class="p">},</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="mf">1.F</span><span class="p">,</span><span class="w"> </span><span class="n">Color</span><span class="o">::</span><span class="n">hex</span><span class="p">(</span><span class="w"> </span><span class="mh">0xF0F0F0</span><span class="w"> </span><span class="p">)</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="p">);</span>
+
+<span class="k">auto</span><span class="w"> </span><span class="o">&amp;</span><span class="n">disc</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">stage</span><span class="p">.</span><span class="n">visuals</span><span class="p">.</span><span class="n">add</span><span class="p">(</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">make_unique</span><span class="o">&lt;</span><span class="n">Circle</span><span class="o">&gt;</span><span class="p">(</span><span class="w"> </span><span class="mf">2.F</span><span class="w"> </span><span class="p">)</span><span class="w"> </span><span class="p">);</span>
+<span class="n">disc</span><span class="p">.</span><span class="n">fill_gradient</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Gradient</span><span class="o">::</span><span class="n">radial</span><span class="p">(</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="mf">0.F</span><span class="p">,</span><span class="w"> </span><span class="mf">0.F</span><span class="w"> </span><span class="p">},</span><span class="w"> </span><span class="mf">2.F</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="mf">0.7F</span><span class="p">,</span><span class="w"> </span><span class="mf">0.7F</span><span class="w"> </span><span class="p">},</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="mf">0.F</span><span class="p">,</span><span class="w"> </span><span class="n">palette</span><span class="p">.</span><span class="n">yellow</span><span class="w"> </span><span class="p">},</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="mf">1.F</span><span class="p">,</span><span class="w"> </span><span class="n">palette</span><span class="p">.</span><span class="n">red</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="p">);</span>
+
+<span class="k">auto</span><span class="w"> </span><span class="o">&amp;</span><span class="n">title</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">stage</span><span class="p">.</span><span class="n">visuals</span><span class="p">.</span><span class="n">add</span><span class="p">(</span><span class="w"> </span><span class="n">make_text</span><span class="p">(</span><span class="w"> </span><span class="n">theme</span><span class="p">,</span><span class="w"> </span><span class="s">"Gradients"</span><span class="p">,</span><span class="w"> </span><span class="n">FontStyle</span><span class="p">{</span><span class="w"> </span><span class="n">Intent</span><span class="o">::</span><span class="n">TITLE</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="p">)</span><span class="w"> </span><span class="p">);</span>
+<span class="n">fill_each_with_gradient</span><span class="p">(</span><span class="w"> </span><span class="n">title</span><span class="p">,</span><span class="w"> </span><span class="mf">90.F</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="mf">0.F</span><span class="p">,</span><span class="w"> </span><span class="n">palette</span><span class="p">.</span><span class="n">blue</span><span class="w"> </span><span class="p">},</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="mf">1.F</span><span class="p">,</span><span class="w"> </span><span class="n">palette</span><span class="p">.</span><span class="n">pink</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="p">);</span><span class="w"> </span><span class="c1">// a gradient per glyph</span>
+</code></pre></div>
+<p>A gradient is placed in the visual's own coordinates, so it moves, turns and scales with the visual. <code>Gradient::across</code>
+fits a linear one to a box at an angle (0 goes to the right, 90 up); <code>box_of</code> gives that box only while the visual is
+still at its origin, so use it before placing the visual. Stops are at offsets from 0 to 1. The visual's
+<code>color</code> tints the gradient and its alpha fades it, and white in a stop is the theme's text color, as everywhere.</p>
+<p><strong>Text</strong> has a gradient per glyph, not one across a word: <code>fill_each_with_gradient</code> gives each shape below a visual its
+own, across that shape.</p>
+<p>Colors blend as they are written, in sRGB and not in linear light; add stops to follow any other curve. A frame has 8
+bits a channel and gradients are not dithered, so a long, dark ramp shows bands (from 0 to 16 across 1600 pixels: 17
+bands, each about 94 pixels wide). Between stops with different alpha, Voxima's renderer blends colors
+premultiplied, so a color fading out does not pick up the hue of the transparent stop, as it would in a browser
+looking at the same SVG. A gradient that goes nowhere (its ends the same, or a radius of 0) is drawn in its last color.</p>
+<p><strong>A morph</strong> blends gradients: a plain fill and a gradient turn into one another, and two of a kind blend their stops and
+their places. A linear and a radial one cannot become one another, so they pass through a plain color, the average
+of the two:</p>
+<div class="highlight"><pre><span></span><code><span class="k">auto</span><span class="w"> </span><span class="n">square</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">make_unique</span><span class="o">&lt;</span><span class="n">Rectangle</span><span class="o">&gt;</span><span class="p">(</span><span class="w"> </span><span class="mf">2.F</span><span class="p">,</span><span class="w"> </span><span class="mf">2.F</span><span class="w"> </span><span class="p">);</span>
+<span class="n">square</span><span class="o">-&gt;</span><span class="n">position</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="mf">4.F</span><span class="p">,</span><span class="w"> </span><span class="mf">-0.5F</span><span class="w"> </span><span class="p">};</span>
+<span class="n">square</span><span class="o">-&gt;</span><span class="n">fill_gradient</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Gradient</span><span class="o">::</span><span class="n">across</span><span class="p">(</span><span class="w"> </span><span class="n">AABB</span><span class="p">{</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="mf">-2.F</span><span class="p">,</span><span class="w"> </span><span class="mf">-2.F</span><span class="w"> </span><span class="p">},</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="mf">2.F</span><span class="p">,</span><span class="w"> </span><span class="mf">2.F</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="p">},</span><span class="w"> </span><span class="mf">0.F</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="mf">0.F</span><span class="p">,</span><span class="w"> </span><span class="n">palette</span><span class="p">.</span><span class="n">green</span><span class="w"> </span><span class="p">},</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="mf">1.F</span><span class="p">,</span><span class="w"> </span><span class="n">palette</span><span class="p">.</span><span class="n">blue</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="p">);</span>
+<span class="k">co_await</span><span class="w"> </span><span class="n">morph</span><span class="p">(</span><span class="w"> </span><span class="n">stage</span><span class="p">,</span><span class="w"> </span><span class="n">disc</span><span class="p">,</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">move</span><span class="p">(</span><span class="w"> </span><span class="n">square</span><span class="w"> </span><span class="p">),</span><span class="w"> </span><span class="mi">2</span><span class="n">s</span><span class="p">,</span><span class="w"> </span><span class="n">ease_cubic_in_out</span><span class="w"> </span><span class="p">);</span><span class="w"> </span><span class="c1">// a radial one and a linear one pass through a plain color</span>
+</code></pre></div>
 <h2 id="placing-things-against-each-other">Placing things against each other<a class="headerlink" href="#placing-things-against-each-other" title="Permanent link">&para;</a></h2>
 <p>Hard-coded coordinates are fine for a couple of things. For anything more, place visuals <strong>relative to each
 other</strong> (<code>visuals/Placement.h</code>), so a change in size or text does not make things overlap. The boxes used are

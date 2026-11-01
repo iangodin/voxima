@@ -60,7 +60,10 @@ struct ImageInfo
 struct OutlineShape
 {
 	std::vector<Contour> contours;
+	// With a gradient, `fill` is what it comes to overall
 	Color fill;
+	// In the frame of the contours, and in the colors it is seen in: tint, fade and the rest are in its stops
+	std::optional<Gradient> gradient;
 	Color stroke;
 	float stroke_thickness = 0.F;
 	StrokeDash dash = {}; // scaled as the thickness is

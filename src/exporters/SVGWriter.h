@@ -53,6 +53,9 @@ public:
 private:
 	void emit_path_data( const std::vector<PathCommand> &commands, std::ostream &out ) const;
 
+	// The fill's attributes, plain or a gradient
+	std::string fill_of( const Visual &v, const Color &color );
+
 	static bool dashed_outline( const Visual &v );
 	void write_dashed_ellipse( const Visual &v, float rx, float ry, const Color &fill, const Color &stroke );
 
@@ -73,6 +76,9 @@ private:
 	// baked in), so identical outlines share one definition and different ones never do.
 	std::map<std::string, size_t> _glyph_ids;
 	std::vector<std::string> _glyph_paths;
+	// Gradients already written, keyed by what they draw, so identical ones share one definition
+	std::map<std::string, size_t> _gradient_ids;
+	std::vector<std::string> _gradients;
 	std::vector<bool> _open_g_count;
 	// How much the groups open now scale what is in them, and what that was as each one opened
 	float _scale = 1.F;

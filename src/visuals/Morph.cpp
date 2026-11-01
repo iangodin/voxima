@@ -27,6 +27,113 @@ Color lerp( const Color &a, const Color &b, float t )
 	return { channel( a.r, b.r ), channel( a.g, b.g ), channel( a.b, b.b ), channel( a.a, b.a ) };
 }
 
+// The same gradient, invisible
+Gradient faded( Gradient gradient )
+{
+	for ( GradientStop &stop: gradient.stops )
+	{
+		stop.color.a = 0.F;
+	}
+	return gradient;
+}
+
+GradientTransform lerp( const GradientTransform &a, const GradientTransform &b, float t )
+{
+	return { lerp( a.a, b.a, t ), lerp( a.b, b.b, t ), lerp( a.c, b.c, t ), lerp( a.d, b.d, t ), lerp( a.tx, b.tx, t ), lerp( a.ty, b.ty, t ) };
+}
+
+// A gradient on its way, in one shape's place, with its stops blended by `color_of` from what they are
+template<typename ColorOf>
+Gradient with_stops( const Gradient &gradient, ColorOf &&color_of )
+{
+	Gradient out = gradient;
+	for ( GradientStop &stop: out.stops )
+	{
+		stop.color = color_of( stop.color );
+	}
+	return out;
+}
+
+// The fill on the way between two sides, at least one of them a gradient (each side's `fill` is what it comes to overall).
+//
+// With a plain color on the other side, the stops turn into that color. Two gradients of a kind blend their stops and their
+// places. A linear one and a radial one cannot become one another, so the first turns into a plain color between what they
+// come to, and that turns into the second. When the shape is only being carried (`carry`), so is the gradient.
+Gradient blended_gradient(
+	const std::optional<Gradient> &a,
+	const Color &fill_a,
+	const std::optional<Gradient> &b,
+	const Color &fill_b,
+	float t,
+	const std::optional<Similarity> &carry )
+{
+	// Where the first side's gradient is when t of the way, and the second's when it is still to arrive
+	const auto placed_a = [&]( Gradient g )
+	{
+		if ( carry )
+		{
+			g.transform = carry->transform( t ) * g.transform;
+		}
+		return g;
+	};
+	const auto placed_b = [&]( Gradient g )
+	{
+		if ( carry )
+		{
+			g.transform = carry->transform( t - 1.F ) * g.transform;
+		}
+		return g;
+	};
+
+	if ( !b )
+	{
+		return placed_a( with_stops( *a, [&]( const Color &c ) { return lerp( c, fill_b, t ); } ) );
+	}
+	if ( !a )
+	{
+		return placed_b( with_stops( *b, [&]( const Color &c ) { return lerp( fill_a, c, t ); } ) );
+	}
+	if ( a->kind != b->kind )
+	{
+		const Color middle = lerp( fill_a, fill_b, 0.5F );
+		if ( t < 0.5F )
+		{
+			return placed_a( with_stops( *a, [&]( const Color &c ) { return lerp( c, middle, t * 2.F ); } ) );
+		}
+		return placed_b( with_stops( *b, [&]( const Color &c ) { return lerp( middle, c, t * 2.F - 1.F ); } ) );
+	}
+
+	// Both of a kind: stops wherever either has one
+	std::vector<float> offsets;
+	for ( const GradientStop &stop: a->ordered_stops() )
+	{
+		offsets.push_back( stop.offset );
+	}
+	for ( const GradientStop &stop: b->ordered_stops() )
+	{
+		offsets.push_back( stop.offset );
+	}
+	std::sort( offsets.begin(), offsets.end() );
+	offsets.erase( std::unique( offsets.begin(), offsets.end() ), offsets.end() );
+
+	Gradient out = carry ? placed_a( *a ) : *a;
+	if ( !carry )
+	{
+		out.start = lerp( a->start, b->start, t );
+		out.end = lerp( a->end, b->end, t );
+		out.center = lerp( a->center, b->center, t );
+		out.focus = lerp( a->focus, b->focus, t );
+		out.radius = std::max( 0.F, lerp( a->radius, b->radius, t ) );
+		out.transform = lerp( a->transform, b->transform, t );
+	}
+	out.stops.clear();
+	for ( const float offset: offsets )
+	{
+		out.stops.push_back( { offset, lerp( a->sample( offset ), b->sample( offset ), t ) } );
+	}
+	return out;
+}
+
 size_t open_contours( const OutlineShape &shape )
 {
 	return static_cast<size_t>( std::count_if( shape.contours.begin(), shape.contours.end(), []( const Contour &c ) { return !c.closed; } ) );
@@ -95,6 +202,18 @@ Color transparent( Color c )
 	return c;
 }
 
+}
+
+GradientTransform Similarity::transform( float t ) const
+{
+	if ( shift_only )
+	{
+		return { 1.F, 0.F, 0.F, 1.F, shift.x() * t, shift.y() * t };
+	}
+	const float s = std::exp( log_scale * t );
+	const float c = std::cos( angle * t ) * s;
+	const float n = std::sin( angle * t ) * s;
+	return { c, n, -n, c, pivot.x() - c * pivot.x() + n * pivot.y(), pivot.y() - n * pivot.x() - c * pivot.y() };
 }
 
 Point Similarity::apply( Point p, float t ) const
@@ -249,6 +368,8 @@ Morph::Morph( const Visual &from, const Visual &to, const MorphOptions &options 
 			}
 			part.fill_a = a.fill;
 			part.fill_b = b.fill;
+			part.gradient_a = a.gradient;
+			part.gradient_b = b.gradient;
 			part.stroke_a = a.stroke;
 			part.stroke_b = b.stroke;
 			part.thickness_a = a.stroke_thickness;
@@ -265,6 +386,8 @@ Morph::Morph( const Visual &from, const Visual &to, const MorphOptions &options 
 			}
 			part.fill_a = a.fill;
 			part.fill_b = transparent( a.fill );
+			part.gradient_a = a.gradient;
+			part.gradient_b = a.gradient ? std::optional<Gradient>( faded( *a.gradient ) ) : std::nullopt;
 			part.stroke_a = a.stroke;
 			part.stroke_b = transparent( a.stroke );
 			part.thickness_a = part.thickness_b = a.stroke_thickness;
@@ -279,6 +402,8 @@ Morph::Morph( const Visual &from, const Visual &to, const MorphOptions &options 
 			}
 			part.fill_a = transparent( b.fill );
 			part.fill_b = b.fill;
+			part.gradient_a = b.gradient ? std::optional<Gradient>( faded( *b.gradient ) ) : std::nullopt;
+			part.gradient_b = b.gradient;
 			part.stroke_a = transparent( b.stroke );
 			part.stroke_b = b.stroke;
 			part.thickness_a = part.thickness_b = b.stroke_thickness;
@@ -344,6 +469,28 @@ void Morph::set( float t )
 
 		Path &path = *part.path;
 		path.color = lerp( part.fill_a, part.fill_b, progress );
+		path.fill_gradient.reset();
+		if ( part.gradient_a || part.gradient_b )
+		{
+			// Exactly at an end, what it is there
+			const bool plain_end = ( progress == 0.F && !part.gradient_a ) || ( progress == 1.F && !part.gradient_b );
+			if ( !plain_end )
+			{
+				path.color = { 1.F, 1.F, 1.F, 1.F }; // (it is all in the stops)
+				if ( progress == 0.F )
+				{
+					path.fill_gradient = part.gradient_a;
+				}
+				else if ( progress == 1.F )
+				{
+					path.fill_gradient = part.gradient_b;
+				}
+				else
+				{
+					path.fill_gradient = blended_gradient( part.gradient_a, part.fill_a, part.gradient_b, part.fill_b, progress, part.carry );
+				}
+			}
+		}
 		path.stroke_color = lerp( part.stroke_a, part.stroke_b, progress );
 		path.stroke_thickness = std::max( 0.F, lerp( part.thickness_a, part.thickness_b, progress ) );
 		if ( progress == 0.F || progress == 1.F )

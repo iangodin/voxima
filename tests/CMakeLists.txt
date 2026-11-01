@@ -69,6 +69,7 @@ add_executable( voxima_unit_tests
 	TestDataDirs.cpp
 	TestGroupOrder.cpp
 	TestStrokeDash.cpp
+	TestGradient.cpp
 )
 
 target_link_libraries( voxima_unit_tests

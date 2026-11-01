@@ -4,6 +4,7 @@
 #include "visuals/Point.h"
 #include "visuals/Color.h"
 #include "visuals/AABB.h"
+#include "visuals/Gradient.h"
 #include "visuals/StrokeDash.h"
 
 #include <optional>
@@ -19,6 +20,7 @@ struct Visual
 	float scale_x = 1.F;
 	float scale_y = 1.F;
 	Color color = { 1.F, 1.F, 1.F, 1.F };
+	std::optional<Gradient> fill_gradient = {}; // fills it instead of a plain color, which then tints and fades it
 
 	float stroke_thickness = 0.F;
 	Color stroke_color = { 1.F, 1.F, 1.F, 1.F };
@@ -61,6 +63,10 @@ protected:
 		if ( extent )
 		{
 			*extent *= scale;
+		}
+		if ( fill_gradient )
+		{
+			*fill_gradient *= scale;
 		}
 	}
 };

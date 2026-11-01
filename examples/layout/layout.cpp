@@ -12,7 +12,9 @@
 #include <core/SceneRegistry.h>
 #include <core/Script.h>
 #include <core/Stage.h>
+#include <core/EaseCubic.h>
 #include <core/EaseLinear.h>
+#include <core/MorphAnim.h>
 #include <core/Tween.h>
 #include <core/Wait.h>
 #include <math/Operators.h>
@@ -241,20 +243,50 @@ Scene show_dashes( Stage &stage, Script & )
 
 	// --8<-- [start:dashes]
 	auto &line = stage.visuals.add( std::make_unique<Line>() );
+	line.stroke_color = palette.blue;
 	line.start = { -5.F, 2.F };
 	line.end = { 5.F, 2.F };
 	line.stroke_thickness = 0.06F;
 	line.stroke_dash = StrokeDash::dashed( 0.4F, 0.2F ); // 0.4 on, 0.2 off
 
 	auto &ring = stage.visuals.add( std::make_unique<Circle>( 1.2F, Color{ 1.F, 1.F, 1.F, 0.F } ) );
+	ring.stroke_color = palette.orange;
 	ring.stroke_thickness = 0.12F;
 	ring.stroke_dash = StrokeDash::dotted( 0.3F );       // round dots, 0.3 apart
 
 	co_await tween( stage, 3s, ease_linear, [&]( float t ) { ring.stroke_dash.offset = -3.F * t; } ); // they march
 	// --8<-- [end:dashes]
 
-	line.stroke_color = palette.blue;
-	ring.stroke_color = palette.orange;
+	co_await wait_for( stage, 1s );
+}
+
+// Fills that change color across a shape, a glyph at a time in text, and that a morph blends
+Scene show_gradients( Stage &stage, Script & )
+{
+	Theme &theme = *stage.theme;
+	const Palette &palette = theme.palette();
+
+	// --8<-- [start:gradients]
+	auto &bar = stage.visuals.add( std::make_unique<Rectangle>( 1.F, 2.F ) );
+	bar.fill_gradient = Gradient::across( box_of( bar ), 90.F, { { 0.F, Color::hex( 0x101010 ) }, { 1.F, Color::hex( 0xF0F0F0 ) } } );
+
+	auto &disc = stage.visuals.add( std::make_unique<Circle>( 2.F ) );
+	disc.fill_gradient = Gradient::radial( { 0.F, 0.F }, 2.F, { 0.7F, 0.7F }, { { 0.F, palette.yellow }, { 1.F, palette.red } } );
+
+	auto &title = stage.visuals.add( make_text( theme, "Gradients", FontStyle{ Intent::TITLE } ) );
+	fill_each_with_gradient( title, 90.F, { { 0.F, palette.blue }, { 1.F, palette.pink } } ); // a gradient per glyph
+	// --8<-- [end:gradients]
+	bar.position = { -4.F, -0.5F };
+	disc.position = { 0.F, -0.5F };
+	move_to( title, { 0.F, 3.F }, Anchor::CENTER );
+	co_await wait_for( stage, 1.5s );
+
+	// --8<-- [start:gradient-morph]
+	auto square = std::make_unique<Rectangle>( 2.F, 2.F );
+	square->position = { 4.F, -0.5F };
+	square->fill_gradient = Gradient::across( AABB{ { -2.F, -2.F }, { 2.F, 2.F } }, 0.F, { { 0.F, palette.green }, { 1.F, palette.blue } } );
+	co_await morph( stage, disc, std::move( square ), 2s, ease_cubic_in_out ); // a radial one and a linear one pass through a plain color
+	// --8<-- [end:gradient-morph]
 	co_await wait_for( stage, 1s );
 }
 
@@ -263,3 +295,4 @@ REGISTER_SCENE( "layout", "Panels, a list and a table, and a row of shapes, plac
 REGISTER_SCENE( "tables", "Tables that wrap, hold formulas, and tint their rows", show_tables );
 REGISTER_SCENE( "drawing-order", "Putting a shape in front of or behind the others", show_order );
 REGISTER_SCENE( "dashes", "Dashed and dotted strokes, and dashes that march", show_dashes );
+REGISTER_SCENE( "gradients", "Linear and radial gradients, on shapes and glyphs, and morphing between them", show_gradients );
