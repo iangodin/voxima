@@ -5,6 +5,7 @@
 
 #include <coroutine>
 #include <exception>
+#include <utility>
 
 struct Coroutine
 {
@@ -25,9 +26,10 @@ struct Coroutine
 			return {};
 		}
 
+		// Kept for whoever is waiting for this one: see await_resume() and resume()
 		void unhandled_exception( void )
 		{
-			std::terminate();
+			exception = std::current_exception();
 		}
 
 		void return_void( void )
@@ -71,6 +73,8 @@ struct Coroutine
 
 	void resume( void )
 	{
+		// (found now: one that is waited for can be gone once it has run, as its finishing lets what waits for it carry on)
+		const bool waited_for = handle.promise().parent_promise != nullptr;
 		if ( handle.promise().active_child_resume )
 		{
 			handle.promise().active_child_resume();
@@ -78,6 +82,12 @@ struct Coroutine
 		else
 		{
 			handle.resume();
+		}
+		// What goes wrong in a scene goes to what waits for it (see await_resume()), and from the outermost one, to whoever called
+		// this: the producer, or a choreograph
+		if ( !waited_for )
+		{
+			rethrow();
 		}
 	}
 
@@ -103,8 +113,19 @@ struct Coroutine
 		this->resume();
 	}
 
-	void await_resume() noexcept
+	// A scene that throws throws where it is waited for, as if it were a function, so a scene can catch it there
+	void await_resume()
 	{
+		rethrow();
+	}
+
+private:
+	void rethrow()
+	{
+		if ( handle && handle.promise().exception )
+		{
+			std::rethrow_exception( std::exchange( handle.promise().exception, nullptr ) );
+		}
 	}
 };
 

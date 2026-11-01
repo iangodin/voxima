@@ -10,6 +10,7 @@
 #include <chrono>
 #include <memory>
 #include <sstream>
+#include <stdexcept>
 #include <string>
 #include <vector>
 
@@ -131,6 +132,21 @@ TEST_CASE( "A morph can be in any group, and keeps its place there", "[group][mo
 
 	CHECK( children( layer ) == std::vector<const Visual *>{ &behind, to_ptr, &front } );
 	CHECK( stage.visuals.size() == 1 );
+}
+
+TEST_CASE( "A morph of what is not a child of the group is refused", "[group][morph]" )
+{
+	Stage stage;
+	auto &layer = stage.visuals.add( std::make_unique<Group>() );
+	auto &from = layer.add( std::make_unique<Circle>() );
+
+	CHECK_THROWS_AS( run( morph( stage, from, std::make_unique<Circle>(), 0.1s, ease_linear ) ), std::invalid_argument );
+
+	Group other;
+	MorphOptions options;
+	options.parent = &other;
+	CHECK_THROWS_AS( run( morph( stage, from, std::make_unique<Circle>(), 0.1s, ease_linear, options ) ), std::invalid_argument );
+	CHECK( layer.size() == 1 );
 }
 
 TEST_CASE( "A morph in a tinted group starts in the color it was", "[group][morph]" )

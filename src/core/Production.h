@@ -3,6 +3,7 @@
 
 #include <coroutine>
 #include <cstdint>
+#include <exception>
 #include <functional>
 
 class Producer;
@@ -17,6 +18,7 @@ struct ProductionPromise
 	ProductionPromise *parent_promise = nullptr;
 	std::coroutine_handle<> parent_handle = nullptr;
 	std::function<void(void)> active_child_resume = nullptr;
+	std::exception_ptr exception = nullptr;
 };
 
 struct ReturnToParent
